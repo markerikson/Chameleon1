@@ -6,6 +6,8 @@
 ////////////////////////////////////////////////////////////////////
 #include "compiler.h"
 
+#include "../common/debug.h"
+
 
 BEGIN_EVENT_TABLE(Compiler, wxEvtHandler)
 	EVT_PROCESS2_STDOUT(Compiler::OnProcessOut)
