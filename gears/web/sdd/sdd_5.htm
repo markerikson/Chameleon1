@@ -15,6 +15,14 @@
 
 <h3>5.2.1 GUI<br></h3>
   <p>The GUI module handles the majority of the interactions with the user.&nbsp; It is, in a sense, the "master module" from which the others are invoked.&nbsp; It includes the main program window and its appearance, such as toolbars and window layout.&nbsp; It also includes the display portion of the interactive remote terminal.<br></p>
+  <p>The menu bar will have no less than the following items:
+  <ul>
+  <li>File - commands for creating new, opening, saving, and closing files; and closing the program.</li>
+  <li>Edit - selection-based text editing as well as "find" functionality.</li>
+  <li>Options - various GUI options that have yet to be determined but include Permissions management.</li>
+  <li>Tools - file tools, such as compiling.</li>
+  <li>Help - Basic help.</li></ul><br></p>
+  <p>The buttons will be extensions of the file menu.
 
 <h3>5.2.2 Editor<br></h3>
   <p>The editor module handles the rest of the user interaction, specifically that having to do with text entry and manipulation.&nbsp; <br></p>
@@ -32,7 +40,7 @@
   <p>The permissions manager is a fairly small module, but is vital to the rest of the program.&nbsp; Each of the other modules, particularly the GUI module, query it to see what features are currently enabled.&nbsp; This is done during startup, and may be done when program options are changed as well.<br></p>
 
 
-<h2><a name="constraints">5.3 Design Constraints</a></h2>
+<h3><a name="constraints">5.3 Design Constraints</a></h2>
   <p>For the networking modules, it is assumed that there is a server that users can log into via Secure Shell (SSH).</p> 
 
 <h2><a name="global">5.4 Global Data Objects</a><br></h2>
@@ -41,10 +49,10 @@
 <h2><a name="errors">5.5 Error Handling</a></h2>
   Because of the level of user we are targetting, we plan to handle as many errors internally as possible and only alert the user if absolutely necessary.&nbsp; Error handling methods will done using wxWindows debugging and logging functions.&nbsp; Because of the nature of the program, user input errors are not nearly as big an issue as they might be with other types of applications.  Because of the ownership heirarchy (wxApplication -> GUI -> modules) most errors will be dealt with by the GUI.  During testing and early stages, it is likely many errors will be displayed that won't be in the production version.<br></p> 
 
-<h2><a name="language">5.6 Development Language</a></h2>
-  <p>We are using standard C++, with macros and data structures from the wxWindows toolkit.&nbsp; We plan to compile Chameleon using several different compilers, including Microsoft's C++ compiler versions 6 and 7, and the GNU MinGW compiler. &nbsp;</p> 
+<h3><a name="language">5.6 Development Language</a></h2>
+  <p>We are using standard C++, with macros and data structures from the wxWindows toolkit.&nbsp; We plan to compile Chameleon using several different compilers, including Microsoft's C++ compiler versions 6 and 7, and the GNU MinGW compiler (whatever most-recent version is available). &nbsp;</p> 
 
-<h2><a name="precond">5.7 Preconditions and Postconditions</a></h2>
+<h3><a name="precond">5.7 Preconditions and Postconditions</a></h2>
   <p>Chameleon will be statically linked with the wxWindows libraries, eliminating the need for the wxWindows DLL to be distributed.&nbsp; It may, however, require a C++ runtime DLL.<br> </p> 
   <br>
   <p>Currently, the only data files that Chameleon will be dealing with will be C++ code files that are opened by the user.&nbsp; Upon an "Exit Program" event, the user will be notified if his current file has been modified since its last save and given an opportunity to save before exiting.<br></p>
