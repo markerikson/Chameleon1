@@ -51,6 +51,8 @@ BEGIN_EVENT_TABLE( ProfOptionsDialog, wxDialog )
 
     EVT_BUTTON( ID_BUTTON1, ProfOptionsDialog::OnButtonUncheckAllClick )
 
+    EVT_BUTTON( ID_BUTTON2, ProfOptionsDialog::OnDecodeClick )
+
     EVT_BUTTON( ID_EXITBUTTON, ProfOptionsDialog::OnExitbuttonClick )
 
 ////@end ProfOptionsDialog event table entries
@@ -58,6 +60,8 @@ BEGIN_EVENT_TABLE( ProfOptionsDialog, wxDialog )
 	EVT_CLOSE(ProfOptionsDialog::OnQuit)
 
 END_EVENT_TABLE()
+
+#pragma warning( disable : 4267)
 
 /*!
  * ProfOptionsDialog constructors
@@ -135,15 +139,15 @@ void ProfOptionsDialog::CreateControls()
 
     wxTextCtrl* item9 = new wxTextCtrl( item1, ID_TXTCODE, _(""), wxDefaultPosition, wxSize(140, -1), 0 );
     m_txtGeneratedCode = item9;
-    item7->Add(item9, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxBOTTOM, 5);
+    item7->Add(item9, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT, 5);
 
-    wxCheckBox* item10 = new wxCheckBox( item1, ID_RANDOMIZE, _("Randomize code"), wxDefaultPosition, wxSize(100, -1), 0 );
-    m_chkRandomize = item10;
-    item10->SetValue(FALSE);
-    item7->Add(item10, 0, wxALIGN_LEFT|wxALL, 5);
+    wxButton* item10 = new wxButton( item1, ID_GENERATE, _("Generate code"), wxDefaultPosition, wxSize(90, -1), 0 );
+    m_genButton = item10;
+    item7->Add(item10, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxBOTTOM, 5);
 
-    wxButton* item11 = new wxButton( item1, ID_GENERATE, _("Generate code"), wxDefaultPosition, wxSize(90, -1), 0 );
-    m_genButton = item11;
+    wxCheckBox* item11 = new wxCheckBox( item1, ID_RANDOMIZE, _("Randomize code"), wxDefaultPosition, wxSize(100, -1), 0 );
+    m_chkRandomize = item11;
+    item11->SetValue(FALSE);
     item7->Add(item11, 0, wxALIGN_LEFT|wxALL, 5);
 
     wxButton* item12 = new wxButton( item1, ID_BUTTON, _("Check all modules"), wxDefaultPosition, wxSize(120, -1), 0 );
@@ -154,12 +158,23 @@ void ProfOptionsDialog::CreateControls()
     m_butUncheckAll = item13;
     item7->Add(item13, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxBOTTOM, 5);
 
-    wxBoxSizer* item14 = new wxBoxSizer(wxVERTICAL);
-    item7->Add(item14, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 30);
+    wxBoxSizer* item14 = new wxBoxSizer(wxHORIZONTAL);
+    item7->Add(item14, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
-    wxButton* item15 = new wxButton( item1, ID_EXITBUTTON, _("Exit"), wxDefaultPosition, wxDefaultSize, 0 );
-    m_exitButton = item15;
-    item7->Add(item15, 0, wxALIGN_RIGHT|wxLEFT|wxRIGHT|wxTOP, 5);
+    wxButton* item15 = new wxButton( item1, ID_BUTTON2, _("Decode:"), wxDefaultPosition, wxSize(90, -1), 0 );
+    m_decodeButton = item15;
+    item7->Add(item15, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT, 5);
+
+    wxTextCtrl* item16 = new wxTextCtrl( item1, ID_TEXTCTRL, _(""), wxDefaultPosition, wxSize(140, -1), 0 );
+    m_txtDecode = item16;
+    item7->Add(item16, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT, 5);
+
+    wxBoxSizer* item17 = new wxBoxSizer(wxHORIZONTAL);
+    item7->Add(item17, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+
+    wxButton* item18 = new wxButton( item1, ID_EXITBUTTON, _("Exit"), wxDefaultPosition, wxDefaultSize, 0 );
+    m_exitButton = item18;
+    item7->Add(item18, 0, wxALIGN_RIGHT|wxLEFT|wxRIGHT|wxTOP, 5);
 
 ////@end ProfOptionsDialog content construction
 }
@@ -297,6 +312,54 @@ void ProfOptionsDialog::OnButtonCheckAllClick( wxCommandEvent& event )
 	{
 		m_chklstModules->Check(i, true);
 	}
+}
+
+
+/*!
+ * wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON2
+ */
+
+void ProfOptionsDialog::OnDecodeClick( wxCommandEvent& event )
+{
+    // Insert custom code here
+    event.Skip();
+
+	for(int i = 0; i < m_chklstModules->GetCount(); i++)
+	{
+		m_chklstModules->Check(i, false);
+	}
+
+	wxString stringToDecode = m_txtDecode->GetValue();
+
+	wxString numberString = stringToDecode.Right(stringToDecode.Len() - 4);
+	wxString prefixString = stringToDecode.Left(4);
+
+	ClsCrc16 crc;
+	crc.CrcInitialize();
+	crc.CrcAdd((unsigned char *)(numberString.GetData()), numberString.Len());
+	wxString generatedCRC;
+
+	generatedCRC.Printf("%X", crc.CrcGet());
+
+	if(generatedCRC != prefixString)
+	{
+		wxMessageBox("Invalid authorization code!", "Invalid code", wxOK | wxICON_WARNING);
+		return;
+	}
+
+	long numberLong;
+
+	numberString.ToLong(&numberLong);
+
+
+	for(int i = 0; i < PERM_LAST; i++)
+	{
+		m_chklstModules->Check(i, (numberLong & (1 << i)));
+	}
+	
+
+
+
 }
 
 

@@ -38,10 +38,12 @@
 #define ID_DIALOG 10000
 #define ID_CHECKLISTBOX 10001
 #define ID_TXTCODE 10002
-#define ID_RANDOMIZE 10004
 #define ID_GENERATE 10003
+#define ID_RANDOMIZE 10004
 #define ID_BUTTON 10006
 #define ID_BUTTON1 10007
+#define ID_BUTTON2 10009
+#define ID_TEXTCTRL 10008
 #define ID_EXITBUTTON 10005
 ////@end control identifiers
 
@@ -76,6 +78,9 @@ public:
     /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON1
     void OnButtonUncheckAllClick( wxCommandEvent& event );
 
+    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON2
+    void OnDecodeClick( wxCommandEvent& event );
+
     /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_EXITBUTTON
     void OnExitbuttonClick( wxCommandEvent& event );
 
@@ -93,10 +98,12 @@ public:
 ////@begin ProfOptionsDialog member variables
     wxCheckListBox* m_chklstModules;
     wxTextCtrl* m_txtGeneratedCode;
-    wxCheckBox* m_chkRandomize;
     wxButton* m_genButton;
+    wxCheckBox* m_chkRandomize;
     wxButton* m_butCheckAll;
     wxButton* m_butUncheckAll;
+    wxButton* m_decodeButton;
+    wxTextCtrl* m_txtDecode;
     wxButton* m_exitButton;
 ////@end ProfOptionsDialog member variables
 };
