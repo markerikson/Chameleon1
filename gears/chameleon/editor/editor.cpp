@@ -1,4 +1,10 @@
+#define CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
+
 #include "../common/CommonHeaders.h"
+
+#include <wx/datetime.h>
 
 #include "stc.h"
 #include "editor.h"
@@ -6,15 +12,12 @@
 #include "../gui/ChameleonNotebook.h"
 #include "../common/datastructures.h"
 #include "../common/Options.h"
+#include "../common/DebugEvent.h"
+#include "../common/ProjectInfo.h"
 #include "../common/debug.h"
 
-
-#include <wx/datetime.h>
-
 #ifdef _DEBUG
-
-    #define new DEBUG_NEW
-
+#define new DEBUG_NEW
 #endif
 
 
@@ -24,6 +27,7 @@ BEGIN_EVENT_TABLE(ChameleonEditor, wxStyledTextCtrl)
 	EVT_RIGHT_DOWN		(ChameleonEditor::OnRightClick)
 	EVT_MENU			(ID_DEBUG_ADD_BREAKPOINT, ChameleonEditor::OnAddBreakpoint)
 	EVT_MENU			(ID_DEBUG_REMOVE_BREAKPOINT, ChameleonEditor::OnRemoveBreakpoint)
+	EVT_MENU			(ID_DEBUG_CLEAR_ALL_BREAKPOINTS, ChameleonEditor::OnClearBreakpoints)
 	EVT_COMPILER_ENDED	(ChameleonEditor::OnCompilerEnded)
 END_EVENT_TABLE()
 
@@ -33,8 +37,11 @@ int CompareInts(int n1, int n2)
 }
 
 
+
+
 ChameleonEditor::ChameleonEditor( ChameleonWindow *mframe,
 								 Options* options,
+								 ProjectInfo* project,
                                   wxWindow *parent,     wxWindowID id, const
                                       wxPoint & pos /* = wxDefaultPosition */,
                                   const wxSize & size /* = wxDefaultSize */,
@@ -45,6 +52,8 @@ ChameleonEditor::ChameleonEditor( ChameleonWindow *mframe,
     m_mainFrame = mframe;
 	m_parentNotebook = (ChameleonNotebook*)parent;
 	m_options = options;
+	m_project = project;
+	m_project->AddEditor(this);
 
 	m_bLoadingFile = false;
 	m_bLastSavedRemotely = true;
@@ -109,14 +118,14 @@ ChameleonEditor::ChameleonEditor( ChameleonWindow *mframe,
 
 	UpdateSyntaxHighlighting();
 
-	this->MarkerDefine(0, wxSTC_MARK_CIRCLE);
-	this->MarkerSetBackground(0, wxColour("red"));
+	this->MarkerDefine(MARKER_BREAKPOINT, wxSTC_MARK_CIRCLE);
+	this->MarkerSetBackground(MARKER_BREAKPOINT, wxColour("red"));
 
-	this->MarkerDefine(1, wxSTC_MARK_CIRCLE);
-	this->MarkerSetForeground(1, wxColour("red"));
+	//this->MarkerDefine(1, wxSTC_MARK_CIRCLE);
+	//this->MarkerSetForeground(1, wxColour("red"));
 
-	this->MarkerDefine(2, wxSTC_MARK_SHORTARROW);
-	this->MarkerSetBackground(2, wxColour("yellow"));
+	this->MarkerDefine(MARKER_FOCUSEDLINE, wxSTC_MARK_SHORTARROW);
+	this->MarkerSetBackground(MARKER_FOCUSEDLINE, wxColour("yellow"));
 
 	
 	/*
@@ -136,12 +145,13 @@ ChameleonEditor::ChameleonEditor( ChameleonWindow *mframe,
 
 	m_popupMenu.Append(ID_DEBUG_ADD_BREAKPOINT, "Add a breakpoint");
 	m_popupMenu.Append(ID_DEBUG_REMOVE_BREAKPOINT, "Remove this breakpoint");
+	m_popupMenu.Append(ID_DEBUG_CLEAR_ALL_BREAKPOINTS, "Clear all breakpoints");
 
 	m_popupMenu.Append(ID_DEBUG_RUNTOCURSOR, "Run to cursor");
 
-	int modmask =	wxSTC_MOD_DELETETEXT
-					| wxSTC_MOD_CHANGESTYLE
-					| wxSTC_PERFORMED_USER 
+	int modmask =	wxSTC_MOD_INSERTTEXT 
+					| wxSTC_MOD_DELETETEXT
+					//| wxSTC_MOD_CHANGESTYLE
 					| wxSTC_PERFORMED_UNDO 
 					| wxSTC_PERFORMED_REDO;
 
@@ -151,7 +161,14 @@ ChameleonEditor::ChameleonEditor( ChameleonWindow *mframe,
 
 ChameleonEditor::~ChameleonEditor() 
 {
-    //this->PopEventHandler(true);
+    if(m_project->IsSingleFile())
+	{
+		delete m_project;
+	}
+	else
+	{
+		m_project->RemoveEditor(this);
+	}
 }
 
 
@@ -396,6 +413,8 @@ void ChameleonEditor::SetFilename(wxFileName filename, bool fileIsRemote)
 
 	//m_fileNameAndPath.Assign(path, name, fileIsRemote ? wxPATH_UNIX : wxPATH_DOS);
 	m_fileNameAndPath = filename;
+
+	
 }
 
 wxString ChameleonEditor::GetFileNameAndPath()
@@ -424,18 +443,45 @@ void ChameleonEditor::ResetEditor()
 	SetSavePoint();
 	EmptyUndoBuffer();
 	m_fileNameAndPath.Clear();
+
+	if(m_project != NULL && m_project->IsSingleFile())
+	{
+		delete m_project;
+	}
+	
+	m_project = new ProjectInfo();
 }
 
 void ChameleonEditor::OnRightClick(wxMouseEvent &event)
 {
-
-	bool breakpointsAllowed = !m_mainFrame->IsDebugging();
-
-	m_popupMenu.Enable(ID_DEBUG_ADD_BREAKPOINT, breakpointsAllowed);
-	m_popupMenu.Enable(ID_DEBUG_REMOVE_BREAKPOINT, breakpointsAllowed);
-	m_popupMenu.Enable(ID_DEBUG_RUNTOCURSOR, breakpointsAllowed);
-
 	m_lastRightClick = event.GetPosition();
+	int charpos = PositionFromPoint(m_lastRightClick);
+	int linenum = LineFromPosition(charpos);
+	int markerLineBitmask = this->MarkerGet(linenum);
+
+	bool breakpointOnLine = (markerLineBitmask & (1 << MARKER_BREAKPOINT));
+
+	bool breakpointsAllowed = true;
+	bool isDebugging = m_mainFrame->IsDebugging();
+	
+	if(isDebugging)
+	{
+		breakpointsAllowed = m_mainFrame->IsDebuggerPaused();
+	}
+
+	m_popupMenu.Enable(ID_DEBUG_ADD_BREAKPOINT, breakpointsAllowed && !breakpointOnLine);
+	m_popupMenu.Enable(ID_DEBUG_REMOVE_BREAKPOINT, breakpointsAllowed && breakpointOnLine);
+	m_popupMenu.Enable(ID_DEBUG_RUNTOCURSOR, breakpointsAllowed && isDebugging);
+
+	// returns a copy of a member variable, which would seem sort of pointless, but
+	// GetBreakpoints cleans up any stray marker IDs in the list before returning
+	// so we have an accurate count of how many breakpoints there are
+	wxArrayInt currentBreakpoints = GetBreakpoints();
+	bool canClearBreakpoints = currentBreakpoints.GetCount() > 0;
+
+	m_popupMenu.Enable(ID_DEBUG_CLEAR_ALL_BREAKPOINTS, canClearBreakpoints);
+
+	
 	PopupMenu(&m_popupMenu, m_lastRightClick);
 }
 
@@ -457,7 +503,8 @@ void ChameleonEditor::OnEditorModified(wxStyledTextEvent &event)
 			break;
 	}	
 	*/
-	m_bHasBeenCompiled = false;
+	//m_bHasBeenCompiled = false;
+	m_project->SetCompiled(false);
 }
 
 void ChameleonEditor::OnAddBreakpoint(wxCommandEvent &event)
@@ -465,10 +512,10 @@ void ChameleonEditor::OnAddBreakpoint(wxCommandEvent &event)
 	int charpos = PositionFromPoint(m_lastRightClick);
 	int linenum = LineFromPosition(charpos);
 
-	int markerNum = this->MarkerAdd(linenum, 0);
+	int markerNum = this->MarkerAdd(linenum, MARKER_BREAKPOINT);
 	
 	m_breakpoints.Add(markerNum);
-	
+	CreateBreakpointEvent(linenum, true);	
 }
 
 void ChameleonEditor::OnRemoveBreakpoint(wxCommandEvent &event)
@@ -478,7 +525,23 @@ void ChameleonEditor::OnRemoveBreakpoint(wxCommandEvent &event)
 
 	// need to remove the marker handle from the array - use
 	// LineFromHandle on debug start and clean up then
-	this->MarkerDelete(linenum, 0);
+	this->MarkerDelete(linenum, MARKER_BREAKPOINT);
+	CreateBreakpointEvent(linenum, false);
+}
+
+void ChameleonEditor::OnClearBreakpoints(wxCommandEvent &event)
+{
+	// m_breakpoints should have been cleared of any orphaned marker
+	// handles during the right-click that led us here
+	int numBreakpoints = m_breakpoints.GetCount();
+
+	for(int i = 0; i < numBreakpoints; i++)
+	{
+		int markerHandle = m_breakpoints[i];
+		int linenum = this->MarkerLineFromHandle(markerHandle);
+		this->MarkerDeleteHandle(markerHandle);
+		CreateBreakpointEvent(linenum, false);
+	}
 }
 
 wxArrayInt ChameleonEditor::GetBreakpoints()
@@ -514,12 +577,14 @@ wxArrayInt ChameleonEditor::GetBreakpoints()
 
 bool ChameleonEditor::HasBeenCompiled()
 {
-	return m_bHasBeenCompiled;
+	//return m_bHasBeenCompiled;
+	return m_project->IsCompiled();
 }
 
 void ChameleonEditor::SetCompiled()
 {
-	m_bHasBeenCompiled = true;
+	//m_bHasBeenCompiled = true;
+	m_project->SetCompiled(true);
 }
 
 void ChameleonEditor::OnCompilerEnded(wxCompilerEndedEvent &event)
@@ -528,4 +593,46 @@ void ChameleonEditor::OnCompilerEnded(wxCompilerEndedEvent &event)
 		m_bHasBeenCompiled = true;
 		m_executableFilename = event.GetExecFile();
 	}
+}
+
+void ChameleonEditor::FocusOnLine(int linenumber)
+{
+	GotoLine(linenumber);
+	MarkerDeleteAll(MARKER_FOCUSEDLINE);
+
+	MarkerAdd(linenumber, MARKER_FOCUSEDLINE);
+}
+
+void ChameleonEditor::CreateBreakpointEvent(int linenumber, bool addBreakpoint)
+{
+	wxDebugEvent dbg;
+	wxString filename = m_fileNameAndPath.GetFullPath(wxPATH_UNIX);
+	//wxArrayString sources;
+	//sources.Add(filename);
+	dbg.SetSourceFilename(filename);
+	// adjust for the zero-based index
+	dbg.SetLineNumber(linenumber + 1);
+	int type = addBreakpoint ? ID_DEBUG_ADD_BREAKPOINT : ID_DEBUG_REMOVE_BREAKPOINT;
+	dbg.SetId(type);
+	dbg.SetStatus(type);
+	dbg.SetProject(m_project);
+	m_mainFrame->AddPendingEvent(dbg);
+}
+
+
+void ChameleonEditor::SetProject(ProjectInfo* project)
+{
+	if(m_project != NULL && m_project->IsSingleFile())
+	{
+		delete m_project;
+	}
+
+	// TODO I've got some not-quite-formed thoughts that I need to set the project's exec name here...
+	m_project = project;
+	m_project->AddEditor(this);
+}
+
+void ChameleonEditor::SetExecutableFilename(wxFileName filename)
+{
+	m_project->SetExecutableName(filename);
 }

@@ -13,13 +13,14 @@ class ChameleonWindow;
 class ChameleonNotebook;
 class wxFileName;
 class Options;
+class ProjectInfo;
 
 
 class ChameleonEditor : public wxStyledTextCtrl
 {
 public:
-	ChameleonEditor(ChameleonWindow* mframe, Options* options, wxWindow *parent, wxWindowID id, 
-					const wxPoint& pos = wxDefaultPosition,
+	ChameleonEditor(ChameleonWindow* mframe, Options* options, ProjectInfo* project, 
+					wxWindow *parent, wxWindowID id, const wxPoint& pos = wxDefaultPosition,
 					const wxSize& size = wxDefaultSize, long style = 0,
 					const wxString& name = wxSTCNameStr);
 	~ChameleonEditor();
@@ -34,6 +35,7 @@ public:
 
 	bool Modified();
 	bool HasBeenCompiled();
+	bool HasBeenSaved();
 
 	void SetCompiled();
 
@@ -41,17 +43,8 @@ public:
 	void OnRightClick(wxMouseEvent &event);
 
 	void UpdateSyntaxHighlighting();
+	void FocusOnLine(int linenumber);
 
-	//wxString GetRemoteFileName() { return m_remoteFileName.GetFullName();}
-	//wxString GetRemotePath() { return m_remoteFileName.GetPath(false, wxPATH_UNIX);}
-	//wxString GetRemoteFileNameAndPath() { return m_remoteFileName.GetFullPath(wxPATH_UNIX);}
-	//void SetRemoteFileNameAndPath(wxString path, wxString name);
-	//void SetLocalFileNameAndPath(wxString path, wxString name);
-
-
-
-	//wxString GetFilename () {return m_simpleFileName;};
-	//void SetFilename (const wxString &filename) {m_simpleFileName =  filename;};
 
 	wxString GetFileNameAndPath();
 	wxString GetFilenameString();
@@ -59,10 +52,13 @@ public:
 	wxFileName GetExecutableFileName() 	{ return m_executableFilename; }
 	wxString GetFilePath();
 	wxArrayInt GetBreakpoints();
+	ProjectInfo* GetProject(){ return m_project; }
+
+
 	//void SetFileNameAndPath(wxString path, wxString name, bool fileIsRemote);
 	void SetFilename(wxFileName filename, bool fileIsRemote);
-	void SetExecutableFilename(wxFileName filename){ m_executableFilename = filename; }
-	bool HasBeenSaved();
+	void SetExecutableFilename(wxFileName filename);
+	void SetProject(ProjectInfo* project);
 	void ResetEditor();
 	bool LastSavedRemotely() {	return m_bLastSavedRemotely;}
 
@@ -72,12 +68,16 @@ private:
 	void OnEditorModified(wxStyledTextEvent &event);
 	void OnAddBreakpoint(wxCommandEvent &event);
 	void OnRemoveBreakpoint(wxCommandEvent &event);
+	void OnClearBreakpoints(wxCommandEvent &event);
 	void OnCompilerEnded(wxCompilerEndedEvent &event);
+
+	void CreateBreakpointEvent(int linenumber, bool addBreakpoint);
 	
 
 	ChameleonWindow* m_mainFrame;
 	ChameleonNotebook* m_parentNotebook;	
 	Options* m_options;
+	ProjectInfo* m_project;
 
 	wxFileName m_fileNameAndPath;
 	wxFileName m_executableFilename;
