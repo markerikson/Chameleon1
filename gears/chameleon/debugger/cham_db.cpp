@@ -39,6 +39,10 @@
 #include <wx/RegEx.h>
 //#include <iostream>
 
+#include <wx/arrimpl.cpp> // this is a magic incantation which must be done!
+WX_DEFINE_OBJARRAY(VariableInfoArray);
+
+
 #include "../common/debug.h"
 
 #ifdef _DEBUG
