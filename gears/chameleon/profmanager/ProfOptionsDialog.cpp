@@ -33,6 +33,8 @@
 ////@begin XPM images
 ////@end XPM images
 
+extern wxString GlobalPermStrings[];
+
 /*!
  * ProfOptionsDialog type definition
  */
@@ -63,6 +65,8 @@ BEGIN_EVENT_TABLE( ProfOptionsDialog, wxDialog )
 END_EVENT_TABLE()
 
 #pragma warning( disable : 4267)
+
+
 
 /*!
  * ProfOptionsDialog constructors
@@ -279,7 +283,7 @@ bool ProfOptionsDialog::ShowToolTips()
   return TRUE;
 }
 
-void ProfOptionsDialog::OnQuit(wxCommandEvent &event)
+void ProfOptionsDialog::OnQuit(wxCloseEvent &event)
 {
 	Destroy();
 }
