@@ -29,23 +29,19 @@
 
 
 
-#ifndef INCLUDE_WXSSH
-#define INCLUDE_WXSSH
+#ifndef __WXSSH__H__
+#define __WXSSH__H__
 
-#include "wxterm.h"
-#include "../common/process2events.h"
+#include "../common/CommonHeaders.h"
+
+#include <wx/txtstrm.h>
+#include "../network/gterm.hpp"
+#include "../network/gtelnet.hpp"  // <------------
+#include "../common/debug.h"
 #include "../common/process2.h"
-
-#ifdef __GNUG__
-#pragma interface
-#endif
-
-//#define wxEVT_COMMAND_TELNET_CONNECT           (wxEVT_COMMAND_TERM_NEXT + 1)
-//#define wxEVT_COMMAND_TELNET_DISCONNECT        (wxEVT_COMMAND_TERM_NEXT + 2)
-
-//#define EVT_TELNET_CONNECT(id, fn) { wxEVT_COMMAND_TELNET_CONNECT, id, -1, (wxObjectEventFunction) (wxEventFunction) (wxCommandEventFunction) &fn, (wxObject *)NULL },
-//#define EVT_TELNET_DISCONNECT(id, fn) { wxEVT_COMMAND_TELNET_DISCONNECT, id, -1, (wxObjectEventFunction) (wxEventFunction) (wxCommandEventFunction) &fn, (wxObject *)NULL },
-
+#include "../common/process2events.h"
+#include "wxterm.h"
+#include "wxssh.h"
 
 
 class wxSSH : public wxTerm
@@ -55,15 +51,13 @@ class wxSSH : public wxTerm
 				const wxPoint& pos = wxDefaultPosition,
 				int width = 80, int height = 25,
 				const wxString& name = "wxSSH");
-
 		virtual ~wxSSH();
 
-		//void OnPlinkEvent(wxEvent& event);
 		void OnPlinkEvent(wxProcess2StdOutEvent& event);
 
 		virtual void SendBack(int len, char *data);
 
-		virtual void Connect(const wxString& hostname, unsigned short port);
+		virtual void Connect(wxString hostname, wxString username, wxString passphrase);
 		virtual void Disconnect(void);
 		virtual bool IsConnected(void);
 
@@ -75,4 +69,4 @@ class wxSSH : public wxTerm
 	DECLARE_EVENT_TABLE()
 };
 
-#endif /* INCLUDE_WXSSH */
+#endif /* __WXSSH__H__ */

@@ -13,10 +13,10 @@
 #include "dialogs/OptionsDialog.h"
 #include "dialogs/RemoteFileDialog.h"
 #include "../perms/p.h"
-
-#include "../network/networking.h"
-#include "wxtelnet.h"
 #include "../common/ProjectInfo.h"
+#include "../network/networking.h"
+//#include "wxtelnet.h"
+#include "wxssh.h"
 
 #include "new.xpm"
 #include "open.xpm"
@@ -966,15 +966,25 @@ void ChameleonWindow::OnFileClose (wxCommandEvent &WXUNUSED(event))
 
 void ChameleonWindow::OnConnect(wxCommandEvent& WXUNUSED(event))
 {
-	wxIPV4address local;
-	local.LocalHost();
+	//wxIPV4address local;
+	//local.LocalHost();
 
-	wxString hostName = "163.11.42.198";
-	//("Address: " + local.Hostname())
-	wxLogDebug("Connecting to address: %s", hostName);
-	//m_telnet->Connect(local.Hostname(), 3012);
-	m_telnet->Connect(hostName, 23);
-	wxLogDebug("Connected: %d", m_telnet->IsConnected());
+	NetworkStatus isok = m_network->GetStatus();
+	if(isok == NET_GOOD) { // This doesn't appear to be working as I hoped.
+		wxString hostname = m_optionsDialog->GetServerAddress();
+		wxString username = m_optionsDialog->GetUsername();
+		wxString password1 = m_optionsDialog->GetPassword1();
+
+		//("Address: " + local.Hostname())
+		//wxLogDebug("Connecting to address: %s", hostName);
+		//m_telnet->Connect(local.Hostname(), 3012);
+		//m_telnet->Connect(hostName, 23);
+		m_telnet->Connect(hostname, username, password1);
+		wxLogDebug("Connected: %d", m_telnet->IsConnected());
+	}
+	else {
+		wxLogDebug("Tried to start Terminal without Networking == good");
+	}
 
 }
 

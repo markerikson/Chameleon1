@@ -27,42 +27,10 @@
        derry@techass.com
 */
 
-#ifdef __GNUG__
-    #pragma implementation "wxssh.h"
-#endif
-
-// For compilers that support precompilation, includes "wx/wx.h".
-#include "wx/wxprec.h"
-
-#include "../common/CommonHeaders.h"
-
-
-// for all others, include the necessary headers (this file is usually all you
-// need because it includes almost all "standard" wxWindows headers
-#ifndef WX_PRECOMP
-    #include "wx/wx.h"
-#endif
-
-//#include <ctype.h>
-
-#include <wx/txtstrm.h>
-#include "../network/gterm.hpp"
-#include "../network/gtelnet.hpp"
-#include "../common/process2.h"
-#include "../common/process2events.h"
-#include "wxterm.h"
 #include "wxssh.h"
 
-#include "../common/debug.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
-
-//wxTerm
 BEGIN_EVENT_TABLE(wxSSH, wxTerm)
 	EVT_PROCESS2_STDOUT(wxSSH::OnPlinkEvent)
-	//EVT_CUSTOM(wxEVT_PROCESS2_STDOUT, wxID_ANY, wxSSH::OnPlinkEvent)
 END_EVENT_TABLE()
 
 wxSSH::wxSSH(wxWindow* parent, wxWindowID id, const wxPoint& pos, int width, int height, const wxString& name)
@@ -76,25 +44,31 @@ wxSSH::~wxSSH()
 {
 	if(m_plink)
 	{
-		// do something
+		// Rudimentary exiting
+		wxTextOutputStream os(* (m_plink->GetOutputStream()) );
+		os.WriteString("\rexit\r"); // this may be tacking on an extra \r or \n
 	}
 }
 
 void wxSSH::SendBack(int len, char *data)
 {
-	wxLogDebug("wxSSH::SendBack called...\n");
-	wxLogDebug("wxSSH::SendBack sending: ");
-	for(int j = 0; j < len; j++) {
-		wxLogDebug("%d ", data[j]);
-	}
-	//wxLogDebug("\n");
-	wxTextOutputStream os(* (m_plink->GetOutputStream()) );
-	for(int i = 0; i < len; i++) {
-		os.Write8(data[i]);
+	if(m_connected) {
+		wxLogDebug("wxSSH::SendBack called...\n");
+		wxLogDebug("wxSSH::SendBack sending: ");
+		for(int j = 0; j < len; j++) {
+			wxLogDebug("%d ", data[j]);
+		}
+		//wxLogDebug("\n");
+		wxTextOutputStream os(* (m_plink->GetOutputStream()) );
+		wxString s = "";
+		for(int i = 0; i < len; i++) {
+			s += data[i];
+		}
+		os.WriteString(s); // this may be tacking on an extra \r or \n
 	}
 }
 
-void wxSSH::Connect(const wxString& hostname, unsigned short port)
+void wxSSH::Connect(wxString hostname, wxString username, wxString passphrase)
 {
 	if(m_connected) {
 		Disconnect();
@@ -104,8 +78,9 @@ void wxSSH::Connect(const wxString& hostname, unsigned short port)
 	Refresh();
 
 	// Start the new Process
+	wxString cmd = "plink.exe -pw "+passphrase+" "+username+"@"+hostname;
 	m_plink = new wxProcess2(this);
-	int pid = wxExecute("plink.exe -pw dayspring danroeber@163.11.160.218", wxEXEC_ASYNC, m_plink);
+	int pid = wxExecute(cmd, wxEXEC_ASYNC, m_plink);
 
 	if(pid == 0) {
 		//Command could not be executed
@@ -124,12 +99,13 @@ void wxSSH::Connect(const wxString& hostname, unsigned short port)
 	}
 }
 
+
 void wxSSH::Disconnect()
 {
 	if(m_plink)
 	{
 		wxTextOutputStream os(* (m_plink->GetOutputStream()) );
-		os.WriteString("exit\r");
+		os.WriteString("\rexit\r");
 //		delete m_plink;
 	}
 	m_connected = false;
@@ -138,18 +114,19 @@ void wxSSH::Disconnect()
 	Refresh();
 }
 
+
 bool wxSSH::IsConnected(void)
 {
 	return m_connected;
 }
 
 
-//void wxSSH::OnPlinkEvent(wxEvent &e)
 void wxSSH::OnPlinkEvent(wxProcess2StdOutEvent &e)
 {
-	unsigned char buf[900]; // <-- fix the constant
+	// ProcessInput needs a const unsigned char* -- so create one
+	unsigned char buf[9000]; // <-- fix the constant
 	wxString s = e.GetOutput();
-	int len = (e.GetOutput()).Length();
+	int len = s.Length();
 	for(int i = 0; i < len; i++) {
 		buf[i] = s.GetChar(i);
 	}

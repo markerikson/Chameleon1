@@ -56,9 +56,9 @@
 #include "wxterm.h"
 
 #include "../common/debug.h"
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
+//#ifdef _DEBUG
+//#define new DEBUG_NEW
+//#endif
 
 void WinMessageBeep();
 
@@ -397,7 +397,7 @@ wxTerm::wxTerm(wxWindow* parent, wxWindowID id,
                int width, int height,
                const wxString& name) :
   wxScrolledWindow(parent, id, pos, wxSize(-1, -1), wxHSCROLL | wxVSCROLL /*wxWANTS_CHARS*/, name),
-  GTelnet(width, height)
+  GTerm/*lnet*/(width, height)
 {
   int
     i;
@@ -1254,7 +1254,7 @@ wxTerm::ModeChange(int state)
     m_colors = m_vt_colors;
     m_colorPens = m_vt_colorPens;
   }
-  GTelnet::ModeChange(state);
+  GTerm/*lnet*/::ModeChange(state);
 }
 
 void
@@ -1343,7 +1343,7 @@ wxTerm::ResizeTerminal(int width, int height)
   /*
   **  Set terminal size
   */
-  GTelnet::ResizeTerminal(width, height);
+  GTerm/*lnet*/::ResizeTerminal(width, height);
   m_width = width;
   m_height = height;
 
@@ -1372,7 +1372,7 @@ wxTerm::ProcessInput(int len, unsigned char *data)
 
   ClearSelection();
   m_curDC = &dc;
-  GTelnet::ProcessInput(len, data);
+  GTerm/*lnet*/::ProcessInput(len, data);
   m_curDC = 0;
 }
 
