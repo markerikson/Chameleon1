@@ -271,10 +271,6 @@ wxString Networking::GetStatusDetails() {
 
 void Networking::SSHCacheFingerprint() {
 	ssh_plink->acceptCacheFingerprint();
-<<<<<<< networking.cpp
-	status = NET_CACHED_FINGERPRINT;
-=======
 	// Set the status
 	SSHSendCommand("");
->>>>>>> 1.10
 }
