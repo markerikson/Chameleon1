@@ -11,6 +11,7 @@
 
   <h3>Main program</h3>
   <p>The ChameleonWindow class is basically the application itself.  All the user interaction happens there, and all the program logic starts there.  Most of the user interaction (menu items, toolbar clicks, etc) is handled in the OnMenuEvent function.  The only major exception is debug-related toolbar buttons, which are handled in OnDebugEvent.  </p>
+<p>Chameleon's ability to change what's visible is handled in pretty much the most naive way possible: everything is wiped out, deleted, hidden, or removed, and then items are conditionally added back in based on the current permissions.  It's ugly, but it really simplifies things.  Trying to track, say, which buttons are active and where they're located would be a lot more complicated than just deleting the toolbar.  Hiding and showing the project tree and the terminal notebook is accomplished with splitter windows.</p>
 
 	<h3>Terminal</h3>
 	<p>90% of the terminal code was not written by our team.  Anyone needing to work with the terminal should really only have to deal with TextManager, wxTerm, and wxSSH.</p>
