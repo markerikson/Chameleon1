@@ -258,12 +258,12 @@ void Networking::DetermineStatusError(wxString errlog, wxString output)
 		/*	MPE:
 			This regular expression looks for the following:
 			one or more digits (0-9) followed by one more more whitespace characters
-			followed by 15 pairs of two hex digits and a colon, followed by two final hex digits
+			followed by one or more pairs of two hex digits and a colon, followed by two final hex digits
 				
 			Since I know this is a valid regex, I'm leaving out the .IsValid() check that would otherwise
 			be a good idea
 		*/
-		wxRegEx reFingerprint = "[[:digit:]]+[[:blank:]]+([[:xdigit:]]{2}:){15}[[:xdigit:]]{2}";
+		wxRegEx reFingerprint = "[[:digit:]]+[[:blank:]]+([[:xdigit:]]{2}:)+[[:xdigit:]]{2}";
 
 		if(reFingerprint.Matches(errlog))
 		{
