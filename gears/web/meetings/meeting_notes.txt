@@ -776,3 +776,42 @@ by: Ben
 	*Ben: fix breakpoints, watching variables, user input / output, perfect code, test code.
 	*Dave: Thursday, Adv compiling and async networking
 	*Mark: if he's bored... printing, then the other random functions (pulling out SSH)
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Group Meeting 4/01/2004 8:45pm
+by: Ben
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+>>Status>
+	*Mark: Working on ... ?
+	*Dave: Not a lot of progress... upset that it's not done.  Muddled in design ideas.
+	*Ben: minimal coding.
+
+>>Issues: (breakpoints)
+	*need to document SOMEWHERE that we can't get GDB to spit out a path for breakpoints...
+	*the limit = identical file names in one compiled file, different paths, cannot be differentiated
+
+	*GDB doesn't accept tildes in file paths
+	*solution?  getting home directory, avoid tilde?
+
+>>Things this week:
+	*Project code has been re-hashed.
+	*Projects are stored absolute. (??)
+	*Next Thursday: Maint. Manual DUE  So we need to do something about it
+	*BETA: Handed to Ben Next Saturday for playing
+		-->printing
+		-->breakpoints (variable watching??)
+		-->?2.5?
+
+>>Maintenance Manual:
+	*Doxigen for our code.
+	*Detail issue: *see requirements*
+	*Latest: start it tuesday in class
+
+>>Design:
+	*issues with remote/local networking pointer sending
+	*Debugger needs a re-design in [start()]
+	*Dave may have found a round-about...he'll have to tell Debugger since
+
+>>By Sunday:
+	--dave: reworking networking
+	--mark: ??
+	--ben: Variable watching functional (??), breakpoints DONE & over, GDB custom view / send function?
