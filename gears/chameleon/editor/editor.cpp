@@ -20,6 +20,7 @@
 BEGIN_EVENT_TABLE(ChameleonEditor, wxStyledTextCtrl)
 	EVT_STC_CHARADDED(-1, ChameleonEditor::OnChar)
 	//EVT_STC_MODIFIED(-1, ChameleonEditor::OnSetTabModified)
+	EVT_RIGHT_DOWN		(ChameleonEditor::OnRightClick)
 END_EVENT_TABLE()
 
 ChameleonEditor::ChameleonEditor( ChameleonWindow *mframe,
@@ -42,7 +43,10 @@ ChameleonEditor::ChameleonEditor( ChameleonWindow *mframe,
 
     this->SetMarginWidth(0, 40);
 
-    this->SetMarginType(0, 1);
+    this->SetMarginType(0, wxSTC_MARGIN_NUMBER);
+
+	this->SetMarginWidth(1, 16);
+	this->SetMarginType(1, wxSTC_MARGIN_SYMBOL);
 
     wxFont font(10, wxMODERN, wxNORMAL, wxNORMAL);
 
@@ -92,12 +96,42 @@ ChameleonEditor::ChameleonEditor( ChameleonWindow *mframe,
 
 	UpdateSyntaxHighlighting();
 
-    
+	this->MarkerDefine(0, wxSTC_MARK_CIRCLE);
+	this->MarkerSetBackground(0, wxColour("red"));
+
+	this->MarkerDefine(1, wxSTC_MARK_CIRCLE);
+	this->MarkerSetForeground(1, wxColour("red"));
+
+	this->MarkerDefine(2, wxSTC_MARK_SHORTARROW);
+	this->MarkerSetBackground(2, wxColour("yellow"));
+
+	
+	/*
+	for(int i = 0; i <= wxSTC_MARK_PLUS; i++)
+	{
+		this->MarkerDefine(i, i);
+		this->MarkerAdd(i, i);
+	}
+	*/
+
+	this->UsePopUp(false);
+	
+	m_popupMenu.Append(ID_CUT, "Cut");
+	m_popupMenu.Append(ID_COPY, "Copy");
+	m_popupMenu.Append(ID_PASTE, "Paste");
+	m_popupMenu.AppendSeparator();
+
+	m_popupMenu.Append(ID_ADD_BREAKPOINT, "Add a breakpoint");
+	m_popupMenu.Append(ID_REMOVE_BREAKPOINT, "Remove this breakpoint");
+
+	m_popupMenu.Append(ID_RUNTOCURSOR, "Run to cursor");
+
 }
 
-ChameleonEditor::~ChameleonEditor() {
+ChameleonEditor::~ChameleonEditor() 
+{
     //this->PopEventHandler(true);
-    }
+}
 
 
 
@@ -355,4 +389,17 @@ wxString ChameleonEditor::GetFilename()
 wxString ChameleonEditor::GetFilePath()
 {
 	return m_fileNameAndPath.GetPath(false, m_bLastSavedRemotely ? wxPATH_UNIX : wxPATH_DOS);
+}
+
+void ChameleonEditor::ResetEditor()
+{
+	ClearAll();
+	SetSavePoint();
+	EmptyUndoBuffer();
+	m_fileNameAndPath.Clear();
+}
+
+void ChameleonEditor::OnRightClick(wxMouseEvent &event)
+{
+	PopupMenu(&m_popupMenu, event.GetPosition());
 }

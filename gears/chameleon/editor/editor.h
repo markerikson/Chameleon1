@@ -3,6 +3,8 @@
 
 
 #include "stc.h"
+#include <wx/menu.h>
+#include <wx/dynarray.h>
 //#include <wx/wx.h>
 
 class ChameleonWindow;
@@ -31,6 +33,7 @@ public:
 	//void SetTabUnmodified();
 
 	void OnChar(wxStyledTextEvent &event);
+	void OnRightClick(wxMouseEvent &event);
 
 	void UpdateSyntaxHighlighting();
 
@@ -50,6 +53,7 @@ public:
 	wxString GetFilePath();
 	void SetFileNameAndPath(wxString path, wxString name, bool fileIsRemote);
 	bool HasBeenSaved();
+	void ResetEditor();
 	bool LastSavedRemotely() 
 	{
 		return m_bLastSavedRemotely;
@@ -70,9 +74,12 @@ private:
 	wxString m_simpleFileName;
 	wxDateTime m_filetime;
 
+	wxArrayInt m_breakpoints;
+
 	bool m_bLoadingFile;
 	bool m_bLastSavedRemotely;
 	
+	wxMenu m_popupMenu;
 	
 	DECLARE_EVENT_TABLE()
 };
