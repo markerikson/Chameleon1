@@ -30,6 +30,7 @@ BEGIN_EVENT_TABLE(ChameleonEditor, wxStyledTextCtrl)
 	EVT_MENU			(ID_DEBUG_REMOVE_BREAKPOINT, ChameleonEditor::OnRemoveBreakpoint)
 	EVT_MENU			(ID_DEBUG_CLEAR_ALL_BREAKPOINTS, ChameleonEditor::OnClearBreakpoints)
 	EVT_COMPILER_END	(ChameleonEditor::OnCompilerEnded)
+	EVT_MENU			(ID_DEBUG_RUNTOCURSOR, ChameleonEditor::OnRunToCursor)
 END_EVENT_TABLE()
 
 int CompareInts(int n1, int n2)
@@ -686,4 +687,18 @@ void ChameleonEditor::SetExecutableFilename(wxFileName filename)
 FileFilterType ChameleonEditor::GetFileType()
 {
 	return FILE_ALLSOURCETYPES;
+}
+
+void ChameleonEditor::OnRunToCursor(wxCommandEvent &event)
+{
+	int charpos = PositionFromPoint(m_lastRightClick);
+	int linenum = LineFromPosition(charpos);
+	// adjust for Scintilla's internal zero-based line numbering
+	linenum++;
+
+	wxDebugEvent debugEvent;
+	debugEvent.SetId(ID_DEBUG_RUNTOCURSOR);	
+	debugEvent.SetSourceFilename(GetFilenameString());
+	debugEvent.SetLineNumber(linenum);
+	m_mainFrame->AddPendingEvent(debugEvent);
 }
