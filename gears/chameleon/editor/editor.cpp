@@ -26,6 +26,7 @@ ChameleonEditor::ChameleonEditor( ChameleonWindow *mframe,
 	m_parentNotebook = (ChameleonNotebook*)parent;
 
 	m_bLoadingFile = false;
+	m_bLastSavedRemotely = true;
 
     this->SetTabWidth(4);
 
@@ -90,9 +91,9 @@ ChameleonEditor::~ChameleonEditor() {
 
 
 
-bool ChameleonEditor::SaveFile()
+bool ChameleonEditor::SaveFileLocal()
 {
-	return SaveFile(m_localFileName.GetFullPath());
+	return SaveFile(m_fileNameAndPath.GetFullPath());
 }
 
 bool ChameleonEditor::SaveFile( const wxString & filename )
@@ -287,10 +288,11 @@ void ChameleonEditor::OnChar( wxStyledTextEvent &event )
 
 bool ChameleonEditor::HasBeenSaved()
 {
-	bool result = m_simpleFileName != wxEmptyString;
+	bool result = m_fileNameAndPath.GetFullPath() != wxEmptyString;
 	return result;
 }
 
+/*
 void ChameleonEditor::SetRemoteFileNameAndPath(wxString path, wxString name)
 {
 	m_remoteFileName.Assign(path, name, wxPATH_UNIX);
@@ -300,6 +302,7 @@ void ChameleonEditor::SetLocalFileNameAndPath(wxString path, wxString name)
 {
 	m_localFileName.Assign(path, name, wxPATH_DOS);
 }
+*/
 
 void ChameleonEditor::UpdateSyntaxHighlighting()
 {
@@ -321,4 +324,26 @@ void ChameleonEditor::UpdateSyntaxHighlighting()
 	{
 		this->SetLexer(wxSTC_LEX_CONTAINER);
 	}
+}
+
+void ChameleonEditor::SetFileNameAndPath(wxString path, wxString name, bool fileIsRemote)
+{
+	m_bLastSavedRemotely = fileIsRemote;
+
+	m_fileNameAndPath.Assign(path, name, fileIsRemote ? wxPATH_UNIX : wxPATH_DOS);
+}
+
+wxString ChameleonEditor::GetFileNameAndPath()
+{
+	return m_fileNameAndPath.GetFullPath(m_bLastSavedRemotely ? wxPATH_UNIX : wxPATH_DOS);
+}
+
+wxString ChameleonEditor::GetFilename()
+{
+	return m_fileNameAndPath.GetFullName();
+}
+
+wxString ChameleonEditor::GetFilePath()
+{
+	return m_fileNameAndPath.GetPath(false, m_bLastSavedRemotely ? wxPATH_UNIX : wxPATH_DOS);
 }

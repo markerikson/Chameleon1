@@ -56,6 +56,7 @@ BEGIN_EVENT_TABLE( OptionsDialog, wxDialog )
     EVT_BUTTON( ID_BUTTON_CANCEL, OptionsDialog::OnButtonCancelClick )
 
 ////@end OptionsDialog event table entries
+	EVT_CHAR(OptionsDialog::OnChar)
 
 END_EVENT_TABLE()
 
@@ -260,3 +261,11 @@ void OptionsDialog::OnButtonCancelClick( wxCommandEvent& event )
 	EndModal(wxCANCEL);
 }
 
+void OptionsDialog::OnChar(wxKeyEvent &event)
+{
+	if(event.GetKeyCode() == WXK_RETURN)
+	{
+		event.Skip();
+	}
+
+}

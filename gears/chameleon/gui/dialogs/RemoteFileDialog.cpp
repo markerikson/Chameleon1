@@ -453,10 +453,6 @@ void RemoteFileDialog::OpenRemoteFile()
 void RemoteFileDialog::SaveRemoteFile()
 {
 	wxString remoteFileName = m_txtFilename->GetValue();
-
-	wxFileName localfn(wxGetCwd(), remoteFileName);
-	wxFile(localfn.GetFullPath(), wxFile::write);
-
 	m_remoteFileNamePath.Assign(m_currentPath.GetPath(false, wxPATH_UNIX), remoteFileName);
 
 	EndModal(wxOK);
@@ -517,6 +513,7 @@ bool RemoteFileDialog::Prepare(bool open)
 	wxPathFormat format = GetCurrentPathFormat();
 
 	wxString path = m_currentPath.GetPath(false, wxPATH_UNIX);
+	m_txtFilename->SetValue(wxEmptyString);
 	return ShowDirectory(path);
 }
 /*!

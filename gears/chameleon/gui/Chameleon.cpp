@@ -340,6 +340,7 @@ void ChameleonWindow::PageHasChanged (int pageNr)
 	{
 		m_currentPage = pageNr;
 		m_currentEd = (ChameleonEditor *) m_book->GetPage (m_currentPage);
+		m_book->SetSelection(pageNr);
 		m_currentEd->SetFocus();
 		//m_files->SetSelection (m_currentPage);
 	}
@@ -350,6 +351,10 @@ void ChameleonWindow::PageHasChanged (int pageNr)
 		//m_files->SetSelection (0);
 	}
 	m_book->Refresh();
+	if(m_currentEd != NULL)
+	{
+		m_currentEd->Refresh();
+	}
 }
 
 // event handler for closing the whole program
@@ -409,7 +414,11 @@ void ChameleonWindow::CloseFile (int pageNr)
 	{
 		if ((m_book->GetPageCount() > 1) || m_appClosing) 
 		{
+			ChameleonEditor* pEdit = (ChameleonEditor*)m_book->GetPage(pageNr);
+			ChameleonEditor* tmpEditor = m_currentEd;
 			m_book->DeletePage (pageNr);
+			m_currentEd = tmpEditor;
+			//m_book->Refresh();
 		}
 		// closing out the last buffer, reset it to act as a new one
 		else
@@ -420,12 +429,15 @@ void ChameleonWindow::CloseFile (int pageNr)
 			m_currentEd->EmptyUndoBuffer();
 			wxString noname = "<untitled> " + wxString::Format ("%d", m_fileNum);
 			m_book->SetPageText (pageNr, noname);
-			m_book->Refresh();
+			//m_book->Refresh();
 
-			m_currentEd->SetFilename(wxEmptyString);
-			m_currentEd->SetRemoteFileNameAndPath(wxEmptyString, wxEmptyString);
-			m_currentEd->SetLocalFileNameAndPath(wxEmptyString, wxEmptyString);
+			//m_currentEd->SetFilename(wxEmptyString);
+			//m_currentEd->SetRemoteFileNameAndPath(wxEmptyString, wxEmptyString);
+			//m_currentEd->SetLocalFileNameAndPath(wxEmptyString, wxEmptyString);
+			m_currentEd->SetFileNameAndPath(wxEmptyString, wxEmptyString, true);
 		}
+		int newSelectedPageNum = GetPageNum(m_currentEd->GetFileNameAndPath());
+		PageHasChanged(newSelectedPageNum);
 	}
 }
 
@@ -441,9 +453,12 @@ int ChameleonWindow::HandleModifiedFile(int pageNr, bool closingFile)
 
 	if (edit->Modified()) 
 	{
-		wxString fileName = wxFileName(edit->GetFilename()).GetFullName();
+		//wxString fileName = wxFileName(edit->GetFilename()).GetFullName();
 		wxString saveMessage = "The file ";
+		wxString fileName = edit->GetFileNameAndPath();
+		saveMessage += fileName;
 
+		/*
 		// the file hasn't been saved yet, grab the "<untitled> #" bit from the tab
 		if(fileName = wxEmptyString)
 		{
@@ -459,6 +474,7 @@ int ChameleonWindow::HandleModifiedFile(int pageNr, bool closingFile)
 			fileName = tabText;
 		}
 		saveMessage += fileName;
+		*/
 		saveMessage << " has unsaved changes.  Do you want to save them before the file is ";
 		
 		if(closingFile)
@@ -473,8 +489,13 @@ int ChameleonWindow::HandleModifiedFile(int pageNr, bool closingFile)
 		int result = wxMessageBox (_(saveMessage), _("Close"), wxYES_NO | wxCANCEL | wxICON_QUESTION);
 		if( result == wxYES) 
 		{
-			// do a Save As
-			SaveFile(true);
+			//PageHasChanged(pageNr);
+			ChameleonEditor* tmpCurrentEd = m_currentEd;
+			m_currentEd = edit;
+			// only do a Save As if necessary
+			SaveFile(false);
+			m_currentEd = tmpCurrentEd;
+			m_currentEd->SetFocus();
 
 			if (edit->Modified()) 
 			{
@@ -586,21 +607,23 @@ void ChameleonWindow::OpenFile (wxArrayString fnames)
 				if(fileContents != wxEmptyString)
 				{
 					m_currentEd->LoadFileText(fileContents);
-					m_currentEd->SetFilename(fnames[n]);
+					//m_currentEd->SetFilename(fnames[n]);
 
 					// TODO this may be redundant.  I'll deal with it when we decide on how to handle remote mode
 					if(m_remoteMode)
 					{
 						wxString remotePath = m_remoteFileDialog->GetRemotePath();
 						wxString remoteFilename = m_remoteFileDialog->GetRemoteFileName();
-						m_currentEd->SetRemoteFileNameAndPath(remotePath, remoteFilename);
+						//m_currentEd->SetRemoteFileNameAndPath(remotePath, remoteFilename);
+						m_currentEd->SetFileNameAndPath(remotePath, remoteFilename, true);
 					}
 					else
 					{
 						wxFileName localFN(fnames[n]);
-						wxString localFileName = localFN.GetFullName();
+						wxString localFilename = localFN.GetFullName();
 						wxString localPath = localFN.GetPath(false, wxPATH_DOS);
-						m_currentEd->SetLocalFileNameAndPath(localPath, localFileName);
+						//m_currentEd->SetLocalFileNameAndPath(localPath, localFileName);
+						m_currentEd->SetFileNameAndPath(localPath, localFilename, false);
 					}
 
 					m_book->SetPageText(m_currentPage, fileNameNoPath);
@@ -617,21 +640,23 @@ void ChameleonWindow::OpenFile (wxArrayString fnames)
 				if(fileContents != wxEmptyString)
 				{
 					edit->LoadFileText(fileContents);
-					edit->SetFilename(fnames[n]);
+//					edit->SetFilename(fnames[n]);
 
 					// TODO ditto as with the previous else
 					if(m_remoteMode)
 					{
 						wxString remotePath = m_remoteFileDialog->GetRemotePath();
 						wxString remoteFilename = m_remoteFileDialog->GetRemoteFileName();
-						m_currentEd->SetRemoteFileNameAndPath(remotePath, remoteFilename);
+						//edit->SetRemoteFileNameAndPath(remotePath, remoteFilename);
+						edit->SetFileNameAndPath(remotePath, remoteFilename, true);
 					}
 					else
 					{
 						wxFileName localFN(fnames[n]);
 						wxString localFileName = localFN.GetFullName();
 						wxString localPath = localFN.GetPath(false, wxPATH_DOS);
-						m_currentEd->SetLocalFileNameAndPath(localPath, localFileName);
+						//edit->SetLocalFileNameAndPath(localPath, localFileName);
+						edit->SetFileNameAndPath(localPath, localFileName, false);
 					}
 					m_currentEd = edit;
 					m_currentPage = m_book->GetPageCount();
@@ -722,7 +747,7 @@ int ChameleonWindow::GetPageNum (const wxString &fname)
 	{
 		edit = (ChameleonEditor *) m_book->GetPage(pageNum);
 
-		if (edit && (edit->GetFilename() == fname))
+		if (edit && (edit->GetFileNameAndPath() == fname))
 		{			
 			return pageNum;
 		}
@@ -912,7 +937,7 @@ void ChameleonWindow::SaveFile(bool saveas)
 {
 	wxString filename;
 
-	bool doSaveAs = saveas || !m_currentEd->HasBeenSaved();
+	bool doSaveAs = saveas || !m_currentEd->HasBeenSaved() || (m_remoteMode != m_currentEd->LastSavedRemotely());
 
 	// check if we're in local mode or not
 	if(!(m_perms->isEnabled(PERM_REMOTELOCAL) && m_remoteMode))
@@ -930,12 +955,15 @@ void ChameleonWindow::SaveFile(bool saveas)
 
 			m_currentEd->SetFocus();
 			filename = dlg.GetPath();
-			m_currentEd->SetFilename(wxFileName(filename).GetFullPath());
+			wxFileName fn(filename);
+			//m_currentEd->SetFilename(wxFileName(filename).GetFullPath());
+			m_currentEd->SetFileNameAndPath(fn.GetPath(false, wxPATH_DOS), fn.GetFullName(), false);
+			
 			m_currentEd->SaveFile(filename);
 		}
 		else
 		{
-			m_currentEd->SaveFile();
+			m_currentEd->SaveFileLocal();
 		}
 	}
 	// remote mode
@@ -967,8 +995,10 @@ void ChameleonWindow::SaveFile(bool saveas)
 		}
 		else
 		{
-			remoteFile = m_currentEd->GetRemoteFileName();
-			remotePath = m_currentEd->GetRemotePath();
+			//remoteFile = m_currentEd->GetRemoteFileName();
+			//remotePath = m_currentEd->GetRemotePath();
+			remoteFile = m_currentEd->GetFilename();
+			remotePath = m_currentEd->GetFilePath();
 		}
 
 		wxBeginBusyCursor();
@@ -987,14 +1017,15 @@ void ChameleonWindow::SaveFile(bool saveas)
 			return;
 		}
 
-		if(m_currentEd->GetFilename() == wxEmptyString)
+		if(m_currentEd->GetFileNameAndPath() == wxEmptyString)
 		{
 			int currentTab = m_book->GetSelection();
 			m_book->SetPageText(currentTab, remoteFile);
 		}
 
-		m_currentEd->SetFilename(remoteFile);
-		m_currentEd->SetRemoteFileNameAndPath(remotePath, remoteFile);
+		//m_currentEd->SetFilename(remoteFile);
+		//m_currentEd->SetRemoteFileNameAndPath(remotePath, remoteFile);
+		m_currentEd->SetFileNameAndPath(remotePath, remoteFile, true);
 	}
 
 	m_currentEd->EmptyUndoBuffer();

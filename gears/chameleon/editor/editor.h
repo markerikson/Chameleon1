@@ -28,7 +28,7 @@ public:
 	bool LoadFileText(wxString fileContents);
 	//bool SaveFileAs();
 	bool SaveFile(const wxString& filename);
-	bool SaveFile();
+	bool SaveFileLocal();
 
 	bool Modified();
 
@@ -38,17 +38,26 @@ public:
 
 	void UpdateSyntaxHighlighting();
 
-	wxString GetRemoteFileName() { return m_remoteFileName.GetFullName();}
-	wxString GetRemotePath() { return m_remoteFileName.GetPath(false, wxPATH_UNIX);}
-	wxString GetRemoteFileNameAndPath() { return m_remoteFileName.GetFullPath(wxPATH_UNIX);}
-	void SetRemoteFileNameAndPath(wxString path, wxString name);
-	void SetLocalFileNameAndPath(wxString path, wxString name);
+	//wxString GetRemoteFileName() { return m_remoteFileName.GetFullName();}
+	//wxString GetRemotePath() { return m_remoteFileName.GetPath(false, wxPATH_UNIX);}
+	//wxString GetRemoteFileNameAndPath() { return m_remoteFileName.GetFullPath(wxPATH_UNIX);}
+	//void SetRemoteFileNameAndPath(wxString path, wxString name);
+	//void SetLocalFileNameAndPath(wxString path, wxString name);
 
 
 
-	wxString GetFilename () {return m_simpleFileName;};
-	void SetFilename (const wxString &filename) {m_simpleFileName =  filename;};
+	//wxString GetFilename () {return m_simpleFileName;};
+	//void SetFilename (const wxString &filename) {m_simpleFileName =  filename;};
+
+	wxString GetFileNameAndPath();
+	wxString GetFilename();
+	wxString GetFilePath();
+	void SetFileNameAndPath(wxString path, wxString name, bool fileIsRemote);
 	bool HasBeenSaved();
+	bool LastSavedRemotely() 
+	{
+		return m_bLastSavedRemotely;
+	}
 
 private:
 
@@ -59,12 +68,14 @@ private:
 	ChameleonWindow* m_mainFrame;
 	ChameleonNotebook* m_parentNotebook;	
 
-	wxFileName m_remoteFileName;
-	wxFileName m_localFileName;
+	wxFileName m_fileNameAndPath;
+	//wxFileName m_remoteFileName;
+	//wxFileName m_localFileName;
 	wxString m_simpleFileName;
 	wxDateTime m_filetime;
 
 	bool m_bLoadingFile;
+	bool m_bLastSavedRemotely;
 	
 	
 	DECLARE_EVENT_TABLE()

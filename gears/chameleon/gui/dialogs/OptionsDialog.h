@@ -80,6 +80,10 @@ public:
 
 ////@end OptionsDialog event handler declarations
 
+	void OnChar(wxKeyEvent &event);
+
+
+
 ////@begin OptionsDialog member function declarations
 
 ////@end OptionsDialog member function declarations
