@@ -54,6 +54,7 @@ class Debugger;
 class VariableWatchPanel;
 class wxTimer;
 class wxListCtrl;
+class CompilerOutputPanel;
 
 
 //----------------------------------------------------------------------
@@ -61,7 +62,9 @@ class wxListCtrl;
 class MyApp : public wxApp
 {
 public:
+	~MyApp();
 	virtual bool OnInit();
+	virtual int OnRun();
 };
 
 //----------------------------------------------------------------------
@@ -174,7 +177,8 @@ private:
 	wxSplitterWindow*  m_splitEditorOutput;
 	wxSplitterWindow* m_splitProjectEditor;
 	wxTextCtrl* m_compilerTextbox;
-	wxListCtrl* m_compilerList;
+	//wxListCtrl* m_compilerList;
+	CompilerOutputPanel* m_outputPanel;
 	wxTermContainer* m_termContainer;
 	VariableWatchPanel* m_watchPanel;
 	wxSSH* m_terminal;

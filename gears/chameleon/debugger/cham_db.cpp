@@ -65,6 +65,7 @@ Debugger::Debugger(wxTextCtrl* outBox, Networking* networking, wxEvtHandler* poi
 {
 	flushPrivateVar();
 	varCount = 0;
+	m_numberOfDebugEvents = 0;
 
 	myEvent = NULL;
 
@@ -99,13 +100,13 @@ Debugger::Debugger(wxTextCtrl* outBox, Networking* networking, wxEvtHandler* poi
 	varRegExes["char[]"] = "\"(.*)\"";//"[[:digit:]]+ '([[:alnum:]]+)'";
 	
 	// array- "$n = {val, val...}"
-	varRegExes["array"] = "{(.*)}";
+	varRegExes["array"] = "({.*})\\r\\n$";
 	
 	// str#2- "$n = "text"" (same as [char])
 	varRegExes["string"] = "\"(.*)\"";
 
 	// obj -  "$n = {varName = val, varName = val, ..} (varName can be of any listed type...)
-	varRegExes["class"] = "{(.*)}";
+	varRegExes["class"] = "({.*})\\r\\n$";
 }
 //end constructors
 
@@ -142,6 +143,9 @@ Debugger::~Debugger()
 		delete myEvent;
 	}
 
+	flushPrivateVar();
+	m_varInfo.Clear();
+
 	//delete outputScreen;
 	//delete guiPointer;
 	//if(debugProc != NULL) {delete debugProc;}
@@ -150,13 +154,42 @@ Debugger::~Debugger()
 //onDebugEvent(): catches when Mark sends me something...
 void Debugger::onDebugEvent(wxDebugEvent &event)
 {
+	int eventCommand = event.GetId();
+
+	/* We can only accept certain types of events while stopped/paused.
+	 * If we're running and we get an unacceptable event type for the current
+	 * state, we put it back on the event queue.  We use a counter with a 
+	 * completely arbitrary number (say, 50) to keep us from going into an
+	 * infinite loop.  If we've received events 50 times without actually
+	 * processing one, then we'll just pitch it and return.  This combination
+	 * prevents stuff like getting stuck after repeatedly pressing Step too fast.
+	 */
+	if(eventCommand != ID_DEBUG_STOP &&
+		eventCommand != ID_DEBUG_START && 
+		eventCommand != ID_DEBUG_ADD_WATCH &&
+		eventCommand != ID_DEBUG_REMOVE_WATCH)
+	{
+		if(status != DEBUG_WAIT &&
+			status != DEBUG_BREAK)
+		{
+			if(m_numberOfDebugEvents < 50)
+			{
+				this->AddPendingEvent(event);
+			}
+			
+			m_numberOfDebugEvents++;
+			return;
+		}
+	}
+	m_numberOfDebugEvents = 0;
+
 	if(myEvent != NULL)
 	{
 		delete myEvent;
 	}
 	myEvent = (wxDebugEvent*)event.Clone();
 	//all the variables i need here:
-	int eventCommand = event.GetId();
+	
 	int eventLineNum;
 	
 	wxArrayString gui_var_names;
@@ -1057,8 +1090,11 @@ void Debugger::snoopVar(wxString varName, wxString funcName, wxString className,
 	if( notFound &&
 		(status == DEBUG_BREAK || status == DEBUG_WAIT))
 	{
+		/*
 		command.Printf("whatis %s%s", varName.c_str(), returnChar.c_str());
 		sendCommand(command);
+		*/
+		sendWhat();
 
 		classStatus = GET_WHAT;
 	}
@@ -1356,16 +1392,32 @@ bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 			{
 				// fromGDB should contain Windows-based line endings, ie, CRLF (\r\n).  
 				lineBreak = fromGDB.Find("\n");
-				singleLine = fromGDB.Mid(0, lineBreak);
-				singleLine = singleLine.BeforeLast('\r');
+				singleLine = fromGDB.Mid(0, lineBreak + 1);
+				//singleLine = singleLine.BeforeLast('\r');
 
 				//fromGDB.Remove(0, lineBreak);
 				fromGDB = fromGDB.AfterFirst('\n');
 
-				if( singleLine.Mid(0,1) == "$" ||
-					singleLine.Mid(0,9) == "No symbol" ||
-					singleLine.IsEmpty())
-				{stayIn = false;}
+				if(singleLine.IsEmpty())
+				{
+					stayIn = false;
+				}
+
+				if( stayIn && 
+					(singleLine.StartsWith("$") ||
+					singleLine.StartsWith("No symbol")))
+				{
+					while(!fromGDB.StartsWith("$") && 
+							!fromGDB.StartsWith("No Symbol") &&
+							!fromGDB.StartsWith(PROMPT_CHAR) &&
+							!fromGDB.IsEmpty())
+					{
+						lineBreak = fromGDB.Find("\n");
+						singleLine += fromGDB.Mid(0, lineBreak + 1);
+						fromGDB = fromGDB.AfterFirst('\n');
+					}
+					stayIn = false;
+				}
 
 				//fromGDB.Remove(0, 1);	//get rid of the \r
 			}
@@ -1376,6 +1428,7 @@ bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 				if(singleLine.Mid(0,9) == "No symbol")
 				{
 					varValue.Add(singleLine);
+					continue;
 				}
 				else if(m_varInfo[i].type.Find("[") == -1)
 				{
@@ -1493,7 +1546,7 @@ bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 				}
 				else
 				{
-					wxRegEx varParser = regexString;
+					wxRegEx varParser(regexString, wxRE_ADVANCED);
 					bool keepMatching = true;
 
 					while(keepMatching && !parseError)
@@ -1506,15 +1559,41 @@ bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 						}
 						else
 						{
+							int nextMarker = -1;
+							wxString endOfVarRegex;
+							/*if(i < (varCount - 1))
+							{
+								endOfVarRegex ="\\r\\n$[[:digit:]]+";								
+
+							}
+							else
+							{*/
+								endOfVarRegex = "\\r\\n" + PROMPT_CHAR;
+							//}
+
+							wxRegEx reEndOfVar(endOfVarRegex, wxRE_ADVANCED);
+							size_t start, len;
+
+							if(reEndOfVar.Matches(fromGDB))
+							{
+								reEndOfVar.GetMatch(&start, &len);
+
+								nextMarker = (int)start;
+								wxString temp = fromGDB.Mid(0, nextMarker - 1);
+								singleLine += temp;
+							}/*
 							if(fromGDB != wxEmptyString)
 							{
+								
 								lineBreak = fromGDB.Find("\n");
 
 								// Grab the next logical line and append it
 								singleLine += fromGDB.Mid(0, lineBreak);
 								singleLine = singleLine.BeforeLast('\r');
 								fromGDB = fromGDB.AfterFirst('\n');
+								
 							}
+							*/
 							else
 							{
 								parseError = true;

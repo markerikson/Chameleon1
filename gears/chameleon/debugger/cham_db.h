@@ -226,6 +226,8 @@ class Debugger : public wxEvtHandler
 		wxEvtHandler* guiPointer;
 		ProjectInfo* projectBeingDebugged;
 
+		int m_numberOfDebugEvents;
+
 		DECLARE_EVENT_TABLE()
 };
 

@@ -284,7 +284,7 @@ void VariableWatchPanel::UpdateVariableInfo(wxDebugEvent event)
 	for(int i = 0; i < m_list->GetItemCount(); i++)
 	{
 		textColorItem.m_itemId = i;
-		m_list->SetItem(textColorItem);
+		//m_list->SetItem(textColorItem);
 	}
 
 	textColorItem.SetTextColour(wxColour("red"));
@@ -306,10 +306,10 @@ void VariableWatchPanel::UpdateVariableInfo(wxDebugEvent event)
 		// found the item's name
 		if(nameLineNum > -1)
 		{
-			retrievalItem.SetId(nameLineNum);
-			retrievalItem.m_col = 1;
-			m_list->GetItem(retrievalItem);
-			wxString listedType = retrievalItem.m_text;
+			//retrievalItem.SetId(nameLineNum);
+			//retrievalItem.m_col = 1;
+			//m_list->GetItem(retrievalItem);
+			//wxString listedType = retrievalItem.m_text;
 
 			m_list->SetItem(nameLineNum, 1, type);
 			retrievalItem.m_col = 2;
@@ -320,7 +320,7 @@ void VariableWatchPanel::UpdateVariableInfo(wxDebugEvent event)
 			if(listedValue != value)
 			{
 				m_list->SetItem(nameLineNum, 2, value);
-				m_list->SetItem(textColorItem);
+				//m_list->SetItem(textColorItem);
 			}				
 		}
 	}

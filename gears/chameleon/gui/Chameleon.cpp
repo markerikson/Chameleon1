@@ -1,8 +1,14 @@
 #define CHAMELEON__CPP
 
-#define _CRTDBG_MAP_ALLOC
-#include <stdlib.h>
-#include <crtdbg.h>
+//#define DEBUG_TRACE_MEMORY_LEAKS
+
+#ifdef DEBUG_TRACE_MEMORY_LEAKS
+#include <windows.h>
+#include "../common/StackWalker.h"
+#endif
+//#define _CRTDBG_MAP_ALLOC
+//#include <stdlib.h>
+//#include <crtdbg.h>
 
 //#include "../common/StackTrace.h"
 //#include "../common/CommonHeaders.h"
@@ -24,6 +30,7 @@
 #include "dialogs/RemoteFileDialog.h"
 #include "dialogs/wxTermContainer.h"
 #include "dialogs/VariableWatchPanel.h"
+//#include "dialogs/CompilerOutputPanel.h"
 #include "../common/ChameleonPrintout.h"
 #include "../perms/p.h"
 #include "../common/ProjectInfo.h"
@@ -143,11 +150,34 @@ IMPLEMENT_APP(MyApp)
 
 bool MyApp::OnInit()
 {
+	//OnlyInstallUnhandeldExceptionFilter()
+#ifdef DEBUG_TRACE_MEMORY_LEAKS
+	InitAllocCheck(ACOutput_XML);
+#endif
     ChameleonWindow *frame = new ChameleonWindow("Chameleon",
                                  wxPoint(5, 5), wxSize(400, 300));
 
     frame->Show(TRUE);
     return TRUE;
+}
+
+int MyApp::OnRun()
+{
+	try
+	{
+		return wxApp::OnRun();
+	}
+	catch (...) 
+	{
+		int q = 42;
+	}
+}
+
+MyApp::~MyApp()
+{
+#ifdef DEBUG_TRACE_MEMORY_LEAKS
+	DeInitAllocCheck();
+#endif
 }
 
 //----------------------------------------------------------------------
@@ -163,7 +193,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	//m_appStarting = true;
 	wxStopWatch stopwatch;
 
-	//_crtBreakAlloc = 2576;
+	//_crtBreakAlloc = 9012;
 	
 	// should be approximately 80x15 for the terminal
 	this->SetSize(800, 600);
@@ -450,10 +480,13 @@ void ChameleonWindow::OnMenuEvent(wxCommandEvent &event)
 
 		case ID_CLOSETAB:
 		{
+			CloseTab();
+			/*
 			if (!m_setSelection)
 			{
 				PageHasChanged();
 			}
+			*/
 			break;
 		}
 
@@ -980,6 +1013,7 @@ wxArrayString ChameleonWindow::OpenFile(FileFilterType filterType)
 		else
 		{
 			wxEndBusyCursor();
+			CheckNetworkStatus();
 			return fnames;
 		}
 	}
