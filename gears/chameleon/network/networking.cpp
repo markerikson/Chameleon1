@@ -16,7 +16,8 @@ Networking::Networking(Options* options)
 	m_currHost = m_options->GetHostname();
 	m_currUser = m_options->GetUsername();
 	m_currPass = m_options->GetPassphrase();
-	status = NET_GOOD; // assumption??!!
+	status = NET_ERROR_MESSAGE; // assumption??!!
+	statusDetails = "SSH Settings Have Not Been Initialized";
 	ssh_plink = new PlinkConnect(m_options->GetPlinkApp(), m_currHost, m_currUser, m_currPass);
 }
 
@@ -171,6 +172,12 @@ wxArrayString Networking::ParseLS(wxString strng, bool includeHidden)
 //Private:
 wxString Networking::SSHSendCommand(wxString command)
 {
+	if(command == "") {
+		// because I'm using boolean logic to determine the success of the command
+		//  I need to have at least have true
+		command = "true";
+	}
+
 	command += " && echo \"C_O_M_P_L_E_T_E_D_OK\"";
 
 	ssh_plink->sendCommand(command);
@@ -279,7 +286,7 @@ NetworkStatus Networking::GetStatus()
 		ssh_plink->setPassphrase(newP);
 
 		// Update the status
-		SSHSendCommand("true"); // "" doesn't work ??
+		SSHSendCommand("");
 	}
 
 	return status;
@@ -296,7 +303,7 @@ void Networking::SSHCacheFingerprint()
 {
 	ssh_plink->acceptCacheFingerprint();
 	// Set the status:
-	SSHSendCommand("true"); // "" doesn't work ??
+	SSHSendCommand("");
 }
 
 
@@ -348,7 +355,9 @@ void Networking::SCPDoTransfer(wxString from_path_name, wxString to_path_name)
 }
 
 
-wxProcess2* Networking::GetPlinkProcess(wxEvtHandler* owner) {
+wxProcess2* Networking::GetPlinkProcess(wxEvtHandler* owner)
+{
+	// I should call GetStatus();
 
 	// Start the new Process
 	wxString cmd = m_options->GetPlinkApp();

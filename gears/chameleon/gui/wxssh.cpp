@@ -97,8 +97,9 @@ void wxSSH::Disconnect()
 	{
 		// Rudimentary exiting
 		wxTextOutputStream os(* (m_plink->GetOutputStream()) );
-		os.WriteString("\r^c\rexit\r"); // this may be tacking on an extra \r or \n
-		//os.WriteString("\rexit\r");
+		os.WriteString("\r^c\rexit\r"); // this doesn't work - I need to send crtl-c a couple times
+		// It would be good if I could some how wait a couple seconds, and if the above
+		//   doesn't terminate it, I could send Plink a SIGKILL
 	}
 	//m_connected = false; // done when the processterm event is caught
 	//m_plinkPid = -2; // ditto
@@ -163,11 +164,14 @@ void wxSSH::OnPlinkOut(wxProcess2StdOutEvent &e)
 
 void wxSSH::OnPlinkErr(wxProcess2StdErrEvent &e)
 {
-	wxString s = e.GetError();
-	int len = s.Length();
-	ProcessInput(len, (unsigned char*)s.c_str()); // dump errors to the terminal window
+	//wxString s = e.GetError();
+	//int len = s.Length();
+	//ProcessInput(len, (unsigned char*)s.c_str()); // dump errors to the terminal window
 
-	wxLogDebug("Terminal-Error: "+e.GetError());
+	// These are plink related errors.  There is no need to dump them to the
+	//    terminal anymore.  (Plink errors should not occur because Networking
+	//    should catch them before a wxProcess2 is started.)
+	wxLogDebug("Plink-Error: "+e.GetError());
 }
 
 void wxSSH::OnPlinkTerm(wxProcess2EndedEvent &e)
