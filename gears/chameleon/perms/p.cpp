@@ -58,7 +58,8 @@ wxString GlobalPermStrings[] = {"Syntax highlighting",
 //blank one: blank slate init.
 Permission::Permission()
 {
-	setGlobalAuthorized("0");
+	//this is a valid "everything unauthorized" code
+	setGlobalAuthorized("10A80000000");
 	setGlobalEnabled("0");
 }
 
@@ -190,7 +191,7 @@ bool Permission::setGlobalAuthorized(wxString newAuthCode)
 	{
 		numberString.ToLong(&authCode);
 		auth = bitset<NUM_MODULES>(authCode);
-		validAuthCode = newAuthCode;
+		savedAuthCode = newAuthCode;
 	}
 
 	return validAuthCode;
@@ -206,6 +207,7 @@ void Permission::setGlobalEnabled(wxString newEnableCode)
 		enable(PERM_COMPILE);
 	}
 
+	savedPermCode << getGlobalEnabled();
 }
 
 //getGlobal
