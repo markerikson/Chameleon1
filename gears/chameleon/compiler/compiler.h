@@ -4,10 +4,10 @@
 #include <wx/wx.h>
 #include <wx/txtstrm.h>
 #include <wx/filename.h>
-#include "../common/process2.h"
 #include "../common/options.h"
 #include "../network/networking.h"
 #include "../common/projectinfo.h"
+#include "../common/chameleonprocessevent.h"
 
 class wxEvtHandler;
 
@@ -31,18 +31,21 @@ class Compiler : public wxEvtHandler
 		bool IsCompiling() { return m_isCompiling;}
 
 	private:
-		void OnProcessTerm(wxProcess2EndedEvent& e);
-		void OnProcessOut(wxProcess2StdOutEvent& e);
-		void OnProcessErr(wxProcess2StdErrEvent& e);
+		//Helper:
+		void StartNext();
+		void CompileRemoteFile(wxFileName file, wxFileName outfile);
+		void CompileLocalFile(wxFileName file, wxFileName outfile);
 
-		void CompileRemoteFile(wxFileName file, wxString outfile);
-		void CompileLocalFile(wxFileName file, wxString outfile);
+		//Events:
+		void OnProcessTerm(ChameleonProcessEvent& e);
+		void OnProcessOut(ChameleonProcessEvent& e);
+		void OnProcessErr(ChameleonProcessEvent& e);
 
 		// Data:
 		Options* m_options;
 		Networking* m_network;
 		wxTextCtrl* m_out;
-		wxProcess2* m_proc;
+		wxTextOutputStream* m_compilerStdIn; // only used for ^C
 		bool m_isCompiling;
 		bool m_receivedToken;
 		long m_compilePID;

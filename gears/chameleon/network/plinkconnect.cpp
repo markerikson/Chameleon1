@@ -17,7 +17,7 @@
 #include <wx/process.h>
 #include <wx/listimpl.cpp> // CAREFUL!
 #include "plinkconnect.h"
-#include "../common/processevents.h"
+#include "../common/chameleonprocessevent.h"
 #include "../common/datastructures.h"
 #include "../common/debug.h"
 
@@ -201,13 +201,15 @@ wxString PlinkConnect::executeSyncCommand(wxString command)
 {
 	executeCommand(command, NULL);
 
-	ProcessInfo* p = (ProcessInfo*)m_processes.Last()->GetData();
+	// executeCommand spawns a new process, so my process is the next-to-last one
+	ProcessInfo* p = (ProcessInfo*)m_processes.GetLast()->GetPrevious()->GetData();
+
 	while(p->state == PC_BUSY || p->state == PC_EXECUTING) {
 		// Perhaps this should terminate after an amount of time
 		wxSafeYield();
 	}
 
-	return "";
+	return p->outputBuf;
 }
 
 
@@ -268,8 +270,9 @@ void PlinkConnect::parseOutput(ProcessInfo* p, wxString output, wxString errLog)
 
 		//Throw Appropriate Events:
 		if(p->outputBuf != "") {
-			if(p->owner != NULL) { // (if not being run in SYNCH)
-				ProcessStdOutEvent e(p->outputBuf);
+			if(p->owner != NULL) { // if not being run in SYNCH
+				ChameleonProcessEvent e(chEVT_PROCESS_STDOUT);
+				e.SetString(p->outputBuf);
 				p->owner->AddPendingEvent(e);
 				// Clear the buffer:
 				p->outputBuf = "";
@@ -277,7 +280,8 @@ void PlinkConnect::parseOutput(ProcessInfo* p, wxString output, wxString errLog)
 		}
 		if(p->state == PC_ENDING) { // ie. just finished
 			if(p->owner != NULL) {
-				ProcessEndedEvent e(0); // <-- this is incomplete
+				ChameleonProcessEvent e(chEVT_PROCESS_ENDED);
+				e.SetInt(0); // <-- this is incomplete
 				p->owner->AddPendingEvent(e);
 			}
 
@@ -295,29 +299,36 @@ void PlinkConnect::parseOutput(ProcessInfo* p, wxString output, wxString errLog)
 }
 
 
-// ASYNCHRONOUS (?)
+// SYNCHRONOUS (?)
 //Private:
 void PlinkConnect::terminateConnection(ProcessInfo* p)
 {
 	if(p->state == PC_BUSY || p->state == PC_EXECUTING) {
-		//send break signal:
-		*(p->stdinStream) << (char)3; // SIGINT
+		////send break signal:
+		//*(p->stdinStream) << (char)3; // SIGINT
+		//// Wait for it the process to cancel
+		//while(p->state == PC_BUSY || p->state == PC_EXECUTING) {
+		//	// Perhaps this should SIGKILL after an amount of time
+		//	wxSafeYield();
+		//}
 
-		// Wait for it the process to cancel
-		while(p->state == PC_BUSY || p->state == PC_EXECUTING) {
-			// Perhaps this should terminate after an amount of time
-			wxSafeYield();
-		}
+		// There is no definite intkey that will stop and procress in bash because
+		//   the processes can trap the signals and do as they please
+		// Therefore: (gently) Kill the plink process
+		p->state = PC_ENDING;
+		wxKill(p->pid, wxSIGTERM);
 	}
-
-	//send exit:
-	p->state = PC_ENDING;
-	*(p->stdinStream) <<  "exit" << endl;
-	// do all the termination clean-up in onTerminate()
+	else {
+		//send exit:
+		p->state = PC_ENDING;
+		*(p->stdinStream) <<  "exit" << endl;
+	}
+	
+	// All the termination clean-up is done in onTerminate()
 }
 
 	
-// ASYNCHRONOUS (?)
+// ASYNCHRONOUS
 //Private:
 void PlinkConnect::terminateAllConnections()
 {
@@ -380,6 +391,7 @@ void PlinkConnect::onTerminate(wxProcessEvent& event) {
 	delete p->proc;
 	delete p->stdinStream;
 	m_processes.DeleteObject(p);
+	delete p;
 
 	if(m_processes.GetCount() == 0) {
 		m_isConnected = false;

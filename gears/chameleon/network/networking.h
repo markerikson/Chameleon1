@@ -30,7 +30,7 @@ class Networking : public wxEvtHandler {
 		NetworkStatus GetStatus();
 		wxString GetStatusDetails();
 		void SSHCacheFingerprint();
-		//void PingOptions();
+		void PingOptions();
 
 		// Remote Specific:
 		bool GetHomeDirPath(wxString &homeDir);
@@ -40,12 +40,12 @@ class Networking : public wxEvtHandler {
 							bool includeHidden = false);
 
 		// Processes:
-		wxTextOutputStream* StartRemoteCommand(wxEvtHandler* owner);
-		wxTextOutputStream* StartLocalCommand(wxEvtHandler* owner);
-		//wxString ExecuteRemoteCommand(wxString cmd);
-		//wxString ExecuteLocalCommand(wxString cmd);
-		//wxString ExecuteCommand(bool isRemote, wxString cmd);
-		wxTextOutputStream* StartCommand(bool isRemote, wxEvtHandler* owner);
+		wxTextOutputStream* StartRemoteCommand(wxString cmd, wxEvtHandler* owner);
+		wxTextOutputStream* StartLocalCommand(wxString cmd, wxEvtHandler* owner);
+		wxString ExecuteRemoteCommand(wxString cmd);
+		wxString ExecuteLocalCommand(wxString cmd);
+		wxString ExecuteCommand(bool isRemote, wxString cmd);
+		wxTextOutputStream* StartCommand(bool isRemote, wxString cmd, wxEvtHandler* owner);
 		void ForceKillProcess(wxTextOutputStream* w); // <-- ICKY ICKY ICKY
 
 	private:

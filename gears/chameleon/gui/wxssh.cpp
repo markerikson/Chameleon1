@@ -1,32 +1,8 @@
-/*
-    taTelnet - A cross-platform telnet program.
-    Copyright (c) 2000 Derry Bryson.
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-    Contact Information:
-
-       Technology Associates, Inc.
-       Attn:  Derry Bryson
-       959 W. 5th Street
-       Reno, NV  89503
-       USA
-
-       derry@techass.com
-*/
-
+//////////////////////////////////////
+//
+//    Based on Derry Bryson's taTelnet, Copyright 2000
+//
+/////////////////////////////////////
 #include "wxssh.h"
 #include "../common/debug.h"
 
@@ -36,9 +12,9 @@
 
 
 BEGIN_EVENT_TABLE(wxSSH, wxTerm)
-	EVT_PROCESS2_STDOUT(wxSSH::OnPlinkOut)
-	EVT_PROCESS2_STDERR(wxSSH::OnPlinkErr)
-	EVT_PROCESS2_ENDED(wxSSH::OnPlinkTerm)
+	EVT_PROCESS_STDOUT(wxSSH::OnPlinkOut)
+	EVT_PROCESS_STDERR(wxSSH::OnPlinkErr)
+	EVT_PROCESS_ENDED(wxSSH::OnPlinkTerm)
 END_EVENT_TABLE()
 
 wxSSH::wxSSH(wxWindow* parent, wxWindowID id, Networking* network, const wxPoint& pos, int width, int height, const wxString& name)
@@ -46,7 +22,7 @@ wxSSH::wxSSH(wxWindow* parent, wxWindowID id, Networking* network, const wxPoint
 {
 	m_connected = false;
 	m_networking = network;
-	m_plink = NULL;
+	m_plinkStdIn = NULL;
 	m_plinkPid = -2;
 	m_inputBuffer = "";
 	m_isInESCsequence = false;
@@ -57,23 +33,20 @@ wxSSH::~wxSSH()
 	if(m_connected)
 	{
 		// "No time for pleasantries"
-		m_plink->Detach();
-		int result = wxProcess::Kill(m_plinkPid, wxSIGKILL);
-		wxLogDebug("wxSSH tried to kill m_plink (wxKill Result: %d)", result);
-		//delete m_plink; <-- wxProcess2 self-destructs
+		m_networking->ForceKillProcess(m_plinkStdIn);
+		wxLogDebug("wxSSH tried to kill m_plink.");
 	}
 }
 
 void wxSSH::SendBack(int len, char *data)
 {
 	if(m_connected) {
-		wxTextOutputStream os(* (m_plink->GetOutputStream()) );
 		wxString s = "";
 		for(int i = 0; i < len; i++) {
 			//wxLogDebug("%d ", data[i]);
 			s += data[i];
 		}
-		os.WriteString(s);
+		m_plinkStdIn->WriteString(s);
 	}
 }
 
@@ -88,8 +61,8 @@ void wxSSH::Connect(wxString hostname, wxString username, wxString passphrase)
 	Refresh();
 
 	// Start the new Process
-	m_plink = m_networking->GetPlinkProcess(this);
-	if(m_plink != NULL) {
+	m_plinkStdIn = m_networking->StartRemoteCommand("bash", this);
+	if(m_plinkStdIn != NULL) {
 		m_connected = true;
 		m_inputBuffer = "";
 		m_isInESCsequence = false;
@@ -101,11 +74,7 @@ void wxSSH::Disconnect()
 {
 	if(m_connected)
 	{
-		// Rudimentary exiting
-		wxTextOutputStream os(* (m_plink->GetOutputStream()) );
-		os.WriteString("\r^c\rexit\r"); // this doesn't work - I need to send crtl-c a couple times
-		// It would be good if I could some how wait a couple seconds, and if the above
-		//   doesn't terminate it, I could send Plink a SIGKILL
+		m_networking->ForceKillProcess(m_plinkStdIn);
 	}
 	//m_connected = false; // done when the processterm event is caught
 	//m_plinkPid = -2; // ditto
@@ -133,9 +102,9 @@ bool wxSSH::IsConnected(void)
 // Currently the plan is just to surpress them because they aren't relevant to Chameleon
 //wxSSH should override the input mechanism, and when any of the xterm escape sequences are issued it should eat them(into a buffer).  If a max STRING length is reached with out getting BEL the buffer can be 're-issued'.
 //**Note: if a vt52 printscreen is sent, the screen will be blank until MAX characters are sent
-void wxSSH::OnPlinkOut(wxProcess2StdOutEvent &e)
+void wxSSH::OnPlinkOut(ChameleonProcessEvent &e)
 {
-	wxString s = e.GetOutput();
+	wxString s = e.GetString();
 	int len = s.Length();
 
 	if(!m_isInESCsequence && !s.Contains((char)27)) {
@@ -168,22 +137,18 @@ void wxSSH::OnPlinkOut(wxProcess2StdOutEvent &e)
 */
 }
 
-void wxSSH::OnPlinkErr(wxProcess2StdErrEvent &e)
+void wxSSH::OnPlinkErr(ChameleonProcessEvent &e)
 {
-	//wxString s = e.GetError();
+	//wxString s = e.GetString();
 	//int len = s.Length();
 	//ProcessInput(len, (unsigned char*)s.c_str()); // dump errors to the terminal window
 
-	// These are plink related errors.  There is no need to dump them to the
-	//    terminal anymore.  (Plink errors should not occur because Networking
-	//    should catch them before a wxProcess2 is started.)
-	wxLogDebug("Plink-Error: "+e.GetError());
+	wxLogDebug("Terminal-StdError: "+e.GetString());
 }
 
-void wxSSH::OnPlinkTerm(wxProcess2EndedEvent &e)
+void wxSSH::OnPlinkTerm(ChameleonProcessEvent &e)
 {
 	wxLogDebug("Plink Terminated!");
 	m_connected = false;
 	m_plinkPid = -2;
-	//delete m_plink; <--- wxProcess2 self-destructs
 }

@@ -19,8 +19,7 @@
 #include <wx/event.h>
 #include <wx/txtstrm.h>
 
-#include "../common/process2.h"
-#include "../common/process2events.h"
+#include "../common/chameleonprocessevent.h"
 #include "../common/debugevent.h"
 #include "../network/networking.h"
 #include "../common/datastructures.h"
@@ -149,10 +148,10 @@ class Debugger : public wxEvtHandler
 		void addErrorHist(wxString comment);//updates error history
 
 		//ASYNC Event Triggered Functions
-		void onProcessOutputEvent(wxProcess2StdOutEvent &e);
-		void onProcessErrOutEvent(wxProcess2StdErrEvent &e);
+		void onProcessOutputEvent(ChameleonProcessEvent &e);
+		void onProcessErrOutEvent(ChameleonProcessEvent &e);
 		//void onProcessTermEvent(wxProcessEvent &e);
-		void onProcessTermEvent(wxProcess2EndedEvent &e);
+		void onProcessTermEvent(ChameleonProcessEvent &e);
 
 		//private elements [grouped according to function]
 		bool isRemote;				//stores current mode: false = local

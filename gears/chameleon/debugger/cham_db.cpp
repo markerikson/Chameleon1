@@ -53,9 +53,9 @@ WX_DEFINE_OBJARRAY(VariableInfoArray);
 
 //vent handling
 BEGIN_EVENT_TABLE(Debugger, wxEvtHandler)
-	EVT_PROCESS2_ENDED(Debugger::onProcessTermEvent)
-	EVT_PROCESS2_STDOUT(Debugger::onProcessOutputEvent)
-	EVT_PROCESS2_STDERR(Debugger::onProcessErrOutEvent)
+	EVT_PROCESS_ENDED(Debugger::onProcessTermEvent)
+	EVT_PROCESS_STDOUT(Debugger::onProcessOutputEvent)
+	EVT_PROCESS_STDERR(Debugger::onProcessErrOutEvent)
 
 	EVT_DEBUG(Debugger::onDebugEvent)
 END_EVENT_TABLE()
@@ -544,7 +544,7 @@ void Debugger::startProcess(bool fullRestart, bool mode, wxString fName, wxStrin
 	classStatus = NEW_PROC;
 	
 
-	streamOut = myConnection->StartCommand(isRemote, this);
+	streamOut = myConnection->StartCommand(isRemote, execThis+returnChar, this);
 
 	//begin funky process stuff
 /*	if(isRemote)
@@ -1491,7 +1491,7 @@ bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 
 //The following 3 are from Dave Czechowski.  KUDOS!
 
-void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
+void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 {
 	//variables to hold stuff for parsing...
 	wxString tempHold, goBreakpoint;
@@ -1527,7 +1527,7 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 	status = DEBUG_WAIT;
 
 	//data now has the output...
-	tempHold = e.GetOutput();
+	tempHold = e.GetString();
 	data.Add(tempHold);
 	
 	//data.Add(e.GetOutput());
@@ -1953,19 +1953,19 @@ bool Debugger::checkOutputStream(wxString stream)
 	return(true);
 }
 
-void Debugger::onProcessErrOutEvent(wxProcess2StdErrEvent &e)
+void Debugger::onProcessErrOutEvent(ChameleonProcessEvent &e)
 {
 	status = DEBUG_ERROR;
 
 	//error now has the output
-	error = e.GetError();
+	error = e.GetString();
 	addErrorHist("Event-Generated error");
 
 	//DEBUG CODE//
 	wxLogDebug("DB error event: %s", error);
 }
 
-void Debugger::onProcessTermEvent(wxProcess2EndedEvent &e) 
+void Debugger::onProcessTermEvent(ChameleonProcessEvent &e) 
 {
 	//the process has been killed (aka GDB quit for some reason)
 	status = DEBUG_DEAD;

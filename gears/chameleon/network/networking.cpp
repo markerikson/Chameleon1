@@ -245,9 +245,9 @@ bool Networking::SSHGetDirListing(wxString dirPath, DirListing &listing,
 	
 	if( SSHExecSyncCommand(cmd, output) ) {
 
-		int tokenPos = output.Find("N_E_TwOrKiNg-DiRs\n");
+		int tokenPos = output.Find("N_E_TwOrKiNg-DiRs\r\n");
 		wxString files = output.Left(tokenPos+1);
-		wxString dirs = output.Right(tokenPos+18);
+		wxString dirs = output.Mid(tokenPos+19);
 
 		listing.fileNames = ParseFindOutput(files, includeHidden);
 		listing.dirNames = ParseFindOutput(dirs, includeHidden);
@@ -291,13 +291,15 @@ wxArrayString Networking::ParseFindOutput(wxString strng, bool includeHidden)
 			isHidden = true;
 		}
 
-		while(c1 != '\n') {
+		while(c1 != '\r') {
 			newitem += c1;
 			c1 = strng.GetChar(0); // peek
 			strng.Remove(0,1); // pop
 		}
 
-		if( !(isHidden && !includeHidden) ) {
+		strng.Remove(0,1); // '\n'
+
+		if(!isHidden || includeHidden) {
 			r.Add(newitem);
 		}
 	}
@@ -308,7 +310,7 @@ wxArrayString Networking::ParseFindOutput(wxString strng, bool includeHidden)
 
 //Private:
 bool Networking::SSHExecSyncCommand(wxString command, wxString &output) {
-	command += " && Su_CC_ess-CMD";
+	command += " && echo Su_CC_ess-CMD";
 
 	output = m_plinks->executeSyncCommand(command);
 
@@ -417,4 +419,74 @@ void Networking::onTerm(wxProcessEvent &e) {
 void Networking::onTimerTick(wxTimerEvent &e) {
 	//
 }
+
+
+void Networking::PingOptions() {
+	if(MaintainSettings()) {
+		//GetStatus(); <-- best not to be pre-emptive
+	}
+	//else nothing to update
+}
+
+/////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
+
+wxTextOutputStream* Networking::StartCommand(bool isRemote, wxString cmd, wxEvtHandler* owner)
+{
+	if(isRemote) {
+		return StartRemoteCommand(cmd, owner);
+	}
+	else {
+		return StartLocalCommand(cmd, owner);
+	}
+}
+
+
+wxTextOutputStream* Networking::StartRemoteCommand(wxString cmd, wxEvtHandler* owner)
+{
+	return m_plinks->executeCommand(cmd, owner);
+}
+
+
+wxTextOutputStream* Networking::StartLocalCommand(wxString cmd, wxEvtHandler* owner)
+{
+	wxLogDebug("Local Process Execution still missing.");
+	return NULL;
+}
+
+
+// A very simple method
+wxString Networking::ExecuteCommand(bool isRemote, wxString cmd)
+{
+	if(isRemote) {
+		return ExecuteRemoteCommand(cmd);
+	}
+	else {
+		return ExecuteLocalCommand(cmd);
+	}
+}
+
+
+wxString Networking::ExecuteRemoteCommand(wxString cmd)
+{
+	return m_plinks->executeSyncCommand(cmd);
+}
+
+
+wxString Networking::ExecuteLocalCommand(wxString cmd)
+{
+	wxLogDebug("Local Process Execution still missing.");
+	return wxEmptyString;
+}
+
+
+// This is certainly not a common-sense thing to pass when desiring to terminate
+//    a process
+void Networking::ForceKillProcess(wxTextOutputStream* w)
+{
+	wxLogDebug("David is a dingbat, and NEEDS to implement this!");
+}
+
+
+
 
