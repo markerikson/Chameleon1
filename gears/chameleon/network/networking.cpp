@@ -173,6 +173,10 @@ bool Networking::SSHGetFileContents(wxString file, wxString &contents)
 
 	if( SSHExecSyncCommand(cmd, output) ) {
 
+		/////////////
+		output.Replace("\r\n", "\n", true);
+		/////////////
+
 		output.Remove(output.Length()-2); // remove cat's EOL("\r\n")
 		contents = output;
 		m_statusDetails = "";
