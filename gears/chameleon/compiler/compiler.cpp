@@ -126,13 +126,13 @@ void Compiler::StartLinking() {
 	// Start the linking:
 	wxString cmd = wxEmptyString;
 	if(isRemote) {
-		cmd += "g++ -g -o -fmessage-length=0 " + outFile.GetFullPath(wxPATH_UNIX);
+		cmd += "g++ -g -fmessage-length=0 -o " + outFile.GetFullPath(wxPATH_UNIX);
 		cmd +=  inFiles;
 		cmd +=  " && echo C_O_M_P_I_L_E_SUCCESS || echo C_O_M_P_I_L_E_FAILED";
 	}
 	else {
 		cmd +=  "\"" + m_options->GetMingwPath() + "/bin/g++.exe\" ";
-		cmd +=  " -g -o -fmessage-length=0 " + outFile.GetFullPath(wxPATH_DOS);
+		cmd +=  " -g -fmessage-length=0 -o " + outFile.GetFullPath(wxPATH_DOS);
 		cmd +=  inFiles;
 		cmd +=  " && echo C_O_M_P_I_L_E_SUCCESS || echo C_O_M_P_I_L_E_FAILED";
 	}
