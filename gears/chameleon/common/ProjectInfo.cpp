@@ -20,6 +20,20 @@ ProjectInfo::ProjectInfo(bool singleFile /* = true */)
 	// in fact, it could almost go in the constructor...
 	m_isRemote = true;
 	m_isBeingCompiled = false;
+
+	if(singleFile) {
+		//set some defaults
+		//m_headerFiles = wxArrayString;
+		//m_sourceFiles = wxArrayString;
+		//m_libraryFiles = wxArrayString;
+		//m_headersEnabled = BoolArray;
+		//m_sourcesEnabled = BoolArray;
+		//m_librariesEnabled = BoolArray;
+		//m_edPointers = EditorPointerArray;
+		m_projectBasePath = "";
+		m_projectName = "";
+		//m_executableName = wxFileName;
+	}
 }
 
 bool ProjectInfo::FileExistsInProject(wxString filename)
@@ -80,6 +94,12 @@ void ProjectInfo::AddFileToProject(wxString filename, FileFilterType filterType)
 	BoolArray* enablelist = SelectBoolArray(filterType);
 	enablelist->Add(true);
 
+	//if(m_isSingleFile) {
+	if(m_projectName == "" && m_sourceFiles.Count() == 1) {
+		wxFileName file(filename);
+		m_projectName = file.GetName();
+		m_projectBasePath = file.GetPath(wxPATH_GET_VOLUME, m_isRemote ? wxPATH_UNIX : wxPATH_DOS);
+	}
 }
 
 void ProjectInfo::RemoveFileFromProject(wxString filename, FileFilterType filterType)
