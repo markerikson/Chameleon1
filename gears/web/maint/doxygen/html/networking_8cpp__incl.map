@@ -1,0 +1,6 @@
+base referer
+rect $networking_8h.html 447,167 527,193
+rect $debug_8h.html 248,92 368,119
+rect $plinkconnect_8h.html 551,167 641,193
+rect $_options_8h.html 797,92 928,119
+rect $datastructures_8h.html 605,92 773,119

@@ -1,0 +1,6 @@
+base referer
+rect $class_options.html 167,108 220,135
+rect $class_networking.html 108,199 180,225
+rect $class_permission.html 157,17 229,44
+rect $class_project_info.html 323,199 392,225
+rect $class_plink_connect.html 7,108 92,135

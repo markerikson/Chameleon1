@@ -1,0 +1,8 @@
+base referer
+rect $editor_8cpp.html 7,92 71,118
+rect $wxssh_8h.html 95,92 151,118
+rect $_chameleon_8cpp.html 19,17 117,44
+rect $wxssh_8cpp.html 141,17 211,44
+rect $_chameleon_notebook_8cpp.html 175,92 327,118
+rect $_options_dialog_8cpp.html 351,92 465,118
+rect $_remote_file_dialog_8cpp.html 489,92 623,118

@@ -1,0 +1,7 @@
+base referer
+rect $debug_8h.html 161,316 292,342
+rect $wx_term_container_8h.html 425,316 542,342
+rect $wxterm_8h.html 566,316 641,342
+rect $gterm_8hpp.html 593,166 718,193
+rect $gtelnet_8hpp.html 485,241 618,268
+rect $_text_manager_8h.html 609,92 702,118

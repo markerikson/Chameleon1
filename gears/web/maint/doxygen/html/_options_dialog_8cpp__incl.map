@@ -1,0 +1,7 @@
+base referer
+rect $_common_headers_8h.html 223,92 420,118
+rect $_chameleon_window_8h.html 57,92 199,118
+rect $_options_8h.html 545,92 687,118
+rect $_options_dialog_8h.html 711,92 809,118
+rect $p_8h.html 833,92 924,118
+rect $debug_8h.html 948,92 1079,118

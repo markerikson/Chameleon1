@@ -1,0 +1,5 @@
+base referer
+rect $class_g_term.html 185,316 231,343
+rect $struct_g_term_1_1_v_t_key_seq.html 172,17 244,44
+rect $struct_g_term_1_1_p_c_key_seq.html 323,17 395,44
+rect $struct_state_option.html 419,17 496,44

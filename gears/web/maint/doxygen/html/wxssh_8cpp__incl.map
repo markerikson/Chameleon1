@@ -1,0 +1,10 @@
+base referer
+rect $wxssh_8h.html 516,241 572,268
+rect $_common_headers_8h.html 57,167 241,193
+rect $networking_8h.html 420,167 561,193
+rect $debug_8h.html 323,92 443,119
+rect $gterm_8hpp.html 640,17 765,44
+rect $gtelnet_8hpp.html 636,92 769,119
+rect $wxterm_8h.html 687,167 748,193
+rect $chameleonprocessevent_8h.html 772,167 996,193
+rect $_options_8h.html 1020,167 1151,193

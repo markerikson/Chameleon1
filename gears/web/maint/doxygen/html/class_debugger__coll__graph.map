@@ -1,0 +1,7 @@
+base referer
+rect $class_project_info.html 44,108 113,135
+rect $classwx_debug_event.html 183,199 276,225
+rect $class_networking.html 300,199 372,225
+rect $class_options.html 256,108 309,135
+rect $class_permission.html 247,17 319,44
+rect $class_plink_connect.html 345,108 431,135

@@ -1,0 +1,7 @@
+base referer
+rect $_chameleon_window_8h.html 448,316 589,342
+rect $_variable_watch_panel_8h.html 129,316 268,342
+rect $datastructures_8h.html 185,92 364,118
+rect $_debug_event_8h.html 236,241 401,268
+rect $_project_info_8h.html 476,166 556,193
+rect $fixvsbug_8h.html 664,316 805,342

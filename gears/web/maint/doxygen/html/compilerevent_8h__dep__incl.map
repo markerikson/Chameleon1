@@ -1,0 +1,9 @@
+base referer
+rect $editor_8h.html 296,92 347,118
+rect $_chameleon_printout_8cpp.html 7,17 148,44
+rect $_project_info_8cpp.html 172,17 265,44
+rect $editor_8cpp.html 289,17 353,44
+rect $_chameleon_8cpp.html 377,17 476,44
+rect $compiler_8cpp.html 443,92 523,118
+rect $compilerevent_8cpp.html 547,92 659,118
+rect $_compiler_output_panel_8cpp.html 683,92 837,118

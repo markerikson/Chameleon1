@@ -1,0 +1,12 @@
+base referer
+rect $classwx_term.html 315,407 368,433
+rect $class_g_term.html 173,316 219,343
+rect $class_text_manager.html 107,407 189,433
+rect $struct_g_term_1_1_v_t_key_seq.html 7,17 79,44
+rect $struct_g_term_1_1_p_c_key_seq.html 156,17 228,44
+rect $struct_state_option.html 252,17 329,44
+rect $structwx_term_1_1_term_key_map.html 299,316 384,343
+rect $class_networking.html 432,407 504,433
+rect $class_options.html 443,316 496,343
+rect $class_permission.html 436,17 508,44
+rect $class_plink_connect.html 531,316 616,343

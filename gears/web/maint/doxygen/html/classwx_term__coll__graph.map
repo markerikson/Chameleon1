@@ -1,0 +1,7 @@
+base referer
+rect $class_g_term.html 171,316 216,342
+rect $class_text_manager.html 112,406 195,433
+rect $struct_g_term_1_1_v_t_key_seq.html 7,17 79,44
+rect $struct_g_term_1_1_p_c_key_seq.html 157,17 229,44
+rect $struct_state_option.html 253,17 331,44
+rect $structwx_term_1_1_term_key_map.html 263,316 348,342

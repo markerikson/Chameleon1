@@ -1,0 +1,15 @@
+base referer
+rect $class_chameleon_window.html 825,396 945,423
+rect $class_options.html 821,108 875,135
+rect $class_networking.html 556,199 628,225
+rect $class_chameleon_editor.html 999,593 1105,620
+rect $class_compiler.html 745,289 804,316
+rect $class_permission.html 812,17 884,44
+rect $class_chameleon_notebook.html 1148,503 1276,529
+rect $class_remote_file_dialog.html 143,503 252,529
+rect $class_compiler_output_panel.html 511,503 641,529
+rect $class_variable_watch_panel.html 719,503 847,529
+rect $classwx_s_s_h.html 405,289 456,316
+rect $class_debugger.html 985,289 1049,316
+rect $class_project_info.html 1065,199 1135,225
+rect $classwx_term_container.html 831,289 940,316

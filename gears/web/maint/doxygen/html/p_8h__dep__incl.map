@@ -1,0 +1,7 @@
+base referer
+rect $options_8cpp.html 7,17 81,44
+rect $editor_8cpp.html 105,17 169,44
+rect $_chameleon_8cpp.html 193,17 292,44
+rect $_options_dialog_8cpp.html 316,17 431,44
+rect $p_8cpp.html 455,17 495,44
+rect $_prof_options_dialog_8cpp.html 519,17 655,44

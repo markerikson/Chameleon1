@@ -1,0 +1,9 @@
+base referer
+rect $options_8cpp.html 6,92 81,118
+rect $compiler_8cpp.html 105,92 185,118
+rect $editor_8cpp.html 209,92 273,118
+rect $_chameleon_8cpp.html 261,17 360,44
+rect $wxssh_8h.html 348,92 404,118
+rect $wxssh_8cpp.html 384,17 453,44
+rect $_options_dialog_8cpp.html 428,92 542,118
+rect $networking_8cpp.html 566,92 660,118

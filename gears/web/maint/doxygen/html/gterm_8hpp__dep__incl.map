@@ -1,0 +1,16 @@
+base referer
+rect $wxssh_8h.html 81,92 137,119
+rect $gtelnet_8hpp.html 264,241 336,268
+rect $wxterm_8h.html 196,167 257,193
+rect $_chameleon_8cpp.html 6,17 105,44
+rect $wxssh_8cpp.html 129,17 198,44
+rect $wx_term_container_8cpp.html 161,92 292,119
+rect $wxterm_8cpp.html 316,92 390,119
+rect $gtelnet_8cpp.html 332,167 404,193
+rect $actions_8cpp.html 473,241 548,268
+rect $gterm_8cpp.html 572,241 638,268
+rect $keytrans_8cpp.html 662,241 745,268
+rect $states_8cpp.html 769,241 838,268
+rect $_text_manager_8cpp.html 862,241 969,268
+rect $utils_8cpp.html 993,241 1049,268
+rect $vt52__states_8cpp.html 1073,241 1172,268

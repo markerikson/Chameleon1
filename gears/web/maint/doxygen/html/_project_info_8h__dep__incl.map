@@ -1,0 +1,16 @@
+base referer
+rect $_debug_event_8h.html 405,167 493,193
+rect $_debug_event_8cpp.html 57,92 159,119
+rect $cham__db_8h.html 183,92 255,119
+rect $cham__db_8cpp.html 49,17 135,44
+rect $_chameleon_8cpp.html 200,17 299,44
+rect $_chameleon_window_8h.html 543,92 671,119
+rect $_variable_watch_panel_8h.html 380,92 519,119
+rect $editor_8cpp.html 1149,17 1213,44
+rect $_chameleon_notebook_8cpp.html 499,17 651,44
+rect $_compiler_output_panel_8cpp.html 675,17 829,44
+rect $_options_dialog_8cpp.html 853,17 968,44
+rect $_remote_file_dialog_8cpp.html 992,17 1125,44
+rect $_variable_watch_panel_8cpp.html 323,17 475,44
+rect $_project_info_8cpp.html 796,167 889,193
+rect $compiler_8cpp.html 913,167 993,193

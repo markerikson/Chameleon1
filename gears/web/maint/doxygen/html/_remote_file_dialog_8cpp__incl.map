@@ -1,0 +1,7 @@
+base referer
+rect $_common_headers_8h.html 247,108 444,134
+rect $_chameleon_window_8h.html 275,209 416,236
+rect $networking_8h.html 268,564 423,590
+rect $_remote_file_dialog_8h.html 285,462 405,489
+rect $datastructures_8h.html 19,488 197,514
+rect $debug_8h.html 48,589 168,616

@@ -1,0 +1,7 @@
+base referer
+rect $datastructures_8h.html 625,92 727,119
+rect $_project_info_8h.html 459,167 539,193
+rect $_debug_event_8h.html 489,241 639,268
+rect $chameleonprocessevent_8h.html 87,241 311,268
+rect $networking_8h.html 783,167 924,193
+rect $debug_8h.html 871,92 991,119
