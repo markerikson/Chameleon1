@@ -1,3 +1,6 @@
+#ifndef EDITOR__H
+#define EDITOR_H
+
 #include "stc.h"
 #include "../common/datastructures.h"
 #include "../common/debug.h"
@@ -49,4 +52,5 @@ private:
 
 
 //BEGIN_EVENT_TABLE(ChameleonEditor, wxStyledTextCtrl)
-	
+
+#endif

@@ -3,6 +3,7 @@
 #define DATASTRUCTURES__H
 
 #include <wx/hashmap.h>
+#include <wx/string.h>
 
 
 enum VariableNames
@@ -25,6 +26,8 @@ enum WindowID
 	ID_SAVE,
 	ID_PAGECLOSE,
 	ID_CLOSETAB,
+	ID_OPEN_REMOTE,
+	ID_SAVE_REMOTE,
 
 
 	// major widgets
@@ -74,6 +77,28 @@ enum WindowID
 
 	ID_OPTIONS_GRID = 10005,
 };
+
+enum modules
+{
+	PERM_FIRST = 0,
+	PERM_SYNTAXHIGHLIGHT = PERM_FIRST,
+	PERM_AUTOCOMPLETE,
+	PERM_AUTOINDENT,
+	PERM_DEBUG,
+	PERM_TERMINAL,
+	PERM_REMOTELOCAL,
+	PERM_LAST
+};
+
+#ifdef PERM___H
+wxString GlobalPermStrings[] = {"Syntax Highlighting", 
+								"Name completion",
+								"Auto-indentation",
+								"Debugging",
+								"Terminal",
+								"Remote/Local modes"};
+
+#endif
 
 WX_DECLARE_HASH_MAP( int,
 					int,

@@ -38,11 +38,12 @@ Permission::Permission()
 {
 	
 	permNames = new wxArrayString();
-	permNames->Add("Syntax Highlighting");
-	permNames->Add("Name completion");
-	permNames->Add("Auto-indentation");
-	permNames->Add("Debugging");
-	permNames->Add("Terminal");
+
+	for(int i = 0; i < PERM_LAST; i++)
+	{
+		permNames->Add(GlobalPermStrings[i]);
+	}
+
 
 
 

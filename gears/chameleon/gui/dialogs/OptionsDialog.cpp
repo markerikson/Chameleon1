@@ -235,7 +235,18 @@ void OptionsDialog::OnButtonOkClick( wxCommandEvent& event )
     // Insert custom code here
     event.Skip();
 
-	EndModal(wxOK);
+	wxString pwd1 = m_password1->GetValue();
+	wxString pwd2 = m_password2->GetValue();
+
+	if(pwd1 == pwd2)
+	{
+		EndModal(wxOK);
+	}
+	else
+	{
+		wxMessageBox("Please enter the same password in both fields");
+	}
+	
 }
 
 /*!

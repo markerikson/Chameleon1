@@ -14,22 +14,14 @@
 //includes
 #include<bitset>
 #include <wx/wx.h>
+#include "../common/datastructures.h"
 
 //globals
 using namespace std;
 
 const int NUM_MODULES = 15;
 //give each module a number
-enum modules
-{
-	PERM_FIRST = 0,
-	PERM_SYNTAXHIGHLIGHT = PERM_FIRST,
-	PERM_AUTOCOMPLETE,
-	PERM_AUTOINDENT,
-	PERM_DEBUG,
-	PERM_TERMINAL,
-	PERM_LAST
-};
+
 
 //class declaration
 class Permission
