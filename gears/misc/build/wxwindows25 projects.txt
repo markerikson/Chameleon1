@@ -7,7 +7,7 @@ MS Visual Studio; Project->Settings...
  C/C++: Code Generation, Use Runtime Library:
    Debug Multithreaded DLL
  C/C++: Preprocessor, Additional Include Directories:
-   c:\wxWindows-2.5.1\include,c:\wxWindows-2.5.1\lib\vc_lib\mswd
+   c:\wxWindows-2.5.1\include,c:\wxWindows-2.5.1\lib\vc_lib\mswd,c:\wxWindows-2.5.1\contrib\include
  Link: General, Object/Library modules:
    Add " comctl32.lib rpcrt4.lib wsock32.lib wxbase25d.lib wxmsw25d_core.lib wxregexd.lib wxjpegd.lib wxpngd.lib wxtiffd.lib wxzlibd.lib wxmsw25d_stc.lib wxmsw25d_adv.lib "
  Link: Input, Additional Library path:
