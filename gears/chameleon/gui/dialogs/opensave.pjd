@@ -537,6 +537,7 @@
 								<value name="parent" type="Integer">12621920</value>
 								<value name="locked" type="Integer">0</value>
 								<value name="proxy-type" type="string">wbButtonProxy</value>
+								<value name="event-handler-0" type="string">wxEVT_COMMAND_BUTTON_CLICKED|OnButtonOpenClick</value>
 								<value name="proxy-Id name" type="string">ID_BUTTONOPEN</value>
 								<value name="proxy-Id value" type="Integer">10003</value>
 								<value name="proxy-Class" type="string">wxButton</value>

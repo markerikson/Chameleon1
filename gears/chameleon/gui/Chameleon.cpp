@@ -20,6 +20,7 @@ BEGIN_EVENT_TABLE(ChameleonWindow, wxFrame)
 	EVT_MENU						(ID_ABOUT, ChameleonWindow::OnAbout)
 	EVT_MENU						(ID_TEST, ChameleonWindow::Test)
 	EVT_MENU						(ID_SAVE, ChameleonWindow::OnSave)
+	EVT_MENU						(ID_SAVE_AS, ChameleonWindow::OnSaveAs)
 	EVT_MENU						(ID_PAGECLOSE, ChameleonWindow::OnFileClose)
 	EVT_MENU						(ID_CLOSETAB, ChameleonWindow::CloseTab)
 	EVT_UPDATE_UI					(ID_SAVE, ChameleonWindow::OnUpdateSave)
@@ -113,6 +114,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	menuFile->Append(ID_PAGECLOSE, "&Close");
 	menuFile->InsertSeparator(3);
 	menuFile->Append(ID_SAVE, "&Save\tCtrl-S", "Save the current file");
+	menuFile->Append(ID_SAVE_AS, "Save &As", "Save the current file as a different name");
 	menuFile->Append(ID_QUIT, "E&xit\tAlt-X", "Quit this program");
 
 	wxMenu* menuTools = new wxMenu();
@@ -476,9 +478,9 @@ void ChameleonWindow::OpenFile (wxArrayString fnames)
 
 	for (size_t n = 0; n < fnames.GetCount(); n++) 
 	{
-		wxFileName w(fnames[n]); 
-		w.Normalize(); 
-		fnames[n] = w.GetFullPath();
+		//wxFileName w(fnames[n]); 
+		//w.Normalize(); 
+		//fnames[n] = w.GetFullPath();
 		wxString filename = wxFileName (fnames[n]).GetFullName();
 		int pageNr = GetPageNum(fnames[n]);
 
@@ -499,7 +501,7 @@ void ChameleonWindow::OpenFile (wxArrayString fnames)
 				}
 			}
 		}
-		else if (m_currentEd && (!m_currentEd->Modified() && m_currentEd->GetFilename().IsEmpty())) 
+		else if (m_currentEd && (!m_currentEd->Modified() && !m_currentEd->HasBeenSaved() && m_currentEd->GetText().IsEmpty())) 
 		{
 			//m_currentEd->LoadFile(fnames[n]);
 
@@ -846,6 +848,7 @@ void ChameleonWindow::SaveFile(bool saveas)
 		m_currentEd->EmptyUndoBuffer();
 		m_currentEd->SetSavePoint();
 		m_currentEd->SetTabUnmodified();
+		m_book->Refresh();
 	}
 }
 
@@ -1075,6 +1078,8 @@ void ChameleonWindow::EvaluateOptions()
 	// update the debug buttons
 	wxToolBar* t = GetToolBar();
 
+	m_remoteMode = m_perms->isEnabled(PERM_REMOTELOCAL);
+
 	bool debugEnabled = m_perms->isEnabled(PERM_DEBUG);
 
 	wxControl* pTool = t->FindControl(ID_DEBUG_IDS_FIRST);
@@ -1091,6 +1096,12 @@ void ChameleonWindow::EvaluateOptions()
 		AddDebugButtons();		
 		t->Realize();
 	}	
+
+	for(int i = 0; i < m_book->GetPageCount(); i++)
+	{
+		ChameleonEditor* edit = (ChameleonEditor*)m_book->GetPage(i);
+		edit->UpdateSyntaxHighlighting();
+	}
 
 
 

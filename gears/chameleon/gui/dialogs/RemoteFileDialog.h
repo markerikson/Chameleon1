@@ -105,7 +105,7 @@ public:
 	void SetNetworking(Networking* network);
 	wxString GetLocalFileNameAndPath();
 	wxString GetRemoteFileName() { return m_remoteFileNamePath.GetFullName();}
-	wxString GetRemotePath() { return m_remoteFileNamePath.GetPath(wxPATH_UNIX);}
+	wxString GetRemotePath() { return m_remoteFileNamePath.GetPath(false, wxPATH_UNIX);}
 
 	wxString GetRemoteFileNameAndPath();
 
