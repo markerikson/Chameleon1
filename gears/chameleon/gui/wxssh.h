@@ -53,7 +53,9 @@ class wxSSH : public wxTerm
 				const wxString& name = "wxSSH");
 		virtual ~wxSSH();
 
-		void OnPlinkEvent(wxProcess2StdOutEvent& event);
+		void OnPlinkOut(wxProcess2StdOutEvent& event);
+		void OnPlinkErr(wxProcess2StdErrEvent& event);
+		void OnPlinkTerm(wxProcess2EndedEvent& event);
 
 		virtual void SendBack(int len, char *data);
 
@@ -64,6 +66,9 @@ class wxSSH : public wxTerm
 	private:
 		bool m_connected;
 		wxProcess2* m_plink;
+		wxString m_host;
+		wxString m_user;
+		long m_plinkPid;
 
 	
 	DECLARE_EVENT_TABLE()

@@ -30,7 +30,9 @@
 #include "wxssh.h"
 
 BEGIN_EVENT_TABLE(wxSSH, wxTerm)
-	EVT_PROCESS2_STDOUT(wxSSH::OnPlinkEvent)
+	EVT_PROCESS2_STDOUT(wxSSH::OnPlinkOut)
+	EVT_PROCESS2_STDERR(wxSSH::OnPlinkErr)
+	EVT_PROCESS2_ENDED(wxSSH::OnPlinkTerm)
 END_EVENT_TABLE()
 
 wxSSH::wxSSH(wxWindow* parent, wxWindowID id, const wxPoint& pos, int width, int height, const wxString& name)
@@ -38,63 +40,74 @@ wxSSH::wxSSH(wxWindow* parent, wxWindowID id, const wxPoint& pos, int width, int
 {
   m_connected = false;
   m_plink = NULL;
+  m_host = "";
+  m_user = "";
+  m_plinkPid = -2;
 }
 
 wxSSH::~wxSSH()
 {
-	if(m_plink)
+	if(m_connected)
 	{
-		// Rudimentary exiting
-		wxTextOutputStream os(* (m_plink->GetOutputStream()) );
-		os.WriteString("\rexit\r"); // this may be tacking on an extra \r or \n
+		// "No time for pleasantries"
+		m_plink->Detach();
+		int result = wxProcess::Kill(m_plinkPid, wxSIGKILL);
+		wxLogDebug("wxSSH tried to kill m_plink (wxKill Result: %d)", result);
+		//delete m_plink; <-- wxProcess2 self-destructs
 	}
 }
 
 void wxSSH::SendBack(int len, char *data)
 {
 	if(m_connected) {
-		wxLogDebug("wxSSH::SendBack called...\n");
-		wxLogDebug("wxSSH::SendBack sending: ");
-		for(int j = 0; j < len; j++) {
-			wxLogDebug("%d ", data[j]);
-		}
-		//wxLogDebug("\n");
 		wxTextOutputStream os(* (m_plink->GetOutputStream()) );
 		wxString s = "";
 		for(int i = 0; i < len; i++) {
+			//wxLogDebug("%d ", data[i]);
 			s += data[i];
 		}
-		os.WriteString(s); // this may be tacking on an extra \r or \n
+		os.WriteString(s);
 	}
 }
 
 void wxSSH::Connect(wxString hostname, wxString username, wxString passphrase)
 {
 	if(m_connected) {
-		Disconnect();
+		Disconnect(); // might this be a problem because it's Asynchronous?  Is wxProcess2 this independant?
 	}
 
 	Reset();
 	Refresh();
 
 	// Start the new Process
-	wxString cmd = "plink.exe -pw "+passphrase+" "+username+"@"+hostname;
-	m_plink = new wxProcess2(this);
-	int pid = wxExecute(cmd, wxEXEC_ASYNC, m_plink);
+	wxString cmd = "plink.exe ";
+	if(passphrase != "") {
+		cmd += " -pw "+passphrase;
+	}
+	if(username != "") {
+		cmd += " -l "+username;
+	}
+	cmd += " "+hostname;
 
-	if(pid == 0) {
+	m_plink = new wxProcess2(this);
+	m_plinkPid = wxExecute(cmd, wxEXEC_ASYNC, m_plink);
+
+	if(m_plinkPid == 0) {
 		//Command could not be executed
 		wxLogDebug("Could not start process.");
 		delete m_plink;
 	}
-	else if (pid == -1) {
+	else if (m_plinkPid == -1) {
 		// BAD ERROR!  User ought to upgrade their operating system
 		// User has DDE running under windows (OLE deprecated this)
 		wxLogDebug("Could not start process.");
 		delete m_plink;
 	}
 	else { // Process is Live!
+		m_host = hostname;
+		m_user = username;
 		m_connected = true;
+		m_plink->SetPID(m_plinkPid); // Temporary solution
 		wxLogDebug("Process started successfully!");
 	}
 }
@@ -102,13 +115,15 @@ void wxSSH::Connect(wxString hostname, wxString username, wxString passphrase)
 
 void wxSSH::Disconnect()
 {
-	if(m_plink)
+	if(m_connected)
 	{
+		// Rudimentary exiting
 		wxTextOutputStream os(* (m_plink->GetOutputStream()) );
-		os.WriteString("\rexit\r");
-//		delete m_plink;
+		os.WriteString("\r^c\rexit\r"); // this may be tacking on an extra \r or \n
+		//os.WriteString("\rexit\r");
 	}
-	m_connected = false;
+	//m_connected = false; // done when the processterm event is caught
+	//m_plinkPid = -2; // ditto
 
 	Reset();
 	Refresh();
@@ -121,16 +136,27 @@ bool wxSSH::IsConnected(void)
 }
 
 
-void wxSSH::OnPlinkEvent(wxProcess2StdOutEvent &e)
+void wxSSH::OnPlinkOut(wxProcess2StdOutEvent &e)
 {
-	// ProcessInput needs a const unsigned char* -- so create one
-	unsigned char buf[9000]; // <-- fix the constant
 	wxString s = e.GetOutput();
 	int len = s.Length();
-	for(int i = 0; i < len; i++) {
-		buf[i] = s.GetChar(i);
-	}
+	ProcessInput(len, (unsigned char*)s.c_str());
+}
 
-	ProcessInput(len, buf);
+void wxSSH::OnPlinkErr(wxProcess2StdErrEvent &e)
+{
+	wxString s = e.GetError();
+	int len = s.Length();
+	ProcessInput(len, (unsigned char*)s.c_str()); // dump errors to the terminal window
+
+	wxLogDebug("Terminal-Error: "+e.GetError());
+}
+
+void wxSSH::OnPlinkTerm(wxProcess2EndedEvent &e)
+{
+	wxLogDebug("Plink Terminated!");
+	m_connected = false;
+	m_plinkPid = -2;
+	//delete m_plink; <--- wxProcess2 self-destructs
 }
 
