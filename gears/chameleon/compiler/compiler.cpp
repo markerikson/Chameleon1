@@ -214,7 +214,7 @@ void Compiler::OnProcessTerm(ChameleonProcessEvent& e)
 		m_isLinking = false;
 
 		CompilerEvent e(chEVT_COMPILER_END);
-		e.SetResult(CR_ERROR);
+		e.SetResult(m_compilingStatus);
 
 		m_currProj->SetCompiled(false); // default
 		if(m_compilingStatus == CR_OK) {
