@@ -130,7 +130,7 @@ void Permission::enable(int id)
 		status.set(id);
 		permCode = status.to_ulong();
 
-		if(isEnabled(PERM_ADVANCEDCOMPILE))
+		if(isEnabled(PERM_ADVANCEDCOMPILE) && !(isEnabled(PERM_COMPILE)))
 		{
 			enable(PERM_COMPILE);
 		}
