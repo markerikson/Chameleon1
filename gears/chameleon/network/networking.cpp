@@ -23,9 +23,10 @@ Networking::Networking(Options* options)
 	m_currHost = m_options->GetHostname();
 	m_currUser = m_options->GetUsername();
 	m_currPass = m_options->GetPassphrase();
-	status = NET_ERROR_MESSAGE;
-	statusDetails = "SSH Settings Have Not Been Initialized";
+	//status = NET_GOOD;
+	//statusDetails = "SSH Settings Have Not Been Initialized";
 	ssh_plink = new PlinkConnect(m_options->GetPlinkApp(), m_currHost, m_currUser, m_currPass);
+	SSHSendCommand(wxEmptyString);
 }
 
 
