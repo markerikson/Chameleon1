@@ -693,7 +693,7 @@ bool Debugger::stop(bool pleaseRestart)
 	}
 	else
 	{
-		command = "quit";
+		command = "quit" + returnChar;
 		sendCommand(command);
 	}
 
@@ -856,12 +856,12 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 	//data now has the output...
 	tempHold = e.GetOutput();
 	data.Add(tempHold);
-	tempHold.Empty();
-
+	
 	//data.Add(e.GetOutput());
 
 	//~~DEBUG CODE~~//
 	(*outputScreen)<<"--Output:\n"<<tempHold<<"\n--end output--\n";
+	tempHold.Empty();
 
 	//What we're doing with output events:
 	//1) See if the captured string has a [$] all by itself at the end
@@ -1054,6 +1054,8 @@ void Debugger::onProcessErrOutEvent(wxProcess2StdErrEvent &e)
 	error = e.GetError();
 	addErrorHist("Event-Generated error");
 
+	(*outputScreen)<<"Event Error: "<<error<<"\n";
+
 	//again, some event stuff here...
 }
 
@@ -1062,13 +1064,17 @@ void Debugger::onProcessTermEvent(wxProcess2EndedEvent &e)
 	//the process has been killed (aka GDB quit for some reason)
 	if(e.GetPid() == pid) 
 	{
-		status = DEBUG_DEAD;
+		(*outputScreen)<<"Process "<<pid<<" terminated\n";
 
+		status = DEBUG_DEAD;
+		classStatus = STOP;
 		streamError = NULL;
 		streamIn = NULL;
 		pid = -2; // a nothing pid
 		procLives = false;
 		delete debugProc;
+		delete streamIn;
+		delete streamError;
 	}
 }
 
