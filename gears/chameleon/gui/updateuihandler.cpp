@@ -1,6 +1,9 @@
-#include "updateuihandler.h"
+#include "../common/CommonHeaders.h"
 
-#include "../common/debug.h"
+#include "updateuihandler.h"
+#include "../editor/stc.h"
+
+//#include "../common/debug.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

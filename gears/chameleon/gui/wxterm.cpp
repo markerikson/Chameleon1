@@ -55,6 +55,10 @@
 #include "../network/gtelnet.hpp"
 #include "wxterm.h"
 
+#include "../common/debug.h"
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
 
 void WinMessageBeep();
 
@@ -392,7 +396,7 @@ wxTerm::wxTerm(wxWindow* parent, wxWindowID id,
                const wxPoint& pos,
                int width, int height,
                const wxString& name) :
-  wxWindow(parent, id, pos, wxSize(-1, -1), wxWANTS_CHARS, name),
+  wxScrolledWindow(parent, id, pos, wxSize(-1, -1), wxHSCROLL | wxVSCROLL /*wxWANTS_CHARS*/, name),
   GTelnet(width, height)
 {
   int
@@ -446,6 +450,10 @@ wxTerm::wxTerm(wxWindow* parent, wxWindowID id,
   m_bitmap = 0;
 
   ResizeTerminal(width, height);
+
+  
+  SetVirtualSize(m_charWidth * 80, m_charHeight * 100);
+  SetScrollRate(m_charWidth, m_charHeight);
 
   m_init = 0;
 

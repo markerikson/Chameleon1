@@ -3,14 +3,7 @@
 
 
 
-#include <wx/wx.h>
-#include <wx/msgdlg.h>
-#include <wx/notebook.h>
-#include <windows.h>
-#include <commctrl.h>
-#include <wx/tabctrl.h>
 
-#include "../common/datastructures.h"
 
 
 
@@ -29,6 +22,8 @@ public:
 	void TestMenu(wxCommandEvent& evt);
 
 	void OnTabActivate (wxMouseEvent &event);
+
+	void OnSize(wxSizeEvent &event);
 
 private:
 	void CreateBookMenus();

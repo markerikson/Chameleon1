@@ -1,5 +1,5 @@
 #include <wx/event.h>
-#include "../editor/stc.h"
+
 
 class ChameleonWindow;
 

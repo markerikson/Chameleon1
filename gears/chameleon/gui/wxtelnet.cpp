@@ -38,6 +38,8 @@
     #pragma hdrstop
 #endif
 
+#include "../common/CommonHeaders.h"
+
 // for all others, include the necessary headers (this file is usually all you
 // need because it includes almost all "standard" wxWindows headers
 #ifndef WX_PRECOMP
@@ -53,6 +55,10 @@
 #include "wxterm.h"
 #include "wxtelnet.h"
 
+#include "../common/debug.h"
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
 
 #define ID_SOCKET        1000
 

@@ -42,7 +42,7 @@
 
 #define EVT_TERM_RESIZE(id, fn) { wxEVT_COMMAND_TERM_RESIZE, id, -1, (wxObjectEventFunction) (wxEventFunction) (wxCommandEventFunction) &fn, (wxObject *)NULL },
 
-class wxTerm : public wxWindow, public GTelnet
+class wxTerm : public wxScrolledWindow, public GTelnet
 {
   int
     m_charWidth,

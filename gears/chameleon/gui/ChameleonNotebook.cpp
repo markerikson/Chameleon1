@@ -1,7 +1,17 @@
+#include "../common/CommonHeaders.h"
 #include "ChameleonNotebook.h"
 #include "ChameleonWindow.h"
 
 #include "../common/debug.h"
+
+#include <wx/wx.h>
+#include <wx/msgdlg.h>
+#include <wx/notebook.h>
+#include <windows.h>
+#include <commctrl.h>
+#include <wx/tabctrl.h>
+
+#include "../common/datastructures.h"
 
 
 #ifdef _DEBUG
@@ -12,7 +22,7 @@ BEGIN_EVENT_TABLE(ChameleonNotebook, wxNotebook)
 //EVT_CONTEXT_MENU(ChameleonNotebook::TestMenu)
 
 	EVT_RIGHT_UP ( ChameleonNotebook::OnTabActivate)
-
+	EVT_SIZE(ChameleonNotebook::OnSize)
 
 END_EVENT_TABLE()
 
@@ -136,3 +146,12 @@ void ChameleonNotebook::CreateBookMenus () {
 
 }
 
+void ChameleonNotebook::OnSize(wxSizeEvent &event)
+{
+	event.Skip();
+
+	wxString message;
+	wxSize size = event.GetSize();
+	message.Printf("X: %d, Y: %d", size.GetHeight(), size.GetWidth());
+	//wxLogDebug(message);
+}

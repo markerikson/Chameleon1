@@ -31,58 +31,35 @@
 #include "wx/wx.h"
 #endif
 
-
-
-#include <wx/wfstream.h>
-#include <wx/frame.h>
-#include <wx/toolbar.h>
-#include <wx/bitmap.h>
-#include <wx/frame.h>
-#include <wx/string.h>
-#include <wx/filedlg.h>
-#include <wx/file.h>
-#include <wx/textfile.h>
-#include <wx/splitter.h>
-#include <wx/grid.h>
-#include <wx/dynarray.h>
-#include <wx/notebook.h>
-#include <wx/tabctrl.h>
-#include <wx/log.h>
-#include <wx/filename.h>
-#include <wx/socket.h>
-#include <wx/checklst.h>
-
-#include "new.xpm"
-#include "open.xpm"
-#include "save.xpm"
-#include "build.xpm"
-#include "button.xpm"
-
-#include "start.xpm"
-#include "stop.xpm"
-#include "stepnext.xpm"
-#include "stepout.xpm"
-#include "stepover.xpm"
-#include "pause.xpm"
-
-#include "moz.xpm"
-//#include "mbrowser.xpm"
-
-
-//#include "stc.h"
-//class wxGridCellEditorEvtHandler;
-#include "../editor/editor.h"
-#include "updateuihandler.h"
 #include "../common/datastructures.h"
-#include "wxtelnet.h"
-#include "dialogs/OptionsDialog.h"
-#include "dialogs/RemoteFileDialog.h"
-#include "../perms/p.h"
-#include "../network/networking.h"
+#include <wx/treectrl.h>
 
-#include "ChameleonNotebook.h"
+// forward declarations
 
-class wxIniConfig;
+class wxFileConfig;
+class ChameleonNotebook;
+class wxTreeCtrl;
+class wxTextCtrl;
+class ChameleonEditor;
+class wxLogWindow;
+class wxTabCtrl;
+class IntIntHashmap;
+class WindowPointerArray;
+class wxPanel;
+class wxSplitterWindow;
+class RemoteFileDialog;
+class OptionsDialog;
+class Permission;
+class Networking;
+class wxFileConfig;
+class wxTelnet;
+class wxMenu;
+class wxTreeItemId;
+class wxImageList;
+class wxNotebookEvent;
+class wxSplitterEvent;
+class wxTreeEvent;
+class wxStatusBar;
 
 //----------------------------------------------------------------------
 
@@ -118,10 +95,12 @@ public:
 
 	NetworkCallResult CheckNetworkStatus();
 
-	void OpenFile(wxArrayString fnames);
+	void OpenSourceFile(wxArrayString fnames);
 
 	//ChameleonEditor* GetCurrentEditor();
 	Networking* GetNetworking();
+
+	void PassImageList(wxImageList* imagelist);
 
 
 
@@ -138,7 +117,7 @@ private:
 	void OnSave(wxCommandEvent &event);
 	void OnSaveAs(wxCommandEvent &event);
 	//void SaveFileLocal(bool saveas);
-	void OpenFile();
+	wxArrayString OpenFile(FileFilterType filterType );
 	void SaveFile(bool saveas);
 	void Test(wxCommandEvent& event);
 	//void SaveFileAs(wxCommandEvent& event);
@@ -148,9 +127,13 @@ private:
 	void OnCloseWindow(wxCloseEvent& event);
 	void OnConnect(wxCommandEvent &event);
 	void OnToolsOptions(wxCommandEvent &event);
-	void OnTermResize(wxCommandEvent &event);
+	void OnSplitterDoubleClick(wxSplitterEvent &event);
+	void OnSize(wxSizeEvent &event);
 
-	void OnGridClicked(wxGridEvent& event);
+	void OnTreeItemRightClick(wxTreeEvent& event);
+	void OnTreeItemActivated(wxTreeEvent &event);
+	void OnOpenProjectFile(wxCommandEvent &event);
+	void OnAddFileToProject(wxCommandEvent &event);
 
 	void OnPageChange (wxNotebookEvent &event);
 	void OnPageClose(wxCommandEvent& event);
@@ -193,20 +176,32 @@ private:
 	ChameleonNotebook* m_book;
 	ChameleonNotebook*  m_noteTerm;
 	ChameleonEditor* m_currentEd;
-	wxTabCtrl* tc;
+
+	wxTreeCtrl* m_projectTree;
+	wxStatusBar* m_statusBar;
 	wxPanel* panelEd;
-	wxSplitterWindow*  m_split;
+	wxSplitterWindow*  m_splitEditorOutput;
+	wxSplitterWindow* m_splitProjectEditor;
 	//wxTextCtrl* textbox;
-	UpdateUIHandler*  uih;
+	//UpdateUIHandler*  uih;
 	wxTelnet*  m_telnet;
 	OptionsDialog*  m_optionsDialog;
 	RemoteFileDialog* m_remoteFileDialog;
-	wxGrid* m_optGrid;
-	wxIniConfig* m_config;
+	//wxGrid* m_optGrid;
+
+	//wxIniConfig* m_config;
+	wxFileConfig* m_config;
+	wxImageList* m_tempImageList;
 
 
 	IntIntHashmap m_permNumMap;
 	WindowPointerArray m_infoTabTracker;
+
+	wxTreeItemId m_projectFileFolders[3];
+	wxTreeItemId m_clickedTreeItem;
+	FileFilterType m_projectSelectedFolderType;
+
+	wxMenu m_projectPopupMenu;
 	//wxPanel* tcPanel1;
 
 	//wxBoxSizer* sizerPanel;
@@ -222,6 +217,7 @@ private:
 	int m_currentPage;
 	int m_fileNum;
 	int m_clickedTabNum;
+	
 
 	bool m_appClosing;
 	bool m_setSelection;
@@ -232,21 +228,22 @@ private:
 
 	wxArrayString* m_openFiles;
 
+	wxString m_filterCPPFiles;
+	wxString m_filterHeaderFiles;
+	wxString m_filterProjectFiles;
+	wxString m_filterAllFiles;
+	
+
 	DECLARE_EVENT_TABLE()
 };
 
+class wxTreeItemData;
 
-
-// IDs for the controls and the menu commands
-
-
-/*
-enum Permissions
+class FileNameTreeData : public wxTreeItemData
 {
-	PERM_1,
-	PERM_2,
+public:
+	wxString filename;
 };
-*/
 
 
 #endif
