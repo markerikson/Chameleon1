@@ -340,7 +340,7 @@ void TextManager::SetCharAdjusted(int y, int x, char c)
 {
 	int actualLine = AdjustIndex(y);
 
-	if( (actualLine > MAXHEIGHT) || (y >= m_viewportHeight))
+	if( (actualLine > m_maxHeight) || (y >= m_viewportHeight))
 	{
 		// if we're here, then there's a good chance that the server thinks we're
 		// doing 80x24, when we're actually something smaller.  At the moment, tough.
@@ -365,7 +365,7 @@ char TextManager::GetCharAdjusted(int y, int x)
 {
 	int actualLine = AdjustIndex(y);
 
-	if( (actualLine > MAXHEIGHT) || (y >= m_viewportHeight))
+	if( (actualLine > m_maxHeight) || (y >= m_viewportHeight))
 	{
 		wxLogDebug("Bad Y value in TextManager::GetCharAdjusted.  y = %d, viewport height = %d", y, m_viewportHeight);
 		return ' ';
@@ -405,7 +405,7 @@ unsigned short TextManager::GetColorAdjusted(int y, int x)
 {
 	int actualLine = AdjustIndex(y);
 
-	if( (actualLine > MAXHEIGHT) || (y >= m_viewportHeight))
+	if( (actualLine > m_maxHeight) || (y >= m_viewportHeight))
 	{
 		wxLogDebug("Bad Y value in TM::GCA.  y = %d, viewport height = %d", y, m_viewportHeight);
 		return 0;
@@ -446,7 +446,7 @@ void TextManager::SetColorAdjusted(int y, int x, unsigned short value)
 {
 	int actualLine = AdjustIndex(y);
 
-	if( (actualLine > MAXHEIGHT) || (y >= m_viewportHeight))
+	if( (actualLine > m_maxHeight) || (y >= m_viewportHeight))
 	{
 		wxLogDebug("Bad Y value in TM::SCA.  y = %d, viewport height = %d", y, m_viewportHeight);
 		return;
@@ -578,6 +578,8 @@ void TextManager::SetMaxSize(int newSize)
 			m_text.pop_front();
 		}
 	}
+
+	m_maxHeight = newSize;
 }
 
 
@@ -592,4 +594,9 @@ void TextManager::SetMaxSize(int newSize)
 int TextManager::GetLinesReceived()
 {
 	return m_linesReceived;
+}
+
+int TextManager::GetMaxSize()
+{
+	return m_maxHeight;
 }

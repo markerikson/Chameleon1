@@ -366,3 +366,9 @@ void wxTermContainer::OnUpdateUI(wxUpdateUIEvent &event)
 	event.Enable(true);
 	m_scrollbar->SetScrollbar(thumbPosition, thumbSize, scrollHeight, pageSize);	
 }
+
+void wxTermContainer::SetTerminalHistory(int newSize)
+{
+	m_terminal->SetTerminalHistory(newSize);
+	//m_scrollbar->SetScrollbar(100 - termHeight, termHeight, 100, 10);
+}

@@ -307,9 +307,10 @@ int GTerm::GetScrollHeight()
 {
 	int scrollHeight = tm.GetLinesReceived();
 
-	if(scrollHeight > MAXHEIGHT)
+	int maxSize = tm.GetMaxSize();
+	if(scrollHeight > maxSize)
 	{
-		scrollHeight = MAXHEIGHT;
+		scrollHeight = maxSize;
 	}
 	else
 	{
@@ -322,4 +323,9 @@ int GTerm::GetScrollHeight()
 int GTerm::GetScrollPosition()
 {
 	return tm.GetNumLinesScrolled();
+}
+
+void GTerm::SetTerminalHistory(int size)
+{
+	tm.SetMaxSize(size);
 }

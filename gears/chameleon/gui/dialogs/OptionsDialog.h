@@ -23,6 +23,7 @@
 ////@begin includes
 #include "wx/wx.h"
 #include "wx/notebook.h"
+#include "wx/spinctrl.h"
 ////@end includes
 
 
@@ -32,6 +33,7 @@
 
 ////@begin forward declarations
 class wxNotebook;
+class wxSpinCtrl;
 ////@end forward declarations
 
 class ChameleonWindow;
@@ -57,12 +59,12 @@ class ChameleonWindow;
 #define ID_USERNAME 10009
 #define ID_PASSWORD1 10010
 #define ID_PASSWORD2 10011
-#define ID_PANEL2 10013
-#define ID_MINGWPATH 10014
-#define ID_MINGWBROWSE 10015
 #define ID_PANEL3 10016
 #define ID_PRINTSTYLE 10017
 #define ID_CHECKBOX 10018
+#define ID_SPINCTRL 10019
+#define ID_MINGWPATH 10014
+#define ID_MINGWBROWSE 10015
 #define ID_BUTTON_OK 10002
 #define ID_BUTTON_CANCEL 10003
 ////@end control identifiers
@@ -161,10 +163,11 @@ public:
     wxTextCtrl* m_username;
     wxTextCtrl* m_password1;
     wxTextCtrl* m_password2;
-    wxTextCtrl* m_txtMingwPath;
-    wxButton* m_butBrowseMingw;
     wxComboBox* m_printStyle;
     wxCheckBox* m_showToolbarText;
+    wxSpinCtrl* m_termHistory;
+    wxTextCtrl* m_txtMingwPath;
+    wxButton* m_butBrowseMingw;
 ////@end OptionsDialog member variables
 
 	ChameleonWindow* m_parentFrame;

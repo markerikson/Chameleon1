@@ -202,6 +202,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 		bool showToolbarText = (m_config->Read("Interface/ShowToolbarText", "true") == "true");
 		m_options->SetShowToolbarText(showToolbarText);
+		int terminalHistory = m_config->Read("Miscellaneous/TerminalHistory", 100);
 		
 		authorizedCode = m_config->Read("Permissions/authorized", defaultAuthorizedCode);
 		enabledCode = m_config->Read("Permissions/enabled", defaultEnableCode);
@@ -2201,14 +2202,19 @@ void ChameleonWindow::EvaluateOptions()
 		edit->UpdateSyntaxHighlighting();
 	}
 
+	int newMaxTermSize = m_options->GetTerminalHistorySize();
+	m_termContainer->SetTerminalHistory(newMaxTermSize);
+
 	m_config->Write("Permissions/enabled", perms->getGlobalEnabled());
 	m_config->Write("Network/hostname", m_options->GetHostname());
 	m_config->Write("Network/username", m_options->GetUsername());
 	m_config->Write("Compiler/mingwpath", m_options->GetMingwPath());
+	m_config->Write("Miscellaneous/TerminalHistory", newMaxTermSize);
 
 	bool printInColor = (m_options->GetPrintStyle() == wxSTC_PRINT_COLOURONWHITE);
 
 	m_config->Write("Miscellaneous/PrintInColor", printInColor ? "true" : "false");
+	
 
 	m_config->Flush();
 }

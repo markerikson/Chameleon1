@@ -37,6 +37,7 @@ class Options
 		bool SetLocalCompileOut(wxString path_and_file);
 		void SetPrintStyle(int style);
 		void SetShowToolbarText(bool useText);
+		void SetTerminalHistorySize(int size);
 
 		// Accessors:  (inlined)
 		wxString GetPscpApp() { return m_pscpProg; }
@@ -50,6 +51,7 @@ class Options
 		Permission* GetPerms() { return m_perms; }
 		int GetPrintStyle() { return m_printStyle; }
 		bool GetShowToolbarText() { return m_showToolbarText; }
+		int GetTerminalHistorySize() { return m_terminalSize; }
 
 	private:
 		wxString m_pscpProg;
@@ -64,6 +66,7 @@ class Options
 		wxString m_localCompileOut;
 
 		int m_printStyle;
+		int m_terminalSize;
 
 		bool m_showToolbarText;
 

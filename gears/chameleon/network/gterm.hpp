@@ -341,6 +341,8 @@ public:
 	int GetColor();
 	void DecodeColor(int color, int &fg_color, int &bg_color);
 
+	void SetTerminalHistory(int size);
+
 	bool IsScrolledUp();
 	int GetMode() { return mode_flags; }
 	void SetMode(int mode) { mode_flags = mode; }

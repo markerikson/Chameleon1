@@ -88,6 +88,8 @@ public:
 ////@begin wxTermContainer member function declarations
 ////@end wxTermContainer member function declarations
 
+	void SetTerminalHistory(int newSize);
+
     /// Should we show tooltips?
     static bool ShowToolTips();
 

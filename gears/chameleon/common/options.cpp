@@ -19,6 +19,7 @@ Options::Options()
 	m_hostname = "localhost";
 	m_password = "";
 	m_remoteCompileOut = "a.out";
+	m_terminalSize = 100;
 
 	// Default to printing with black text, white background
 	m_printStyle = wxSTC_PRINT_BLACKONWHITE;
@@ -26,12 +27,6 @@ Options::Options()
 	m_perms = new Permission();
 	
 	m_showToolbarText = true;
-	//wxFileName pscpPath(wxGetCwd(), "pscp.exe");
-	//SetPscpApp(pscpPath.GetFullPath());
-	//wxFileName plinkPath(wxGetCwd(), "plink.exe");
-	//SetPlinkApp(plinkPath.GetFullPath());
-	//wxFileName mingwPath(wxGetCwd());
-	//SetMingwPath(mingwPath.GetFullPath());
 }
 
 Options::~Options()
@@ -116,13 +111,8 @@ void Options::SetShowToolbarText(bool useText)
 	m_showToolbarText = useText;
 }
 
-
-//wxString GetPscpApp(); <-- Inlined
-//wxString GetPlinkApp(); <-- Inlined
-//wxString GetMingwPath(); <-- Inlined
-//wxString GetUsername(); <-- Inlined
-//wxString GetHostname(); <-- Inlined
-//wxString GetPassphrase(); <-- Inlined
-//wxString GetCompileOut(); <-- Inlined
-//wxString GetLocalOut(); <-- Inlined
+void Options::SetTerminalHistorySize(int size)
+{
+	m_terminalSize = size;
+}
 
