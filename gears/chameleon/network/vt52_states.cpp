@@ -5,7 +5,11 @@
 // Copyright Timothy Miller, 1999
 
 #include "gterm.hpp"
-
+/*
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+*/
 // I'm certain that this set is incomplete, but I got these from reverse-
 // engineering a VT100 verification test program.
 

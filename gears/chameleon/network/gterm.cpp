@@ -7,6 +7,7 @@
 
 #include "gterm.hpp"
 
+
 void GTerm::Update()
 {
 	update_changes();

@@ -52,6 +52,7 @@
 #include "../network/gtelnet.hpp"
 #include "wxterm.h"
 
+
 void WinMessageBeep();
 
 #define CURSOR_BLINK_DEFAULT_TIMEOUT	300
@@ -809,7 +810,11 @@ void
 wxTerm::OnLeftUp(wxMouseEvent& event)
 {
   m_selecting = FALSE;
-  ReleaseMouse();
+  if(GetCapture() == this)
+  {
+	ReleaseMouse();
+  }
+  
 }
 
 void

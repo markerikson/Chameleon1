@@ -5,7 +5,11 @@
 // Copyright Timothy Miller, 1999
 
 #include "gterm.hpp"
-
+/*
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+*/
 // state machine transition tables
 StateOption GTerm::normal_state[] = {
     { 13, &GTerm::cr,      normal_state },

@@ -12,6 +12,7 @@
 #include "gterm.hpp"
 #include "gtelnet.hpp"
 
+
 GTelnet::StateOption GTelnet::telnet_normal_state[] =
 {
   { IAC,         &GTelnet::telnet_iac,         telnet_cmd_state },

@@ -1,3 +1,7 @@
+#ifndef CHAMELEONWINDOW__H
+#define CHAMELEONWINDOW__H
+
+
 /////////////////////////////////////////////////////////////////////////////
 // Name:        stctest.cpp
 // Purpose:     sample of using wxStyledTextCtrl
@@ -27,6 +31,8 @@
 #include "wx/wx.h"
 #endif
 
+
+
 #include <wx/wfstream.h>
 #include <wx/frame.h>
 #include <wx/toolbar.h>
@@ -37,6 +43,12 @@
 #include <wx/file.h>
 #include <wx/textfile.h>
 #include <wx/splitter.h>
+#include <wx/grid.h>
+#include <wx/dynarray.h>
+#include <wx/notebook.h>
+#include <wx/tabctrl.h>
+#include <wx/log.h>
+#include <wx/filename.h>
 
 #include "new.xpm"
 #include "open.xpm"
@@ -53,10 +65,17 @@
 
 
 //#include "stc.h"
+class wxGridCellEditorEvtHandler;
 #include "../editor/editor.h"
 #include "updateuihandler.h"
 #include "../common/datastructures.h"
 #include "wxtelnet.h"
+#include "dialogs/OptionsDialog.h"
+//#include "GridCellEditorEvtHandler.h"
+//#include "GridCellCheckboxRenderer.h"
+#include "../perms/p.h"
+
+#include "ChameleonNotebook.h"
 
 //----------------------------------------------------------------------
 
@@ -68,12 +87,23 @@ public:
 
 //----------------------------------------------------------------------
 
+
+
+
+
 // Define a new frame type: this is going to be our main frame
 class ChameleonWindow : public wxFrame
 {
 public:
 	ChameleonWindow(const wxString& title, const wxPoint& pos, const wxSize& size);
+	~ChameleonWindow();
 
+
+	//void SetNumPages(int newnum);
+	void SetIntVar(int variableName, int value);
+	int GetIntVar(int variableName);
+
+	bool IsEnabled(int permission);
 
 
 
@@ -85,6 +115,7 @@ private:
 
 
 	void OnQuit(wxCommandEvent& event);
+	void OnClose(wxCloseEvent& event);
 	void OnAbout(wxCommandEvent& event);
 	void OnSave(wxCommandEvent &event);
 	void OnSaveAs(wxCommandEvent &event);
@@ -97,16 +128,68 @@ private:
 	void OnRedo(wxCommandEvent &event);
 	void OnCloseWindow(wxCloseEvent& event);
 	void OnConnect(wxCommandEvent &event);
+	void OnToolsOptions(wxCommandEvent &event);
+
+	void OnPageChange (wxNotebookEvent &event);
+	void OnPageClose(wxCommandEvent& event);
 	
 
+	// file manipulation functions
+	void OnFileNew (wxCommandEvent &event);
+	void OnFileOpen (wxCommandEvent &event);
+	void OnFileSave (wxCommandEvent &event);
+	void OnFileSaveAs (wxCommandEvent &event);
+	void OnFileClose (wxCommandEvent &event);
+	void OnFileRecents (wxCommandEvent &event);
+
+
+
+	void OpenFile(wxArrayString fnames);
+	void CloseFile(int pageNr = -1);
+	void PageHasChanged (int pageNr = -1);
+	int GetPageNum(const wxString& fname);
 
 
 	//wxStyledTextCtrl* ed;
-	ChameleonEditor* ed;
-	wxSplitterWindow* split;
-	wxTextCtrl* textbox;
-	UpdateUIHandler* uih;
-	wxTelnet* telnet;
+	//wxNotebook* noteEd;
+	//wxNotebook* noteTerm;
+
+	wxLogWindow* logWindow;
+
+	ChameleonNotebook* m_book;
+	ChameleonNotebook*  m_noteTerm;
+	ChameleonEditor* m_currentEd;
+	wxTabCtrl* tc;
+	wxPanel* panelEd;
+	wxSplitterWindow*  m_split;
+	//wxTextCtrl* textbox;
+	UpdateUIHandler*  uih;
+	wxTelnet*  m_telnet;
+	OptionsDialog*  m_optionsDialog;
+
+	wxPanel* tcPanel1;
+
+	wxBoxSizer* sizerPanel;
+	wxBoxSizer* sizerTab;
+
+	Permission*  m_perms;
+
+	//wxArrayPtrVoid* docArray; 
+	//scintillaDocPageHash* docHash;
+
+	int m_numPages;
+	int m_currentPage;
+	int m_fileNum;
+	int m_clickedTabNum;
+
+	bool m_appClosing;
+	bool m_setSelection;
+
+
+	ChameleonEditor* m_edit;
+
+	wxArrayString* m_openFiles;
+
 
 	wxString saveFileName;
 
@@ -114,54 +197,17 @@ private:
 };
 
 
+
 // IDs for the controls and the menu commands
-enum
+
+
+/*
+enum Permissions
 {
-	// menu items
-	ID_QUIT = 5200,
-
-	ID_NEW,
-	ID_ABOUT,
-	ID_OPEN,
-	ID_SAVE,
-
-
-	ID_ED,
-	ID_TELNET,
-
-	ID_UNDO,
-	ID_REDO,
-
-	ID_COPY,
-	ID_CUT,
-	ID_PASTE,
-
-	ID_COMPILE,
-	ID_TEST,
-
-	ID_START,
-	ID_STOP,
-	ID_PAUSE,
-	ID_STEPNEXT,
-	ID_STEPOVER,
-	ID_STEPOUT,
+	PERM_1,
+	PERM_2,
 };
+*/
 
 
-BEGIN_EVENT_TABLE(ChameleonWindow, wxFrame)
-	EVT_MENU			(ID_OPEN, ChameleonWindow::OpenFile)
-	EVT_MENU            (ID_QUIT,  ChameleonWindow::OnQuit)
-	EVT_MENU            (ID_ABOUT, ChameleonWindow::OnAbout)
-	//EVT_MENU			(ID_TEST, ChameleonWindow::Test)
-	EVT_MENU			(ID_SAVE, ChameleonWindow::OnSave)
-	//
-	//EVT_SIZE			(ChameleonWindow::ResizeSplitter)
-	EVT_UPDATE_UI		(ID_SAVE, ChameleonWindow::OnUpdateSave)
-	EVT_MENU			(ID_TEST, ChameleonWindow::OnConnect)
-	EVT_MENU			(ID_UNDO, ChameleonWindow::OnUndo)
-	EVT_MENU			(ID_REDO, ChameleonWindow::OnRedo)
-	EVT_CLOSE			(ChameleonWindow::OnCloseWindow)
-END_EVENT_TABLE()
-
-
-IMPLEMENT_APP(MyApp)
+#endif

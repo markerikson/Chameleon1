@@ -1,5 +1,33 @@
 #include "ChameleonWindow.h"
 
+
+#include "../common/debug.h"
+
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
+
+BEGIN_EVENT_TABLE(ChameleonWindow, wxFrame)
+	EVT_MENU			(ID_NEW, ChameleonWindow::OnFileNew)
+	EVT_MENU			(ID_OPEN, ChameleonWindow::OnFileOpen)
+	EVT_MENU            (ID_QUIT,  ChameleonWindow::OnQuit)
+	EVT_MENU            (ID_ABOUT, ChameleonWindow::OnAbout)
+	EVT_MENU			(ID_TEST, ChameleonWindow::Test)
+	EVT_MENU			(ID_SAVE, ChameleonWindow::OnSave)
+	EVT_MENU			(ID_PAGECLOSE, ChameleonWindow::OnFileClose)
+	EVT_UPDATE_UI		(ID_SAVE, ChameleonWindow::OnUpdateSave)
+	EVT_MENU			(ID_STARTCONNECT, ChameleonWindow::OnConnect)
+	EVT_MENU			(ID_UNDO, ChameleonWindow::OnUndo)
+	EVT_MENU			(ID_REDO, ChameleonWindow::OnRedo)
+	EVT_MENU			(ID_OPTIONS, ChameleonWindow::OnToolsOptions)
+	EVT_CLOSE			(ChameleonWindow::OnClose)
+	EVT_NOTEBOOK_PAGE_CHANGED (ID_NOTEBOOK_ED,   ChameleonWindow::OnPageChange)
+END_EVENT_TABLE()
+
+
+IMPLEMENT_APP(MyApp)
 //----------------------------------------------------------------------
 // `Main program' equivalent: the program execution "starts" here
 
@@ -30,14 +58,32 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 	this->SetClientSize(640, 480);
 
+#ifdef DEBUG
+	logWindow = new wxLogWindow(this, "Debug messages");
+#endif
+	 m_perms = new Permission();
+
+	 m_perms->setGlobal(0xF);
+	 
+
+	 m_openFiles = new wxArrayString();
+
 
     // create a menu bar
-    wxMenu* menuFile = new wxMenu("", wxMENU_TEAROFF);
+    wxMenu* menuFile = new wxMenu();
 
 	menuFile->Append(ID_NEW, "&New\tCtrl-N", "Create a new file");
 	menuFile->Append(ID_OPEN, "&Open\tCtrl-O", "Open an existing file");
+	menuFile->Append(ID_PAGECLOSE, "&Close");
+	menuFile->InsertSeparator(3);
 	menuFile->Append(ID_SAVE, "&Save\tCtrl-S", "Save the current file");
 	menuFile->Append(ID_QUIT, "E&xit\tAlt-X", "Quit this program");
+
+	wxMenu* menuTools = new wxMenu();
+
+	menuTools->Append(ID_OPTIONS, "&Options");
+	menuTools->Append(ID_STARTCONNECT, "&Connect");
+	menuTools->InsertSeparator(2);
 
 	wxMenu* menuEdit = new wxMenu();
 
@@ -45,26 +91,23 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	menuEdit->Append(ID_REDO, "&Redo\tCtrl-Y");
 
 
-
-
-
-
     // the "About" item should be in the help menu
     wxMenu *helpMenu = new wxMenu;
     helpMenu->Append(ID_ABOUT, "&About...\tCtrl-A", "Show about dialog");
 
-//#region blah
 
     // now append the freshly created menu to the menu bar...
     wxMenuBar *menuBar = new wxMenuBar();
     menuBar->Append(menuFile, "&File");
 	menuBar->Append(menuEdit, "&Edit");
+	menuBar->Append(menuTools, "&Tools");
     menuBar->Append(helpMenu, "&Help");
 
-//#endregion
 
 	
 	wxToolBar* toolBar = CreateToolBar(wxTB_FLAT | wxTB_TEXT);
+
+
 	wxBitmap bmNew(new_xpm);
 	toolBar->AddTool(ID_NEW, "New File", bmNew);
 	
@@ -106,10 +149,6 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	toolBar->AddTool(ID_STEPOUT, "Step out", bmStepOut);
 
 
-
-
-
-
 	toolBar->Realize();
 
 	SetToolBar(toolBar);
@@ -123,115 +162,387 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 #endif // wxUSE_STATUSBAR
 
 
-	split = new wxSplitterWindow(this, 5205);
+	 m_optionsDialog = new OptionsDialog(this, -1, "Options");
+	wxArrayString as;
+	
+	wxString optionnames;
+
+	for(int i = 1; i <= 20; i++)
+	{
+		optionnames = "Option #";
+		optionnames << i;
+		as.Add(optionnames);
+	}
 	
 
+	wxGrid* fg =  m_optionsDialog->GetGrid();
+	//wxWindow* gridParent = fg->GetParent();
+	//wxSize parentsize = gridParent->GetSize();
 
+	//fg->SetSize(385, 231);
+	
+	//fg->DeleteRows(0, fg->GetRows());
+
+	//fg->CreateGrid(as->GetCount(), 2);
+	//fg->SetColFormatBool(0);
+	//fg->SetColFormatBool(1);
+
+	
+	fg->SetColLabelValue(0, "Authorized");
+	fg->SetColLabelValue(1, "Enabled");
+
+	int count = as.GetCount();
+
+	if(fg->GetRows() < count)
+	{
+		fg->AppendRows(count - fg->GetRows());
+	}
+
+	for(int i = 0; i < count; i++)
+	{
+		fg->SetRowLabelValue(i, as.Item(i));
+	}
+
+	int numRows = fg->GetRows();
+	int numCols = fg->GetCols();
+
+	wxString choices[2];
+	choices[0] = "Yes";
+	choices[1] = "No";
+
+	//for(int colnum = 0; colnum < numCols; colnum++)
+	//{
+	
+	for(int rownum = 0; rownum < numRows; rownum++)
+	{
+			//wxGridCellChoiceEditor* gcce = new wxGridCellChoiceEditor();
+			//gcce->SetParameters("Yes,No");
+			//fg->SetCellEditor(rownum, colnum, gcce);
+			//fg->SetCellRenderer(rownum, colnum, new wxGridCellStringRenderer);
+		//wxGridCell* gc = fg->GetCell(rownum, colnum);
+		fg->SetCellValue(rownum, 0, "No");		
+		wxGridCellAttr *attr= new wxGridCellAttr;
+		attr->SetAlignment(wxALIGN_CENTRE, wxALIGN_CENTRE);
+		attr->SetReadOnly(true);
+		attr->SetRenderer(new wxGridCellStringRenderer);
+		fg->SetAttr(rownum, 0, attr);
+			
+			//gcbe->Create(fg, -1, new GridCellEditorEvtHandler(fg, gcbe));
+			//attrBool->SetEditor (gcbe);
+			//attrBool->SetRenderer (new GridCellCheckboxRenderer);
+
+			//wxGridCellBoolEditor* gcbe = new wxGridCellBoolEditor();
+			//fg->SetCellEditor(rownum, colnum, gcce);
+			//fg->SetCellRenderer(rownum, colnum, new wxGridCellBoolRenderer);
+			//fg->SetGridCursor(rownum, colnum);
+			//fg->ShowCellEditControl();
+	}
+		//fg->SetColAttr(j, attrBool);
+	//}
+
+	
+	 m_split = new wxSplitterWindow(this, 5205);
+	
 
 
     //----------------------------------------
-    // Setup the editor
-    ed = new ChameleonEditor(split, ID_ED);//wxStyledTextCtrl(split, ID_ED);
-	uih = new UpdateUIHandler(this);
+    // Set up the editor
 
-	ed->PushEventHandler(uih);
+	m_book = new ChameleonNotebook(m_split, ID_NOTEBOOK_ED);
 
-	//textbox = new wxTextCtrl(split, 5206, "", wxDefaultPosition, wxDefaultSize,
-	//	wxTE_MULTILINE | wxTE_RICH, wxDefaultValidator);
+	//uih = new UpdateUIHandler(this);
+	//ed->PushEventHandler(uih);
 
+	m_currentPage = 0;
+	m_fileNum = 0;
 
-	//wxSize cs = this->GetClientSize();
-	telnet = new wxTelnet(split, ID_TELNET, wxPoint(-1, -1), 80, 24);
+	m_appClosing = false;
+	m_setSelection = false;
+
+	wxCommandEvent ev;
+	OnFileNew(ev);
+
+	PageHasChanged(m_currentPage);
+
+	m_telnet = new wxTelnet( m_split, ID_TELNET, wxPoint(-1, -1), 80, 24);	
+	
+	m_split->SplitHorizontally(m_book, m_telnet, -200);	
+	m_split->SetMinimumPaneSize(200);
+
+}
+
+ChameleonWindow::~ChameleonWindow()
+{
+	delete m_perms;
+	delete m_openFiles;
+}
+
+void ChameleonWindow::OnFileNew (wxCommandEvent &WXUNUSED(event)) 
+{
+	m_fileNum += 1;
+	wxString noname = "<untitled> " + wxString::Format ("%d", m_fileNum);
+	ChameleonEditor* edit = new ChameleonEditor (this, m_book, -1);
+	m_currentEd = edit;
+	//m_edit->SetDropTarget (new DropFiles (this));
+	m_currentPage = m_book->GetPageCount();
+	m_book->AddPage (edit, noname, true);
+	m_openFiles->Add (noname);
+
+}
+
+void ChameleonWindow::PageHasChanged (int pageNr) 
+{
+	if (m_book->GetPageCount() == 0) 
+	{
+		m_currentPage = -1;
+		m_currentEd = NULL;
+		//m_openFiles->SetSelection (0);
+		return;
+	}
+
+	if (pageNr == -1)
+	{
+		pageNr = m_book->GetSelection();
+		
+	}
+
+	if (m_book->GetPageCount() <= pageNr)
+	{
+		pageNr = pageNr - 1;
+	}
+
+	if (pageNr >= 0) 
+	{
+		m_currentPage = pageNr;
+		m_currentEd = (ChameleonEditor *) m_book->GetPage (m_currentPage);
+		m_currentEd->SetFocus();
+		//m_files->SetSelection (m_currentPage);
+	}
+	else
+	{
+		m_currentPage = -1;
+		m_currentEd = NULL;
+		//m_files->SetSelection (0);
+	}
+}
+
+void ChameleonWindow::OnClose(wxCloseEvent &event) 
+{
+	int i;
+	int cnt = m_book->GetPageCount();
+
+	m_appClosing = true;
+
+	for (i = 0; i < cnt; i++) 
+	{
+		CloseFile();
+	}
+
 	
 
-	ed->SetMarginWidth(0, 20);
-	ed->SetMarginType(0, 1);
-	
+	PageHasChanged();
+
+	if (m_currentEd && m_currentEd->Modified()) 
+	{
+		if (event.CanVeto())
+		{
+			event.Veto (true);
+		}
+
+		return;
+	}
+
 	/*
-	wxColour black("black");
-	wxColour white("white");
-	wxFont f;
-	f.SetFaceName("Courier New");
-	f.SetFamily(wxMODERN);
-	f.SetPointSize(12);
-	wxTextAttr ta(white, black, f);
-	textbox->SetDefaultStyle(ta);
-	textbox->SetBackgroundColour(black);
-	
-	textbox->SetForegroundColour(white);
-	
-	
-	
+	if (myIsKeyDown (WXK_CONTROL) && !myIsKeyDown ('Q')) 
+	{
+		StoreFrameSize (GetRect ());
+	}
+	*/
 
-	
-	
-	*textbox << "[s1278644@john ~]$ ";
-	textbox->SetStyle(0, textbox->GetValue().Length(), ta);
-*/
+	/*
+	if (m_pageTool)
+	{
+		m_files->RemoveCbox (m_pageTool);
+	}
+	*/
 
-	split->SplitHorizontally(ed, telnet, -200);
+	//m_recents->RemoveMenu (m_recentsMenu);
 
-	
-	split->SetMinimumPaneSize(200);
+	//((MyApp*)wxTheApp)->RemoveFrame (this);
+	Destroy();
+}
 
-    // Default font
-    wxFont font(10, wxMODERN, wxNORMAL, wxNORMAL);
-    ed->StyleSetFont(wxSTC_STYLE_DEFAULT, font);
-    ed->StyleClearAll();
+void ChameleonWindow::CloseFile (int pageNr) 
+{
+	if (pageNr == -1)
+	{
+		pageNr = m_book->GetSelection();
+	}
 
+	ChameleonEditor *edit = (ChameleonEditor *) m_book->GetPage (pageNr);
 
-	// Editor style setup
+	if (!edit)
+	{
+		return;
+	}
 
-	// whitespace
-    ed->StyleSetForeground(0,  wxColour(0x80, 0x80, 0x80));
+	if (edit->Modified()) 
+	{
+		if (wxMessageBox (_("Text is not saved, save before closing?"), _("Close"),
+			wxYES_NO | wxICON_QUESTION) == wxYES) 
+		{
+			edit->SaveFile();
+			//SaveFileLocal(true);
 
-	// comment
-    ed->StyleSetForeground(1,  wxColour(0x00, 0x7f, 0x00));
+			if (edit->Modified()) 
+			{
+				wxMessageBox (_("Text could not be saved!"), _("Close abort"),
+					wxOK | wxICON_EXCLAMATION);
+				return;
+			}
+		}
+	}
 
-	// line comment
-    ed->StyleSetForeground(2,  wxColour(0x00, 0x7f, 0x00));
+	//m_files->Remove (edit->GetFilename());
+	if (m_book->GetPageCount() > 0) 
+	{
+		if ((m_book->GetPageCount() > 1) || m_appClosing) 
+		{
+			m_book->DeletePage (pageNr);
+		}
+		else
+		{
+			m_fileNum = 1;
+			wxString noname = "<untitled> " + wxString::Format (".%d", m_fileNum);
+			m_book->SetPageText (pageNr, noname);
+			//m_edit->SetFilename (wxEmptyString);
+			m_edit->ClearAll();
+			m_edit->SetSavePoint();
+			//m_files->Add (noname);
+		}
+	}
+}
 
-    
-	// numbers
-	ed->StyleSetForeground(4,  wxColour("Red"));
+void ChameleonWindow::OnFileOpen (wxCommandEvent &WXUNUSED(event)) 
+{
+	if (!m_currentEd)
+	{
+		return;
+	}
 
-	// keywords
-    ed->StyleSetForeground(5,  wxColour("Blue"));
-	ed->StyleSetBold(5,  TRUE);
+	wxArrayString fnames;
+	wxFileDialog dlg (this, _("Open files"), "", "", "C++ files (*.cpp, *.h)|*.cpp;*.h",
+		wxOPEN | wxFILE_MUST_EXIST | wxMULTIPLE | wxCHANGE_DIR);
+	if (dlg.ShowModal() != wxID_OK)
+	{
+		return;
+	}
+	dlg.GetPaths (fnames);
+	OpenFile (fnames);
+	PageHasChanged (m_currentPage);
+}
 
-	// double-quoted strings
-    ed->StyleSetForeground(6,  wxColour(0x00, 0x80, 0x80));
-	// single-quoted strings
-    ed->StyleSetForeground(7,  wxColour(0x00, 0x80, 0x80));
+void ChameleonWindow::OpenFile (wxArrayString fnames) 
+{
+	int firstPageNr = -1;
+	for (size_t n = 0; n < fnames.GetCount(); n++) 
+	{
+		wxFileName w(fnames[n]); 
+		w.Normalize(); 
+		fnames[n] = w.GetFullPath();
+		wxString filename = wxFileName (fnames[n]).GetFullName();
+		int pageNr = GetPageNum(fnames[n]);
+		if (pageNr >= 0) 
+		{
+			m_setSelection = true;
+			m_book->SetSelection (pageNr);
+			m_setSelection = false;
+			m_currentPage = pageNr;
+			m_currentEd->LoadFile (fnames[n]);
+		}
+		else if (m_currentEd && (!m_currentEd->Modified() && m_currentEd->GetFilename().IsEmpty())) 
+		{
+			if (m_currentEd->LoadFile (fnames[n])) 
+			{
+				m_book->SetPageText (m_currentPage, filename);
+				//m_files->Replace (fnames[n], m_currentPage);
+			}
+		}
+		else
+		{
+			ChameleonEditor *edit = new ChameleonEditor (this, m_book, -1);
+			if (edit->LoadFile (fnames[n])) 
+			{
+				m_currentEd = edit;
+				//m_currentEd->SetDropTarget (new DropFiles (this));
+				m_currentPage = m_book->GetPageCount();
+				m_book->AddPage (m_currentEd, filename, true);
+				//m_files->Add (fnames[n]);
+			}
+			else
+			{
+				delete edit;
+			}
+		}
 
-	// preprocessor
-    ed->StyleSetForeground(9,  wxColour("Purple"));
+		if (firstPageNr < 0) firstPageNr = m_currentPage;
+		//m_files->SetSelection (m_pageNr);
+		//m_recents->Add (fnames[n]);
+	}
+	if (firstPageNr >= 0) {
+		m_currentPage = firstPageNr;
+		m_setSelection = true;
+		m_book->SetSelection (m_currentPage);
+		m_setSelection = false;
+		//g_statustext->Clear ();
+		//g_statustext->Append (_("Opened file: ") + fnames[0]);
+	}
+}
 
-	// operators
-    ed->StyleSetForeground(10, wxColour(0x00, 0x00, 0x00));
-    ed->StyleSetForeground(11, wxColour(0x00, 0x00, 0x00));
-    
-    ed->StyleSetBold(10, TRUE);
-	
+int ChameleonWindow::GetPageNum (const wxString &fname) 
+{
+	ChameleonEditor *edit;
+	for (int pageNum = 0; pageNum < m_book->GetPageCount(); pageNum++) 
+	{
+		edit = (ChameleonEditor *) m_book->GetPage(pageNum);
 
+		if (edit && (edit->GetFilename() == fname))
+		{			
+			return pageNum;
+		}
+	}
 
-    ed->EmptyUndoBuffer();
+	return -1;
+}
 
-    ed->SetLexer(wxSTC_LEX_CPP);
-    ed->SetKeyWords(0,
-                    "asm auto bool break case catch char class const "
-                    "const_cast continue default delete do double "
-                    "dynamic_cast else enum explicit export extern "
-                    "false float for friend goto if inline int long "
-                    "mutable namespace new operator private protected "
-                    "public register reinterpret_cast return short signed "
-                    "sizeof static static_cast struct switch template this "
-                    "throw true try typedef typeid typename union unsigned "
-                    "using virtual void volatile wchar_t while");	
+void ChameleonWindow::OnPageChange (wxNotebookEvent &WXUNUSED(event)) 
+{
+	//::wxMessageBox("OnPageChange");
+	if (!m_setSelection)
+	{
+		PageHasChanged();
+	}
+}
+
+void ChameleonWindow::OnPageClose (wxCommandEvent &event) 
+{
+	if (m_clickedTabNum >= 0) 
+	{
+		CloseFile(m_clickedTabNum);
+		PageHasChanged(m_clickedTabNum);
+	}
+}
+
+void ChameleonWindow::OnFileClose (wxCommandEvent &WXUNUSED(event)) 
+{
+	if (!m_currentEd) return;
+	CloseFile();
+	PageHasChanged();
 }
 
 void ChameleonWindow::OpenFile(wxCommandEvent& WXUNUSED(event))
 {
+	/*
 	wxString filetext;
 	wxString filename = ::wxFileSelector("Pick a file", "",
 		"", "", "", wxOPEN, NULL);
@@ -245,17 +556,21 @@ void ChameleonWindow::OpenFile(wxCommandEvent& WXUNUSED(event))
 		file.Read(buff, file.Length());
 		st.UngetWriteBuf();
 
+		// TODO multiple buffer
 		ed->InsertText(0, st);
 
-		saveFileName = filename;		
+		saveFileName = filename;
+
 	}
+	*/
+	::wxMessageBox("Open File: obsolete function");
 }
 
 
 void ChameleonWindow::OnConnect(wxCommandEvent& WXUNUSED(event))
 {
-
-	telnet->Connect("127.0.0.1", 3012);
+	//::wxMessageBox("OnConnect");
+	m_telnet->Connect("localhost", 3012);
 
 }
 
@@ -265,20 +580,18 @@ void ChameleonWindow::Test(wxCommandEvent& WXUNUSED(event))
 {
 	//ed->Undo();
 //	wxEventType et = event.GetEventType();
+	::wxMessageBox("Testing");
+	wxString s = "Tab Page #";
+	s << tc->GetItemCount();
 
-	wxString st;
-	bitset<17> bt;
-	bt.set();
-
-	st.Printf("%x", bt.to_ulong());
-
-	::wxMessageBox(st);
+	tc->InsertItem(tc->GetItemCount(), s);
 	
 }
 
 
 void ChameleonWindow::OnCloseWindow(wxCloseEvent& event)
 {
+	/*
 	if(ed->GetModify())
 	{
 		int answer = ::wxMessageBox("Your file has unsaved changes.  Do you want to save?", "Confirm exit",
@@ -295,6 +608,7 @@ void ChameleonWindow::OnCloseWindow(wxCloseEvent& event)
 			}
 		}
 	}
+	*/
 	this->Destroy();
 }
 
@@ -313,12 +627,14 @@ void ChameleonWindow::CloseApp()
 
 void ChameleonWindow::OnUndo(wxCommandEvent &event)
 {
-	ed->Undo();
+	// TODO multiple buffer
+	m_currentEd->Undo();
 }
 
 void ChameleonWindow::OnRedo(wxCommandEvent &event)
 {
-	ed->Redo();
+	// TODO multiple buffer
+	m_currentEd->Redo();
 }
 
 
@@ -338,13 +654,16 @@ void ChameleonWindow::CheckSize()
 	wxString result;
 	result << x << ", " << y;
 	::wxMessageBox(result );
-	ed->SetScrollWidth(x);
+	// TODO multiple buffer
+	m_currentEd->SetScrollWidth(x);
 	
 }
 
 void ChameleonWindow::OnUpdateSave(wxUpdateUIEvent &event)
 {
-	event.Enable(ed->GetModify());
+	event.Enable(true);
+	//TODO multiple buffer
+	//ed->GetModify());
 }
 
 
@@ -364,17 +683,19 @@ void ChameleonWindow::OnSaveAs(wxCommandEvent& WXUNUSED(event))
 void ChameleonWindow::SaveFileLocal(bool saveas)
 {
 
+	::wxMessageBox("SaveFileLocal: obsolete function!");
+/*
 	wxString name = wxEmptyString;
 
 	
 	if( (saveFileName == wxEmptyString) ||
 		(saveas) )
 	{
-/*
+
 		SaveFileDialog sfd = new SaveFileDialog();
 		sfd.Filter = "HTML files (*.html)|*.html|All files (*.*)|*.*";
 		DialogResult dr = sfd.ShowDialog();
-*/
+
 		wxString filetext;
 		wxString filetypes = "C++ files (*.cpp)|*.cpp|Header files (*.h)|*.h|All files (*.*)|*.*";
 		//wxString filename = ::wxFileSelector("Pick a file", "",
@@ -395,7 +716,7 @@ void ChameleonWindow::SaveFileLocal(bool saveas)
 			
 			//::wxMessageBox(message);
 
-			/*
+			
 			switch(filteridx)
 			{
 				case 0:
@@ -404,17 +725,18 @@ void ChameleonWindow::SaveFileLocal(bool saveas)
 				case 1:
 					::wxMessageBox()
 			}
-			*/
+			
 		
 
 
 			wxFile file(filename, wxFile::write);
 
+			// TODO multiple buffer
 			file.Write(ed->GetText());
 			file.Close();
 	
 
-			/*
+			
 			wxTextFile file(filename);
 			file.Read
 			if(!file.Exists())
@@ -426,10 +748,10 @@ void ChameleonWindow::SaveFileLocal(bool saveas)
 			file.AddLine(buffertext);
 			file.Write();
 			file.Close();
-			*/
+			
 		}
 
-/*
+
 		if(dr == DialogResult.OK)
 		{	
 			name  = sfd.FileName;
@@ -457,16 +779,10 @@ void ChameleonWindow::SaveFileLocal(bool saveas)
 	ed.TextBox.Modified = false;
 
 
-*/
-
-
-
-
-
 
 	}
-	
 
+*/
 }
 
 
@@ -483,6 +799,61 @@ void ChameleonWindow::ResizeSplitter()
 	*/
 	
 	
+}
+
+void ChameleonWindow::OnToolsOptions(wxCommandEvent &event)
+{		
+	int result = m_optionsDialog->ShowModal();
+}
+
+
+void ChameleonWindow::SetIntVar(int variableName, int value)
+{
+	int* target;
+
+	switch(variableName)
+	{
+	case VN_NUMPAGES:
+		target = &m_numPages;
+		break;
+	case VN_CURRENTPAGE:
+		target = &m_currentPage;
+		break;
+	case VN_CLICKEDTAB:
+		target = &m_clickedTabNum;
+		break;
+	default:
+		DEBUGLOG("Failed to properly set variable")
+		return;
+	}
+	*target = value;
+
+}
+
+int ChameleonWindow::GetIntVar(int variableName)
+{
+	int* target;
+
+	switch(variableName)
+	{
+	case VN_NUMPAGES:
+		target = &m_numPages;
+		break;
+	case VN_CURRENTPAGE:
+		target = &m_currentPage;
+		break;
+	default:
+		::wxLogDebug("Failed to properly retrieve variable");
+		return 0;
+	}
+
+	return *target;
+	
+}
+
+bool ChameleonWindow::IsEnabled(int permission)
+{
+	return m_perms->isEnabled(permission);
 }
 
 

@@ -53,6 +53,7 @@
 #include "wxterm.h"
 #include "wxtelnet.h"
 
+
 #define ID_SOCKET        1000
 
 BEGIN_EVENT_TABLE(wxTelnet, wxTerm)

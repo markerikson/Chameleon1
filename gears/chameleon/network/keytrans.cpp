@@ -5,6 +5,7 @@
 #include "gterm.hpp"
 #include <ctype.h>
 
+
 //
 //  Keycode translation tables
 //

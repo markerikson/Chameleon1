@@ -1,5 +1,11 @@
 #include "updateuihandler.h"
 
+#include "../common/debug.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
 UpdateUIHandler::UpdateUIHandler(ChameleonWindow* mf)
 {
 	mainframe = mf;
@@ -24,6 +30,11 @@ bool UpdateUIHandler::ProcessEvent(wxEvent& event)
 		::wxMessageBox("Character added");
 	}
 	*/
+	if(et == wxEVT_STC_CHARADDED)
+	{
+		
+		event.Skip();
+	}
 
 	return this->wxEvtHandler::ProcessEvent(event);
 	
