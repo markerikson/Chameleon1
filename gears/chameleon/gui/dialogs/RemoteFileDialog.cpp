@@ -60,6 +60,8 @@ WX_DEFINE_OBJARRAY(ThreeDStringVector)
 #include "upfolder.xpm"
 #include "refresh.xpm"
 
+#include "../../common/debug.h"
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

@@ -121,6 +121,7 @@ public:
     void SetUsername(wxString username);
     void SetPassword1(wxString pwd);
     void SetPassword2(wxString pwd);
+	void SetAuthCode(wxString authcode);
 
 	void EnableServerSettings();
 	void DisableServerSettings();
@@ -133,6 +134,7 @@ public:
     wxCheckListBox* m_checkList;
     wxTextCtrl* m_txtProfCode;
     wxButton* m_butSetAuthCode;
+    wxStaticText* m_authCodeLabel;
     wxTextCtrl* m_serverAddress;
     wxTextCtrl* m_username;
     wxTextCtrl* m_password1;

@@ -146,67 +146,72 @@ void OptionsDialog::CreateControls()
     wxButton* item14 = new wxButton( item4, ID_BUTTON, _("Set authorization code"), wxDefaultPosition, wxSize(120, -1), 0 );
     m_butSetAuthCode = item14;
     item11->Add(item14, 0, wxALIGN_LEFT|wxALL, 5);
+    wxStaticText* item15 = new wxStaticText( item4, wxID_STATIC, _("Current authorization code:"), wxDefaultPosition, wxDefaultSize, 0 );
+    item11->Add(item15, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
+    wxStaticText* item16 = new wxStaticText( item4, wxID_STATIC, _(""), wxDefaultPosition, wxDefaultSize, 0 );
+    m_authCodeLabel = item16;
+    item11->Add(item16, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxBOTTOM|wxADJUST_MINSIZE, 5);
     item3->AddPage(item4, _("Features"));
-    wxPanel* item15 = new wxPanel( item3, ID_PANEL, wxDefaultPosition, wxSize(100, 80), wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
-    wxBoxSizer* item16 = new wxBoxSizer(wxHORIZONTAL);
-    item15->SetSizer(item16);
-    item15->SetAutoLayout(TRUE);
-    wxBoxSizer* item17 = new wxBoxSizer(wxVERTICAL);
-    item16->Add(item17, 0, wxALIGN_TOP, 5);
-    wxStaticText* item18 = new wxStaticText( item15, wxID_STATIC, _("Network server address:"), wxDefaultPosition, wxDefaultSize, 0 );
-    item17->Add(item18, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
-    wxTextCtrl* item19 = new wxTextCtrl( item15, ID_TEXTCTRL1, _(""), wxDefaultPosition, wxSize(160, -1), wxTE_PROCESS_ENTER );
-    m_serverAddress = item19;
-    item17->Add(item19, 0, wxALIGN_CENTER_HORIZONTAL|wxLEFT|wxRIGHT|wxBOTTOM, 5);
-    wxStaticText* item20 = new wxStaticText( item15, wxID_STATIC, _("Username:"), wxDefaultPosition, wxDefaultSize, 0 );
-    item17->Add(item20, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
-    wxTextCtrl* item21 = new wxTextCtrl( item15, ID_TEXTCTRL2, _(""), wxDefaultPosition, wxSize(160, -1), wxTE_PROCESS_ENTER );
-    m_username = item21;
-    item17->Add(item21, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxBOTTOM, 5);
-    wxStaticText* item22 = new wxStaticText( item15, wxID_STATIC, _("Password:"), wxDefaultPosition, wxDefaultSize, 0 );
-    item17->Add(item22, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
-    wxTextCtrl* item23 = new wxTextCtrl( item15, ID_TEXTCTRL3, _(""), wxDefaultPosition, wxSize(160, -1), wxTE_PROCESS_ENTER|wxTE_PASSWORD );
-    m_password1 = item23;
-    item17->Add(item23, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxBOTTOM, 5);
-    wxStaticText* item24 = new wxStaticText( item15, wxID_STATIC, _("Confirm password:"), wxDefaultPosition, wxDefaultSize, 0 );
-    item17->Add(item24, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
-    wxTextCtrl* item25 = new wxTextCtrl( item15, ID_TEXTCTRL4, _(""), wxDefaultPosition, wxSize(160, -1), wxTE_PROCESS_ENTER|wxTE_PASSWORD );
-    m_password2 = item25;
-    item17->Add(item25, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxBOTTOM, 5);
-    item3->AddPage(item15, _("Network"));
-    wxPanel* item26 = new wxPanel( item3, ID_PANEL2, wxDefaultPosition, wxSize(100, 80), wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
-    wxBoxSizer* item27 = new wxBoxSizer(wxHORIZONTAL);
-    item26->SetSizer(item27);
-    item26->SetAutoLayout(TRUE);
-    wxBoxSizer* item28 = new wxBoxSizer(wxVERTICAL);
-    item27->Add(item28, 0, wxALIGN_TOP, 5);
-    wxStaticText* item29 = new wxStaticText( item26, wxID_STATIC, _("Path to MinGW:"), wxDefaultPosition, wxDefaultSize, 0 );
-    item28->Add(item29, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
-    wxBoxSizer* item30 = new wxBoxSizer(wxHORIZONTAL);
-    item28->Add(item30, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
-    wxTextCtrl* item31 = new wxTextCtrl( item26, ID_TEXTCTRL, _(""), wxDefaultPosition, wxSize(180, -1), 0 );
-    m_txtMingwPath = item31;
-    item30->Add(item31, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
-    wxButton* item32 = new wxButton( item26, ID_BUTTON1, _("Browse"), wxDefaultPosition, wxDefaultSize, 0 );
-    m_butBrowseMingw = item32;
-    item30->Add(item32, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
-    wxStaticText* item33 = new wxStaticText( item26, wxID_STATIC, _("Username:"), wxDefaultPosition, wxDefaultSize, 0 );
-    item28->Add(item33, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
-    wxStaticText* item34 = new wxStaticText( item26, wxID_STATIC, _("Password:"), wxDefaultPosition, wxDefaultSize, 0 );
-    item28->Add(item34, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
-    wxStaticText* item35 = new wxStaticText( item26, wxID_STATIC, _("Confirm password:"), wxDefaultPosition, wxDefaultSize, 0 );
-    item28->Add(item35, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
-    item3->AddPage(item26, _("Compiler"));
+    wxPanel* item17 = new wxPanel( item3, ID_PANEL, wxDefaultPosition, wxSize(100, 80), wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
+    wxBoxSizer* item18 = new wxBoxSizer(wxHORIZONTAL);
+    item17->SetSizer(item18);
+    item17->SetAutoLayout(TRUE);
+    wxBoxSizer* item19 = new wxBoxSizer(wxVERTICAL);
+    item18->Add(item19, 0, wxALIGN_TOP, 5);
+    wxStaticText* item20 = new wxStaticText( item17, wxID_STATIC, _("Network server address:"), wxDefaultPosition, wxDefaultSize, 0 );
+    item19->Add(item20, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
+    wxTextCtrl* item21 = new wxTextCtrl( item17, ID_TEXTCTRL1, _(""), wxDefaultPosition, wxSize(160, -1), wxTE_PROCESS_ENTER );
+    m_serverAddress = item21;
+    item19->Add(item21, 0, wxALIGN_CENTER_HORIZONTAL|wxLEFT|wxRIGHT|wxBOTTOM, 5);
+    wxStaticText* item22 = new wxStaticText( item17, wxID_STATIC, _("Username:"), wxDefaultPosition, wxDefaultSize, 0 );
+    item19->Add(item22, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
+    wxTextCtrl* item23 = new wxTextCtrl( item17, ID_TEXTCTRL2, _(""), wxDefaultPosition, wxSize(160, -1), wxTE_PROCESS_ENTER );
+    m_username = item23;
+    item19->Add(item23, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxBOTTOM, 5);
+    wxStaticText* item24 = new wxStaticText( item17, wxID_STATIC, _("Password:"), wxDefaultPosition, wxDefaultSize, 0 );
+    item19->Add(item24, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
+    wxTextCtrl* item25 = new wxTextCtrl( item17, ID_TEXTCTRL3, _(""), wxDefaultPosition, wxSize(160, -1), wxTE_PROCESS_ENTER|wxTE_PASSWORD );
+    m_password1 = item25;
+    item19->Add(item25, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxBOTTOM, 5);
+    wxStaticText* item26 = new wxStaticText( item17, wxID_STATIC, _("Confirm password:"), wxDefaultPosition, wxDefaultSize, 0 );
+    item19->Add(item26, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
+    wxTextCtrl* item27 = new wxTextCtrl( item17, ID_TEXTCTRL4, _(""), wxDefaultPosition, wxSize(160, -1), wxTE_PROCESS_ENTER|wxTE_PASSWORD );
+    m_password2 = item27;
+    item19->Add(item27, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxBOTTOM, 5);
+    item3->AddPage(item17, _("Network"));
+    wxPanel* item28 = new wxPanel( item3, ID_PANEL2, wxDefaultPosition, wxSize(100, 80), wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
+    wxBoxSizer* item29 = new wxBoxSizer(wxHORIZONTAL);
+    item28->SetSizer(item29);
+    item28->SetAutoLayout(TRUE);
+    wxBoxSizer* item30 = new wxBoxSizer(wxVERTICAL);
+    item29->Add(item30, 0, wxALIGN_TOP, 5);
+    wxStaticText* item31 = new wxStaticText( item28, wxID_STATIC, _("Path to MinGW:"), wxDefaultPosition, wxDefaultSize, 0 );
+    item30->Add(item31, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
+    wxBoxSizer* item32 = new wxBoxSizer(wxHORIZONTAL);
+    item30->Add(item32, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+    wxTextCtrl* item33 = new wxTextCtrl( item28, ID_TEXTCTRL, _(""), wxDefaultPosition, wxSize(180, -1), 0 );
+    m_txtMingwPath = item33;
+    item32->Add(item33, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxButton* item34 = new wxButton( item28, ID_BUTTON1, _("Browse"), wxDefaultPosition, wxDefaultSize, 0 );
+    m_butBrowseMingw = item34;
+    item32->Add(item34, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxStaticText* item35 = new wxStaticText( item28, wxID_STATIC, _("Username:"), wxDefaultPosition, wxDefaultSize, 0 );
+    item30->Add(item35, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
+    wxStaticText* item36 = new wxStaticText( item28, wxID_STATIC, _("Password:"), wxDefaultPosition, wxDefaultSize, 0 );
+    item30->Add(item36, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
+    wxStaticText* item37 = new wxStaticText( item28, wxID_STATIC, _("Confirm password:"), wxDefaultPosition, wxDefaultSize, 0 );
+    item30->Add(item37, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
+    item3->AddPage(item28, _("Compiler"));
     item2->Add(item3, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
-    wxBoxSizer* item36 = new wxBoxSizer(wxHORIZONTAL);
-    item2->Add(item36, 0, wxALIGN_RIGHT|wxALL, 0);
+    wxBoxSizer* item38 = new wxBoxSizer(wxHORIZONTAL);
+    item2->Add(item38, 0, wxALIGN_RIGHT|wxALL, 0);
 
-    wxButton* item37 = new wxButton( item1, ID_BUTTON_OK, _("OK"), wxDefaultPosition, wxDefaultSize, 0 );
-    item36->Add(item37, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxButton* item39 = new wxButton( item1, ID_BUTTON_OK, _("OK"), wxDefaultPosition, wxDefaultSize, 0 );
+    item38->Add(item39, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxButton* item38 = new wxButton( item1, ID_BUTTON_CANCEL, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
-    item36->Add(item38, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxButton* item40 = new wxButton( item1, ID_BUTTON_CANCEL, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
+    item38->Add(item40, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
 ////@end OptionsDialog content construction
 }
@@ -393,4 +398,9 @@ void OptionsDialog::DisableServerSettings()
 	m_password1->SetBackgroundColour(grey);
 	m_password2->SetEditable(false);
 	m_password2->SetBackgroundColour(grey);
+}
+
+void OptionsDialog::SetAuthCode(wxString authcode)
+{
+	m_authCodeLabel->SetLabel(authcode);
 }

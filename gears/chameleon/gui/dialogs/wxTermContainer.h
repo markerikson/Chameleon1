@@ -83,6 +83,7 @@ public:
 ////@end wxTermContainer event handler declarations
 
 	void OnSize(wxSizeEvent &event);
+	void OnUpdateUI(wxUpdateUIEvent &event);
 
 ////@begin wxTermContainer member function declarations
 ////@end wxTermContainer member function declarations
@@ -96,8 +97,11 @@ private:
     wxTerm* m_terminal;
     wxScrollBar* m_scrollbar;
 ////@end wxTermContainer member variables
+	
 
+	int m_lastThumbPosition;
 	wxBoxSizer* m_sizer;
+	int m_lastLinesReceived;
 };
 
 #endif

@@ -28,6 +28,8 @@
 #include "wxTermContainer.h"
 #include "../wxTerm.h"
 
+#include "../../common/debug.h"
+
 ////@begin XPM images
 
 ////@end XPM images
@@ -54,6 +56,7 @@ BEGIN_EVENT_TABLE( wxTermContainer, wxPanel )
 ////@end wxTermContainer event table entries
 
   EVT_SIZE						(wxTermContainer::OnSize)
+  EVT_UPDATE_UI					(ID_SCROLLBAR, wxTermContainer::OnUpdateUI)
 
 END_EVENT_TABLE()
 
@@ -69,6 +72,9 @@ wxTermContainer::wxTermContainer( wxWindow* parent, wxWindowID id, const wxPoint
 : m_terminal(NULL)
 {
     Create(parent, id, pos, size, style);
+
+	m_lastLinesReceived = 0;
+	m_lastThumbPosition = 0;
 	
 }
 
@@ -178,6 +184,25 @@ void wxTermContainer::OnScrollbarScrollThumbtrack( wxScrollEvent& event )
 {
     // Insert custom code here
     event.Skip();
+	//wxLogDebug("Scroll event.  Value: %d", event.GetPosition());
+
+	int newThumbPosition = event.GetPosition();
+
+	int linesToScroll;
+	bool scrollUp = (newThumbPosition < m_lastThumbPosition);
+
+	if(scrollUp)
+	{
+		linesToScroll = m_lastThumbPosition - newThumbPosition;
+	}
+	else
+	{
+		linesToScroll = newThumbPosition - m_lastThumbPosition;
+	}
+
+	m_lastThumbPosition = newThumbPosition;
+
+	m_terminal->ScrollTerminal(linesToScroll, scrollUp);
 }
 
 /*!
@@ -205,15 +230,65 @@ void wxTermContainer::SetTerminal(wxTerm* terminal)
 void wxTermContainer::OnSize(wxSizeEvent &event)
 {
 	event.Skip();
+	
 	/*
 	int newHeight = 0;
 	int numLinesReceived = 0;
 
 	if(m_terminal != NULL)
 	{
-		m_terminal->UpdateSize(newHeight, numLinesReceived);
+		//m_terminal->UpdateSize(newHeight, numLinesReceived);
+		m_terminal->UpdateSize();
+
+		int height = m_terminal->Height();
+
+		int maxSize = m_terminal->MaxHeight();
+		int pageSize = maxSize / 10;
+		m_scrollbar->SetScrollbar(maxSize - height, height, maxSize, pageSize);
 	}
 	*/
+
+    
+
+}
+
+void wxTermContainer::OnUpdateUI(wxUpdateUIEvent &event)
+{
+	bool enableScrollbar = true;
+
+	int scrollHeight = m_terminal->GetScrollHeight();
+
+	int thumbSize = m_terminal->Height();
+
+	if(scrollHeight <= thumbSize)
+	{
+		m_scrollbar->Disable();
+		return;
+	}
+	
+	m_scrollbar->Enable();
+	int pageSize = scrollHeight / 10;
+
+	if(pageSize == 0)
+	{
+		pageSize = 10;
+	}
 	
 
+	int thumbPosition = scrollHeight - thumbSize - m_terminal->GetScrollPosition();	
+
+	if(scrollHeight != m_lastLinesReceived)
+	{
+		//wxLogDebug("linesReceived: %d, thumbSize: %d, thumbPosition: %d", scrollHeight, thumbSize, thumbPosition);
+		m_lastLinesReceived = scrollHeight;
+		m_lastThumbPosition = thumbPosition;
+	}
+
+	if(thumbPosition < 0)
+	{
+		thumbPosition = 0;
+	}
+
+	event.Enable(true);
+	m_scrollbar->SetScrollbar(thumbPosition, thumbSize, scrollHeight, pageSize);	
 }
