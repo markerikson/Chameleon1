@@ -61,6 +61,7 @@ class wxSplitterEvent;
 class wxTreeEvent;
 class wxStatusBar;
 class ProjectInfo;
+class wxSSH;
 
 //----------------------------------------------------------------------
 
@@ -187,7 +188,8 @@ private:
 	wxSplitterWindow* m_splitProjectEditor;
 	//wxTextCtrl* textbox;
 	//UpdateUIHandler*  uih;
-	wxTelnet*  m_telnet;
+	//wxTelnet*  m_telnet;
+	wxSSH* m_telnet;
 	OptionsDialog*  m_optionsDialog;
 	RemoteFileDialog* m_remoteFileDialog;
 	//wxGrid* m_optGrid;

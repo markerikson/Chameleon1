@@ -265,7 +265,8 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 
 	m_noteTerm = new ChameleonNotebook(m_splitEditorOutput, ID_NOTEBOOK_TERM);
-	m_telnet = new wxTelnet( m_noteTerm, ID_TELNET, wxPoint(-1, -1), 80, 24);
+	//m_telnet = new wxTelnet( m_noteTerm, ID_TELNET, wxPoint(-1, -1), 80, 24);
+	m_telnet = new wxSSH(m_noteTerm, ID_TELNET);
 	
 	
 	if(m_perms->isEnabled(PERM_TERMINAL))
