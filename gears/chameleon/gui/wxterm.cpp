@@ -749,23 +749,23 @@ wxTerm::OnChar(wxKeyEvent& event)
     */
     if(event.ControlDown())
     {
-      if(event.KeyCode() >= 'a' && event.KeyCode() <= 'z')
-        keyCode = event.KeyCode() - 'a' + 1;
-      else if(event.KeyCode() >= '[' && event.KeyCode() <= '_')
-        keyCode = event.KeyCode() - '[' + 0x1b;
-      else if(event.KeyCode() == '6')
+      if(event.GetKeyCode() >= 'a' && event.GetKeyCode() <= 'z')
+        keyCode = event.GetKeyCode() - 'a' + 1;
+      else if(event.GetKeyCode() >= '[' && event.GetKeyCode() <= '_')
+        keyCode = event.GetKeyCode() - '[' + 0x1b;
+      else if(event.GetKeyCode() == '6')
         keyCode = 0x1e;
-      else if(event.KeyCode() == '-')
+      else if(event.GetKeyCode() == '-')
         keyCode = 0x1f;
     }
     
-    if(!keyCode && !(keyCode = MapKeyCode((int)event.KeyCode())))
+    if(!keyCode && !(keyCode = MapKeyCode((int)event.GetKeyCode())))
     {
       /*
       **  If the keycode wasn't mapped in the table and it is a special
       **  key, then we just ignore it.
       */
-      if(event.KeyCode() >= WXK_START)
+      if(event.GetKeyCode() >= WXK_START)
       {
         event.Skip();
         return;
@@ -773,7 +773,7 @@ wxTerm::OnChar(wxKeyEvent& event)
       /*
       **  Otherwise, it must just be an ascii character
       */
-      keyCode = (int)event.KeyCode();
+      keyCode = (int)event.GetKeyCode();
     }
 
     if(GetMode() & PC)
@@ -1320,11 +1320,8 @@ wxTerm::Bell()
 #endif
 }
 
-//void wxTerm::UpdateSize(int &termheight, int &linesReceived)
-//void wxTerm::UpdateSize(wxSizeEvent &event)
 void wxTerm::UpdateSize()
 {
-	//event.Skip();
 	if(m_inUpdateSize)
 	{		
 		return;
@@ -1352,10 +1349,6 @@ void wxTerm::UpdateSize()
 	{
 		wxString message;
 
-		//message.Printf("numCharsInLine: %d, numLinesShown: %d", numCharsInLine, numLinesShown);
-		//wxLogDebug(message);
-
-
 		// FINALLY!  Finally killed the memory leak!  The problem is that somehow a size event
 		// was generating negative numbers for these values, which led to weird things happening.
 		if( (numCharsInLine > 0) && (numLinesShown > 0))
@@ -1367,9 +1360,8 @@ void wxTerm::UpdateSize()
 
 		// TODO Obviously this isn't working right.  I'll come back to it when I tackle
 		//		the line history issue
-		//GTerm::ExposeArea(0, 0, GTerm::Width() - 1, GTerm::Height() - 1);
-		//Refresh();
-		//GTerm::Update();	
+
+		// On second thought, the "refresh on resize" issue seems to have taken care of itself
 	}
 
 	m_inUpdateSize = false;

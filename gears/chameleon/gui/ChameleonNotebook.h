@@ -3,7 +3,7 @@
 
 
 
-
+#include <wx/notebook.h>
 
 
 
