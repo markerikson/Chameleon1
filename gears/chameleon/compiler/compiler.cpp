@@ -85,7 +85,7 @@ void Compiler::StartNextFile()
 		cmd +=  inFile.GetFullPath(wxPATH_DOS);
 		cmd +=  " && echo C_O_M_P_I_L_E_SUCCESS || echo C_O_M_P_I_L_E_FAILED";
 	}
-	wxLogDebug("Starting to Compile with cmd=" + cmd);
+	//wxLogDebug("Starting to Compile with cmd= \"%s\"", cmd);
 	m_compilerStdIn = m_network->StartCommand(isRemote, cmd, this);
 
 	m_intermediateFiles.Add(outFile.GetFullPath(isRemote ? wxPATH_UNIX : wxPATH_DOS));
@@ -116,10 +116,10 @@ void Compiler::StartLinking() {
 
 	// Assemble inFiles list:
 	wxString inFiles = wxEmptyString;
-	for(int i = 0; i < m_intermediateFiles.Count(); i++) {
+	for(unsigned int i = 0; i < m_intermediateFiles.Count(); i++) {
 		inFiles += " " + m_intermediateFiles.Item(i);
 	}
-	for(int i = 0; i < m_currProj->GetLibraries().Count(); i++) {
+	for(unsigned int i = 0; i < m_currProj->GetLibraries().Count(); i++) {
 		inFiles += " " + m_currProj->GetLibraries().Item(i);
 	}
 
@@ -136,7 +136,7 @@ void Compiler::StartLinking() {
 		cmd +=  inFiles;
 		cmd +=  " && echo C_O_M_P_I_L_E_SUCCESS || echo C_O_M_P_I_L_E_FAILED";
 	}
-	wxLogDebug("Starting to Link with cmd=" + cmd);
+	//wxLogDebug("Starting to Link with cmd= \"%s\"", + cmd);
 	m_compilerStdIn = m_network->StartCommand(isRemote, cmd, this);
 
 	m_intermediateFiles.Add(outFile.GetFullPath(isRemote ? wxPATH_UNIX : wxPATH_DOS));
@@ -156,7 +156,7 @@ void Compiler::StartLinking() {
 //Private:
 void Compiler::RemoveIntermediateFiles() {
 	wxString files = wxEmptyString;
-	for(int i = 0; i < m_intermediateFiles.Count(); i++) {
+	for(unsigned int i = 0; i < m_intermediateFiles.Count(); i++) {
 		files += " " + m_intermediateFiles.Item(i);
 	}
 
@@ -189,7 +189,7 @@ void Compiler::OnProcessTerm(ChameleonProcessEvent& e)
 		}
 		else {
 			// have I compiled all the files?
-			if( m_currFileNum >= m_currProj->GetSourcesToBuild().GetCount() ) {
+			if( m_currFileNum >= (int)m_currProj->GetSourcesToBuild().GetCount() ) {
 				// Yes, so determine if I should link:
 				if(m_compilingStatus == CR_OK) {
 					m_isCompiling = false;
@@ -251,7 +251,7 @@ void Compiler::HaltCompiling()
 //Private:
 void Compiler::OnProcessOut(ChameleonProcessEvent& e)
 {
-	wxLogDebug("Compiler Received: %s", e.GetString());
+	//wxLogDebug("Compiler Received: %s", e.GetString());
 
 	if(m_isCompiling || m_isLinking) {
 		wxString s = e.GetString();
