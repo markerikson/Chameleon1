@@ -16,7 +16,7 @@
 
 // Event Table Declaration
 BEGIN_EVENT_TABLE(PlinkConnect, wxEvtHandler)
-	EVT_END_PROCESS(-1, PlinkConnect::onProcessTermEvent)
+//	EVT_END_PROCESS(-1, PlinkConnect::onProcessTermEvent)
 END_EVENT_TABLE()
 
 
@@ -49,7 +49,6 @@ PlinkConnect::~PlinkConnect() {
 
 // This function starts a wxProcess to asynchornously execute the command.
 // A connection is made, the command is run, then the connection is ended.
-// So the output will not be accurate until the connection has ended.
 void PlinkConnect::sendCmd(wxString command) {
 	//default to trying a command as a batch job
 	sendCommand(command, true);
@@ -76,8 +75,22 @@ void PlinkConnect::sendCommand(wxString command, bool isBatch) {
 		+ " " + command // <--- command
 		+ " && echo cHaMeLeOnDoNe\""; // wrapper
 
-	pid = wxExecute(cmd, wxEXEC_ASYNC, proc); //wxEXEC_NOHIDE
+	//pid = wxExecute(cmd, wxEXEC_ASYNC, proc); //wxEXEC_NOHIDE
+	pid = wxExecute(cmd, wxEXEC_SYNC, proc);
 
+	if (pid == -1) {
+		// Bad Exit
+		message = "Could not start process.";
+	}
+	else {
+		// Not bad Exit
+		rin = proc->GetInputStream();
+		rerr = proc->GetErrorStream();
+		onProcessTermEvent();
+	}
+
+#if 0
+/* Asynchronus:
 	if(pid == 0) {
 		isConnected = false;
 		message = "Connection Failed.  Possibly plink.exe wasn't found.";
@@ -96,6 +109,8 @@ void PlinkConnect::sendCommand(wxString command, bool isBatch) {
 
 		isConnected = true;
 	}
+*/
+#endif
 
 	return;
 }
@@ -107,7 +122,8 @@ void PlinkConnect::sendCommand(wxString command, bool isBatch) {
 //  (ie. the thread really isn't independant until after (at least) the function
 //    that created it has ended -- sendCmd in my case)
 // Only used for Event Handling
-void PlinkConnect::onProcessTermEvent(wxProcessEvent &event) {
+//void PlinkConnect::onProcessTermEvent(wxProcessEvent &event) {
+void PlinkConnect::onProcessTermEvent() {
 	// Get any output.
 	// Surprisingly, this is actually where all the output
 	//  is gathered!  Because the connection ends when the
@@ -186,7 +202,7 @@ void PlinkConnect::send(wxString strng) {
 }
 
 // Public:
-bool PlinkConnect::getIsConnected() {
+bool PlinkConnect::isBusy() {
 	return isConnected;
 }
 
@@ -207,4 +223,25 @@ wxString PlinkConnect::getErrors() {
 wxString PlinkConnect::getMessage() {
 	return message;
 }
+
+// Public:
+void PlinkConnect::setPlinkApp(wxString path_name) {
+	plinkApp = path_name;
+}
+
+// Public:
+void PlinkConnect::setHostname(wxString hostname) {
+	host = hostname;
+}
+
+// Public:
+void PlinkConnect::setUsername(wxString username) {
+	user = username;
+}
+
+// Public:
+void PlinkConnect::setPassphrase(wxString passphrase) {
+	pass = passphrase;
+}
+
 

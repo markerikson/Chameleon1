@@ -4,7 +4,6 @@
 //=================================================================
 // PlinkConnect
 //=================================================================
-#include <wx/txtstrm.h>
 #include <wx/process.h>
 #include <wx/event.h>
 
@@ -17,15 +16,22 @@ class PlinkConnect : public wxEvtHandler {
 					wxString username, wxString passphrase);
 		~PlinkConnect();
 		// Methods:
-		bool getIsConnected();
 		void sendCmd(wxString command);
+		bool isBusy();
+
+		// gets/sets
 		wxString getOutput();
 		wxString getErrors();
 		wxString getMessage();
+		void setPlinkApp(wxString path_name); //path+name
+		void setHostname(wxString hostname);
+		void setUsername(wxString username);
+		void setPassphrase(wxString passphrase);
+
 
 		// Event Handlers:
-		void onProcessTermEvent(wxProcessEvent &UNUSED);
-		//void onTimerEvent(wxEvent &UNUSED);
+		//void onProcessTermEvent(wxProcessEvent &event);  // Dont't forget an Event in Event Table
+		void onProcessTermEvent();
 
 	private:
 		// Methods:
