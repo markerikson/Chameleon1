@@ -67,6 +67,7 @@ class wxSSH;
 class Options;
 class wxTermContainer;
 class Debugger;
+class VariableWatchPanel;
 
 //----------------------------------------------------------------------
 
@@ -100,6 +101,7 @@ public:
 	bool IsEnabled(int permission);
 	bool InRemoteMode();
 	bool IsDebugging();
+	bool IsDebuggerPaused();
 
 	void EvaluateOptions();
 	bool UpdateAuthCode();
@@ -124,17 +126,19 @@ private:
 
 	void OnQuit(wxCommandEvent& event);
 	void OnClose(wxCloseEvent& event);
-	
+	void OnCloseProject(wxCommandEvent &event);
 	void OnAbout(wxCommandEvent& event);
 	void OnSave(wxCommandEvent &event);
 	void OnSaveAs(wxCommandEvent &event);
 	//void SaveFileLocal(bool saveas);
 	wxArrayString OpenFile(FileFilterType filterType );
-	bool SaveFile(bool saveas, FileFilterType filterType);
+	bool SaveFile(bool saveas, bool askLocalRemote, FileFilterType filterType);
 	void Test(wxCommandEvent& event);
 	//void SaveFileAs(wxCommandEvent& event);
 	void OnUpdateSave(wxUpdateUIEvent &event);
 	void OnUpdateDebug(wxUpdateUIEvent &event);
+	void OnUpdateConnection(wxUpdateUIEvent &event);
+	void OnUpdateCompile(wxUpdateUIEvent &event);
 	void OnUndo(wxCommandEvent &event);
 	void OnRedo(wxCommandEvent &event);
 	void OnCloseWindow(wxCloseEvent& event);
@@ -165,6 +169,11 @@ private:
 	void OnFileNewProject(wxCommandEvent &event);
 	void OnFileRecents (wxCommandEvent &event);
 
+	void OnPrint(wxCommandEvent &event);
+	void OnPrintSetup(wxCommandEvent &event);
+	void OnPrintPreview(wxCommandEvent &event);
+	void OnPrintPreviewUI(wxUpdateUIEvent &event);
+
 	void OnDebugCommand(wxCommandEvent &event);
 	void OnDebugEvent(wxDebugEvent &event);
 
@@ -180,11 +189,15 @@ private:
 	void CloseAllFiles();
 	void CloseProjectFile();
 	int HandleModifiedFile(int pageNr, bool closingFile); 
-	void LoadFilesIntoProjectTree(wxString configPath, wxString configEntryBaseName, wxTreeItemId treeid, 
+	void LoadFilesIntoProjectTree(wxString configPath, FileFilterType fileType, wxTreeItemId treeid, 
 								wxFileConfig& config, wxPathFormat currentPathFormat);
 	void CloseTab();
 	void PageHasChanged (int pageNr = -1);
-	int GetPageNum(const wxString& fname);
+	wxRect DeterminePrintSize();
+	//void PrintSetup();
+	int GetPageNum(wxFileName fn, bool compareWholePath = true, int startingTab = 0);
+	wxString ConstructFilterString(FileFilterType filterType);
+	void FocusOnLine(wxString filename, int linenumber, wxString linecontents = wxEmptyString);
 
 	void UpdateMenuBar();
 	void UpdateToolbar();
@@ -214,6 +227,7 @@ private:
 	//UpdateUIHandler*  uih;
 	//wxTelnet*  m_telnet;
 	wxTermContainer* m_termContainer;
+	VariableWatchPanel* m_watchPanel;
 	wxSSH* m_terminal;
 
 	OptionsDialog*  m_optionsDialog;
@@ -242,7 +256,8 @@ private:
 	Networking* m_network;
 	Compiler* m_compiler;
 	Options* m_options;
-	ProjectInfo* m_currentProjectInfo;
+	//ProjectInfo* m_currentProjectInfo;
+	ProjectInfo* m_projMultiFiles;
 	Debugger* m_debugger;
 
 	//wxArrayPtrVoid* docArray; 
