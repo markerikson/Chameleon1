@@ -48,6 +48,10 @@ void Compiler::CompileFile(wxFileName file, bool isRemote, wxTextCtrl* textbox, 
 	if(m_proc != NULL) {
 		*m_out << "Compiling...\n";
 		*m_out << file.GetFullName() << "\n";
+		m_currOutfile = file; m_currOutfile.SetFullName(outfile);
+		m_receivedToken = false;
+		m_isCompiling = true;
+
 
 		//Unfortunately the shells are not identical:
 		if(isRemote) {
@@ -109,9 +113,6 @@ void Compiler::CompileRemoteFile(wxFileName file, wxString outfile)
 		+ file.GetFullName()
 		+ " && echo C_O_M_P_I_L_E_SUCCESS ; echo E_N_D_COMPILE\r";
 	os.WriteString(cmd); // SEND
-
-	m_receivedToken = false;
-	m_isCompiling = true;
 }
 
 
@@ -137,16 +138,12 @@ void Compiler::CompileLocalFile(wxFileName file, wxString outfile)
 		+ " & echo E_N_D_COMPILE\n";
 	cmd = "";
 	os.WriteString(cmd); // SEND
-
-	m_receivedToken = false;
-	m_isCompiling = true;
 }
 
 
 //Private:
 void Compiler::OnProcessTerm(wxProcess2EndedEvent& e)
 {
-	*m_out << "Done.";
 	m_out = NULL;
 	m_isCompiling = false;
 }
@@ -166,19 +163,29 @@ void Compiler::OnProcessOut(wxProcess2StdOutEvent& e)
 
 		if(m_receivedToken) {
 			if(s.Contains("E_N_D_COMPILE\r")) {
+				
 				bool success = false;
+				wxString resultText = "Done.";
 				if(s.Contains("C_O_M_P_I_L_E_SUCCESS")) {
 					s.Remove(s.Find("C_O_M_P_I_L_E_SUCCESS"), 21);
 					success = true;
-				}	
+					resultText = m_currOutfile.GetFullName() + " - 0 Errors.";
+				}
+				else {
+					resultText = "\nDone.";
+				}
+
 				s.Remove(s.Find("E_N_D_COMPILE\r"));
 				m_isCompiling = false;
 				m_receivedToken = false;
 
-				// Signal
-				wxCompilerEndedEvent e(success);
+				// Signal Chameleon
+				wxCompilerEndedEvent e(success, m_currOutfile);
 				ProcessEvent(e); // synchronous because I detach in the very next line
 				SetNextHandler(NULL);
+
+				// Signal the User
+				*m_out << resultText;
 
 				// Terminate the process:
 				wxTextOutputStream os(* (m_proc->GetOutputStream()) );

@@ -2,6 +2,8 @@
 #define __COMPILER__ENDED__EVENT__
 
 #include <wx/event.h>
+#include <wx/filename.h>
+#include "../common/debug.h"
 
 DECLARE_EVENT_TYPE(wxEVT_COMPILER_ENDED, wxID_ANY)
 
@@ -9,12 +11,14 @@ DECLARE_EVENT_TYPE(wxEVT_COMPILER_ENDED, wxID_ANY)
 class wxCompilerEndedEvent : public wxEvent
 {
 	public:
-		wxCompilerEndedEvent(bool isSuccessful) { m_success = isSuccessful; }
-		bool wasSuccessful() { return m_success; }
+		wxCompilerEndedEvent(bool isSuccessful, wxFileName outfile);
+		bool wasSuccessful();
+		wxFileName GetExecFile();
 		virtual wxEvent *Clone() const { return new wxCompilerEndedEvent(*this); }
 
 	public:
 		bool m_success;
+		wxFileName m_resultFile;
 
 };
 

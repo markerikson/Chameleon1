@@ -3,6 +3,7 @@
 
 #include <wx/wx.h>
 #include <wx/txtstrm.h>
+#include <wx/filename.h>
 #include "../common/process2.h"
 #include "../common/options.h"
 #include "../network/networking.h"
@@ -41,6 +42,7 @@ class Compiler : public wxEvtHandler
 		bool m_isCompiling;
 		bool m_receivedToken;
 		long m_compilePID;
+		wxFileName m_currOutfile;
 
 
 	DECLARE_EVENT_TABLE()

@@ -522,5 +522,6 @@ void ChameleonEditor::OnCompilerEnded(wxCompilerEndedEvent &event)
 {
 	if(event.wasSuccessful()) {
 		m_bHasBeenCompiled = true;
+		m_executableFilename = event.GetExecFile();
 	}
 }
