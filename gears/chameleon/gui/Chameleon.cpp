@@ -327,12 +327,12 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	m_terminal->set_mode_flag(GTerm::CURSORINVISIBLE);
 	m_termContainer->SetTerminal(m_terminal);		
 
-	m_compilerTextbox = new wxTextCtrl(m_noteTerm, ID_COMPILERTEXTBOX, wxEmptyString, wxDefaultPosition,
-									wxDefaultSize, wxTE_RICH | wxTE_MULTILINE | wxTE_READONLY);
+	//m_compilerTextbox = new wxTextCtrl(m_noteTerm, ID_COMPILERTEXTBOX, wxEmptyString, wxDefaultPosition,
+	//								wxDefaultSize, wxTE_RICH | wxTE_MULTILINE | wxTE_READONLY);
 	//m_compilerList = new wxListCtrl( m_noteTerm, ID_COMPILERLISTCTRL, wxDefaultPosition, wxDefaultSize, 
 	//									wxLC_REPORT|wxLC_SINGLE_SEL|wxLC_HRULES|wxSIMPLE_BORDER );
 
-	m_compilerTextbox->Hide();
+	//m_compilerTextbox->Hide();
 	m_outputPanel = new CompilerOutputPanel(m_noteTerm, this, ID_COMPILEROUTPUT);
 	m_outputPanel->SetAdvanced(perms->isEnabled(PERM_ADVANCEDCOMPILE));
 
@@ -2843,7 +2843,14 @@ void ChameleonWindow::UpdateTerminalNotebook()
 
 	if(perms->isEnabled(PERM_TERMINAL))
 	{
+		m_termContainer->Show();
+		m_terminal->Show();
 		m_noteTerm->AddPage(m_termContainer, "Terminal");
+	}
+	else
+	{
+		m_termContainer->Hide();
+		m_terminal->Hide();
 	}
 
 	bool advCompileEnabled = perms->isEnabled(PERM_ADVANCEDCOMPILE);

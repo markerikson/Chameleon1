@@ -177,7 +177,7 @@ private:
 	wxPanel* panelEd;
 	wxSplitterWindow*  m_splitEditorOutput;
 	wxSplitterWindow* m_splitProjectEditor;
-	wxTextCtrl* m_compilerTextbox;
+	//wxTextCtrl* m_compilerTextbox;
 	//wxListCtrl* m_compilerList;
 	CompilerOutputPanel* m_outputPanel;
 	wxTermContainer* m_termContainer;
