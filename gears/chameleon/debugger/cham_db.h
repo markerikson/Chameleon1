@@ -111,7 +111,7 @@ class Debugger : public wxEvtHandler
 		//CODE IN A RUN-TO-CURSOR function
 
 		//variable management
-		void snoopVar(wxString varName, bool oneShot);
+		void snoopVar(wxString varName, bool oneShot = true);
 		void setVar(wxString varName, wxString newValue);
 		void removeVar(wxString varName);
 

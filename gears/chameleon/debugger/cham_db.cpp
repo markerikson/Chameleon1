@@ -426,22 +426,24 @@ void Debugger::startProcess(bool fullRestart, bool mode, wxString fName, wxStrin
 	//begin funky process stuff
 	if(isRemote)
 	{
-		debugProc = myConnection->GetPlinkProcess();
+		debugProc = myConnection->GetPlinkProcess(this);
 
-		pid = myConnection->GetPID();
+		pid = debugProc->GetPID();
 		if(pid > 0) {procLives = true;}
+
+		command = execThis;
 		if(procLives)
 		{
 			wxTextOutputStream streamOut(*(debugProc->GetOutputStream()));//me to GDB
-			streamOut.WriteString(send);
-			send = send + "<- sent";
+			streamOut.WriteString(command);
+			command = command + "<- sent";
 		//(*outputScreen)<<send<<"\n";
 		}
 		else
 		{
-			send = send + "<- NOT SENT: PROC DEAD";
+			command = command + "<- NOT SENT: PROC DEAD";
 		}
-		updateHistory(send);
+		updateHistory(command);
 	}
 	else
 	{
@@ -832,7 +834,7 @@ void Debugger::cont()
 
 //snoopVar(): returns the variable's value, and if oneShot = false
 //  will add it to the watch list.
-void Debugger::snoopVar(wxString varName, bool oneShot = true)
+void Debugger::snoopVar(wxString varName, bool oneShot)
 {
 	if(status == DEBUG_STOPPED || 
 		status == DEBUG_WAIT ||
@@ -992,7 +994,7 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 						Linenumber = reCase1.GetMatch(tempHold, 3);
 						status = DEBUG_BREAK;
 
-						Linenumber.ToULong(&tmpLong);
+						Linenumber.ToLong(&tmpLong);
 						tmpArrayString = myEvent.GetSourceFilenames();
 						tmpArrayString[0] = Filename;
 
@@ -1085,7 +1087,7 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 					Filename = reCase1.GetMatch(tempHold, 1);
 					Linenumber = reCase1.GetMatch(tempHold, 3);
 
-					Linenumber.ToULong(&tmpLong);
+					Linenumber.ToLong(&tmpLong);
 					tmpArrayString = myEvent.GetSourceFilenames();
 					tmpArrayString[0] = Filename;
 
@@ -1099,7 +1101,7 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 				{
 					Linenumber = reCase2.GetMatch(tempHold, 1);
 	
-					Linenumber.ToULong(&tmpLong);
+					Linenumber.ToLong(&tmpLong);
 					
 					myEvent.SetLineNumber((int)tmpLong);
 					myEvent.SetStatus(ID_DEBUG_STEPNEXT);
