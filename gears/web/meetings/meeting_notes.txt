@@ -587,3 +587,53 @@ by: Ben
 	-Dave: wxProcess2().  Expect thursday for somewhat workable code to assimulate into debug.  3 stage compiling?  1= they type in terminal.  2= insert compile stuff into terminal.  3=background
 	-Mark: Project management
 	-Ben: test debugger with what he's got
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Group Meeting 02/26/2004 10:40pm
+by: Ben
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+>>Status!
+	~Ben's been slacking.  :(  Still with Dave's new code I need to re-adjust my code.  oh, permissions is updated.
+	~Mark?  not as much progress as he'd like...
+	~Dave?  Got ASYNC working (wow).  Attempted wxSSH, one compile error...
+>>Project Management?
+	-Dave's ideas... he smells "it" comming... what are we allowing user to do, what can we do
+	-What is a project?  A collection of files that go together & compile at once.
+	-Allow user to open a workspace, close, & compile.  Ability to include EZ-Windows Library...
+	-Items:
+	1) storing items local / absolute?  So when compiler gets files, absolute paths are needed.
+	2) Mark wants to store them relative
+	3) Issue of mixed projects
+	Use cases:
+		P1) User has a remote project open, wants to save locally...
+		S1) He see's "Open Project" and "Close/Save Project"... no custom save spots
+
+		P2) User closes a project...
+		S2) Windows with files stay open.  Project file closes.  -OR- Pop up a dialogue for Y/N to close all docs
+
+		S3) When project attributes modified, project configuration saved (not to disk).
+
+		P4) Project is modified... do we update every mod on the server?
+		S4) Save-to-disc project files when project is closed.
+
+		P5) User opens a new project / User creates new project (project is open currently)
+		S5) Ask user with dialoge if he/she wants to close current project (Yes / Cancel)
+
+		P6) User wants to compile a project, but 2 files have "int main()"
+		P6) Add "compile / no compile" attributes to files being added.  DEFAULT: compile
+
+		S7) Dave doesn't need header files... so Mark will add a section of "compile these" files
+
+		~~discussion on compiling and clicking lines & re-focusing... where the output goes, etc~~
+>>Due date...
+	-what does Shomper want MINIMUM...?
+	-need to meet with him
+	-auto-completion (gonna make it work only for local...)?  We'd like to drop this (unexpected complexity, lack of time, impracticality...)
+	-meeting with Shomper Tuesday at NOON (need e-mail)
+>>Due STuff
+	-Ben: Debugger!  duh!
+	-User Manual -=-
+		Dave does Compiler, Networking
+		ben does debugging & perm
+		Mark does project, gui, editor
+		Tutorial?
+		**OUTLINE DUE SUNDAY**
