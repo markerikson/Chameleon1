@@ -183,6 +183,7 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 
 	if(eventCommand == ID_DEBUG_START)
 	{
+		breakpointList.clear();
 		breakpointList = event.GetFileBreakpoints();
 	}
 
@@ -213,7 +214,7 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 		startProcess(true, event.IsRemote(), execFile, "gdb -q");
 
 		//set breakpoints
-		for(i = 0; i < (int)srcFiles.GetCount(); i++)
+		for(i = 0; i < (int)srcFiles.GetCount() && !(breakpointList.empty()); i++)
 		{
 			tmp = srcFiles[i];
 			if(breakpointList.find(tmp) != breakpointList.end())
