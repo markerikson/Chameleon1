@@ -34,7 +34,7 @@
   <p>The compiler module deals with all the relevant settings for the compiler, including linking options, directories, and input files.<br></p>
   
 <h3>5.2.5 Debug<br></h3>
-  <p>The debugger module consists of two sections: the abstraction layer and the actual debugger.&nbsp; Since Chameleon is supposed to use both the built-in debugger and the Debugginator being developed by the Wizards of Zot, the abstraction layer handles the differences between the two and provides a single programming interface for the GUI to hook in to.&nbsp; The debugger itself is a wrapper around the open-source GDB debugger.<br></P
+  <p>The debugger module consists of two sections: the abstraction layer and the actual debugger.&nbsp; Since Chameleon is supposed to use both the built-in debugger and the Debugginator being developed by the Wizards of Zot, the abstraction layer handles the differences between the two and provides a single programming interface for the GUI to hook in to.&nbsp; The debugger itself is a wrapper around the open-source GDB debugger.<br></P>
 
 <h3>5.2.6 Permissions<br></h3>
   <p>The permissions manager is a fairly small module, but is vital to the rest of the program.&nbsp; Each of the other modules, particularly the GUI module, query it to see what features are currently enabled.&nbsp; This is done during startup, and may be done when program options are changed as well.<br></p>
