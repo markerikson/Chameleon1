@@ -104,6 +104,8 @@ enum WindowID
 	ID_DEBUG_RUNTOCURSOR,
 };
 
+// IMPORTANT!!!  Any changes to this enum need to be reflected in the 
+//				 PermStrings array in p.cpp.  
 enum modules
 {
 	PERM_FIRST = 0,
@@ -119,21 +121,9 @@ enum modules
 	PERM_LAST
 };
 
+// IMPORTANT!!! Any changes to this enum need to be reflected in the 
+//				PermStrings array in p.cpp.
 
-#ifdef PERM___H
-wxString GlobalPermStrings[] = {"Syntax highlighting", 
-								"Auto-indentation",
-								"Debugging",
-								"Terminal",
-								"Local mode",
-								"Projects",
-								"Compilation",
-								"Advanced compiler output",
-								"Test permission"};
-
-//char AuthCodeLookupTable[] = {'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
-//								'U', 'V', 'W', 'X', 'Y', 'Z', 'A', 'B', 'C', 'D', 'E', 'F'};
-#endif
 
 typedef struct 
 {
@@ -156,8 +146,8 @@ WX_DECLARE_HASH_MAP(wxString,
 
 WX_DECLARE_HASH_MAP(wxString,
 					DebugBreakInfo,
-					wxIntegerHash,
-					wxIntegerEqual,
+					wxStringHash,
+					wxStringEqual,
 					DebugBreakHash);
 
 WX_DECLARE_HASH_MAP(wxString, 

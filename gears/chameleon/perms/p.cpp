@@ -38,6 +38,16 @@ using namespace std;
 #define new DEBUG_NEW
 #endif
 
+wxString GlobalPermStrings[] = {"Syntax highlighting", 
+								"Auto-indentation",
+								"Debugging",
+								"Terminal",
+								"Local mode",
+								"Projects",
+								"Compilation",
+								"Advanced compiler output",
+								"Test permission"};
+
 //@@@@@@@@@
 //@ BEGIN @
 //@@@@@@@@@
