@@ -9,7 +9,10 @@
 #include "networking.h"
 //#include "../common/datastructure.h"
 #include <wx/utils.h>
-#include <wx/regex.h>
+#include <wx/regex.h> // for finding the host fingerprint
+#include <wx/file.h>
+#include <wx/filename.h>
+#include <wx/process.h>
 #include "../common/debug.h"
 
 
@@ -18,9 +21,9 @@ Networking::Networking()
 	ssh_host = "localhost";
 	ssh_user = "user";
 	ssh_pass = "password";
-	downloadDir = ""; // should cause the working directory to be used
+	//downloadDir = ""; // should cause the working directory to be used
 	plinkApp = "plink.exe"; // will use the working directory
-	//isConnected = false; // no longer needed
+	pscpApp = "pscp.exe";
 	status = NET_GOOD;
 	ssh_plink = new PlinkConnect(plinkApp, ssh_host, ssh_user, ssh_pass);
 }
@@ -39,9 +42,9 @@ wxString Networking::GetFileContents(wxString file, wxString path)
 }
 
 
-// internally could also manage dirListing caches to increase speed
 DirListing Networking::GetDirListing(wxString dirPath, bool forceRefresh, bool includeHidden)
 {
+	// internally could also manage dirListing caches to increase speed
 	// dirPath has no trailing "/"
 	return SSHGetDirListing(dirPath, includeHidden);
 }
@@ -49,29 +52,39 @@ DirListing Networking::GetDirListing(wxString dirPath, bool forceRefresh, bool i
 
 void Networking::SendFileContents(wxString strng, wxString rfile, wxString rpath)
 {
-	// need to escape quote marks and backticks in order for them to
-	// properly go through
-	strng.Replace("\"", "\\\"");
-	strng.Replace("`", "\\`");
-	//wxString cmd = "cd " + rpath + " && echo \"" + strng + "\" > " + rfile + " ";
+	// Save the file someplace:
+	wxString fname = wxFileName::CreateTempFileName("chm"); // chm?????.tmp
+	if(fname != "") {
+		wxFile f(fname, wxFile::write);
+		if(f.IsOpened()) {
+			bool written = f.Write(strng);
+			f.Close();
+			if(written) {
+				// YEAH!, now I can send the file
+				SCPDoTransfer(fname, rpath+"/"+rfile); // also sets Status
 
-	// The "<<ENDOFFILE" says that all input on stdin will be piped to cat until
-	// it reaches the characters ENDOFFILE
-	wxString cmd = "cd " + rpath + " && cat > " + rfile + " <<ENDOFFILE";
-
-	// tack the markers onto the file contents
-	strng += "\nENDOFFILE";
-
-	// send an enter to finish the command, send the file contents, send an
-	// enter to finish the command
-	cmd += "\n" + strng + "\n";
-	SSHSendCommand(cmd);
+				// Remove the temp file
+				wxRemoveFile(fname);
+			}
+			else {
+				status = NET_WRITE_ERROR;
+				statusDetails = "Could not write to the temp file " + fname;
+			}
+		}
+		else {
+			status = NET_WRITE_ERROR;
+			statusDetails = "Could not open the temp file " + fname;
+		}
+	}
+	else {
+		status = NET_WRITE_ERROR;
+		statusDetails = "Could not create a temp file";
+	}
 
 	return;
 }
 
 
-//Maybe this should be requirements for the constructor -- or maybe not, because (in theory) Networking doesn't have to be SSH
 void Networking::SetDetailsNoStatus(wxString hostname, wxString username, wxString passphrase) 
 {
 	if(!hostname.IsEmpty()) {
@@ -93,7 +106,9 @@ void Networking::SetDetailsNoStatus(wxString hostname, wxString username, wxStri
 }
 
 
-// if any of these are "" those will be unchanged
+//Maybe this should be requirements for the constructor -- or maybe not, because (in theory)
+//  Networking doesn't have to be SSH
+//If any of these are "" those will be unchanged
 void Networking::SetDetails(wxString hostname, wxString username, wxString passphrase)
 {
 	SetDetailsNoStatus(hostname, username, passphrase);
@@ -105,12 +120,20 @@ void Networking::SetDetails(wxString hostname, wxString username, wxString passp
 
 void Networking::SetPlinkProg(wxString path_name)
 {
-	// This had better be accurate, because I don't handle an error in this well at all
+	// bool wxFileExists(const wxString& filename)
 	plinkApp = path_name;
 }
 
 
-wxString Networking::GetHomeDirPath() {
+void Networking::SetPscpProg(wxString path_name)
+{
+	// bool wxFileExists(const wxString& filename)
+	pscpApp = path_name;
+}
+
+
+wxString Networking::GetHomeDirPath()
+{
 	// Does not return a trailing /
 	wxString cmd = "cd ~ && pwd ";
 	wxString r = SSHSendCommand(cmd);
@@ -153,7 +176,8 @@ DirListing Networking::SSHGetDirListing(wxString dirPath, bool includeHidden)
 //   in the integrity of the strng I'm parsing, because I know
 //   what's coming in.
 // Private:
-wxArrayString Networking::ParseLS(wxString strng, bool includeHidden){
+wxArrayString Networking::ParseLS(wxString strng, bool includeHidden)
+{
 	wxArrayString r;
 	r.Empty();
 
@@ -193,7 +217,8 @@ wxArrayString Networking::ParseLS(wxString strng, bool includeHidden){
 	return r;
 }
 
-wxString Networking::SSHSendCommand(wxString command) {
+wxString Networking::SSHSendCommand(wxString command)
+{
 	command += " && echo \"C_O_M_P_L_E_T_E_D_OK\"";
 
 	ssh_plink->sendCommand(command);
@@ -205,72 +230,127 @@ wxString Networking::SSHSendCommand(wxString command) {
 		output.Truncate(output.Length()-21); // remove C_O_M_P_L_E_T_E_D_OK\n
 	}
 	else {
-		wxString errlog = ssh_plink->getErrors();
-		wxString message = ssh_plink->getMessage();
-		statusDetails = errlog;
-		statusDetails.RemoveLast(); // "\n"
-
-		if(errlog.Contains("key is not cached") && errlog.Contains("Connection abandoned.") ) {
-			status = NET_UNKNOWN_HOST;	// and StatusDetail will be the key
-
-			// Screen-scrape for the key:
-			// these lines doesn't work properly... returns 0xffffff + 1 + 16, result is 0x00000010
-			//int len = 1+ statusDetails.Index("fingerprint is:\n")+16;
-			//statusDetails.Remove(0,len);
-			/*	MPE:
-				This regular expression looks for the following:
-				one or more digits (0-9) followed by one more more whitespace characters
-				followed by 15 pairs of two hex digits and a colon, followed by two final hex digits
-				
-				Since I know this is a valid regex, I'm leaving out the .IsValid() check that would otherwise
-				be a good idea
-			*/
-			wxRegEx reFingerprint = "[[:digit:]]+[[:blank:]]+([[:xdigit:]]{2}:){15}[[:xdigit:]]{2}";
-
-			if(reFingerprint.Matches(errlog))
-			{
-				wxString match = reFingerprint.GetMatch(errlog);
-				wxLogDebug("Matched fingerprint: \"%s\"", match);
-				statusDetails = match;
-			}
-			else
-			{
-				wxLogDebug("Failed to match the fingerprint in: %s", errlog);
-				statusDetails = "*unknown* - could not parse fingerprint";
-			}
-
-		}
-		else if(errlog.Contains("Unable to authenticate")) {
-			status = NET_AUTH_FAILED;
-			statusDetails.RemoveLast(); // "\n"
-		}
-		//else if() {
-		//	NET_READ_ERROR,
-		//}
-		//else if() {
-		//	NET_WRITE_ERROR
-		//}
-		else {
-			status = NET_ERROR_MESSAGE;
-		}
+		DetermineStatusError(ssh_plink->getErrors(), ssh_plink->getOutput());
 	}
 
 	return output;
 }
 
 
-NetworkStatus Networking::GetStatus() {
+// Before Entering this code, the errlog and output should be accurate
+void Networking::DetermineStatusError(wxString errlog, wxString output)
+{
+	while(errlog.Right(1) == "\n") {
+		errlog.RemoveLast();
+	}
+
+	// Default:
+	status = NET_ERROR_MESSAGE;
+	statusDetails = errlog;
+
+	if(errlog.Contains("key is not cached") && errlog.Contains("Connection abandoned.") ) {
+		status = NET_UNKNOWN_HOST;	// and StatusDetail will be the key
+
+		// Screen-scrape for the key:
+		// these lines doesn't work properly... returns 0xffffff + 1 + 16, result is 0x00000010
+		//int len = 1+ statusDetails.Index("fingerprint is:\n")+16;
+		//statusDetails.Remove(0,len);
+		/*	MPE:
+			This regular expression looks for the following:
+			one or more digits (0-9) followed by one more more whitespace characters
+			followed by 15 pairs of two hex digits and a colon, followed by two final hex digits
+				
+			Since I know this is a valid regex, I'm leaving out the .IsValid() check that would otherwise
+			be a good idea
+		*/
+		wxRegEx reFingerprint = "[[:digit:]]+[[:blank:]]+([[:xdigit:]]{2}:){15}[[:xdigit:]]{2}";
+
+		if(reFingerprint.Matches(errlog))
+		{
+			wxString match = reFingerprint.GetMatch(errlog);
+			wxLogDebug("Matched fingerprint: \"%s\"", match);
+			statusDetails = match;
+		}
+		else
+		{
+			wxLogDebug("Failed to match the fingerprint in: %s", errlog);
+			statusDetails = "*unknown* - could not parse fingerprint";
+		}
+
+	}
+	else if(errlog.Contains("Unable to authenticate")) {
+		status = NET_AUTH_FAILED;
+		statusDetails.RemoveLast(); // "\n"
+	}
+	//else if() {
+	//	NET_READ_ERROR,
+	//}
+	
+	return;
+}
+
+
+
+NetworkStatus Networking::GetStatus()
+{
 	return status;
 }
 
 
-wxString Networking::GetStatusDetails() {
+wxString Networking::GetStatusDetails()
+{
 	return statusDetails;
 }
 
 
-void Networking::SSHCacheFingerprint() {
+void Networking::SSHCacheFingerprint()
+{
 	ssh_plink->acceptCacheFingerprint();
-	// Set the status
+	// Set the status:
 	SSHSendCommand("");
+}
+
+
+// I have decided, because SCP is always a 1 shot thing that 
+void Networking::SCPDoTransfer(wxString from_path_name, wxString to_path_name)
+{
+	// right now this only does local -> remote transfers
+	wxString cmd = pscpApp + " -l " + ssh_user + " -pw " + ssh_pass + " -batch "
+					+ from_path_name + " " + ssh_host + ":" + to_path_name;
+	wxProcess* proc = new wxProcess();
+	proc->Redirect();
+	int pid = wxExecute(cmd, wxEXEC_SYNC, proc);
+
+	if (pid == -1) {
+		// Bad Exit
+		// Could not start process
+		delete proc;
+	}
+	else { // Not bad Exit(hopefully good):
+		// Grab the outputs:
+		wxString output = "";
+		wxString errlog = "";
+		wxInputStream* rin = proc->GetInputStream();
+		wxInputStream* rerr = proc->GetErrorStream();
+		while(!rin->Eof()) {
+			output += rin->GetC();
+		}
+		while(!rerr->Eof()) {
+			errlog += rerr->GetC();
+		}
+		delete proc;
+		//delete rin; // don't delete these
+		//delete rerr;
+
+		// Determine the success:
+		if(output.Contains("100%")) {
+			status = NET_GOOD;
+			statusDetails = "";
+		}
+		else {
+			DetermineStatusError(errlog, output);
+		}
+	}
+
+	return;
 }

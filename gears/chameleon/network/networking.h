@@ -31,14 +31,16 @@ class Networking {
 
 		//Setup
 		void SetPlinkProg(wxString path_name);
-		void SetDetails(wxString hostname, wxString username, wxString passphrase); // Use Me Most Often
+		void SetPscpProg(wxString path_name);
+		void SetDetails(wxString hostname, wxString username, wxString passphrase); // Preffered
 		void SetDetailsNoStatus(wxString hostname, wxString username, wxString passphrase);
 
 		// Methods
 		NetworkStatus GetStatus();
 		wxString GetStatusDetails();
 		wxString GetHomeDirPath(); // no trailing /
-		DirListing GetDirListing(wxString dirPath, bool forceRefresh = false, bool includeHidden = false);
+		DirListing GetDirListing(wxString dirPath, bool forceRefresh = false,
+															bool includeHidden = false);
 		wxString GetFileContents(wxString filename, wxString path);
 		void SendFileContents(wxString strng, wxString rfilename, wxString rpath);
 		void SSHCacheFingerprint();
@@ -48,12 +50,16 @@ class Networking {
 		// Methods:
 		DirListing SSHGetDirListing(wxString dirPath, bool includeHidden = false);
 		wxString SSHSendCommand(wxString command);
+		void SCPDoTransfer(wxString from_path_name, wxString to_path_name);
+		// Helpers:
 		wxArrayString ParseLS(wxString strng, bool includeHidden);
+		void DetermineStatusError(wxString errlog, wxString output);
 		// Data:
 		PlinkConnect* ssh_plink;
 		wxString ssh_host, ssh_user, ssh_pass;
 		wxString plinkApp;
-		wxString downloadDir;
+		wxString pscpApp;
+		//wxString downloadDir;
 		NetworkStatus status;
 		wxString statusDetails;
 };
