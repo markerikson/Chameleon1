@@ -372,3 +372,25 @@ by: Ben
 	*Meeting Thursday... 8pm
 
 >>THANKSGIVING NOTE: Port 5190 with SSH
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Group Meeting 11/16/2003 11:12pm
+by: Ben
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+>>Where are we?
+	*Presentation Tuesday (panic)
+	*Permissions code ... sorta working.  :)
+>>Discussion of presentation
+	*We should mention interaction with visual debugger & virtual prof.
+		~VP: instantiate class, & that'll handle it
+		~Debugger: spawn process & it'll do it's thing.
+	*Mark & Ben(?) presents
+	*Dave does the clicky
+	*Tastk list?
+		~have more, but is it defined??
+		~no.  Gotta hash it out
+		~Meeting Monday 8pm 1.5 hr meeting
+		~Discuss & Do.
+	*Ben needs Chameleon on his box
+>>To DO:
+	*Meeting tomorrow 8pm!!
+	*Adapt permissions with try_catch blocks (if file doesn't open, keep track... return -1)
