@@ -49,6 +49,8 @@
 #include <wx/tabctrl.h>
 #include <wx/log.h>
 #include <wx/filename.h>
+#include <wx/socket.h>
+#include <wx/checklst.h>
 
 #include "new.xpm"
 #include "open.xpm"
@@ -62,6 +64,9 @@
 #include "stepout.xpm"
 #include "stepover.xpm"
 #include "pause.xpm"
+
+#include "moz.xpm"
+//#include "mbrowser.xpm"
 
 
 //#include "stc.h"
@@ -105,6 +110,8 @@ public:
 
 	bool IsEnabled(int permission);
 
+	void EvaluateOptions();
+
 
 
 private:
@@ -130,6 +137,8 @@ private:
 	void OnConnect(wxCommandEvent &event);
 	void OnToolsOptions(wxCommandEvent &event);
 
+	void OnGridClicked(wxGridEvent& event);
+
 	void OnPageChange (wxNotebookEvent &event);
 	void OnPageClose(wxCommandEvent& event);
 	
@@ -142,12 +151,19 @@ private:
 	void OnFileClose (wxCommandEvent &event);
 	void OnFileRecents (wxCommandEvent &event);
 
+	// edit menu functions
+	void OnCut(wxCommandEvent &event);
+	void OnCopy(wxCommandEvent &event);
+	void OnPaste(wxCommandEvent &event);
+
 
 
 	void OpenFile(wxArrayString fnames);
 	void CloseFile(int pageNr = -1);
 	void PageHasChanged (int pageNr = -1);
 	int GetPageNum(const wxString& fname);
+
+	void AddDebugButtons();
 
 
 	//wxStyledTextCtrl* ed;
@@ -166,11 +182,14 @@ private:
 	UpdateUIHandler*  uih;
 	wxTelnet*  m_telnet;
 	OptionsDialog*  m_optionsDialog;
+	wxGrid* m_optGrid;
 
-	wxPanel* tcPanel1;
 
-	wxBoxSizer* sizerPanel;
-	wxBoxSizer* sizerTab;
+	IntIntHashmap m_permNumMap;
+	//wxPanel* tcPanel1;
+
+	//wxBoxSizer* sizerPanel;
+	//wxBoxSizer* sizerTab;
 
 	Permission*  m_perms;
 
@@ -186,7 +205,7 @@ private:
 	bool m_setSelection;
 
 
-	ChameleonEditor* m_edit;
+	//ChameleonEditor* m_edit;
 
 	wxArrayString* m_openFiles;
 

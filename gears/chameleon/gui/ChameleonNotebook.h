@@ -12,6 +12,8 @@
 
 #include "../common/datastructures.h"
 
+
+
 class ChameleonWindow;
 
 class ChameleonNotebook : public wxNotebook

@@ -1,4 +1,5 @@
 #include "ChameleonWindow.h"
+#include <wx/fdrepdlg.h>
 
 
 #include "../common/debug.h"
@@ -10,20 +11,25 @@
 
 
 BEGIN_EVENT_TABLE(ChameleonWindow, wxFrame)
-	EVT_MENU			(ID_NEW, ChameleonWindow::OnFileNew)
-	EVT_MENU			(ID_OPEN, ChameleonWindow::OnFileOpen)
-	EVT_MENU            (ID_QUIT,  ChameleonWindow::OnQuit)
-	EVT_MENU            (ID_ABOUT, ChameleonWindow::OnAbout)
-	EVT_MENU			(ID_TEST, ChameleonWindow::Test)
-	EVT_MENU			(ID_SAVE, ChameleonWindow::OnSave)
-	EVT_MENU			(ID_PAGECLOSE, ChameleonWindow::OnFileClose)
-	EVT_UPDATE_UI		(ID_SAVE, ChameleonWindow::OnUpdateSave)
-	EVT_MENU			(ID_STARTCONNECT, ChameleonWindow::OnConnect)
-	EVT_MENU			(ID_UNDO, ChameleonWindow::OnUndo)
-	EVT_MENU			(ID_REDO, ChameleonWindow::OnRedo)
-	EVT_MENU			(ID_OPTIONS, ChameleonWindow::OnToolsOptions)
-	EVT_CLOSE			(ChameleonWindow::OnClose)
-	EVT_NOTEBOOK_PAGE_CHANGED (ID_NOTEBOOK_ED,   ChameleonWindow::OnPageChange)
+	EVT_MENU						(ID_NEW, ChameleonWindow::OnFileNew)
+	EVT_MENU						(ID_OPEN, ChameleonWindow::OnFileOpen)
+	EVT_MENU						(ID_QUIT,  ChameleonWindow::OnQuit)
+	EVT_MENU						(ID_ABOUT, ChameleonWindow::OnAbout)
+	EVT_MENU						(ID_TEST, ChameleonWindow::Test)
+	EVT_MENU						(ID_SAVE, ChameleonWindow::OnSave)
+	EVT_MENU						(ID_PAGECLOSE, ChameleonWindow::OnFileClose)
+	EVT_UPDATE_UI					(ID_SAVE, ChameleonWindow::OnUpdateSave)
+	EVT_MENU						(ID_STARTCONNECT, ChameleonWindow::OnConnect)
+	EVT_MENU						(ID_UNDO, ChameleonWindow::OnUndo)
+	EVT_MENU						(ID_REDO, ChameleonWindow::OnRedo)
+	EVT_MENU						(ID_OPTIONS, ChameleonWindow::OnToolsOptions)
+	EVT_MENU						(ID_CUT, ChameleonWindow::OnCut)
+	EVT_MENU						(ID_COPY, ChameleonWindow::OnCopy)
+	EVT_MENU						(ID_PASTE, ChameleonWindow::OnPaste)
+	EVT_CLOSE						(ChameleonWindow::OnClose)
+	EVT_NOTEBOOK_PAGE_CHANGED		(ID_NOTEBOOK_ED,   ChameleonWindow::OnPageChange)
+
+	
 END_EVENT_TABLE()
 
 
@@ -60,10 +66,20 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 #ifdef DEBUG
 	logWindow = new wxLogWindow(this, "Debug messages");
+	wxLog::SetActiveTarget(logWindow);
 #endif
+
+	wxIcon icon(moz_xpm);
+	SetIcon(icon);
+
 	 m_perms = new Permission();
 
-	 m_perms->setGlobal(0xF);
+	 m_perms->setGlobal(0xFF);
+
+	 for(int i = PERM_FIRST; i < PERM_LAST; i++)
+	 {
+		 m_perms->enable(i);
+	 }
 	 
 
 	 m_openFiles = new wxArrayString();
@@ -89,6 +105,11 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 	menuEdit->Append(ID_UNDO, "&Undo\tCtrl-Z");
 	menuEdit->Append(ID_REDO, "&Redo\tCtrl-Y");
+	menuEdit->InsertSeparator(2);
+	menuEdit->Append(ID_CUT, "Cu&t\tCtrl-X");
+	menuEdit->Append(ID_COPY, "&Copy\tCtrl-C");
+	menuEdit->Append(ID_PASTE, "&Paste\tCtrl-V");
+	
 
 
     // the "About" item should be in the help menu
@@ -130,23 +151,13 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 	toolBar->InsertSeparator(7);
 
-	wxBitmap bmStart(start_xpm);
-	toolBar->AddTool(ID_START, "Run", bmStart);
-	
-	wxBitmap bmPause(pause_xpm);
-	toolBar->AddTool(ID_PAUSE, "Pause", bmPause);
 
-	wxBitmap bmStop(stop_xpm);
-	toolBar->AddTool(ID_STOP, "Stop", bmStop);
+	if(m_perms->isEnabled(PERM_DEBUG))
+	{
+		AddDebugButtons();
+	}
 
-	wxBitmap bmStepNext(stepnext_xpm);
-	toolBar->AddTool(ID_STEPNEXT, "Step next", bmStepNext);
 
-	wxBitmap bmStepOver(stepover_xpm);
-	toolBar->AddTool(ID_STEPOVER, "Step over", bmStepOver);
-
-	wxBitmap bmStepOut(stepout_xpm);
-	toolBar->AddTool(ID_STEPOUT, "Step out", bmStepOut);
 
 
 	toolBar->Realize();
@@ -163,82 +174,41 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 
 	 m_optionsDialog = new OptionsDialog(this, -1, "Options");
-	wxArrayString as;
-	
-	wxString optionnames;
 
-	for(int i = 1; i <= 20; i++)
+	
+
+	
+	
+	
+
+
+	//m_permNumMap = new IntIntHashmap();
+	wxCheckListBox* checkList = m_optionsDialog->GetListBox();
+	wxString optionname;
+	wxArrayString optionList;
+
+	for(int i = PERM_FIRST; i < PERM_LAST; i++)
 	{
-		optionnames = "Option #";
-		optionnames << i;
-		as.Add(optionnames);
-	}
-	
-
-	wxGrid* fg =  m_optionsDialog->GetGrid();
-	//wxWindow* gridParent = fg->GetParent();
-	//wxSize parentsize = gridParent->GetSize();
-
-	//fg->SetSize(385, 231);
-	
-	//fg->DeleteRows(0, fg->GetRows());
-
-	//fg->CreateGrid(as->GetCount(), 2);
-	//fg->SetColFormatBool(0);
-	//fg->SetColFormatBool(1);
-
-	
-	fg->SetColLabelValue(0, "Authorized");
-	fg->SetColLabelValue(1, "Enabled");
-
-	int count = as.GetCount();
-
-	if(fg->GetRows() < count)
-	{
-		fg->AppendRows(count - fg->GetRows());
-	}
-
-	for(int i = 0; i < count; i++)
-	{
-		fg->SetRowLabelValue(i, as.Item(i));
-	}
-
-	int numRows = fg->GetRows();
-	int numCols = fg->GetCols();
-
-	wxString choices[2];
-	choices[0] = "Yes";
-	choices[1] = "No";
-
-	//for(int colnum = 0; colnum < numCols; colnum++)
-	//{
-	
-	for(int rownum = 0; rownum < numRows; rownum++)
-	{
-			//wxGridCellChoiceEditor* gcce = new wxGridCellChoiceEditor();
-			//gcce->SetParameters("Yes,No");
-			//fg->SetCellEditor(rownum, colnum, gcce);
-			//fg->SetCellRenderer(rownum, colnum, new wxGridCellStringRenderer);
-		//wxGridCell* gc = fg->GetCell(rownum, colnum);
-		fg->SetCellValue(rownum, 0, "No");		
-		wxGridCellAttr *attr= new wxGridCellAttr;
-		attr->SetAlignment(wxALIGN_CENTRE, wxALIGN_CENTRE);
-		attr->SetReadOnly(true);
-		attr->SetRenderer(new wxGridCellStringRenderer);
-		fg->SetAttr(rownum, 0, attr);
+		
+		if(m_perms->isAuthorized(i))
+		{
+			optionname = m_perms->getPermName(i);
 			
-			//gcbe->Create(fg, -1, new GridCellEditorEvtHandler(fg, gcbe));
-			//attrBool->SetEditor (gcbe);
-			//attrBool->SetRenderer (new GridCellCheckboxRenderer);
+			int optionMapNum = checkList->GetCount();
+			checkList->Append(optionname);//optionList.GetCount();
+			
+			m_permNumMap[optionMapNum] = i;
 
-			//wxGridCellBoolEditor* gcbe = new wxGridCellBoolEditor();
-			//fg->SetCellEditor(rownum, colnum, gcce);
-			//fg->SetCellRenderer(rownum, colnum, new wxGridCellBoolRenderer);
-			//fg->SetGridCursor(rownum, colnum);
-			//fg->ShowCellEditControl();
+			if(m_perms->isEnabled(i))
+			{
+				checkList->Check(optionMapNum, true);
+			}
+		}		
 	}
-		//fg->SetColAttr(j, attrBool);
-	//}
+	
+
+	
+
 
 	
 	 m_split = new wxSplitterWindow(this, 5205);
@@ -264,9 +234,12 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 	PageHasChanged(m_currentPage);
 
-	m_telnet = new wxTelnet( m_split, ID_TELNET, wxPoint(-1, -1), 80, 24);	
+	m_noteTerm = new ChameleonNotebook(m_split, ID_NOTEBOOK_TERM);
+
+	m_telnet = new wxTelnet( m_noteTerm, ID_TELNET, wxPoint(-1, -1), 80, 24);
+	m_noteTerm->AddPage(m_telnet, "Terminal");
 	
-	m_split->SplitHorizontally(m_book, m_telnet, -200);	
+	m_split->SplitHorizontally(m_book, m_noteTerm, -200);	
 	m_split->SetMinimumPaneSize(200);
 
 }
@@ -275,6 +248,9 @@ ChameleonWindow::~ChameleonWindow()
 {
 	delete m_perms;
 	delete m_openFiles;
+	delete m_optionsDialog;
+
+
 }
 
 void ChameleonWindow::OnFileNew (wxCommandEvent &WXUNUSED(event)) 
@@ -283,7 +259,7 @@ void ChameleonWindow::OnFileNew (wxCommandEvent &WXUNUSED(event))
 	wxString noname = "<untitled> " + wxString::Format ("%d", m_fileNum);
 	ChameleonEditor* edit = new ChameleonEditor (this, m_book, -1);
 	m_currentEd = edit;
-	//m_edit->SetDropTarget (new DropFiles (this));
+	//m_currentEd->SetDropTarget (new DropFiles (this));
 	m_currentPage = m_book->GetPageCount();
 	m_book->AddPage (edit, noname, true);
 	m_openFiles->Add (noname);
@@ -415,9 +391,9 @@ void ChameleonWindow::CloseFile (int pageNr)
 			m_fileNum = 1;
 			wxString noname = "<untitled> " + wxString::Format (".%d", m_fileNum);
 			m_book->SetPageText (pageNr, noname);
-			//m_edit->SetFilename (wxEmptyString);
-			m_edit->ClearAll();
-			m_edit->SetSavePoint();
+			//m_currentEd->SetFilename (wxEmptyString);
+			m_currentEd->ClearAll();
+			m_currentEd->SetSavePoint();
 			//m_files->Add (noname);
 		}
 	}
@@ -524,6 +500,8 @@ void ChameleonWindow::OnPageChange (wxNotebookEvent &WXUNUSED(event))
 	}
 }
 
+
+
 void ChameleonWindow::OnPageClose (wxCommandEvent &event) 
 {
 	if (m_clickedTabNum >= 0) 
@@ -570,7 +548,11 @@ void ChameleonWindow::OpenFile(wxCommandEvent& WXUNUSED(event))
 void ChameleonWindow::OnConnect(wxCommandEvent& WXUNUSED(event))
 {
 	//::wxMessageBox("OnConnect");
-	m_telnet->Connect("localhost", 3012);
+	wxIPV4address local;
+	local.LocalHost();
+
+	DEBUGLOG("Address: " + local.Hostname())
+	m_telnet->Connect(local.Hostname(), 3012);
 
 }
 
@@ -578,14 +560,29 @@ void ChameleonWindow::OnConnect(wxCommandEvent& WXUNUSED(event))
 // event handlers
 void ChameleonWindow::Test(wxCommandEvent& WXUNUSED(event))
 {
+
+	
+
+	//wxFindReplaceDialog frdialog(this, new wxFindReplaceData, "Find");
+	/*
+	DEBUGLOG("CW::Test")
+	wxString value = "PERM_DEBUG: ";
+	value << m_perms->isEnabled(PERM_DEBUG);
+	DEBUGLOG(value)
 	//ed->Undo();
 //	wxEventType et = event.GetEventType();
-	::wxMessageBox("Testing");
-	wxString s = "Tab Page #";
-	s << tc->GetItemCount();
 
-	tc->InsertItem(tc->GetItemCount(), s);
-	
+	if(m_perms->isEnabled(PERM_DEBUG))
+	{
+		m_perms->disable(PERM_DEBUG);
+	}
+	else
+	{
+		m_perms->enable(PERM_DEBUG);
+	}
+
+	EvaluateOptions();
+	*/
 }
 
 
@@ -635,6 +632,21 @@ void ChameleonWindow::OnRedo(wxCommandEvent &event)
 {
 	// TODO multiple buffer
 	m_currentEd->Redo();
+}
+
+void ChameleonWindow::OnCopy(wxCommandEvent &event)
+{
+	m_currentEd->Copy();
+}
+
+void ChameleonWindow::OnCut(wxCommandEvent &event)
+{
+	m_currentEd->Cut();
+}
+
+void ChameleonWindow::OnPaste(wxCommandEvent &event)
+{
+	m_currentEd->Paste();
 }
 
 
@@ -804,6 +816,49 @@ void ChameleonWindow::ResizeSplitter()
 void ChameleonWindow::OnToolsOptions(wxCommandEvent &event)
 {		
 	int result = m_optionsDialog->ShowModal();
+
+	if(result == wxOK)
+	{
+		//wxGrid* m_optGrid = m_optionsDialog->GetGrid();
+		//:wxMessageBox("wxOK");
+		//for(int i = PERM_FIRST; i < PERM_LAST; i++)
+		//{
+			//wxString value = m_optGrid->GetCellValue(i, 0);
+			wxCheckListBox* checkList = m_optionsDialog->GetListBox();
+
+			for(int i = 0; i < checkList->GetCount(); i++)
+			{
+				int mappedPermNum = m_permNumMap[i];
+
+				bool enableOption = checkList->IsChecked(i);
+
+				wxLogDebug("Setting permissions: %s = %s", 
+							m_perms->getPermName(mappedPermNum),
+							enableOption ? "true" : "false");
+
+				if(enableOption)
+				{
+					m_perms->enable(mappedPermNum);
+				}
+				else
+				{
+					m_perms->disable(mappedPermNum);
+				}
+			}
+
+/*			if(value == "No")
+			{
+				m_perms->disable(i);
+			}
+			else
+			{
+				m_perms->enable(i);
+			}
+			*/
+		//}
+	}
+	EvaluateOptions();
+
 }
 
 
@@ -856,5 +911,50 @@ bool ChameleonWindow::IsEnabled(int permission)
 	return m_perms->isEnabled(permission);
 }
 
+void ChameleonWindow::AddDebugButtons()
+{
+	wxToolBar* toolBar = GetToolBar();
 
+	wxBitmap bmStart(start_xpm);
+	toolBar->AddTool(ID_START, "Run", bmStart);
+
+	wxBitmap bmPause(pause_xpm);
+	toolBar->AddTool(ID_PAUSE, "Pause", bmPause);
+
+	wxBitmap bmStop(stop_xpm);
+	toolBar->AddTool(ID_STOP, "Stop", bmStop);
+
+	wxBitmap bmStepNext(stepnext_xpm);
+	toolBar->AddTool(ID_STEPNEXT, "Step next", bmStepNext);
+
+	wxBitmap bmStepOver(stepover_xpm);
+	toolBar->AddTool(ID_STEPOVER, "Step over", bmStepOver);
+
+	wxBitmap bmStepOut(stepout_xpm);
+	toolBar->AddTool(ID_STEPOUT, "Step out", bmStepOut);
+
+}
+
+void ChameleonWindow::EvaluateOptions()
+{
+	wxToolBar* t = GetToolBar();
+
+	bool debugEnabled = m_perms->isEnabled(PERM_DEBUG);
+
+	wxControl* pTool = t->FindControl(ID_DEBUG_IDS_FIRST);
+
+
+	for(int i = ID_DEBUG_IDS_FIRST; i < ID_DEBUG_IDS_LAST; i++)
+	{
+		//t->RemoveTool(i);
+		t->DeleteTool(i);		
+	}
+	
+	
+	if(debugEnabled)
+	{
+		AddDebugButtons();		
+		t->Realize();
+	}	
+}
 

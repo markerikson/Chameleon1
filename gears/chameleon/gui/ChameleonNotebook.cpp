@@ -1,6 +1,13 @@
 #include "ChameleonNotebook.h"
 #include "ChameleonWindow.h"
 
+#include "../common/debug.h"
+
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
 BEGIN_EVENT_TABLE(ChameleonNotebook, wxNotebook)
 //EVT_CONTEXT_MENU(ChameleonNotebook::TestMenu)
 
