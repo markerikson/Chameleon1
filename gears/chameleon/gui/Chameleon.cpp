@@ -2263,6 +2263,8 @@ void ChameleonWindow::UpdateTerminalNotebook()
 		if(advCompileEnabled)
 		{
 			// TODO Advanced compiler listctrl here
+
+			m_noteTerm->AddPage(m_compilerTextbox, "Compiler Output");
 		}
 		else
 		{
@@ -2274,7 +2276,7 @@ void ChameleonWindow::UpdateTerminalNotebook()
 	{
 		if(advCompileEnabled)
 		{
-
+			m_compilerTextbox->Hide();
 		}
 		else
 		{
