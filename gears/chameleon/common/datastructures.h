@@ -150,9 +150,38 @@ enum modules
 // IMPORTANT!!! Any changes to this enum need to be reflected in the 
 //				PermStrings array in p.cpp.
 
+WX_DEFINE_ARRAY(wxWindow*, WindowPointerArray);
+WX_DEFINE_ARRAY(ChameleonEditor*, EditorPointerArray);
+WX_DEFINE_ARRAY(bool, BoolArray);
 
 
+typedef struct 
+{
+	wxArrayInt gdbNumbers;
+	wxArrayInt lineNumbers;	
+} DebugBreakInfo;
 
+typedef struct 
+{
+	bool functionHasBeenVisited;
+	BoolArray variableDisplayed;
+	wxArrayString variableNames;
+} FunctionVariablesInfo;
+
+typedef struct  
+{
+	wxString type;
+	wxString name;
+	wxString functionName;
+	wxString value;
+	wxString regexKey;
+} VariableInfo;
+
+typedef struct 
+{
+	wxArrayString dirNames;
+	wxArrayString fileNames;
+} DirListing;
 
 WX_DECLARE_HASH_MAP( int,
 					int,
@@ -193,40 +222,8 @@ WX_DECLARE_HASH_MAP(wxString,
 WX_DECLARE_STRING_HASH_MAP(wxString, 
 						   StringStringHashmap);
 
+WX_DECLARE_OBJARRAY(VariableInfo, VariableInfoArray);
 
-WX_DEFINE_ARRAY(wxWindow*, WindowPointerArray);
-WX_DEFINE_ARRAY(ChameleonEditor*, EditorPointerArray);
-WX_DEFINE_ARRAY(bool, BoolArray);
-
-
-typedef struct 
-{
-	wxArrayInt gdbNumbers;
-	wxArrayInt lineNumbers;	
-} DebugBreakInfo;
-
-typedef struct 
-{
-	bool functionHasBeenVisited;
-	BoolArray variableDisplayed;
-	wxArrayString variableNames;
-} FunctionVariablesInfo;
-
-typedef struct  
-{
-	wxString type;
-	wxString name;
-	wxString functionName;
-	wxString value;
-	wxString regexKey;
-} VariableInfo;
-
-
-typedef struct 
-{
-	wxArrayString dirNames;
-	wxArrayString fileNames;
-} DirListing;
 
 enum NetworkStatus
 {
