@@ -46,8 +46,8 @@
 #define ID_TEXTCTRL1 10004
 #define ID_CHECKBOX2 10005
 #define ID_TEXTCTRL2 10006
-#define ID_BUTTON 10001
-#define ID_BUTTON1 10003
+#define ID_DOADDWATCH 10001
+#define ID_CANCELWATCH 10003
 ////@end control identifiers
 
 /*!
@@ -80,16 +80,32 @@ public:
 
 ////@begin AddVariableWatchDialog event handler declarations
 
+    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_DOADDWATCH
+    void OnDoaddwatchClick( wxCommandEvent& event );
+
+    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_CANCELWATCH
+    void OnCancelwatchClick( wxCommandEvent& event );
+
 ////@end AddVariableWatchDialog event handler declarations
 
 ////@begin AddVariableWatchDialog member function declarations
 
 ////@end AddVariableWatchDialog member function declarations
 
+	wxString GetVariableName() { return m_varname->GetValue(); }
+	wxString GetFunctionName() { return m_funcName->GetValue(); }
+	wxString GetClassName() { return m_classname->GetValue(); }
+
+	bool FunctionInClass() { return m_isClassMember->IsChecked(); }
+
     /// Should we show tooltips?
     static bool ShowToolTips();
 
 ////@begin AddVariableWatchDialog member variables
+    wxTextCtrl* m_varname;
+    wxTextCtrl* m_funcName;
+    wxCheckBox* m_isClassMember;
+    wxTextCtrl* m_classname;
 ////@end AddVariableWatchDialog member variables
 };
 

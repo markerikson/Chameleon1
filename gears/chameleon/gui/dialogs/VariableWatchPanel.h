@@ -25,6 +25,8 @@
 #include "wx/listctrl.h"
 ////@end includes
 
+//#include  <wx/dynarray.h>
+#include "../../common/datastructures.h"
 #include "../../common/DebugEvent.h"
 
 /*!
@@ -50,6 +52,7 @@ class ChameleonWindow;
 #define ID_LISTCTRL 10001
 #define ID_ADDWATCH 10002
 #define ID_REMOVEWATCH 10003
+#define ID_CLEARALLWATCHES 10004
 ////@end control identifiers
 
 /*!
@@ -88,12 +91,18 @@ public:
     /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_REMOVEWATCH
     void OnRemovewatchClick( wxCommandEvent& event );
 
+    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_CLEARALLWATCHES
+    void OnClearallwatchesClick( wxCommandEvent& event );
+
 ////@end VariableWatchPanel event handler declarations
 
 ////@begin VariableWatchPanel member function declarations
 
 ////@end VariableWatchPanel member function declarations
 
+	void AddWatch();
+	void RemoveWatch();
+	void ClearVariableValues();
 	void UpdateVariableInfo(wxDebugEvent event);
     /// Should we show tooltips?
     static bool ShowToolTips();
@@ -101,7 +110,11 @@ public:
 ////@begin VariableWatchPanel member variables
     wxListCtrl* m_list;
 ////@end VariableWatchPanel member variables
+
 	ChameleonWindow* m_mainFrame;
+	IntIntHashmap m_gdbVariableMappings;
+
+	//wxArrayString 
 };
 
 #endif
