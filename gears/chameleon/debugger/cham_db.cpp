@@ -1030,6 +1030,7 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 					if(reCase1.Matches(tempHold))
 					{
 						Filename = reCase1.GetMatch(tempHold, 1);
+						currentSourceName = Filename;
 						Linenumber = reCase1.GetMatch(tempHold, 3);
 						status = DEBUG_BREAK;
 
@@ -1136,6 +1137,7 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 				if(reCase1.Matches(tempHold))
 				{
 					Filename = reCase1.GetMatch(tempHold, 1);
+					currentSourceName = Filename;
 					Linenumber = reCase1.GetMatch(tempHold, 3);
 
 					Linenumber.ToLong(&tmpLong);
@@ -1147,7 +1149,7 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 					
 					outputEvent.SetLineNumber((int)tmpLong);
 					outputEvent.SetSourceFilenames(tmpArrayString);
-					outputEvent.SetStatus(ID_DEBUG_STEPNEXT);
+					outputEvent.SetStatus(ID_DEBUG_BREAKPOINT);
 					guiPointer->AddPendingEvent(outputEvent);
 					//(*outputScreen)<<"\nCASE 1: file="<<Filename<<" line="<<Linenumber<<"\n\n";
 				}
@@ -1159,7 +1161,10 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 					
 					
 					outputEvent.SetLineNumber((int)tmpLong);
-					outputEvent.SetStatus(ID_DEBUG_STEPNEXT);
+					wxArrayString sourceFiles;
+					sourceFiles.Add(currentSourceName);
+					outputEvent.SetSourceFilenames(sourceFiles);
+					outputEvent.SetStatus(ID_DEBUG_BREAKPOINT);
 					guiPointer->AddPendingEvent(outputEvent);
 					//(*outputScreen)<<"\nCASE 2: #="<<Linenumber<<"\n\n";
 				}
