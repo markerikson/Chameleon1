@@ -2377,6 +2377,7 @@ void ChameleonWindow::OnTreeItemRightClick(wxTreeEvent& event)
 		else
 		{
 			Permission* perms = m_options->GetPerms();
+			popupMenu.Append(ID_NEW_PROJECT, "Create a new project");
 			if(perms->isEnabled(PERM_LOCALMODE))
 			{
 				popupMenu.Append(ID_OPEN_PROJECT_LOCAL, "Open a local project");
@@ -2538,6 +2539,15 @@ void ChameleonWindow::AddFileToProject()
 	m_projectTree->AppendItem(m_clickedTreeItem, simpleName, iconIndex, -1, data);
 	m_projectTree->SortChildren(m_clickedTreeItem);
 	m_projectTree->Refresh();	
+	
+	wxFileName fn(fileToOpen);
+	int pageNum = GetPageNum(fn);
+
+	if(pageNum != -1)
+	{
+		ChameleonEditor* edit = static_cast<ChameleonEditor*> (m_book->GetPage(pageNum));
+		edit->SetProject(m_projMultiFiles);
+	}
 }
 
 void ChameleonWindow::OnTreeItemActivated(wxTreeEvent &event)
@@ -2725,6 +2735,14 @@ void ChameleonWindow::LoadFilesIntoProjectTree(wxString configPath,  FileFilterT
 			m_projectTree->AppendItem(treeid, newFileName.GetFullName(), iconNum, -1, data);
 
 			m_projMultiFiles->AddFileToProject(data->filename, fileType);
+
+			int pageNum = GetPageNum(newFileName);
+
+			if(pageNum != -1)
+			{
+				ChameleonEditor* edit = static_cast<ChameleonEditor*> (m_book->GetPage(pageNum));
+				edit->SetProject(m_projMultiFiles);
+			}
 		}
 	}
 
@@ -2781,6 +2799,16 @@ void ChameleonWindow::RemoveFileFromProject()
 	{
 		m_projMultiFiles->RemoveFileFromProject(treeData->filename, m_projectSelectedFolderType);
 		m_projectTree->Delete(m_clickedTreeItem);
+
+		wxFileName fn(treeData->filename);
+		int pageNum = GetPageNum(fn);
+		
+		if(pageNum != -1)
+		{
+			ChameleonEditor* pEdit = static_cast <ChameleonEditor* >(m_book->GetPage(pageNum));
+			ProjectInfo* proj = new ProjectInfo();
+			pEdit->SetProject(proj);
+		}
 	}
 }
 
