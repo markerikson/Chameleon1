@@ -657,3 +657,26 @@ by: Ben
 		3) Default mode
 	-this week is bad.  :(  Midterms & projects & whatnot.
 	-Spring break here we come!
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Customer Meeting 03/02/2004 12:30pm
+by: Ben
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+>Question of Default Mode: Shomper says remote is to be the default mode
+>we want to roll-back the code completion feature.  Shompher: that's fine
+>Major functionality as a minimum:
+	-"Major Features" -> GUI, debugger, editor, networking, compiler
+	-Shomper wants each of these functional.
+	-The debugger would be a wonderful addition; it's not "neccesary" but it'd be nice...
+	**2nd Presentation**:
+		~create a new file, save, compile in terminal, re-write, re-save, re-compile for demo
+		~demonstration of a project?
+>Feedback
+	+our group is most interactive & responsive
+	+we seem to work well as a team
+	+we're organized (so it seems...)
+	+group contribution is high
+	-Ben's seperate from the main group... sorta... this confused me when i took notes
+>Demonstration of terminal?  It's all good.
+>Thoughts on permissions:
+	-add a label with current authorization code in CHAMELEON
+	-add a reverse-authorize ability in PROFESSOR PROGRAM
