@@ -129,6 +129,7 @@ enum WindowID
 
 	//i added these Mark -B
 	ID_DEBUG_VARINFO,
+	ID_DEBUG_RUN_TO_LINE,
 	//ID_DEBUG_REMOVE_VAR,
 
 	ID_DEBUG_BREAKPOINT,
