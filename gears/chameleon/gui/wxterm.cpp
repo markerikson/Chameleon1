@@ -48,8 +48,8 @@
 
 #include <ctype.h>
 
-#include "gterm.hpp"
-#include "gtelnet.hpp"
+#include "../network/gterm.hpp"
+#include "../network/gtelnet.hpp"
 #include "wxterm.h"
 
 void WinMessageBeep();

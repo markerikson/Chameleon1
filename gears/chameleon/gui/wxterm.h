@@ -34,8 +34,8 @@
 #pragma interface
 #endif
 
-#include "gterm.hpp"
-#include "gtelnet.hpp"
+#include "../network/gterm.hpp"
+#include "../network/gtelnet.hpp"
 
 #define wxEVT_COMMAND_TERM_RESIZE        wxEVT_USER_FIRST + 1000
 #define wxEVT_COMMAND_TERM_NEXT          wxEVT_USER_FIRST + 1001
