@@ -19,7 +19,7 @@
 
 BEGIN_EVENT_TABLE(ChameleonEditor, wxStyledTextCtrl)
 	EVT_STC_CHARADDED(-1, ChameleonEditor::OnChar)
-	//EVT_STC_MODIFIED(-1, ChameleonEditor::OnSetTabModified)
+	EVT_STC_MODIFIED(-1, ChameleonEditor::OnEditorModified)
 	EVT_RIGHT_DOWN		(ChameleonEditor::OnRightClick)
 END_EVENT_TABLE()
 
@@ -121,10 +121,14 @@ ChameleonEditor::ChameleonEditor( ChameleonWindow *mframe,
 	m_popupMenu.Append(ID_PASTE, "Paste");
 	m_popupMenu.AppendSeparator();
 
-	m_popupMenu.Append(ID_ADD_BREAKPOINT, "Add a breakpoint");
-	m_popupMenu.Append(ID_REMOVE_BREAKPOINT, "Remove this breakpoint");
+	m_popupMenu.Append(ID_DEBUG_ADD_BREAKPOINT, "Add a breakpoint");
+	m_popupMenu.Append(ID_DEBUG_REMOVE_BREAKPOINT, "Remove this breakpoint");
 
-	m_popupMenu.Append(ID_RUNTOCURSOR, "Run to cursor");
+	m_popupMenu.Append(ID_DEBUG_RUNTOCURSOR, "Run to cursor");
+
+	int modmask = wxSTC_MOD_DELETETEXT | wxSTC_MOD_INSERTTEXT;
+
+	this->SetModEventMask(modmask);
 
 }
 
@@ -407,5 +411,33 @@ void ChameleonEditor::ResetEditor()
 
 void ChameleonEditor::OnRightClick(wxMouseEvent &event)
 {
+
+	bool breakpointsAllowed = !m_mainFrame->IsDebugging();
+
+	m_popupMenu.Enable(ID_DEBUG_ADD_BREAKPOINT, breakpointsAllowed);
+	m_popupMenu.Enable(ID_DEBUG_REMOVE_BREAKPOINT, breakpointsAllowed);
+	m_popupMenu.Enable(ID_DEBUG_RUNTOCURSOR, breakpointsAllowed);
+
 	PopupMenu(&m_popupMenu, event.GetPosition());
+}
+
+void ChameleonEditor::OnEditorModified(wxStyledTextEvent &event)
+{
+	int modType = event.GetModificationType();
+
+	wxString debugMessage;
+	wxString message;
+
+	switch(modType)
+	{
+		case wxSTC_MOD_INSERTTEXT:
+			message = "Insert mod.";
+			break;
+		case wxSTC_MOD_DELETETEXT:
+			message = "Delete mod.";
+			break;
+	}
+
+
+	
 }

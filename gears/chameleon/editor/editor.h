@@ -31,8 +31,6 @@ public:
 
 	bool Modified();
 
-	//void SetTabUnmodified();
-
 	void OnChar(wxStyledTextEvent &event);
 	void OnRightClick(wxMouseEvent &event);
 
@@ -52,26 +50,26 @@ public:
 	wxString GetFileNameAndPath();
 	wxString GetFilenameString();
 	wxFileName GetFileName(); // capital N
+	wxFileName GetExecutableFileName() 	{ return m_executableFilename; }
 	wxString GetFilePath();
 	//void SetFileNameAndPath(wxString path, wxString name, bool fileIsRemote);
 	void SetFilename(wxFileName filename, bool fileIsRemote);
+	void SetExecutableFilename(wxFileName filename){ m_executableFilename = filename; }
 	bool HasBeenSaved();
 	void ResetEditor();
-	bool LastSavedRemotely() 
-	{
-		return m_bLastSavedRemotely;
-	}
+	bool LastSavedRemotely() {	return m_bLastSavedRemotely;}
 
 private:
 
 
-	//void OnSetTabModified(wxStyledTextEvent &event);
+	void OnEditorModified(wxStyledTextEvent &event);
 	
 
 	ChameleonWindow* m_mainFrame;
 	ChameleonNotebook* m_parentNotebook;	
 
 	wxFileName m_fileNameAndPath;
+	wxFileName m_executableFilename;
 	//wxFileName m_remoteFileName;
 	//wxFileName m_localFileName;
 	wxString m_simpleFileName;
