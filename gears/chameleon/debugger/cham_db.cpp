@@ -1736,6 +1736,7 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
  		case STEP:
 		case STEP_OVER:
 		case STEP_OUT:
+		{
 
 			//looking for this heirarchy:
 			// 1) the word "Program" as this indicates a fatal error
@@ -1748,6 +1749,7 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 			//and update the array;
 
 			//kudos to Mark for the RegEx!!
+			bool noNewWhats = true;
 			keepParsing = checkOutputStream(tempHold);
 
 			//begin testing cases
@@ -1773,6 +1775,12 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 					outputEvent.SetSourceFilename(Filename);
 					outputEvent.SetStatus(ID_DEBUG_BREAKPOINT);
 					guiPointer->AddPendingEvent(outputEvent);
+
+					data.Empty();
+
+					sendWhat();
+
+					noNewWhats = false;
 				}
 				else if(reCase2.Matches(tempHold))
 				{
@@ -1804,7 +1812,10 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 
 			data.Empty();
 
-			sendPrint("");
+			if(noNewWhats)
+			{
+				sendPrint("");
+			}
 			break;
 
 		case WAITING:		//i'm waiting...
