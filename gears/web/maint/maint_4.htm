@@ -25,6 +25,9 @@
 <h2>4.2 - Unimplemented Features</h2>
 <p>There are a couple things we didn't get around to adding.  The biggest one was word autocompletion / object member completion.  This feature is certainly not a necessary one, but if implemented would be incredibly useful.  We didn't get this one done for two reasons.  First, we flat out ran out of time.  Second, we completely miscalculated the amount of effort and complexity this feature would take.  Scintilla has the hooks to display popup windows for autocompletion and member completion, which is why this feature was added to the requirements list.  However, the program itself is responsible for keeping track of what's typed and telling Scintilla to pop up a window with the appropriate information.  Autocompletion alone would require a lot of work.  Member completion is even more complicated.  In order to list the members of an object, the program needs to have parsed the declaration of that object.  Basically, implementing either of these abilities would require a nearly-full C++ parser, few of which are easily accessible.  There is one main possibility along that route: taking the C++ parser from the Dev-CPP IDE (<a href="http://sourceforge.net/projects/dev-cpp">http://sourceforge.net/projects/dev-cpp</a>), which is written in Delphi, and porting it to C++ (possibly with the aid of <a href="http://ivan.vecerina.com/code/delphi2cpp/">delphi2cpp</a>.  After that, however, there are potential issues regarding parsing files that are located on the remote server.  Overall, while this feature would be useful, it's a decidedly non-trivial task.</p>
 <p>The other item we didn't have a chance to get to was code folding.  Again, this is something Scintilla supports, but this one actually shouldn't be that hard to implement.  We just didn't have enough time.  This one is debatably useful.  It's certainly useful to some people, but others won't bother with it.  If it was implemented, it wouldn't hurt.</p>
+
+<h2>4.3 - Future Enhancements</h2>
+<p>The single biggest enhancement that could be made would be auto/member completion.  There are certainly plenty of programmer's editors available which don't have that ability and are quite usable, so it's not like Chameleon is in bad shape because it doesn't have it.  However, having that ability would certainly be useful.  Some form of integration with the Debugginator project would also be interesting and potentially useful.</p>
 <hr><center>
 
 <table summary="navigation">
@@ -32,9 +35,9 @@
 <td height="100" width="60"><a href="../index.html"><img src="../images/home.gif" align="bottom" alt="Home" border="0">
 </a></td>
 <td height="100" width="60"><a href="maint.htm"><img src="../images/toc.gif" align="bottom" alt="TOC" border="0"></a></td>
-<td height="100" width="60"><a href="maint_1.htm"><img src="../images/previous.gif" align="bottom" alt="Previous" border="0"></a>
+<td height="100" width="60"><a href="maint_3.htm"><img src="../images/previous.gif" align="bottom" alt="Previous" border="0"></a>
 </td>
-<td height="100" width="60"><a href="maint_3.htm"><img src="../images/next.gif" align="bottom" alt="Next" border="0">
+<td height="100" width="60"><a href="maint_5.htm"><img src="../images/next.gif" align="bottom" alt="Next" border="0">
 </a></td>
 </tr>
 </tbody></table>
