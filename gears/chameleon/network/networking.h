@@ -3,7 +3,7 @@
 
 /***********************
  *
- * Internally, I will keep the trailing / on directories, but...
+ * Internally, I (presently) am ignorant regarding  the trailing / on directories, but...
  * Externally, I will receive pathes without trailing /
  *
  * When I have path_name that means path+name (ie. "c:/windows/plink.exe")
@@ -31,12 +31,11 @@ class Networking {
 
 		//Setup
 		void SetPlinkProg(wxString path_name);
-		//void SetPscpProg(wxString path_name);  // No longer using
 		void SetDetails(wxString hostname, wxString username, wxString passphrase);
 
 		// Methods
 		NetworkStatus GetStatus();
-		wxString GetHomeDirPath();
+		wxString GetHomeDirPath(); // no trailing /
 		DirListing GetDirListing(wxString dirPath, bool forceRefresh = false, bool includeHidden = false);
 		wxString GetFileContents(wxString filename, wxString path);
 		void SendFileContents(wxString strng, wxString rfilename, wxString rpath);
@@ -48,10 +47,9 @@ class Networking {
 		wxString SSHSendCommand(wxString command);
 		wxArrayString ParseLS(wxString strng, bool includeHidden);
 		// Data:
-		//bool isConnected;
 		PlinkConnect* ssh_plink;
 		wxString ssh_host, ssh_user, ssh_pass;
-		wxString plinkApp;// pscpApp;
+		wxString plinkApp;
 		wxString downloadDir;
 		NetworkStatus status;
 };

@@ -91,9 +91,11 @@ void Networking::SetPlinkProg(wxString path_name)
 //}
 
 wxString Networking::GetHomeDirPath() {
-	// !!!! I don't know if this has a trailing /
+	// Does not return a trailing /
 	wxString cmd = "cd ~ && pwd ";
-	return SSHSendCommand(cmd);
+	wxString r = SSHSendCommand(cmd);
+	r.Remove(r.Length()-1,1); // remove the "\n"
+	return r;
 }
 
 
@@ -171,13 +173,14 @@ wxArrayString Networking::ParseLS(wxString strng, bool includeHidden){
 
 
 wxString Networking::SSHSendCommand(wxString command) {
-	//command += " && echo \"C_O_M_P_E_T_E_D_OK\"";
+	command += " && echo \"C_O_M_P_L_E_T_E_D_OK\"";
 	ssh_plink->sendCommand(command);
 	wxString output = ssh_plink->getOutput();
 
 	// Confirm that all went according to plan
-	if(output.Right(19) == "C_O_M_P_E_T_E_D_OK\n") {
+	if(output.Right(19) == "C_O_M_P_L_E_T_E_D_OK\n") {
 		status = NET_GOOD;
+		output.Truncate(output.Length()-19); // remove C_O_M_P_L_E_T_E_D_OK\n
 	}
 	else {
 		//figure out what went wrong
