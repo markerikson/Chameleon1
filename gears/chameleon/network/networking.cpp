@@ -397,7 +397,7 @@ wxProcess2* Networking::GetPlinkProcess(wxEvtHandler* owner)
 
 	if(pid == 0) {
 		//Command could not be executed
-		wxLogDebug("Could not start a Plink process.");
+		wxLogDebug("Could not start a Plink process -- Command could not be executed.");
 		delete proc; //proc = NULL;
 	}
 	else if (pid == -1) {
@@ -408,7 +408,7 @@ wxProcess2* Networking::GetPlinkProcess(wxEvtHandler* owner)
 	}
 	else { // Process is Live
 		proc->SetPID(pid); // Temporary Solution?
-		wxLogDebug("Started a Plink process successfully.");
+		//wxLogDebug("Started a Plink process successfully.");
 	}
 
 	// Add this process to an internal list?
@@ -417,7 +417,8 @@ wxProcess2* Networking::GetPlinkProcess(wxEvtHandler* owner)
 }
 
 wxProcess2* Networking::GetLocalProcess(wxEvtHandler* owner) {
-	wxString cmd = "cmd.exe";
+	// ::wxGetOsVersion()
+	wxString cmd = "cmd.exe"; // "command"
 
 	wxProcess2* proc = new wxProcess2(owner);
 	long pid = wxExecute(cmd, wxEXEC_ASYNC, proc);
