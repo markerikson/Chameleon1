@@ -282,16 +282,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 		authorizedCode = m_config->Read("Permissions/authorized", defaultAuthorizedCode);
 		enabledCode = m_config->Read("Permissions/enabled", defaultEnableCode);
 		
-		if(!perms->setGlobalAuthorized(authorizedCode))
-		{
-			wxLogDebug("Authcode initialization failed!  Code: %s", authorizedCode.c_str());
-			authorizedCode = "0";
-		}
-		else
-		{
-			
-		}
-		perms->setGlobalEnabled(enabledCode);		
+				
 	}
 	else
 	{
@@ -304,6 +295,25 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 		m_config->Write("Permissions/authorized", defaultAuthorizedCode);
 		m_config->Write("Permissions/enabled", defaultEnableCode);
 	}
+
+	if(authorizedCode == wxEmptyString)
+	{
+		authorizedCode = defaultAuthorizedCode;
+	}
+	if(enabledCode == wxEmptyString)
+	{
+		enabledCode = defaultEnableCode;
+	}
+
+	if(!perms->setGlobalAuthorized(authorizedCode))
+	{
+		wxLogDebug("Authcode initialization failed!  Code: %s", authorizedCode.c_str());
+	}
+	else
+	{
+		perms->setGlobalEnabled(enabledCode);
+	}
+	
 
 	wxFileName plinkPath(wxGetCwd(), "plink.exe");  // <-- Mark, look at Options.cpp
 	m_options->SetPlinkApp(plinkPath.GetFullPath());
@@ -1581,34 +1591,34 @@ bool ChameleonWindow::SaveFile(bool saveas, bool askLocalRemote, FileFilterType 
 
 	bool doSaveAs = saveas || !m_currentEd->HasBeenSaved() || (m_remoteMode != m_currentEd->LastSavedRemotely());
 
-	//bool remoteEnabled = m_perms->isEnabled(PERM_REMOTELOCAL);
 	bool isSourceFile = !(filterType == FILE_PROJECT);
 
 	wxString filterString = ConstructFilterString(filterType);
 	
-	// assume for the moment that we won't have remote mode as a permission
 	if(doSaveAs && askLocalRemote)
 	{
 		// default to saving remotely
 		m_remoteMode = true;
-
-		wxArrayString choices;
-		choices.Add("Remote");
-		choices.Add("Local");
-		wxString choice = wxGetSingleChoice("Would you like to save this file: \n\n1) Remotely (on the server) \n2) Locally (on the computer you're sitting at)?", 
-											"Save File - location",choices);
-		if(choice == "Local")
+		
+		if(m_options->GetPerms()->isEnabled(PERM_LOCALMODE))
 		{
-			m_remoteMode = false;
-		}
-		else if(choice == wxEmptyString)
-		{
-			// user hit Cancel - don't save
-			m_remoteMode = originalRemoteMode;
-			return false;
-		}
+			wxArrayString choices;
+			choices.Add("Remote");
+			choices.Add("Local");
+			wxString choice = wxGetSingleChoice("Would you like to save this file: \n\n1) Remotely (on the server) \n2) Locally (on the computer you're sitting at)?", 
+				"Save File - location",choices);
+			if(choice == "Local")
+			{
+				m_remoteMode = false;
+			}
+			else if(choice == wxEmptyString)
+			{
+				// user hit Cancel - don't save
+				m_remoteMode = originalRemoteMode;
+				return false;
+			}
+		}		
 	}
-
 
 	if(isSourceFile)
 	{
@@ -1707,6 +1717,7 @@ bool ChameleonWindow::SaveFile(bool saveas, bool askLocalRemote, FileFilterType 
 			}
 			else
 			{
+				CheckNetworkStatus();
 				return false;
 			}			
 		}
@@ -1919,23 +1930,14 @@ void ChameleonWindow::UpdateMenuBar()
 	menuFile->Append(ID_CLOSEALL, "Close All Files");
 	menuFile->AppendSeparator();
 	menuFile->Append(ID_SAVE, "&Save File\tCtrl-S", "Save the current file");
-	menuFile->Append(ID_SAVE_SOURCE_LOCAL, "Save File &As (Local)", "Save the current file as a different name");
+
+	if(localModeEnabled)
+	{
+		menuFile->Append(ID_SAVE_SOURCE_LOCAL, "Save File &As (Local)", "Save the current file as a different name");
+	}
+	
 	menuFile->Append(ID_SAVE_SOURCE_REMOTE, "Save File &As (Remote)", "Save the current file as a different name");
 	menuFile->AppendSeparator();
-
-	if(perms->isEnabled(PERM_PROJECTS))
-	{
-		menuFile->Append(ID_NEW_PROJECT, "Create New Project");
-
-		if(localModeEnabled)
-		{
-			menuFile->Append(ID_OPEN_PROJECT_LOCAL, "Open Project File (Local)");
-		}
-		
-		menuFile->Append(ID_OPEN_PROJECT_REMOTE, "Open Project File (Remote)");
-		menuFile->Append(ID_CLOSE_PROJECT, "Close Project");
-		menuFile->AppendSeparator();
-	}
 
 	menuFile->Append(ID_PRINT_PAGE, "&Print\tCtrl-P", "Print the current file");
 	menuFile->Append(ID_PRINT_PREVIEW, "Print preview");
@@ -1971,6 +1973,30 @@ void ChameleonWindow::UpdateMenuBar()
 
 	menuBar->Append(menuEdit, "&Edit");
 
+	if(perms->isEnabled(PERM_PROJECTS))
+	{
+		wxMenu* menuProject = new wxMenu();
+		menuProject->Append(ID_NEW_PROJECT, "Create New Project");
+
+		if(localModeEnabled)
+		{
+			menuProject->Append(ID_OPEN_PROJECT_LOCAL, "Open Project File (Local)");
+		}
+
+		menuProject->Append(ID_OPEN_PROJECT_REMOTE, "Open Project File (Remote)");
+		menuProject->Append(ID_CLOSE_PROJECT, "Close Project");
+
+		menuBar->Append(menuProject, "&Projects");
+	}
+
+
+	if(perms->isEnabled(PERM_COMPILE))
+	{
+		wxMenu* compileMenu = new wxMenu();
+		compileMenu->Append(ID_COMPILE, "Compile File");
+		menuBar->Append(compileMenu, "&Compile");
+	}
+
 
 	wxMenu* menuTools = new wxMenu();
 
@@ -1986,35 +2012,11 @@ void ChameleonWindow::UpdateMenuBar()
 
 	menuBar->Append(menuTools, "&Tools");
 
-
-	if(perms->isEnabled(PERM_COMPILE))
-	{
-		wxMenu* compileMenu = new wxMenu();
-		compileMenu->Append(ID_COMPILE, "Compile File");
-		menuBar->Append(compileMenu, "&Compile");
-	}
-
-
-	/*
-	if(perms->isEnabled(PERM_PROJECTS))
-	{
-		wxMenu* projectMenu = new wxMenu();
-		projectMenu->Append(ID_PROJECT_ADDFILE, "Add file to project");
-		projectMenu->Append(ID_PROJECT_REMOVEFILE, "Remove file from project");
-		projectMenu->Append(ID_PROJECT_SETTINGS, "Project settings");
-		menuBar->Append(projectMenu, "&Project");
-	}
-	*/
-
-
 	wxMenu *helpMenu = new wxMenu;
 	helpMenu->Append(ID_HELP, "Chameleon help contents");
 	helpMenu->Append(ID_ABOUT, "&About Chameleon", "Show about dialog");	
 	
 	menuBar->Append(helpMenu, "&Help");
-
-
-
 }
 
 void ChameleonWindow::UpdateToolbar()
@@ -2970,7 +2972,7 @@ void ChameleonWindow::OnDebugEvent(wxDebugEvent &event)
 				pEdit->MarkerDeleteAll(MARKER_FOCUSEDLINE);
 			}
 			wxLogDebug("Debugger exit");
-			m_debugTerminal->Disconnect();
+			m_debugTerminal->Disconnect(false);
 
 			break;
 		}

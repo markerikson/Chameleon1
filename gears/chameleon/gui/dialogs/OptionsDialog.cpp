@@ -510,7 +510,7 @@ bool OptionsDialog::EvaluateOptions()
 
 	wxString mingwPath = m_txtMingwPath->GetValue();
 
-	if(!wxFileName::DirExists(mingwPath))
+	if( (mingwPath != m_options->GetMingwPath()) && !wxFileName::DirExists(mingwPath))
 	{
 		outputMessage = mingwPath + " is not a valid path.";
 		validOptions = false;

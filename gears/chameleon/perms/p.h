@@ -28,7 +28,7 @@ class Permission
 {
 	public:
 		//Permission();
-		Permission(wxString loadAuthCode = "10A80000000", wxString loadPermCode = "0");
+		Permission(wxString loadAuthCode = "0", wxString loadPermCode = "0");
 		~Permission();
 
 		bool isEnabled(int id);		//module-specific permissions request
