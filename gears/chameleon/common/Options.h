@@ -2,7 +2,7 @@
 #define OPTIONS_H
 
 #include <wx/wx.h>
-#include <wx/filename.h>
+
 
 class Options
 {
@@ -17,6 +17,7 @@ class Options
 		bool SetHostname(wxString host);
 		bool SetPassphrase(wxString pass);
 		bool SetRemoteCompileOut(wxString path_and_file);
+		bool SetLocalCompileOut(wxString path_and_file);
 
 		// Accessors:  (inlined)
 		wxString GetPscpApp() { return m_pscpProg; }
@@ -26,6 +27,7 @@ class Options
 		wxString GetHostname() { return m_hostname; }
 		wxString GetPassphrase() { return m_password; }
 		wxString GetRemoteCompileOut() { return m_remoteCompileOut; }
+		wxString GetLocalCompileOut() { return m_localCompileOut; }
 
 	private:
 		wxString m_pscpProg;
@@ -37,6 +39,7 @@ class Options
 		wxString m_password;
 
 		wxString m_remoteCompileOut;
+		wxString m_localCompileOut;
 };
 
 

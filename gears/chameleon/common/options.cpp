@@ -1,10 +1,9 @@
 #include "Options.h"
 
+// Includes:
+#include <wx/filename.h>
 #include "debug.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
 
 
 Options::Options() {
@@ -86,6 +85,11 @@ bool Options::SetRemoteCompileOut(wxString path_and_file) {
 	return true;
 }
 
+bool Options::SetLocalCompileOut(wxString path_and_file) {
+	m_localCompileOut = path_and_file;
+	return true;
+}
+
 
 //wxString GetPscpApp(); <-- Inlined
 //wxString GetPlinkApp(); <-- Inlined
@@ -94,4 +98,5 @@ bool Options::SetRemoteCompileOut(wxString path_and_file) {
 //wxString GetHostname(); <-- Inlined
 //wxString GetPassphrase(); <-- Inlined
 //wxString GetCompileOut(); <-- Inlined
+//wxString GetLocalOut(); <-- Inlined
 
