@@ -23,7 +23,6 @@ wxSSH::wxSSH(wxWindow* parent, wxWindowID id, Networking* network, const wxPoint
 	m_connected = false;
 	m_networking = network;
 	m_plinkStdIn = NULL;
-	m_plinkPid = -2;
 	m_inputBuffer = "";
 	m_isInESCsequence = false;
 }
@@ -75,14 +74,13 @@ void wxSSH::Disconnect()
 	if(m_connected)
 	{
 		m_networking->ForceKillProcess(m_plinkStdIn);
-	}
-	//m_connected = false; // done when the processterm event is caught
-	//m_plinkPid = -2; // ditto
+		m_connected = false;
 
-	GTerm::Reset();
-	set_mode_flag(CURSORINVISIBLE);
-	GTerm::Update();
-	Refresh();
+		GTerm::Reset();
+		set_mode_flag(CURSORINVISIBLE);
+		GTerm::Update();
+		Refresh();
+	}
 }
 
 
@@ -148,7 +146,7 @@ void wxSSH::OnPlinkErr(ChameleonProcessEvent &e)
 
 void wxSSH::OnPlinkTerm(ChameleonProcessEvent &e)
 {
-	wxLogDebug("Plink Terminated!");
+	wxLogDebug("Terminal's Plink Terminated!");
+
 	m_connected = false;
-	m_plinkPid = -2;
 }

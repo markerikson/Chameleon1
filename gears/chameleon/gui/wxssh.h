@@ -46,7 +46,6 @@ class wxSSH : public wxTerm
 		Networking* m_networking;
 		//wxString m_host;
 		//wxString m_user;
-		long m_plinkPid;
 		wxString m_inputBuffer;
 		bool m_isInESCsequence;
 
