@@ -122,6 +122,7 @@ public:
 	bool EvaluateOptions();
 
 	void InitializeDialog();
+	void UpdateChecklist();
 	void ExitDialog();
 	void OnEnter(wxCommandEvent &event);
 

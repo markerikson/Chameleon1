@@ -914,13 +914,69 @@ void ChameleonWindow::OnDebugCommand(wxCommandEvent &event)
 // my "I need to try something out, I'll stick it in here" function
 void ChameleonWindow::Test(wxCommandEvent& WXUNUSED(event))
 {
-	TextManager tm = m_terminal->GetTM();
+	
+	wxString case1a = "Breakpoint 1, main () at my program.cpp:65\n65              foo[2] = 'd';";
+	wxString case1b = "AnObject::setData(int) (this=, what=33) at stupid.cpp:13\n13              theData[point] = what;";
+	wxString case2 = "66              foo[3] = 'b'\n%";
+	wxString case3 = "Program received signal SIGFPE, Arithmetic exception.\nmain () at my program.cpp:71\n71              amount = foo[1] / 0;";
+	
+	wxRegEx reCase1 = "at (([[:alnum:]]|[[:blank:]]|\\.)+):([[:digit:]]+)";
+	wxRegEx reCase2 = "([[:digit:]]+)[[:blank:]]+";
 
-	//tm.PrintViewport();
+	if(reCase1.Matches(case1a))
+	{
+		wxLogDebug("Case 1a: match 1 = \"%s\", match 2 = \"%s\"", reCase1.GetMatch(case1a, 1), reCase1.GetMatch(case1a, 3));
+	}
+	else
+	{
+		wxLogDebug("No match for case 1");
+	}
 
-	//tm.PrintContents();
+	if(reCase1.Matches(case1b))
+	{
+		wxLogDebug("Case 1b: match 1 = \"%s\", match 2 = \"%s\"", reCase1.GetMatch(case1b, 1), reCase1.GetMatch(case1b, 3));
+	}
+	else
+	{
+		wxLogDebug("No match for case 1");
+	}
 
-	tm.PrintToBitmap();
+	if(reCase2.Matches(case2))
+	{
+		wxLogDebug("match 1: \"%s\"", reCase2.GetMatch(case2, 1));
+	}
+	else
+	{
+		wxLogDebug("No match for case 1");
+	}
+
+	wxString case3tmp = case3;
+	if(case3tmp.Left(8) == "Program ")
+	{
+		case3tmp.Remove(0, 8);
+
+		if(case3tmp.Left(8) == "received")
+		{
+			int newlineIndex = case3tmp.find_first_of("\n");
+			case3tmp.Remove(0, newlineIndex);
+
+			if(reCase1.Matches(case3tmp))
+			{
+				wxLogDebug("Match for \"Program recieved\".  match 1 = %s, match 2 = %s", 
+							reCase1.GetMatch(case3tmp, 1), reCase1.GetMatch(case3tmp, 3));
+			}
+			else
+			{
+				wxLogDebug("Found \"Program received\", but regex failed.");
+			}
+		}
+	}
+
+	
+
+
+	//TextManager tm = m_terminal->GetTM();
+	//tm.PrintToBitmap();
 	/*
 	wxString homepath = m_network->GetHomeDirPath();
 	wxString filename = "~/java/numeric/GCD.java";
@@ -964,17 +1020,7 @@ void ChameleonWindow::Test(wxCommandEvent& WXUNUSED(event))
 	
 	
 
-	/*
-	wxString testText = "(?) <untitled> 1";
-	wxRegEx reTesting = "\\((R|L|\\?)\\) ";
-
-	if(reTesting.Matches(testText))
-	{
-		wxString otherMatch = reTesting.GetMatch(testText, 1);
-		//wxLogDebug("match: \"%s\", otherMatch: \"%s\"", match, otherMatch);
-	}
 	
-	*/	
 
 
 	/*
@@ -1778,7 +1824,7 @@ void ChameleonWindow::EvaluateOptions()
 		edit->UpdateSyntaxHighlighting();
 	}
 
-	m_config->Write("Permissions/enabled", perms->GetPermCode());
+	m_config->Write("Permissions/enabled", perms->getGlobalEnabled());
 	m_config->Write("Network/hostname", m_options->GetHostname());
 	m_config->Write("Network/username", m_options->GetUsername());
 }

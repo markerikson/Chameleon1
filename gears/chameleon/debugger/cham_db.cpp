@@ -51,6 +51,7 @@ Debugger::Debugger(wxTextCtrl* outBox)
 	procLives = false;
 	status = DEBUG_DEAD;
 	classStatus = STOP;
+	debugProc = NULL;
 }
 //end constructors
 
@@ -61,6 +62,7 @@ Debugger::~Debugger()
 	stop(false);
 
 	//dump history & errors into debug file
+	/*
 	wxFile dumpFile("dump.txt");
 	dumpFile.Write("dump v0.1a");
 	for(int off = 0; off < MAX_HIST_ITEMS; off++)
@@ -75,6 +77,7 @@ Debugger::~Debugger()
 	}
 
 	dumpFile.Close();
+	*/
 
 	if(debugProc != NULL) {delete debugProc;}
 }//end ~Debugger

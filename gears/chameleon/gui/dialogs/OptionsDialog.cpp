@@ -392,25 +392,7 @@ void OptionsDialog::OnUpdateAuthCode( wxCommandEvent& event )
 	}
 	else
 	{
-		m_checkList->Clear();
-		m_permMappings.Clear();
-
-		wxString optionname;
-
-		for(int i = PERM_FIRST; i < PERM_LAST; i++)
-		{		
-			if(perms->isAuthorized(i))
-			{
-				optionname = perms->getPermName(i);
-				m_checkList->Append(optionname);
-				m_permMappings.Add(i);
-
-				if(perms->isEnabled(i))
-				{
-					m_checkList->Check(i, true);
-				}
-			}		
-		}
+		UpdateChecklist();
 
 		m_txtProfCode->Clear();
 		m_authCodeLabel->SetLabel(newAuthCode);
@@ -531,12 +513,7 @@ void OptionsDialog::InitializeDialog()
 {
 	Permission* perms = m_options->GetPerms();
 
-	for(int i = 0; i < m_checkList->GetCount(); i++)
-	{
-		int mappedPerm = m_permMappings[i];
-		
-		m_checkList->Check(i, perms->isEnabled(mappedPerm));
-	}
+	UpdateChecklist();
 
 	m_hostname->SetValue(m_options->GetHostname());
 	m_username->SetValue(m_options->GetUsername());
@@ -548,4 +525,28 @@ void OptionsDialog::InitializeDialog()
 
 	m_authCodeLabel->SetLabel(perms->GetAuthCode());
 
+}
+
+void OptionsDialog::UpdateChecklist()
+{
+	Permission* perms = m_options->GetPerms();
+	m_checkList->Clear();
+	m_permMappings.Clear();
+
+	wxString optionname;
+
+	for(int i = PERM_FIRST; i < PERM_LAST; i++)
+	{		
+		if(perms->isAuthorized(i))
+		{
+			optionname = perms->getPermName(i);
+			m_checkList->Append(optionname);
+			m_permMappings.Add(i);
+
+			if(perms->isEnabled(i))
+			{
+				m_checkList->Check(i, true);
+			}
+		}		
+	}
 }
