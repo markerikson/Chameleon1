@@ -83,7 +83,7 @@ wxString wxSSH::ConnectForDebug()
 	Refresh();
 
 	// Start the new Process
-	m_plinkStdIn = m_networking->StartRemoteCommand("who am i && sleep 1000000 || echo \"CHdEBUGGER-CONNECT\"", this);
+	m_plinkStdIn = m_networking->StartRemoteCommand("who am i && sleep 24h || echo \"CHdEBUGGER-CONNECT\"", this);
 	if(m_plinkStdIn != NULL) {
 		m_connected = true;
 		m_inputBuffer = "";
@@ -140,7 +140,7 @@ bool wxSSH::IsConnected(void)
 //    * ESC]1;stringBEL -- Set icon name to string
 //    * ESC]2;stringBEL -- Set window title to string
 //
-//(where ESC is the escape character (\033), and BEL is the bell character (\007).)
+//(where ESC is the escape character (\027), and BEL is the bell character (\007).)
 //
 // Currently the plan is just to surpress them because they aren't relevant to Chameleon
 //wxSSH should override the input mechanism, and when any of the xterm escape sequences are issued it should eat them(into a buffer).  If a max STRING length is reached with out getting BEL the buffer can be 're-issued'.
@@ -150,8 +150,20 @@ void wxSSH::OnPlinkOut(ChameleonProcessEvent &e)
 	wxString s = e.GetString();
 	int len = s.Length();
 
-	if(!m_isInESCsequence && !m_startingDebugConnection && !s.Contains((char)27)) {
-		// This test is provided to 'short-circuit' the logic below
+	wxString startEscSeq0 = wxString((char)27) + "]0;";
+	//wxString startEscSeq1 = wxEmptyString + (char)27 + "1;";
+	//wxString startEscSeq2 = wxEmptyString + (char)27 + "2;";
+
+	int start = s.Find(startEscSeq0);
+	if(start != -1) {
+		int end = s.Find((char)7);
+		if(end > start) {
+			s.Remove(start, end-start);
+			len -= (end-start);
+		}
+	}
+
+	if(!m_isInESCsequence && !m_startingDebugConnection) { // && !s.Contains((char)27)) {
 		ProcessInput(len, (unsigned char*)s.c_str());
 	}
 	else {
