@@ -421,22 +421,26 @@ void PlinkConnect::onTerminate(wxProcessEvent& event) {
 	// Determine which process:
 	long pid = event.GetPid();
 	ProcessInfo* p;
+	bool found = false;
 	for(ProcessInfoList::Node* node = m_processes.GetFirst(); node; node = node->GetNext() ) {
 		p = node->GetData();
 		if(p->pid == pid) {
+			found = true;
 			break;
 		}
 	}
 
-	//Remove and Delete the process:
-	delete p->proc;
-	delete p->stdinStream;
-	m_processes.DeleteObject(p);
-	delete p;
+	if(found) {
+		//Remove and Delete the process:
+		delete p->proc;
+		delete p->stdinStream;
+		m_processes.DeleteObject(p);
+		delete p;
 
-	if(m_processes.GetCount() == 0) {
-		m_isConnected = false;
-		wxLogDebug("All Plink Processes Terminated");
+		if(m_processes.GetCount() == 0) {
+			m_isConnected = false;
+			wxLogDebug("All Plink Processes Terminated");
+		}
 	}
 
 }
@@ -445,17 +449,21 @@ void PlinkConnect::ForceKillProcess(wxTextOutputStream* w)
 {
 	// Determine which process:
 	ProcessInfo* p;
+	bool found = false;
 	for(ProcessInfoList::Node* node = m_processes.GetFirst(); node; node = node->GetNext() ) {
 		p = node->GetData();
 		if( (int)&(*(p->stdinStream)) == (int)(&(*w)) ) { // yeah, this is a hack :(
+			found = true;
 			break;
 		}
 	}
 
 	// "terminateConnection(p); will check for any new output before actually killing the proc
 	//    and will cause the event.  Setting NULL will prevent this.
-	p->owner = NULL;
-	terminateConnection(p);
+	if(found) {
+		p->owner = NULL;
+		terminateConnection(p);
+	}
 }
 
 
