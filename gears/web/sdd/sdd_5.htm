@@ -9,156 +9,49 @@
 
 
 <h2><a name="overview">5.1 Overview</a></h2>
+  <p>Development is being done in the Object Oriented Design Paradigm.  As such, the bulk of the program has been split into six major components which are described below.<br> </p> 
+
+<h2><a name="architecture">5.2 Architecture</a><a name="architecture"></a><br></h2>
+
+<h3>5.2.1 GUI<br></h3>
+  <p>The GUI module handles the majority of the interactions with the user.&nbsp; It is, in a sense, the "master module" from which the others are invoked.&nbsp; It includes the main program window and its appearance, such as toolbars and window layout.&nbsp; It also includes the display portion of the interactive remote terminal.<br></p>
+
+<h3>5.2.2 Editor<br></h3>
+  <p>The editor module handles the rest of the user interaction, specifically that having to do with text entry and manipulation.&nbsp; <br></p>
+
+<h3>5.2.3 Networking<br></h3>
+  <p>The networking module includes the remote access portion of the interactive terminal (ie, conveying the input to the server and returning the output), as well as the file handling details.<br></p>
+
+<h3>5.2.4 Compilation<br></h3>
+  <p>The compiler module deals with all the relevant settings for the compiler, including linking options, directories, and input files.<br></p>
+  
+<h3>5.2.5 Debug<br></h3>
+  <p>The debugger module consists of two sections: the abstraction layer and the actual debugger.&nbsp; Since Chameleon is supposed to use both the built-in debugger and the Debugginator being developed by the Wizards of Zot, the abstraction layer handles the differences between the two and provides a single programming interface for the GUI to hook in to.&nbsp; The debugger itself is a wrapper around the open-source GDB debugger.<br></P
+
+<h3>5.2.6 Permissions<br></h3>
+  <p>The permissions manager is a fairly small module, but is vital to the rest of the program.&nbsp; Each of the other modules, particularly the GUI module, query it to see what features are currently enabled.&nbsp; This is done during startup, and may be done when program options are changed as well.<br></p>
 
 
-
-<p>Provide a couple sentences or paragraphs describing the
-
-overview of the software design.<br>
-
- --JC.<br>
-<br>
-</p> 
-
-<h2><a name="architecture">5.2 Architecture</a><a name="architecture"></a><br>
-</h2>
-<h2>
-
-
-
-</h2>
-<h3>5.2.1 GUI <br>
-</h3>
-
-
-
-<p>The GUI module handles the majority of the interactions with the
-user.&nbsp; It is, in a sense, the "master module" from which the
-others are invoked.&nbsp; It includes the main program window and its
-appearance, such as toolbars and window layout.&nbsp; It also includes
-the display portion of the interactive remote terminal.<br>
-</p>
- 
-
-<h3>5.2.2 Editor<br>
-</h3>
-
-
-
-<p>The editor module handles the rest of the user interaction,
-specifically that having to do with text entry and manipulation.&nbsp; <br>
-</p>
-<h3>5.2.3 Networking<br>
-</h3>
-The networking module includes the remote access portion of the
-interactive terminal (ie, conveying the input to the server and
-returning the output), as well as the file handling details.<br>
-<h3>5.2.4 Compiler<br>
-</h3>
-The compiler module deals with all the relevant settings for the
-compiler, including linking options, directories, and input files.<br>
-<h3>5.2.5 Debugger<br>
-</h3>
-The debugger module consists of two sections: the abstraction layer and
-the actual debugger.&nbsp; Since Chameleon is supposed to use both the
-built-in debugger and the Debugginator being developed by the Wizards
-of Zot, the abstraction layer handles the differences between the two
-and provides a single programming interface for the GUI to hook in
-to.&nbsp; The debugger itself is a wrapper around the open-source GDB
-debugger.<br>
-<h3>5.2.6 Permissions<br>
-</h3>
-The permissions manager is a fairly small module, but is vital to the
-rest of the program.&nbsp; Each of the other modules, particularly the
-GUI module, query it to see what features are currently enabled.&nbsp;
-This is done during startup, and may be done when program options are
-changed as well.<br>
 <h2><a name="constraints">5.3 Design Constraints</a></h2>
+  <p>For the networking modules, it is assumed that there is a server that users can log into via Secure Shell (SSH).</p> 
 
-
-
-<p>List any design constraints or assumptions that your design
-
-will be based on.<br>
-
- --JC.</p> 
-
-<h2><a name="global">5.4 Global Data Objects</a><br>
-</h2>
-
-
-
-<p>We plan to have no particular global objects other than those
-provide by the wxWindows toolkit by default (such as an Application
-object).&nbsp; <br>
-</p> 
+<h2><a name="global">5.4 Global Data Objects</a><br></h2>
+  <p>We plan to have no particular global objects other than those provide by the wxWindows toolkit by default (such as an Application object).&nbsp; Most objects belong to the GUI MOdule, which belongs to the wxWindows Application object.<br></p> 
 
 <h2><a name="errors">5.5 Error Handling</a></h2>
-
-
-
-<p>Explain how you plan to handle internal, user, and system
-
-errors. For example, if you have internal errors, will the assert
-
-macro be used liberally throughout your source code to detect
-
-such an item? Or if the user enters invalid data, do you have a
-
-consistent and user-friendly way to handle this for all cases? If
-
-your application is running and some part of the system goes down
-
-(e.g. the user pressed Ctl-Alt-Del), do you have a way to recover
-
-the work-in-progress file(s) from such an abrupt abort? Discuss
-
-these and any other related items in this section.<br>
-
- --JC.<br>
-Because of the level of user we are planning for, we plan to handle as
-many errors internally as possible and only alert the user if
-absolutely necessary.&nbsp; Error handling details have not been
-completely determined yet, but may include both wxWindows assert macros
-and standard C++ exceptions.&nbsp; Because of the nature of the
-program, user
-input errors are not nearly as big an issue as they might be with other
-types of applications.&nbsp; With that said, the user is responsible
-for making sure his data is saved on a frequent basis.&nbsp;&nbsp; We
-currently have no plans to aid in recovering a lost in-progress file.<br>
-</p> 
+  Because of the level of user we are targetting, we plan to handle as many errors internally as possible and only alert the user if absolutely necessary.&nbsp; Error handling details have not been completely determined yet, but may include both wxWindows assert macros and standard C++ exceptions.&nbsp; Because of the nature of the program, user input errors are not nearly as big an issue as they might be with other types of applications.  Because of the ownership heirarchy (wxApplication -> GUI -> modules) most errors will be dealt with by the GUI.  During testing and early stages, it is likely many errors will be displayed that won't be in the production version.<br></p> 
 
 <h2><a name="language">5.6 Development Language</a></h2>
+  <p>We are using standard C++, with macros and data structures from the wxWindows toolkit.&nbsp; We plan to compile Chameleon using several different compilers, including Microsoft's C++ compiler versions 6 and 7, and the GNU MinGW compiler. &nbsp;</p> 
+
+<h2><a name="precond">5.7 Preconditions and Postconditions</a></h2>
+  <p>Chameleon will be statically linked with the wxWindows libraries, eliminating the need for the wxWindows DLL to be distributed.&nbsp; It may, however, require a C++ runtime DLL.<br> </p> 
+  <br>
+  <p>Currently, the only data files that Chameleon will be dealing with will be C++ code files that are opened by the user.&nbsp; Upon an "Exit Program" event, the user will be notified if his current file has been modified since its last save and given an opportunity to save before exiting.<br></p>
 
 
 
-<p>We are using standard C++, with macros and data structures from the
-wxWindows toolkit.&nbsp; We plan to compile Chameleon using several
-different compilers, including Microsoft's C++ compiler versions 6 and
-7, and the GNU MinGW compiler. &nbsp;</p> 
-
-<h2><a name="precond">5.7 Preconditions and
-
-Postconditions</a></h2>
-
-
-
-<p>Chameleon will be statically linked with the wxWindows libraries,
-eliminating the need for the wxWindows DLL to be distributed.&nbsp; It
-may, however, require a C++ runtime DLL.<br>
-</p> 
-
-<p></p>
-<p>Currently, the only data files that Chameleon will be dealing with
-will be C++ code files that are opened by the user.&nbsp; Upon a "Exit
-Program" event, the user will be notified if his current file has been
-modified since its last save and given an opportunity to save before
-exiting.<br>
-</p>
-<p></p>
-
-
-
+<br>
 <hr>
 
 <center>
