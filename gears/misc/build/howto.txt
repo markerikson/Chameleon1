@@ -1,0 +1,24 @@
+======================================
+\src\msw\app.cpp, ~line 185
+Add to the end of the function:
+  delete dataOrig;
+
+The function instatiates a version of the "void* data" parameter by internally casting it:
+  const SomeStructType* const var = (const SomeSTructType* const)dataOrig;
+=======================================
+added the new fileconf.h(include/wx/) and fileconf.cpp (src/common/)
+=======================================
+make fix in grid.cpp(src/generic/)
+=======================================
+\include\wx\msw\wx.rc
+The pathes need to be absolute.
+All the pathes near the bottom of wx.rc should be followed by:
+  "disk:/path/to/wx/include/msw/whatever.blah"
+(Yes, those slashes are correct.)
+
+There are possible path issues relating to looking for absolute paths and finding relative ones.
+=======================================
+batch build wxWindows
+=======================================
+build STC
+=======================================

@@ -1,0 +1,70 @@
+Demo
+
+SETUP:
+pre "installation"
+
+
+DO IT:
+start it
+default: text editor with remote files
+type in hello world (no newline at end of file)
+type in username & password
+try save
+ok fingerprint
+save remotely as "testprog.cpp"
+
+[phase 1 - terminal, auto indent, highlighting]  
+using prof program generate code
+enter code & enable
+"g++ testprog.cpp" in terminal
+"./a.out" in terminal
+Do an ls to demonstrate color scrolling
+
+[phase 2 - compiler, local]
+enter code (F3D3950010971) & enable
+open local "testprog2.cpp"
+show of tabs
+save "testprog2.cpp" remotely
+click compile
+see the errors in the compiler tab
+fix errors
+click compile
+ok "need to save" message
+save & compile
+tab to terminal and run it
+
+[phase 3 - projects]
+enter code (34DA1348031611) & enable
+create new project
+add files (including files to be debugged later)
+click compile
+show warning under each file
+
+[phase 4 - debugger]
+enter code (1A75624935039) & enable
+Set a breakpoint on the first line of main, fName
+Add a watch on fName
+Run the program, which should hit the breakpoint
+Add watches for gallagherDance, yugioh, foo, point, and theMonkey (which is a non-existent variable)
+Show the output in the IO panel
+Single-step through the creation of foo and the assignment of gallagherDance, down to the first .setData()
+Step _into_ .setData() and watch the variables change values, and step through the rest of .setData()
+Step _over_ .setData()
+Step _into_ and _out of_ init()
+Set a breakpoint on the cout statement inside of the while loop and hit continue
+When the breakpoint is hit, go to the IO tab
+Hit step (may need to hit it twice), click on the panel, type in a number, and watch the jaw drop
+Step into if(amount), then do a "run to cursor" to the last cout statement after the for loop
+Hit continue
+When the breakpoint inside the while loop is hit, disable it, 
+hit continue, type in a number
+when it loops again, type in 0 to exit
+Run the program again, hit stop when it hits the first breakpoint.
+
+[phase 5 - advanced compiling]
+enter code (C7881014860031) & enable
+close project
+open another project
+click compile
+double click the errors
+

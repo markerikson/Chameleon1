@@ -1,0 +1,38 @@
+It would have been nice for Options to emit an event whenever things changed.
+Get rid of callbacks - make Chameleon mostly event driven?
+Perhaps warn the user of the status right after setting the net info in the options box?
+Directory caching.
+Remove the word "File" from "Save Project File" (user doesn't need to know of it as a file - user manual can explain this) -- Perhaps call it "Project Settings"
+Get rid of GTelnet (convert references from GTelnet to GTerm in wxterm.cpp)
+Have appropriate file icons when in "All files" filtering.
+when in simple mode, pass the actual g++ execution command so it can be shown.
+After changing window options keep the focus on the same tab (if it still exists)
+2 stage Terminal button: Connect, Disconnect
+Any project modifications nullify a previous compilation
+keep track of 'included in build' in the project file
+!!Local Processes!!
+Pass g++ command to compiler output with each START event so in simple mode it will display it a
+
+
+=========================================== Future Re-Design:
+Make a ProcessManager class.  Convert PlinkConnect, and pull the local stuff out of Networking.
+Tools{ Debugger, Networking, Editor, Permissions, Compiler, ProcessManager, Options }
+
+==ChameleonApp==
+Has: Tools and GUI representations.
+Arranges: EditorWindow, ProjectWindow, ChameleonPanel.
+Pops up: RemoteFileDialog and OptionsDialog.
+Does: Layout, Show/Hide, sends menu/button commands to the objects, determines focus.
+
+==ChameleonPanel==
+Has: DebuggerPanel, CompilerPanel, and TerminalPanel.
+
+==______Window==
+Needs a pointer to it's equivalent child passed upon instatiation.
+Sets and Shows child info.
+Catches (appropriate) events from it's children.
+
+
+Changes:
+Move direct-calls to tools out of ChameleonApp and into the appropriate -Window/-Dialog.  ex. Move options setting stuff out of ChameleonApp and into OptionsDialog.
+

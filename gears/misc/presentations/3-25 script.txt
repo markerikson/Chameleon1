@@ -1,0 +1,75 @@
+Auth Code: 4AC0691331711
+
+source Code:
+-------------------------------------------------------------------
+	cout << "This is a demo program." << endl;
+//#error Error 1
+
+	char c = 'X';
+	
+	cout << "What is the first initial of your last name? ";
+	cin >> c;
+
+	int i;
+	for(i = 0; i < 142; i++) {
+#warning Warning 1
+		if(i < 10) {
+			cout << " ";
+		}
+		if(i < 100) {
+			cout << " ";
+		}
+		
+		cout << i << "   ";
+	}
+	
+	cout << "See the loveli lakes, "
+		<< "The wonderful telephone system, "
+#warning Warning 2
+//#error Example error 3
+		<< "And mani interesting furry animals, "
+		<< "Including the majestic moose, "
+		<< "A moose once bit my sister... ";
+
+	for(; i < 250; i++) {
+		cout << i << " ";
+	}
+	
+	cout << endl;
+
+	
+	
+#warning Warning 2
+
+---------------------------------------------------------------
+
+
+Scripts:
+Prof Program
+(Perms of 0)
+Start Chameleon
+Enter an invalid Auth Code
+Enter a Valid Autho Code (appropriate for demo)
+Enter Username & Password (james)
+Enable Terminal & Connect
+"ls /usr/bin"
+Scroll Terminal
+Open Demo.cpp
+Term: "g++ demo.cpp"
+
+Copy in new code
+
+Enable Compile
+Click Compile
+Fix Errors
+Click Compile
+Term: run the program
+
+Enable Local & Projec.
+Open a local file
+show "(L)" & "(R)"
+
+Open Local Proj. ("collection of files for user ease, & allow compiling as a group)
+Open & Close some files/tabs
+Remove a file -- file2.cpp
+Add a file -- file4.cpp

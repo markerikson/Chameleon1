@@ -1,0 +1,22 @@
+CVS 'Style Guide' version 0.1
+
+$CVSROOT=":ext:userfoo@pc160218:/home/cvsroot"
+There are 2 modules: gears_web and gears_chameleon
+
+Committing:
+$ cvs checkin -m "note about what, and why, you are checking in your changes"
+Do not commit code that won't build with what is currently in the repository.
+
+Adding/Removing Files:
+$ cvs add file ; cvs checkin -m "added file because blah blah" file
+$ cvs remove file ; cvs checkin -m "removed file because blah blah"
+
+Tagging:
+(left to the Configuration Manager)
+$ cvs tag foo-1_0 . --or-- $ cvs tag foo-1_0 .
+foo-1_0 = 1.0 release of module
+
+Initial Imports:
+$ cvs import -m "Imported stuff" softeng/web gears web-0_0
+Vendor: gears
+Revisions

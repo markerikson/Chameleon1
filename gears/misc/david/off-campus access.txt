@@ -1,0 +1,12 @@
+Connecting to The Beast from off campus:
+
+I have set up the Beast to listen for SSH connections on port 5190 (a hole in CU's firewall).  Combined with SSH's capabilities, this is excellent.
+
+win32
+  *  CVS can easily be accomplished (because it directly uses SSH), just configure it to use port 5190.
+  *  For any other service (ie. web/apache) you will need to take advantage of SSH's port forwarding.  The program TTSSH claims to be capable. <http://www.zip.com.au/~roca/ttssh.html> & <http://www.zip.com.au/~roca/ttsshdoc.html>
+
+linux
+  *  Again, CVS can easily be used (because it directly uses SSH), just configure it to use port 5190.
+  *  For any other service (ie. web/apache) use SSH port forwarding.
+

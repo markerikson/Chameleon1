@@ -1,0 +1,10 @@
+http://discuss.fogcreek.com/joelonsoftware/default.asp?cmd=show&ixPost=122269
+
+http://techrepublic.com.com/5102-6268-1058177.html
+
+http://microsoft.com -- "command-line reference a-z"
+
+http://www.ss64.com/nysyntax/index.html
+
+command.com is the 16-bit verison of the command shell
+cmd.exe

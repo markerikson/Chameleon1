@@ -1,0 +1,19 @@
+=======================================================
+xterm escape sequences
+
+Window and icon titles may be changed in a running xterm by using XTerm escape sequences. The following sequences are useful in this respect:
+
+    * ESC]0;stringBEL -- Set icon name and window title to string
+    * ESC]1;stringBEL -- Set icon name to string
+    * ESC]2;stringBEL -- Set window title to string
+
+where ESC is the escape character (\033), and BEL is the bell character (\007).
+
+Printing one of these sequences within the xterm will cause the window or icon title to be changed.
+
+Note: these sequences apply to most xterm derivatives, such as nxterm, color-xterm and rxvt. Other terminal types often use different escapes; see the appendix for examples. For the full list of xterm escape sequences see the file ctlseq2.txt, which comes with the xterm distribution, or xterm.seq, which comes with the rxvt distribution.
+=======================================================
+
+wxSSH should override the input mechanism, and when any of the xterm escape sequences are issued it should eat them(into a buffer).  If a max STRING length is reached with out getting BEL the buffer can be 're-issued'.
+
+**Note this in the documentation (if a vt52 printscreen is sent, the screen will be blank until MAX characters are sent)

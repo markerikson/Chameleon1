@@ -1,0 +1,16 @@
+===2.5.1 Project Settings===
+MS Visual Studio; Project->Settings...
+ C/C++: General, Preprocessor Definitions:
+   From "WIN32,_DEBUG,_CONSOLE,_MBCS"
+   To "_DEBUG,WIN32,_WINDOWS,WINVER=0x400,_MT,wxUSE_GUI=1,__WXDEBUG__,WXDEBUG=1"
+   (Also, consider adding "MSVC6")
+ C/C++: Code Generation, Use Runtime Library:
+   Debug Multithreaded DLL
+ C/C++: Preprocessor, Additional Include Directories:
+   c:\wxWindows-2.5.1\include,c:\wxWindows-2.5.1\lib\vc_lib\mswd
+ Link: General, Object/Library modules:
+   Add " comctl32.lib rpcrt4.lib wsock32.lib wxbase25d.lib wxmsw25d_core.lib wxregexd.lib wxjpegd.lib wxpngd.lib wxtiffd.lib wxzlibd.lib wxmsw25d_stc.lib wxmsw25d_adv.lib "
+ Link: Input, Additional Library path:
+   c:\wxWindows-2.5.1\lib\vc_lib
+ Resources: Additional resource include directories:
+   c:\wxWindows-2.5.1\include
