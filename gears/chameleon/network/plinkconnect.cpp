@@ -160,6 +160,8 @@ void PlinkConnect::spawnConnection()
 		p->outputBuf = "";
 		p->owner = NULL; // set when process gets used
 		m_processes.Append(p);
+
+		*(p->stdinStream) << "echo \"Successful Login\"" << endl;
 	}
 
 	return;
@@ -249,7 +251,7 @@ wxString PlinkConnect::executeSyncCommand(wxString command)
 //Private:
 void PlinkConnect::parseOutput(ProcessInfo* p, wxString output, wxString errLog)
 {
-//	wxLogDebug("Plink stdout: \"" + output + "\"");
+	wxLogDebug("Plink stdout: \"" + output + "\"");
 //	wxLogDebug("Plink stderr: \"" + errLog + "\"");
 
 	if(p->state != PC_ENDING) {
@@ -257,7 +259,7 @@ void PlinkConnect::parseOutput(ProcessInfo* p, wxString output, wxString errLog)
 	}
 
 	if(p->state == PC_STARTING) {
-		if(p->outputBuf.Contains("Last login:")) { // <------------------------ FIX ME !!
+		if(p->outputBuf.Contains("Successful Login")) { // <------------------------ FIX ME !!
 			// Yeah!  It succeeded
 			p->outputBuf = "";
 			m_isConnected = true;
@@ -271,8 +273,8 @@ void PlinkConnect::parseOutput(ProcessInfo* p, wxString output, wxString errLog)
 			terminateConnection(p);
 		}
 		else {
+			//*(p->stdinStream) << "echo \"Successful Login\"" << endl; <- backup plan
 			// Do nothing.  Just continue waiting.
-//*(p->stdinStream) << "echo \"Last Login:\"" << endl;
 
 			// (in the meantime:)
 			m_message += errLog;
