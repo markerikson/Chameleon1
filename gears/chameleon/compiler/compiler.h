@@ -2,6 +2,8 @@
 #define _CHAMEL_COMPILER_H_
 
 #include <wx/wx.h>
+#include <wx/txtstrm.h>
+#include "../common/process2.h"
 #include "../network/networking.h"
 #include "../common/projectinfo.h"
 
@@ -16,13 +18,16 @@ class Compiler : public wxEvtHandler
 		//void AdvancedCompileProject(ProjectInfo* proj, CompilerWindow* window);
 
 	private:
-		void OnProcessTerm(wxEvent& e);
-		void OnProcessOut(wxEvent& e);
-		void OnProcessErr(wxEvent& e);
+		void OnProcessTerm(wxProcess2EndedEvent& e);
+		void OnProcessOut(wxProcess2StdOutEvent& e);
+		void OnProcessErr(wxProcess2StdErrEvent& e);
 
 		// Data:
 		Networking* m_network;
+		wxTextCtrl* m_out;
+		wxProcess2* m_proc;
 		bool m_isCompiling;
+		bool m_receivedToken;
 		long m_compilePID;
 
 

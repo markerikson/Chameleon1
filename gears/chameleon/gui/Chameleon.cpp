@@ -2578,7 +2578,14 @@ void ChameleonWindow::OnDisconnect(wxCommandEvent &event)
 
 void ChameleonWindow::OnCompile(wxCommandEvent &event)
 {
-	m_compiler->SimpleCompileFile("some file", m_compilerOutput);
+	m_compilerOutput->Clear();
+
+	if(m_remoteMode) {
+		m_compiler->SimpleCompileFile(m_currentEd->GetFileNameAndPath(), m_compilerOutput);
+	}
+	else {
+		*m_compilerOutput << "Can't do local files yet.";
+	}
 }
 
 void ChameleonWindow::OnFileNewProject(wxCommandEvent &event)
