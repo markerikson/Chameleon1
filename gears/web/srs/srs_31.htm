@@ -5,96 +5,44 @@
 
 <h2><a name="behav">3.1 Behavioral Requirements</a></h2>
 
-  <p>This
-section details various behaviors manifested by Chameleon. As actual
-design of this IDE is under construction, these are certainly not
-exhaustive nor set in stone.</p>
+  <p>This section details various behaviors manifested by Chameleon. As actual design of this IDE is under construction, these are certainly not exhaustive nor set in stone.</p>
 
   <h3><a name="3.1.1">3.1.1</a> Master Control Switch</h3>
   The application shall allow control over available features.
-  <p></p><p>The application will allow the instructor control how many features the users are allowed 
-  to see.  In a single-user instructor-free environment, this feature is rendered nearly pointless, so the single 
-  release version will be released with a generic permissions manager freely enabled through a menu command.</p>
-<p> The instructor will be able to selectively enable and disable features through the permissions
-manager.  Features not enabled by the instructor will remain invisible to the user.</p><p></p>
+  <p>The application will allow the instructor control how many features the users are allowed to see.  In a single-user instructor-free environment, this feature is rendered nearly pointless, so the single release version will be released with a generic permissions manager freely enabled through a menu command.</p>
+  <p> The instructor will be able to selectively enable and disable features through the permissions
+manager.  Features not enabled by the instructor will remain invisible to the user.</p>
 
   <h3><a name="3.1.2">3.1.2</a> Terminal Experience</h3>
   The application shall include a terminal.
-  <p></p><p>The
-application will include a terminal window with access to a Linux
-server. The user will be presented with command-line access to the
-Linux server. This feature will be disabled by default, regardless of a
-master switch, when running on a stand-alone client. Ability to use the
-command line is purely dependent on user, as Chameleon does not
-guarantee help or tutorials for using the terminal.</p><p></p>
+  <p>The application will include a terminal window with access to a Linux server. The user will be presented with command-line access to the Linux server. This feature will be disabled by default, regardless of a master switch, when running on a stand-alone client. Ability to use the command line is purely dependent on user, as Chameleon does not guarantee help or tutorials for using the terminal.</p>
 
   <h3><a name="3.1.3">3.1.3</a> Debugging</h3>
   The product provide debugging capabilities.
-  <p></p><p>The application will provide either base-level debugging ability (considered here as error detection and 
-  reporting while compiling code) or extended debugging ability.  This functionality has been defined as the 
-  ability to step code line by line, stepping over lines of code, or executing whole functions / blocks of code 
-  but waiting for a step command at the next line after the block, or stopping execution at defined break-points.  
-  The user will be given the ability to do this through keyboard shortcuts (typically function keys) and through 
-  buttons.  The ability of the user to use this feature is dependent on two things: 1) the master switch enabling 
-  these features, 2) the user's ability to comprehend and apply this tool.  While using this tool, the user will 
-  be presented with information communicating 1) position in the program currently about to be 'stepped', 2) status 
-  of immediate variables in the line, 3) ability to continue running the program without debugging or terminating 
-  the debugger.</p>
-<p>Chameleon should also be able to utilize the "Debugginator" graphical debugger currently in development by the 
-"Wizards of Zot" team, using the same controls as the standard debugger.  </p><p></p>
+  <p>The application will provide either base-level debugging ability (considered here as error detection and reporting while compiling code) or extended debugging ability.  This functionality has been defined as the ability to step code line by line, stepping over lines of code, or executing whole functions / blocks of code but waiting for a step command at the next line after the block, or stopping execution at defined break-points.  The user will be given the ability to do this through keyboard shortcuts (typically function keys) and through buttons.  The ability of the user to use this feature is dependent on two things: 1) the master switch enabling these features, 2) the user's ability to comprehend and apply this tool.  While using this tool, the user will be presented with information communicating 1) position in the program currently about to be 'stepped', 2) status of immediate variables in the line, 3) ability to continue running the program without debugging or terminating the debugger.</p>
+  <p>Chameleon should also be able to utilize the "Debugginator" graphical debugger currently in development by the "Wizards of Zot" team, using the same controls as the standard debugger.</p>
 
   <h3><a name="3.1.4">3.1.4</a> Code Completion</h3>
   The product shall perform code completion.
-  <p></p><p>The application will attempt to assist in completing code-tokens based on the initial characters as entered
-   by the user.  While the user is typing code, when the application sees a recognizable set of characters, either 
-	user defined or language-defined, the application will then suggest the remaining line to the user in the form 
-	of a tooltip-style window.  The user may then press the Tab key to accept the text and the cursor will jump 
-	to the point after the selection.  If the user continues typing, the selection will change based on the continued 
-	stream of characters.  If the entered characters no longer match any known pattern, the selection will terminate.
-	Otherwise the selection will be consistently updated with the closest matching pattern until one of the two 
-	conditions mentioned before occur. </p><p></p>
+  <p>The application will attempt to assist in completing code-tokens based on the initial characters as entered by the user.  While the user is typing code, when the application sees a recognizable set of characters, either user defined or language-defined, the application will then suggest the remaining line to the user in the form of a tooltip-style window.  The user may then press the Tab key to accept the text and the cursor will jump to the point after the selection.  If the user continues typing, the selection will change based on the continued stream of characters.  If the entered characters no longer match any known pattern, the selection will terminate. Otherwise the selection will be consistently updated with the closest matching pattern until one of the two conditions mentioned before occur. </p>
 
   <h3><a name="3.1.5">3.1.5</a> Syntax Highlighting</h3>
   The product shall perform syntactical highlighting.
-  <p></p><p>The
-application will visually color special words based on a predefined
-library of terms and an associated color. User defined code structures
-(such as a class) will be added to a dynamic per-program library and
-will be colored as user variables. As the user enters code, the
-application will color certain completed words that it is able to
-recognize. The significance of the color is based on the language being
-implemented in the IDE (C++). For example, typing the word 'int' will
-result in a color, but typing 'integral' will not.<br>
-</p>
-<p>Once syntax highlighting is enabled, the user will be able to
-customize the colors used in highlighting.&nbsp;&nbsp; The
-customization interface will&nbsp; most likely resemble the one from
-the PythonWin editor:<br>
-<img src="images/syntaxoptions.png" title="" alt="" style="width: 411px; height: 349px;"><br>
-</p>
-<p></p>
+  <p>The application will visually color special words based on a predefined library of terms and an associated color. User defined code structures (such as a class) will be added to a dynamic per-program library and will be colored as user variables. As the user enters code, the application will color certain completed words that it is able to recognize. The significance of the color is based on the language being implemented in the IDE (C++). For example, typing the word 'int' will result in a color, but typing 'integral' will not.<br></p>
+  <p>Once syntax highlighting is enabled, the user will be able to customize the colors used in highlighting.&nbsp;&nbsp; The customization interface will&nbsp; most likely resemble the one from the PythonWin editor:<br>
+  <img src="images/syntaxoptions.png" title="" alt="" style="width: 411px; height: 349px;"><br></p>
 
-  <h3><a name="3.1.6">3.1.6</a> Project Management</h3>
+  <h3><a name="3.1.6">3.1.6</a> Code Block Hiding</h3>
+  The product shall be able to 'colapse' blocks of code out of the programmers view.
+  <p>The application will be able to identify blocks of code, generally based on open/close curly braces, and allow the users to colapse them out of view.</p>
+
+  <h3><a name="3.1.7">3.1.7</a> Project Management</h3>
   The product shall be able to handle and manage multiple-file projects.
-  <p></p><p>The
-application will be able to manage user defined projects consisting of
-more than just one source code file. The product will be able to
-properly compile such projects, and be able to debug them.</p><p></p>
+  <p>The application will be able to manage user defined projects consisting of more than just one source code file. The product will be able to properly compile such projects, and be able to debug them.</p>
 
-  <h3><a name="3.1.7">3.1.7</a> Generic Editor Behaviors</h3>
+  <h3><a name="3.1.8">3.1.8</a> Generic Editor Behaviors</h3>
   The product shall perform generic editing capabilities.
-  <p></p><p>The
-central portion of any IDE is its ability to edit text.&nbsp; Chameleon
-will use a textbox with extended capabilities as its editor
-component.&nbsp; It will be able to open and save any standard text
-file, although the primary support will be for C++ code files.&nbsp;
-There will also be text manipulation abilities,&nbsp; including
-auto-indentation, the ability to find and replace text, and the
-standard clipboard operations of cut, copy, and paste.&nbsp; It will
-also support basic text file printing.&nbsp; One optional feature that
-may be added if time permits is the ability to automatically format the
-indentation of a C++ file.<br>
-</p><p></p>
+  <p>The central portion of any IDE is its ability to edit text.&nbsp; Chameleon will use a textbox with extended capabilities as its editor component.&nbsp; It will be able to open and save any standard text file, although the primary support will be for C++ code files.&nbsp; There will also be text manipulation abilities,&nbsp; including auto-indentation, the ability to find and replace text, and the standard clipboard operations of cut, copy, and paste.&nbsp; It will also support basic text file printing.&nbsp; One optional feature that may be added if time permits is the ability to automatically format the indentation of a C++ file.<br></p>
 
 
 <hr>
@@ -112,7 +60,7 @@ indentation of a C++ file.<br>
 </tbody></table>
 </center>
 
-Document modified on 
+Document modified on
 
 <script type="text/javascript" language="JavaScript">
 <!--
