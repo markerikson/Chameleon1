@@ -32,8 +32,10 @@ enum WindowID
 	ID_SAVE_AS,
 	ID_PAGECLOSE,
 	ID_CLOSETAB,
-	ID_OPEN_REMOTE,
-	ID_SAVE_REMOTE,
+	ID_OPEN_SOURCE_LOCAL,
+	ID_OPEN_SOURCE_REMOTE,
+	ID_OPEN_PROJECT_LOCAL,
+	ID_OPEN_PROJECT_REMOTE,
 
 
 	// major widgets
@@ -60,16 +62,21 @@ enum WindowID
 	ID_OPTIONS,
 
 
-	// temporary - IDs for working with multiple documents
-
-
 	ID_COMPILE,
 
 	ID_STARTCONNECT,
 
 	ID_TEST,
 
-	ID_ADDPROJECTFILE,
+	ID_PROJECT_ADDFILE,
+	ID_PROJECT_REMOVEFILE,
+
+	ID_PROJECT_ADD_SOURCEFILE,
+	ID_PROJECT_ADD_HEADERFILE,
+	ID_PROJECT_ADD_LIBRARYFILE,
+	ID_PROJECT_REMOVE_SOURCEFILE,
+	ID_PROJECT_REMOVE_HEADERFILE,
+	ID_PROJECT_REMOVE_LIBRARYFILE,
 
 	// debugging IDs
 	ID_DEBUG_IDS_FIRST,
@@ -111,7 +118,12 @@ wxString GlobalPermStrings[] = {"Syntax highlighting",
 								"Compilation",
 								"Test permission"};
 
+char AuthCodeLookupTable[] = {'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
+								'U', 'V', 'W', 'X', 'Y', 'Z', 'A', 'B', 'C', 'D', 'E', 'F'};
+
 #endif
+
+
 
 WX_DECLARE_HASH_MAP( int,
 					int,
