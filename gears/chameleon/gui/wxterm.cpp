@@ -56,9 +56,7 @@
 #include "wxterm.h"
 
 #include "../common/debug.h"
-//#ifdef _DEBUG
-//#define new DEBUG_NEW
-//#endif
+
 
 void WinMessageBeep();
 
@@ -389,7 +387,7 @@ BEGIN_EVENT_TABLE(wxTerm, wxWindow)
   EVT_KEY_DOWN(wxTerm::OnKeyDown)
 #endif
 
-  //EVT_SIZE						(wxTerm::UpdateSize)
+  EVT_SIZE						(wxTerm::OnSize)
   EVT_SET_FOCUS					(wxTerm::OnGainFocus)
   EVT_KILL_FOCUS				(wxTerm::OnLoseFocus)
 END_EVENT_TABLE()
@@ -461,7 +459,8 @@ wxTerm::wxTerm(wxWindow* parent, wxWindowID id,
 
   m_bitmap = 0;
 
-  ResizeTerminal(width, height);
+  
+  //ResizeTerminal(width, height);
 
   
   //SetVirtualSize(m_charWidth * 80, m_charHeight * 100);
@@ -473,6 +472,12 @@ wxTerm::wxTerm(wxWindow* parent, wxWindowID id,
 
   wxFont monospacedFont(10, wxMODERN, wxNORMAL, wxNORMAL, false, "Courier New");
   SetFont(monospacedFont);
+
+
+  // 10pt Courier New is 8 pixels wide and 16 pixels high... set up
+  // a default client size to match
+  SetClientSize(m_charsInLine * 8, m_linesDisplayed * 16);
+  UpdateSize();
 }
 
 wxTerm::~wxTerm()
@@ -723,6 +728,8 @@ wxTerm::OnChar(wxKeyEvent& event)
 	  if(GTerm::IsScrolledUp())
 	  {
 		  GTerm::Scroll(MAXHEIGHT, false);
+		  GTerm::Update();
+		  Refresh();
 	  }
 
     int
@@ -1111,6 +1118,10 @@ void
 wxTerm::DoDrawCursor(int fg_color, int bg_color, int flags,
                    int x, int y, unsigned char c)
 {
+	if(GTerm::IsScrolledUp())
+	{
+		return;
+	}
   int
     t;
 
@@ -1179,6 +1190,8 @@ wxTerm::DrawCursor(int fg_color, int bg_color, int flags,
   m_curBG = bg_color,
   m_curFlags = flags;
   m_curChar = c;
+
+
 
   if(m_timer.IsRunning())
     m_timer.Stop();
@@ -1303,7 +1316,9 @@ wxTerm::Bell()
 #endif
 }
 
-void wxTerm::UpdateSize(int &termheight, int &linesReceived)
+//void wxTerm::UpdateSize(int &termheight, int &linesReceived)
+//void wxTerm::UpdateSize(wxSizeEvent &event)
+void wxTerm::UpdateSize()
 {
 	//event.Skip();
 	if(m_inUpdateSize)
@@ -1333,8 +1348,8 @@ void wxTerm::UpdateSize(int &termheight, int &linesReceived)
 	{
 		wxString message;
 
-		message.Printf("numCharsInLine: %d, numLinesShown: %d", numCharsInLine, numLinesShown);
-		wxLogDebug(message);
+		//message.Printf("numCharsInLine: %d, numLinesShown: %d", numCharsInLine, numLinesShown);
+		//wxLogDebug(message);
 
 
 		// FINALLY!  Finally killed the memory leak!  The problem is that somehow a size event
@@ -1546,4 +1561,9 @@ void wxTerm::ScrollTerminal(int numLines, bool scrollUp /* = true */)
 	GTerm::Scroll(numLines, scrollUp);
 	Refresh();
 
+}
+
+void wxTerm::OnSize(wxSizeEvent &event)
+{
+	UpdateSize();
 }

@@ -163,7 +163,9 @@ public:
   wxString GetSelection();
   void SelectAll();
 
-  void UpdateSize(int &termheight, int &linesReceived);
+  void UpdateSize();
+  //void UpdateSize(int &termheight, int &linesReceived);
+  //void UpdateSize(wxSizeEvent &event);
 
   /*
   **  GTerm stuff
@@ -201,6 +203,7 @@ private:
   void OnMouseMove(wxMouseEvent& event);
   void OnTimer(wxTimerEvent& event);
   void OnActivate(wxActivateEvent &event);
+  void OnSize(wxSizeEvent &event);
 
   void OnGainFocus(wxFocusEvent &event);
   void OnLoseFocus(wxFocusEvent &event);

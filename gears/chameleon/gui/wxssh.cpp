@@ -28,6 +28,8 @@
 */
 
 #include "wxssh.h"
+#include "../common/debug.h"
+
 
 BEGIN_EVENT_TABLE(wxSSH, wxTerm)
 	EVT_PROCESS2_STDOUT(wxSSH::OnPlinkOut)
