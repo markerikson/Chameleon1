@@ -45,7 +45,8 @@ Permission::Permission()
 	if(!in)
 	{
 		io = false;
-		permCode = 0;
+		permCode = -1764;
+		authCode = -729;
 	}
 	else
 	{
@@ -60,7 +61,7 @@ Permission::Permission()
 	permCode = (permCode / fuzz) + fuzz;
 	fuzz = permCode;
 
-	authCode = (authCode + (topaz * topaz)) / (-topaz);
+	authCode = (authCode + (topaz * topaz)) / topaz;
 	topaz = authCode;
 
 	//DEBUG CODE//
@@ -122,7 +123,7 @@ Permission::~Permission()
 		authCode = (authCode * (NOISE - 15)) - ((NOISE - 15) * (NOISE - 15));
 
 		fout<<NOISE + NOISE<<endl
-			<<NOISE / (NOISE - (NOISE / 2))<<endl
+			<<(NOISE / (NOISE - (NOISE / 2)))<<endl
 			<<permCode<<endl
 			<<NOISE<<endl
 			<<(NOISE * NOISE)<<endl
