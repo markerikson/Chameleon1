@@ -68,7 +68,11 @@ CompilerOutputPanel::CompilerOutputPanel( wxWindow* parent, ChameleonWindow* mai
 
 	
 	SetAdvanced(false);
-	m_grid->SetEditable(false);
+
+	wxFont monospacedFont(10, wxMODERN, wxNORMAL, wxNORMAL, false, "Courier New");
+	m_textbox->SetFont(monospacedFont);
+	m_grid->SetDefaultCellFont(monospacedFont);
+	m_grid->SetEditable(false);	
 	//m_grid->EnableGridLines(false);
 	m_grid->SetGridLineColour(wxColour("black"));
 	m_grid->SetColumnWidth(0, 200);
@@ -79,6 +83,8 @@ CompilerOutputPanel::CompilerOutputPanel( wxWindow* parent, ChameleonWindow* mai
 	m_grid->SetCellHighlightPenWidth(0);
 
 	m_mainFrame = mainFrame;
+
+	ClearOutput();
 }
 
 /*!
@@ -127,10 +133,10 @@ void CompilerOutputPanel::CreateControls()
     wxGrid* item4 = new wxGrid( item1, ID_COMPILERGRID, wxDefaultPosition, wxSize(200, 150), wxSUNKEN_BORDER );
     m_grid = item4;
     item4->SetDefaultColSize(80);
-    item4->SetDefaultRowSize(16);
-    item4->SetColLabelSize(16);
-    item4->SetRowLabelSize(0);
-    item4->CreateGrid(5, 3, wxGrid::wxGridSelectRows);
+    item4->SetDefaultRowSize(20);
+    item4->SetColLabelSize(20);
+    item4->SetRowLabelSize(20);
+    item4->CreateGrid(1, 3, wxGrid::wxGridSelectRows);
     item2->Add(item4, 1, wxGROW|wxALL, 5);
 
 ////@end CompilerOutputPanel content construction
@@ -317,4 +323,18 @@ void CompilerOutputPanel::OnGridDoubleClick(wxGridEvent &event)
 		m_mainFrame->FocusOnLine(filename, (int)linenum, false);
 	}
 	
+}
+
+void CompilerOutputPanel::SetFocus()
+{
+	if(m_isAdvanced)
+	{
+		m_grid->SetFocus();
+		m_grid->Refresh();
+	}
+	else
+	{
+		m_textbox->SetFocus();
+		m_textbox->Refresh();
+	}
 }

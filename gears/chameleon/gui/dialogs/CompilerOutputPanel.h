@@ -89,6 +89,8 @@ public:
 
 ////@end CompilerOutputPanel member function declarations
 
+	virtual void SetFocus();
+
 	bool IsAdvanced() { return m_isAdvanced; }
 
 	void ClearOutput();
