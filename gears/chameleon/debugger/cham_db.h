@@ -72,7 +72,7 @@ class Debugger : public wxEvtHandler
 {
 	public:
 		//defaults
-		Debugger(wxTextCtrl* outBox, Networking* networking, wxEvtHandler* pointer);
+		Debugger(Networking* networking, wxEvtHandler* pointer);
 		~Debugger();					//destructor
 
 		void onDebugEvent(wxDebugEvent &event);
@@ -121,7 +121,7 @@ class Debugger : public wxEvtHandler
 		wxString getProcOutput(int numEntries);	//get the process's output to X entries back
 
 	private:
-		void startProcess(bool fullRestart, bool mode, wxString fName, wxString execThis, wxTextCtrl* outBox);
+		void startProcess(bool fullRestart, bool mode, wxString fName, wxString execThis);
 
 		//misc functions i thought would be handy
 		void updateHistory(wxString addMe);	//so I don't have to do it manualy
