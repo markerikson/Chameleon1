@@ -64,6 +64,7 @@ class wxStatusBar;
 class ProjectInfo;
 class wxSSH;
 class Options;
+class wxTermContainer;
 
 //----------------------------------------------------------------------
 
@@ -200,7 +201,8 @@ private:
 	wxTextCtrl* m_compilerOutput;
 	//UpdateUIHandler*  uih;
 	//wxTelnet*  m_telnet;
-	wxSSH* m_telnet;
+	wxTermContainer* m_termContainer;
+	wxSSH* m_terminal;
 
 	OptionsDialog*  m_optionsDialog;
 	RemoteFileDialog* m_remoteFileDialog;

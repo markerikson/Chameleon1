@@ -1,0 +1,101 @@
+/////////////////////////////////////////////////////////////////////////////
+// Name:        wxTermContainer.h
+// Purpose:     
+// Author:      
+// Modified by: 
+// Created:     03/18/04 01:08:08
+// RCS-ID:      
+// Copyright:   
+// Licence:     
+/////////////////////////////////////////////////////////////////////////////
+
+#ifndef _WXTERMCONTAINER_H_
+#define _WXTERMCONTAINER_H_
+
+#ifdef __GNUG__
+#pragma interface "wxTermContainer.h"
+#endif
+
+/*!
+ * Includes
+ */
+
+////@begin includes
+////@end includes
+
+/*!
+ * Forward declarations
+ */
+
+////@begin forward declarations
+class wxTerm;
+////@end forward declarations
+class wxSizer;
+
+/*!
+ * Control identifiers
+ */
+
+////@begin control identifiers
+#define ID_DIALOG 10000
+//#define ID_PANEL 10001
+#define ID_SCROLLBAR 10002
+////@end control identifiers
+
+/*!
+ * wxTermContainer class declaration
+ */
+
+class wxTermContainer: public wxPanel
+{    
+    DECLARE_CLASS( wxTermContainer )
+    DECLARE_EVENT_TABLE()
+
+public:
+    /// Constructors
+    wxTermContainer( );
+    wxTermContainer( wxWindow* parent, wxWindowID id, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = 0 );
+
+    /// Creation
+    bool Create( wxWindow* parent, wxWindowID id = -1, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = 0 );
+
+    /// Creates the controls and sizers
+    void CreateControls();
+
+	void SetTerminal(wxTerm* terminal);
+
+////@begin wxTermContainer event handler declarations
+    /// wxEVT_SCROLL_LINEUP event handler for ID_SCROLLBAR
+    void OnScrollbarScrollLineUp( wxScrollEvent& event );
+
+    /// wxEVT_SCROLL_LINEDOWN event handler for ID_SCROLLBAR
+    void OnScrollbarScrollLineDown( wxScrollEvent& event );
+
+    /// wxEVT_SCROLL_PAGEUP event handler for ID_SCROLLBAR
+    void OnScrollbarScrollPageUp( wxScrollEvent& event );
+
+    /// wxEVT_SCROLL_PAGEDOWN event handler for ID_SCROLLBAR
+    void OnScrollbarScrollPageDown( wxScrollEvent& event );
+
+    /// wxEVT_SCROLL_THUMBTRACK event handler for ID_SCROLLBAR
+    void OnScrollbarScrollThumbtrack( wxScrollEvent& event );
+
+////@end wxTermContainer event handler declarations
+
+////@begin wxTermContainer member function declarations
+////@end wxTermContainer member function declarations
+
+    /// Should we show tooltips?
+    static bool ShowToolTips();
+
+private:
+
+////@begin wxTermContainer member variables
+    wxTerm* m_terminal;
+    wxScrollBar* m_scrollbar;
+////@end wxTermContainer member variables
+
+	wxBoxSizer* m_sizer;
+};
+
+#endif

@@ -42,7 +42,7 @@
 
 #define EVT_TERM_RESIZE(id, fn) { wxEVT_COMMAND_TERM_RESIZE, id, -1, (wxObjectEventFunction) (wxEventFunction) (wxCommandEventFunction) &fn, (wxObject *)NULL },
 
-class wxTerm : public wxScrolledWindow, public GTerm/*lnet*/
+class wxTerm : public wxWindow, public GTerm//wxScrolledWindow, public GTerm/*lnet*/
 {
   int
     m_charWidth,
@@ -156,6 +156,8 @@ public:
   void SetBoldStyle(wxTerm::BOLDSTYLE boldStyle);
   wxTerm::BOLDSTYLE GetBoldStyle(void) { return m_boldStyle; }
 
+  void ScrollTerminal(int numLines, bool scrollUp = true);
+
   void ClearSelection();
   bool HasSelection();
   wxString GetSelection();
@@ -202,6 +204,8 @@ private:
 
   void OnGainFocus(wxFocusEvent &event);
   void OnLoseFocus(wxFocusEvent &event);
+
+  //private wxScrollBar* m_scrollbar;
 
   DECLARE_EVENT_TABLE()
 };

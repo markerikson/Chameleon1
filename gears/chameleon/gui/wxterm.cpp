@@ -398,7 +398,8 @@ wxTerm::wxTerm(wxWindow* parent, wxWindowID id,
                const wxPoint& pos,
                int width, int height,
                const wxString& name) :
-  wxScrolledWindow(parent, id, pos, wxSize(-1, -1), wxHSCROLL | wxVSCROLL | wxWANTS_CHARS, name),
+  //wxScrolledWindow(parent, id, pos, wxSize(-1, -1), wxHSCROLL | wxVSCROLL | wxWANTS_CHARS, name),
+  wxWindow(parent, id, pos, wxSize(-1, -1), wxWANTS_CHARS, name),
   GTerm/*lnet*/(width, height)
 {
   int
@@ -464,7 +465,7 @@ wxTerm::wxTerm(wxWindow* parent, wxWindowID id,
 
   
   //SetVirtualSize(m_charWidth * 80, m_charHeight * 100);
-  SetScrollRate(m_charWidth, m_charHeight);
+  //SetScrollRate(m_charWidth, m_charHeight);
 
   m_init = 0;
 
@@ -719,6 +720,11 @@ wxTerm::OnChar(wxKeyEvent& event)
     event.Skip();
   else
   {
+	  if(GTerm::IsScrolledUp())
+	  {
+		  GTerm::Scroll(MAXHEIGHT, false);
+	  }
+
     int
       rc,
       keyCode = 0,
@@ -828,21 +834,25 @@ wxTerm::OnPaint(wxPaintEvent& WXUNUSED(event))
 void
 wxTerm::OnLeftDown(wxMouseEvent& event)
 {
+	/*
   ClearSelection();
   m_selx1 = m_selx2 = event.GetX() / m_charWidth;
   m_sely1 = m_sely2 = event.GetY() / m_charHeight;
   m_selecting = TRUE;
   CaptureMouse();
+  */
 }
 
 void
 wxTerm::OnLeftUp(wxMouseEvent& event)
 {
+	/*
   m_selecting = FALSE;
   if(GetCapture() == this)
   {
 	ReleaseMouse();
   }
+  */
   
 }
 
@@ -1314,7 +1324,7 @@ void wxTerm::UpdateSize(wxSizeEvent &event)
 	dc->SetFont(m_normalFont);
 	dc->GetTextExtent("M", &charWidth, &charHeight);
 	wxSize currentClientSize = GetClientSize();
-	int numCharsInLine = (currentClientSize.GetX() - m_scrollBarWidth) / charWidth;
+	int numCharsInLine = currentClientSize.GetX() / charWidth;
 	int numLinesShown = currentClientSize.GetY() / charHeight;
 
 	
@@ -1338,8 +1348,9 @@ void wxTerm::UpdateSize(wxSizeEvent &event)
 
 		// TODO Obviously this isn't working right.  I'll come back to it when I tackle
 		//		the line history issue
-		//GTerm::ExposeArea(0, 0, GTerm::Width(), GTerm::Height());
-			
+		GTerm::ExposeArea(0, 0, GTerm::Width() - 1, GTerm::Height() - 1);
+		Refresh();
+		//GTerm::Update();	
 	}
 
 	m_inUpdateSize = false;
@@ -1528,4 +1539,11 @@ void wxTerm::OnLoseFocus(wxFocusEvent &event)
 	this->set_mode_flag(CURSORINVISIBLE);
 	//wxLogDebug("Lost focus");
 	GTerm::Update();
+}
+
+void wxTerm::ScrollTerminal(int numLines, bool scrollUp /* = true */)
+{
+	GTerm::Scroll(numLines, scrollUp);
+	Refresh();
+
 }

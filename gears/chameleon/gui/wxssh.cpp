@@ -104,7 +104,7 @@ void wxSSH::Disconnect()
 	//m_connected = false; // done when the processterm event is caught
 	//m_plinkPid = -2; // ditto
 
-	Reset();
+	GTerm::Reset();
 	set_mode_flag(CURSORINVISIBLE);
 	GTerm::Update();
 	Refresh();

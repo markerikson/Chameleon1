@@ -12,6 +12,7 @@
 #include "ChameleonNotebook.h"
 #include "dialogs/OptionsDialog.h"
 #include "dialogs/RemoteFileDialog.h"
+#include "dialogs/wxTermContainer.h"
 #include "../perms/p.h"
 #include "../common/ProjectInfo.h"
 #include "../network/networking.h"
@@ -291,9 +292,14 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 	m_noteTerm = new ChameleonNotebook(m_splitEditorOutput, ID_NOTEBOOK_TERM);
 	//m_telnet = new wxTelnet( m_noteTerm, ID_TELNET, wxPoint(-1, -1), 80, 24);
-	m_telnet = new wxSSH(m_noteTerm, ID_TELNET, m_network);
+
+	m_termContainer = new wxTermContainer(m_noteTerm, ID_TERM_CONTAINER);
+
+	m_terminal = new wxSSH(m_termContainer, ID_TERMINAL, m_network, wxPoint(0, 0));
+
+	m_termContainer->SetTerminal(m_terminal);
 	
-	m_telnet->set_mode_flag(GTerm::CURSORINVISIBLE);
+	m_terminal->set_mode_flag(GTerm::CURSORINVISIBLE);
 	//m_telnet->SetNetworking(m_network);
 	
 	if(m_perms->isEnabled(PERM_TERMINAL))
@@ -302,9 +308,9 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 		m_splitEditorOutput->SetMinimumPaneSize(20);
 
 		//m_noteTerm->AddPage(m_telnet, "Terminal");
-		m_noteTerm->InsertPage(0, m_telnet, "Terminal");
+		m_noteTerm->InsertPage(0, m_termContainer, "Terminal");
 
-		m_infoTabTracker.Add(m_telnet);
+		m_infoTabTracker.Add(m_termContainer);
 		//m_splitEditorOutput->SetMinimumPaneSize(200);
 	}
 	else
@@ -1016,19 +1022,22 @@ void ChameleonWindow::OnConnect(wxCommandEvent& WXUNUSED(event))
 
 	NetworkStatus isok = m_network->GetStatus();
 	if(isok == NET_GOOD) { // This doesn't appear to be working as I hoped.
-		wxString hostname = m_optionsDialog->GetServerAddress();
-		wxString username = m_optionsDialog->GetUsername();
-		wxString password1 = m_optionsDialog->GetPassword1();
+		//wxString hostname = m_optionsDialog->GetServerAddress();
+		//wxString username = m_optionsDialog->GetUsername();
+		//wxString password1 = m_optionsDialog->GetPassword1();
 
 		//("Address: " + local.Hostname())
 		//wxLogDebug("Connecting to address: %s", hostName);
 		//m_telnet->Connect(local.Hostname(), 3012);
 		//m_telnet->Connect(hostName, 23);
-		m_telnet->Connect(hostname, username, password1);
-		wxLogDebug("Connected: %d", m_telnet->IsConnected());
+		//m_terminal->Connect(hostname, username, password1);
+		m_terminal->Connect(wxEmptyString, wxEmptyString, wxEmptyString);
+		wxLogDebug("Connected: %d", m_terminal->IsConnected());
 	}
 	else {
 		wxLogDebug("Tried to start Terminal without Networking == good");
+		//wxLogDebug("Host: %s, user: %s, pass: %s", m_options->GetHostname().c_str(),
+		//			m_options->GetUsername().c_str(), m_options->GetPassphrase().c_str());
 	}
 
 }
@@ -1536,7 +1545,7 @@ void ChameleonWindow::OnToolsOptions(wxCommandEvent &event)
 {		
 	//UpdatePermsList();
 
-	if(m_telnet->IsConnected())
+	if(m_terminal->IsConnected())
 	{
 		m_optionsDialog->DisableServerSettings();
 	}
@@ -1984,25 +1993,25 @@ void ChameleonWindow::EvaluateOptions()
 	// display or hide the terminal as appropriate
 	if(m_perms->isEnabled(PERM_TERMINAL))
 	{
-		if(m_infoTabTracker.Index(m_telnet) == -1)
+		if(m_infoTabTracker.Index(m_termContainer) == -1)
 		{
-			m_noteTerm->AddPage(m_telnet, "Terminal");
+			m_noteTerm->AddPage(m_termContainer, "Terminal");
 
-			m_infoTabTracker.Add(m_telnet);
+			m_infoTabTracker.Add(m_termContainer);
 
 			m_splitEditorOutput->SplitHorizontally(m_splitProjectEditor, m_noteTerm, -200);
 			m_splitEditorOutput->SetMinimumPaneSize(20);
 			m_noteTerm->Show();			
-			m_telnet->Show();
+			m_termContainer->Show();
 		}
 	}
 	else
 	{
-		if(m_infoTabTracker.Index(m_telnet) != -1)
+		if(m_infoTabTracker.Index(m_termContainer) != -1)
 		{
-			int termIndex = m_infoTabTracker.Index(m_telnet);
-			m_infoTabTracker.Remove(m_telnet);
-			m_telnet->Hide();
+			int termIndex = m_infoTabTracker.Index(m_termContainer);
+			m_infoTabTracker.Remove(m_termContainer);
+			m_termContainer->Hide();
 			m_noteTerm->RemovePage(termIndex);
 
 			if(m_noteTerm->GetPageCount() == 0)
@@ -2573,7 +2582,7 @@ void ChameleonWindow::LoadFilesIntoProjectTree(wxString configPath, wxString con
 
 void ChameleonWindow::OnDisconnect(wxCommandEvent &event)
 {
-	m_telnet->Disconnect();
+	m_terminal->Disconnect();
 }
 
 void ChameleonWindow::OnCompile(wxCommandEvent &event)
