@@ -189,6 +189,7 @@ private:
 	wxTimer* m_updateTimer;
 
 	IntIntHashmap m_permNumMap;
+	StringIntHashmap m_extensionMappings;
 	WindowPointerArray m_infoTabTracker;
 
 	wxFindReplaceData m_findData;
@@ -218,6 +219,7 @@ private:
 	wxString m_filterCPPFiles;
 	wxString m_filterHeaderFiles;
 	wxString m_filterProjectFiles;
+	wxString m_filterLibraryFiles;
 	wxString m_filterAllFiles;
 	
 

@@ -42,43 +42,75 @@ bool ProjectInfo::FileExistsInProject(wxString filename)
 	return fileInProject;
 }
 
-void ProjectInfo::AddFileToProject(wxString filename, FileFilterType fileType)
+wxArrayString* ProjectInfo::SelectStringArray(FileFilterType filterType)
 {
-	switch(fileType)
+	switch(filterType)
 	{
 	case FILE_SOURCES:
-		m_sourceFiles.Add(filename);
-		break;
+		return &m_sourceFiles;
 	case FILE_HEADERS:
-		m_headerFiles.Add(filename);
-		break;
+		return &m_headerFiles;
 	case FILE_LIBRARIES:
-		m_libraryFiles.Add(filename);
-		break;
-	default:
-		wxLogDebug("Invalid file type in ProjectInfo::AddFile.  Filename: %s, type: %d", filename.c_str(), fileType);
-		break;
+		return &m_libraryFiles;
 	}
+	// shouldn't ever get here, just eliminating the "not all code paths
+	// return a value" warning
+	return NULL;
 }
 
-void ProjectInfo::RemoveFileFromProject(wxString filename, FileFilterType fileType)
+BoolArray* ProjectInfo::SelectBoolArray(FileFilterType filterType)
 {
-	switch(fileType)
+	switch(filterType)
 	{
 	case FILE_SOURCES:
-		m_sourceFiles.Remove(filename);
-		break;
+		return &m_sourcesEnabled;
 	case FILE_HEADERS:
-		m_headerFiles.Remove(filename);
-		break;
+		return &m_headersEnabled;
 	case FILE_LIBRARIES:
-		m_libraryFiles.Remove(filename);
-		break;
-	default:
-		wxLogDebug("Invalid file type in ProjectInfo::RemoveFile.  Filename: %s, type: %d", filename.c_str(), fileType);
-		break;
+		return &m_librariesEnabled;
 	}
+	// shouldn't ever get here
+	return NULL;
 }
+
+void ProjectInfo::AddFileToProject(wxString filename, FileFilterType filterType)
+{
+	wxArrayString* filelist = SelectStringArray(filterType);
+	filelist->Add(filename);
+	BoolArray* enablelist = SelectBoolArray(filterType);
+	enablelist->Add(true);
+
+}
+
+void ProjectInfo::RemoveFileFromProject(wxString filename, FileFilterType filterType)
+{
+	wxArrayString* filelist = SelectStringArray(filterType);
+
+	int index = filelist->Index(filename);
+	filelist->Remove(filename);
+
+	BoolArray* enablelist = SelectBoolArray(filterType);
+	enablelist->RemoveAt(index);
+}
+
+bool ProjectInfo::FileIncludedInBuild(wxString filename, FileFilterType filterType)
+{
+	wxArrayString* filelist = SelectStringArray(filterType);
+	int index = filelist->Index(filename);
+	
+	BoolArray* enablelist = SelectBoolArray(filterType);
+	return enablelist->Item(index);
+}
+
+void ProjectInfo::SetFileBuildInclusion(wxString filename, FileFilterType filterType, bool enable)
+{
+	wxArrayString* filelist = SelectStringArray(filterType);
+	int index = filelist->Index(filename);
+
+	BoolArray* enablelist = SelectBoolArray(filterType);
+	(*enablelist)[index] = enable;
+}
+
 
 void ProjectInfo::AddEditor(ChameleonEditor* edit)
 {

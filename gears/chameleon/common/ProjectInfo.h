@@ -4,6 +4,7 @@
 #include <wx/string.h>
 #include <wx/filename.h>
 #include <wx/dynarray.h>
+#include <wx/treectrl.h>
 #include "datastructures.h"
 
 class ChameleonEditor;
@@ -13,9 +14,13 @@ class ProjectInfo
 
 public:
 	ProjectInfo(bool singleFile = true);
+
 	bool FileExistsInProject(wxString filename);
 	void AddFileToProject(wxString filename, FileFilterType fileType);
 	void RemoveFileFromProject(wxString filename, FileFilterType fileType);
+
+	bool FileIncludedInBuild(wxString filename, FileFilterType filterType);
+	void SetFileBuildInclusion(wxString filename, FileFilterType filterType, bool enable);
 
 	void AddEditor(ChameleonEditor* edit);
 	void RemoveEditor(ChameleonEditor* edit);
@@ -46,9 +51,17 @@ public:
 	void SetProjectName(wxString projname) {m_projectName = projname; }
 	void SetExecutableName(wxFileName filename) {m_executableName = filename; }
 private:
+
+	wxArrayString* SelectStringArray(FileFilterType filterType);
+	BoolArray* SelectBoolArray(FileFilterType filterType);
+
 	wxArrayString m_headerFiles;
 	wxArrayString m_sourceFiles;
 	wxArrayString m_libraryFiles;
+
+	BoolArray m_headersEnabled;
+	BoolArray m_sourcesEnabled;
+	BoolArray m_librariesEnabled;
 
 	EditorPointerArray m_edPointers;
 

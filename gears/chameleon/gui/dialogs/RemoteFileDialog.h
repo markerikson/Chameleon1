@@ -160,7 +160,7 @@ public:
 	void FillListView();
 	void LoadTestData();
 
-	int GetIconIndex(wxString extension);
+	//int GetIconIndex(wxString extension);
 
     /// Should we show tooltips?
     static bool ShowToolTips();

@@ -32,6 +32,8 @@
 #include <wx/toolbar.h>
 #include <wx/imaglist.h>
 #include <wx/tokenzr.h>
+#include <wx/bitmap.h>
+#include <wx/dcmemory.h>
 
 #include "RemoteFileDialog.h"
 #include "../ChameleonWindow.h"
@@ -53,6 +55,7 @@ WX_DEFINE_OBJARRAY(ThreeDStringVector)
 #include "cpp.xpm"
 #include "c.xpm"
 #include "h.xpm"
+#include "lib.xpm"
 //#include "folder256.xpm"
 #include "closedfolder16x1632bpp.xpm"
 #include "openfolder16x1632bpp.xpm"
@@ -141,6 +144,14 @@ bool RemoteFileDialog::Create( wxWindow* parent, wxWindowID id, const wxString& 
 
 	// put together the file icons for C++ file types
 
+	// TODO add bitmap for project files here
+	// until then, use default image
+	m_iconExtensionMapping["cpj"] = images->GetImageCount();
+	m_iconExtensionMapping["DEFAULTFILEEXTENSION"] = images->GetImageCount();
+	wxBitmap defaultfile(defaultfile_xpm);
+	images->Add(defaultfile);
+	transferImageList->Add(defaultfile);
+
 	wxBitmap closedfolder(closedfolder16x1632bpp_xpm);
 	images->Add(closedfolder);
 	transferImageList->Add(closedfolder);
@@ -152,28 +163,27 @@ bool RemoteFileDialog::Create( wxWindow* parent, wxWindowID id, const wxString& 
 
 	m_iconExtensionMapping["c"] = images->GetImageCount();
 	
-	wxBitmap standardc(c_xpm);
-	images->Add(standardc);
-	transferImageList->Add(standardc);
+	wxBitmap bmStandardC(c_xpm);
+	images->Add(bmStandardC);
+	transferImageList->Add(bmStandardC);
 
 	m_iconExtensionMapping["cpp"] = images->GetImageCount();
-	wxBitmap cpp(cpp_xpm);
-	images->Add(cpp);
-	transferImageList->Add(cpp);
+	wxBitmap bmCpp(cpp_xpm);
+	images->Add(bmCpp);
+	transferImageList->Add(bmCpp);
 
 	m_iconExtensionMapping["hpp"] = images->GetImageCount();
 	m_iconExtensionMapping["h"] = images->GetImageCount();
-	wxBitmap h(h_xpm);
-	images->Add(h);	
-	transferImageList->Add(h);
+	wxBitmap bmH(h_xpm);
+	images->Add(bmH);	
+	transferImageList->Add(bmH);
 
-	// TODO add bitmap for project files here
-	// until then, use default image
-	m_iconExtensionMapping["cpj"] = images->GetImageCount();
-	m_iconExtensionMapping["DEFAULTFILEEXTENSION"] = images->GetImageCount();
-	wxBitmap defaultfile(defaultfile_xpm);
-	images->Add(defaultfile);
-	transferImageList->Add(defaultfile);
+	m_iconExtensionMapping["lib"] = images->GetImageCount();
+	wxBitmap bmLib(lib_xpm);
+	images->Add(bmLib);
+	transferImageList->Add(bmLib);
+
+	
 
 	m_toolbar = new wxToolBar(this, ID_DIALOGTOOLBAR, wxDefaultPosition, wxDefaultSize, 
 								wxTB_HORIZONTAL | wxTB_FLAT | wxNO_BORDER | wxTB_NODIVIDER);
@@ -196,6 +206,43 @@ bool RemoteFileDialog::Create( wxWindow* parent, wxWindowID id, const wxString& 
 	m_toolbar->Realize();
 
 	m_list->AssignImageList(images, wxIMAGE_LIST_SMALL);
+
+
+	wxMemoryDC dc;
+
+	
+	wxPen pen(wxColour("navy"), 2);
+	dc.SetPen(pen);
+
+	dc.SelectObject(bmStandardC);
+	dc.DrawLine(0, 0, 15, 15);
+	dc.DrawLine(15, 0, 0, 15);
+	dc.SelectObject(wxNullBitmap);
+	transferImageList->Add(bmStandardC);
+	
+
+	dc.SelectObject(bmCpp);
+	dc.DrawLine(0, 0, 15, 15);
+	dc.DrawLine(15, 0, 0, 15);
+	dc.SelectObject(wxNullBitmap);
+	transferImageList->Add(bmCpp);
+	
+
+	dc.SelectObject(bmH);
+	dc.DrawLine(0, 0, 15, 15);
+	dc.DrawLine(15, 0, 0, 15);
+	dc.SelectObject(wxNullBitmap);
+	transferImageList->Add(bmH);
+	
+
+	dc.SelectObject(bmLib);
+	dc.DrawLine(0, 0, 15, 15);
+	dc.DrawLine(15, 0, 0, 15);
+	dc.SelectObject(wxNullBitmap);
+	transferImageList->Add(bmLib);
+	
+
+
 
 	((ChameleonWindow*) parent)->PassImageList(transferImageList);
 	
@@ -710,7 +757,9 @@ void RemoteFileDialog::OnEnter(wxCommandEvent &event)
 	ItemActivated();
 }
 
+/*
 int RemoteFileDialog::GetIconIndex(wxString extension)
 {
 	return m_iconExtensionMapping[extension];
 }
+*/

@@ -106,6 +106,9 @@ enum WindowID
 	ID_PROJECT_REMOVE_HEADERFILE,
 	ID_PROJECT_REMOVE_LIBRARYFILE,
 
+	ID_PROJECT_EXCLUDE_FILE,
+	ID_PROJECT_INCLUDE_FILE,
+
 	// debugging command IDs
 	ID_DEBUG_IDS_FIRST,
 	ID_DEBUG_START = ID_DEBUG_IDS_FIRST,
@@ -150,12 +153,29 @@ enum modules
 	PERM_LAST
 };
 
+// This enum should match the order of items in the wxImageList
+// used for the project tree, as created in RemoteFileDialog's constructor
+enum IconIndex
+{
+	ICON_DEFAULT,	
+	ICON_PROJECT = ICON_DEFAULT,
+	ICON_FOLDERCLOSED,
+	ICON_FOLDEROPEN,
+	ICON_SOURCE_C,
+	ICON_SOURCE_CPP,
+	ICON_SOURCE_H,	
+	ICON_LIBRARY,	
+	ICON_DISABLED_SOURCE_C,
+	ICON_DISABLED_SOURCE_CPP,
+	ICON_DISABLED_SOURCE_H,
+};
+
 // IMPORTANT!!! Any changes to this enum need to be reflected in the 
 //				PermStrings array in p.cpp.
 
 WX_DEFINE_ARRAY(wxWindow*, WindowPointerArray);
 WX_DEFINE_ARRAY(ChameleonEditor*, EditorPointerArray);
-//WX_DEFINE_ARRAY(bool, BoolArray);
+WX_DEFINE_ARRAY(bool, BoolArray);
 
 
 typedef struct 

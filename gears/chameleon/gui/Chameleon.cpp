@@ -108,6 +108,9 @@ BEGIN_EVENT_TABLE(ChameleonWindow, wxFrame)
 	EVT_SPLITTER_DCLICK				(ID_SPLITEDITOROUTPUT, ChameleonWindow::OnSplitterDoubleClick)
 	EVT_TREE_ITEM_RIGHT_CLICK		(ID_PROJECTTREE, ChameleonWindow::OnTreeItemRightClick)
 	EVT_MENU						(ID_PROJECT_ADDFILE, ChameleonWindow::OnMenuEvent)
+	EVT_MENU						(ID_PROJECT_REMOVEFILE, ChameleonWindow::OnMenuEvent)
+	EVT_MENU						(ID_PROJECT_EXCLUDE_FILE, ChameleonWindow::OnMenuEvent)
+	EVT_MENU						(ID_PROJECT_INCLUDE_FILE, ChameleonWindow::OnMenuEvent)
 	EVT_TREE_ITEM_ACTIVATED			(ID_PROJECTTREE, ChameleonWindow::OnTreeItemActivated)
 	EVT_MENU						(ID_NEW_PROJECT, ChameleonWindow::OnMenuEvent)
 	EVT_MENU						(ID_OPEN_PROJECT_LOCAL, ChameleonWindow::OnMenuEvent)
@@ -115,8 +118,7 @@ BEGIN_EVENT_TABLE(ChameleonWindow, wxFrame)
 	EVT_MENU						(ID_PRINT_PAGE, ChameleonWindow::OnMenuEvent)
 	EVT_MENU						(ID_PRINT_PREVIEW, ChameleonWindow::OnMenuEvent)
 	EVT_MENU						(ID_PRINT_SETUP, ChameleonWindow::OnMenuEvent)
-	EVT_MENU						(ID_CLOSE_PROJECT, ChameleonWindow::OnMenuEvent)
-	EVT_MENU						(ID_PROJECT_REMOVEFILE, ChameleonWindow::OnMenuEvent)
+	EVT_MENU						(ID_CLOSE_PROJECT, ChameleonWindow::OnMenuEvent)	
 	EVT_MENU						(ID_DEBUG_START, ChameleonWindow::OnDebugCommand)
 	EVT_MENU						(ID_DEBUG_CONTINUE, ChameleonWindow::OnDebugCommand)
 	EVT_MENU						(ID_DEBUG_STOP, ChameleonWindow::OnDebugCommand)
@@ -278,10 +280,10 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	m_remoteFileDialog = new RemoteFileDialog(this, ID_REMOTEFILEDIALOG);
 	m_remoteFileDialog->SetNetworking(m_network);
 
-	wxTreeItemId rootNode = m_projectTree->AddRoot("No project open", 0, 1);
-	m_projectFileFolders[0] = m_projectTree->AppendItem(rootNode, "Source files", 0, 1);
-	m_projectFileFolders[1] = m_projectTree->AppendItem(rootNode, "Header files", 0, 1);
-	m_projectFileFolders[2] = m_projectTree->AppendItem(rootNode, "Libraries", 0, 1);
+	wxTreeItemId rootNode = m_projectTree->AddRoot("No project open", ICON_FOLDERCLOSED, ICON_FOLDEROPEN);
+	m_projectFileFolders[0] = m_projectTree->AppendItem(rootNode, "Source files", ICON_FOLDERCLOSED, ICON_FOLDEROPEN);
+	m_projectFileFolders[1] = m_projectTree->AppendItem(rootNode, "Header files", ICON_FOLDERCLOSED, ICON_FOLDEROPEN);
+	m_projectFileFolders[2] = m_projectTree->AppendItem(rootNode, "Libraries", ICON_FOLDERCLOSED, ICON_FOLDEROPEN);
 
 	m_currentPage = 0;
 	m_fileNum = 0;
@@ -323,7 +325,23 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	m_filterCPPFiles = "C++ source files (*.cpp, *.c)|*.cpp;*.c";
 	m_filterHeaderFiles += "C++ header files (*.h, *.hpp)|*.h;*.hpp";	
 	m_filterProjectFiles = "Chameleon project files (*.cpj)|*.cpj";
+
+	// If this ever gets ported to Linux, we'd probably want to add
+	// Linux library extensions here (.a, .so).  The other issue is that
+	// the remote file dialog only looks in ~, which might need to be changed.
+	m_filterLibraryFiles = "C++ libraries (*.lib)|*.lib"; 
 	m_filterAllFiles = "All files (*.*)|*.*";
+
+	m_extensionMappings["cpj"] = ICON_PROJECT;
+	m_extensionMappings["c"] = ICON_SOURCE_C;
+	m_extensionMappings["cpp"] = ICON_SOURCE_CPP;
+	m_extensionMappings["h"] = ICON_SOURCE_H;
+	m_extensionMappings["hpp"] = ICON_SOURCE_H;
+	m_extensionMappings["lib"] = ICON_LIBRARY;
+	m_extensionMappings["c_disabled"] = ICON_DISABLED_SOURCE_C;
+	m_extensionMappings["cpp_disabled"] = ICON_DISABLED_SOURCE_CPP;
+	m_extensionMappings["h_disabled"] = ICON_DISABLED_SOURCE_H;
+	m_extensionMappings["hpp_disabled"] = ICON_DISABLED_SOURCE_H;
 
 	m_projMultiFiles = NULL;
 
@@ -589,6 +607,29 @@ void ChameleonWindow::OnMenuEvent(wxCommandEvent &event)
 
 		case ID_PROJECT_REMOVEFILE:
 			RemoveFileFromProject();
+
+		case ID_PROJECT_EXCLUDE_FILE:
+		case ID_PROJECT_INCLUDE_FILE:
+		{
+		
+			bool include = (id == ID_PROJECT_INCLUDE_FILE);
+			FileNameTreeData* data = static_cast <FileNameTreeData* > (m_projectTree->GetItemData(m_clickedTreeItem));
+			m_projMultiFiles->SetFileBuildInclusion(data->filename, m_projectSelectedFolderType, include);
+
+			wxString extension = wxFileName(data->filename).GetExt();
+			int iconIndex;
+			if(include)
+			{
+				iconIndex = m_extensionMappings[extension];
+			}
+			else
+			{
+				extension += "_disabled";
+				iconIndex = m_extensionMappings[extension];
+			}
+			m_projectTree->SetItemImage(m_clickedTreeItem, iconIndex);
+			break;
+		}
 
 		case ID_PRINT_PAGE:
 		{
@@ -1640,6 +1681,9 @@ wxString ChameleonWindow::ConstructFilterString(FileFilterType filterType)
 	case FILE_PROJECT:
 		filterString = m_filterProjectFiles;
 		break;
+	case FILE_LIBRARIES:
+		filterString = m_filterLibraryFiles;
+		break;
 	case FILE_ALLFILES:
 	default:
 		filterString = m_filterAllFiles;
@@ -2102,12 +2146,7 @@ void ChameleonWindow::PassImageList(wxImageList* imagelist)
 void ChameleonWindow::OnTreeItemRightClick(wxTreeEvent& event)
 {
 	//if(!m_bProjectOpen)
-	if(m_projMultiFiles == NULL)
-	{
-		wxMessageBox("You do not currently have a project open.", "No project open", 
-					wxOK | wxCENTRE | wxICON_EXCLAMATION);
-		return;
-	}
+	
     
 	wxTreeItemId clickedItem = event.GetItem();
 	m_clickedTreeItem = clickedItem;
@@ -2115,6 +2154,15 @@ void ChameleonWindow::OnTreeItemRightClick(wxTreeEvent& event)
 
 	wxTreeItemId rootItem = m_projectTree->GetRootItem();
 	wxTreeItemId parentItem = m_projectTree->GetItemParent(clickedItem);
+
+	bool rootClicked = (clickedItem == rootItem);
+
+	if(m_projMultiFiles == NULL && !rootClicked)
+	{
+		wxMessageBox("You do not currently have a project open.", "No project open", 
+			wxOK | wxCENTRE | wxICON_EXCLAMATION);
+		return;
+	}
 
 	if(parentItem == rootItem)
 	{
@@ -2141,11 +2189,51 @@ void ChameleonWindow::OnTreeItemRightClick(wxTreeEvent& event)
 	// user right-clicked a file in the project
 	else if(clickedItem == rootItem)
 	{
-		popupMenu.Append(ID_CLOSE_PROJECT, "Close this project");
+		if(m_projMultiFiles != NULL)
+		{
+			popupMenu.Append(ID_CLOSE_PROJECT, "Close this project");
+		}
+		else
+		{
+			Permission* perms = m_options->GetPerms();
+			if(perms->isEnabled(PERM_LOCALMODE))
+			{
+				popupMenu.Append(ID_OPEN_PROJECT_LOCAL, "Open a local project");
+			}
+			popupMenu.Append(ID_OPEN_PROJECT_REMOTE, "Open a remote project");
+			
+		}
+		
 	}
 	else
 	{
+		if(parentItem == m_projectFileFolders[0])
+		{
+			m_projectSelectedFolderType = FILE_SOURCES;
+		}
+		else if(parentItem == m_projectFileFolders[1])
+		{
+			m_projectSelectedFolderType = FILE_HEADERS;
+		}
+		else if(parentItem == m_projectFileFolders[2])
+		{
+			m_projectSelectedFolderType = FILE_LIBRARIES;
+		}
+
 		popupMenu.Append(ID_PROJECT_REMOVEFILE, "Remove file from project");
+
+		if(m_projectSelectedFolderType != FILE_LIBRARIES)
+		{
+			FileNameTreeData* data = static_cast <FileNameTreeData* > (m_projectTree->GetItemData(clickedItem));
+			if(m_projMultiFiles->FileIncludedInBuild(data->filename, m_projectSelectedFolderType))
+			{
+				popupMenu.Append(ID_PROJECT_EXCLUDE_FILE, "Exclude file from compilation");
+			}
+			else
+			{
+				popupMenu.Append(ID_PROJECT_INCLUDE_FILE, "Include file in compilation");
+			}
+		}		
 	}
 
 	wxPoint p = event.GetPoint();
@@ -2254,16 +2342,18 @@ void ChameleonWindow::AddFileToProject()
 	
 
 	m_remoteMode = m_projMultiFiles->IsRemote();
-	GetFileContents(fileNames[0], fileContents, fileName);
+	//GetFileContents(fileNames[0], fileContents, fileName);
 
 	m_projMultiFiles->AddFileToProject(fileToOpen, m_projectSelectedFolderType);
 
 	int iconIndex = m_remoteFileDialog->GetIconIndex(wxFileName(fileToOpen).GetExt());
 
 	FileNameTreeData* data = new FileNameTreeData();
-	data->filename = fileNames[0];
+	data->filename = fileToOpen;
+
+	wxString simpleName = wxFileName(fileToOpen).GetFullName();
 	
-	m_projectTree->AppendItem(m_clickedTreeItem, fileName, iconIndex, -1, data);
+	m_projectTree->AppendItem(m_clickedTreeItem, simpleName, iconIndex, -1, data);
 	m_projectTree->SortChildren(m_clickedTreeItem);
 	m_projectTree->Refresh();	
 }
@@ -2279,8 +2369,7 @@ void ChameleonWindow::OnTreeItemActivated(wxTreeEvent &event)
 		wxTreeItemId parentItem = m_projectTree->GetItemParent(item);
 
 		if( (parentItem == m_projectFileFolders[0]) ||
-			(parentItem == m_projectFileFolders[1]) ||
-			(parentItem == m_projectFileFolders[2]))
+			(parentItem == m_projectFileFolders[1]) )
 		{
 			FileNameTreeData* data = static_cast <FileNameTreeData* > (m_projectTree->GetItemData(item));
 			
@@ -2292,6 +2381,11 @@ void ChameleonWindow::OnTreeItemActivated(wxTreeEvent &event)
 			filesToOpen.Add(pathname);
 
 			OpenSourceFile(filesToOpen);
+		}
+		else if(parentItem == m_projectFileFolders[2])
+		{
+			wxMessageBox("Only source files can be opened", "Chameleon");
+			return;
 		}
 	}
 	m_currentEd->Refresh();
@@ -2440,7 +2534,7 @@ void ChameleonWindow::LoadFilesIntoProjectTree(wxString configPath,  FileFilterT
 		{
 			wxFileName newFileName(fileName);
 			//newFileName.MakeAbsolute(m_projMultiFiles->projectBasePath);
-			int iconNum = m_remoteFileDialog->GetIconIndex(newFileName.GetExt());
+			int iconNum = m_extensionMappings[newFileName.GetExt()];//m_remoteFileDialog->GetIconIndex(newFileName.GetExt());
 
 			FileNameTreeData* data = new FileNameTreeData();
 			data->filename = newFileName.GetFullPath(currentPathFormat);
