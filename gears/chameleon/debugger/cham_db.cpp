@@ -1915,7 +1915,7 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 					wxLogDebug("\n");
 				}
 				*/
-				grabUserOutput(temHold, "Program ", 0);
+				grabUserOutput(tempHold, "Program ", 0);
 			}
 			data.Empty();
 			break;
