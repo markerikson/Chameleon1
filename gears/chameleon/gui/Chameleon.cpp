@@ -16,6 +16,7 @@
 
 #include <math.h>
 
+#include "../common/fixvsbug.h"
 #include "../editor/editor.h"
 //#include "updateuihandler.h"
 #include "ChameleonNotebook.h"
@@ -2346,7 +2347,8 @@ void ChameleonWindow::AddFileToProject()
 
 	m_projMultiFiles->AddFileToProject(fileToOpen, m_projectSelectedFolderType);
 
-	int iconIndex = m_remoteFileDialog->GetIconIndex(wxFileName(fileToOpen).GetExt());
+	//int iconIndex = m_remoteFileDialog->GetIconIndex(wxFileName(fileToOpen).GetExt());
+	int iconIndex = iconIndex = m_extensionMappings[wxFileName(fileToOpen).GetExt()];
 
 	FileNameTreeData* data = new FileNameTreeData();
 	data->filename = fileToOpen;
