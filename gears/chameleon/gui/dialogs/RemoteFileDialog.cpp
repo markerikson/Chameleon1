@@ -413,6 +413,7 @@ bool RemoteFileDialog::ShowDirectory(wxString dirname, bool refresh, bool showHi
 	if(!m_network->GetDirListing(dirname, dl))
 	{
 		// TODO error stuff here
+		return false;
 	}
 	//wxEndBusyCursor();
 
