@@ -739,3 +739,27 @@ by: Ben
 >>Next Meeting:
 	*Tuesday night: meeting for presentation!!
 	*Debugger had BETTER be connected & running...
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Group Meeting 3/21/2004 11:30pm
+by: Ben
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+>>Status:
+	*Ben: ~waaaaaaaaaaaaaaaahh~  :(  Debugger class overhawl #3
+	*Dave: filename stuff.
+	*Mark: ~zzz~  oh, code!  YEAH!
+>>Discussion
+	*modified files: who knows?  What get sent to Debugger?
+	*Project: when do we need to know if a file in a project has been modified?
+	*Debugger & Adv. Compilation needs to know.
+
+	*So why don't we gray out Debug button & Run button when a file has been modified (any file)
+
+	*When compiled, compiler needs to be able to get path/filename of executable so mark can send me it.
+	*
+>>Presentation?  Hopefully we can demo Debugger a bit... depends on how well Mark & I work.
+>>TODO:
+	*Debugger (duh)
+	*Beta: Feature Release #1
+	*Tues: Presentation
+	*ADV Compilation. (when local & project compilation are done, local dir. cache, then...)
+	*Mark: Printing?  Eh... we'll see...
