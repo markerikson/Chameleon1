@@ -343,3 +343,32 @@ by: Ben
 >>To do
 	*List of items working by 20th
 	*Mark: specifics on open-dialogue
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Group Meeting 11/16/2003 11:12pm
+by: Ben
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+>>SDD Talk
+	*wants detail
+	*return the section we deleted
+	*assigning of sections
+
+>>telnet & ssh: DAVE!!
+	*diagramed on paper what's goin' on
+	*beautiful "Sexy" packet forwarding
+	*Putty issues?  Looking into putty-source to see if we can take advantage of it
+	*Plink can port-forward...
+
+>>Demo time completions (~###~ => optional, ~###% => strongly recommended)
+	*Dave: General LVL1 user running.  Open files, ~listing remote files~, ~embedded terminal%, functional debugger
+	*Mark: agree.  Text editor is running...
+	*ben: no comment
+	*Dave: terminal is *sorta* working.
+
+>>Upcomming week:
+	*Tuesday: <<<CODE DAY>>>
+	*Mark: Taking TA_Telnet & swapping it into the editor?  Eliminating frills.  Figurin' stuff out.
+	*Ben: MinGW.... ack,survive week.  !!!Permissions by 25th!!!
+	*Dave: finishing open dialogue.  File listings: LS.  Working with WX processes with Plink.
+	*Meeting Thursday... 8pm
+
+>>THANKSGIVING NOTE: Port 5190 with SSH
