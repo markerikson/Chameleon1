@@ -480,42 +480,39 @@ bool OptionsDialog::EvaluateOptions()
 	if(!wxFileName::DirExists(mingwPath))
 	{
 		outputMessage = mingwPath + " is not a valid path.";
-		goto end;
-	}
-
-
-	Permission* perms = m_options->GetPerms();
-	for(int i = 0; i < m_checkList->GetCount(); i++)
-	{
-		int mappedPerm = m_permMappings[i];
-
-		if(m_checkList->IsChecked(i))
-		{
-			perms->enable(mappedPerm);
-		}
-		else
-		{
-			perms->disable(mappedPerm);
-		}
-	}
-
-	m_options->SetHostname(m_hostname->GetValue());
-	m_options->SetUsername(m_username->GetValue());
-	m_options->SetPassphrase(m_password1->GetValue());
-	
-	m_options->SetMingwPath(mingwPath);
-
-	
-	
-end:	
-	
-	if(outputMessage != wxEmptyString)
-	{
 		validOptions = false;
+	}
+
+
+	if(validOptions)
+	{
+		Permission* perms = m_options->GetPerms();
+		for(int i = 0; i < m_checkList->GetCount(); i++)
+		{
+			int mappedPerm = m_permMappings[i];
+
+			if(m_checkList->IsChecked(i))
+			{
+				perms->enable(mappedPerm);
+			}
+			else
+			{
+				perms->disable(mappedPerm);
+			}
+		}
+
+		m_options->SetHostname(m_hostname->GetValue());
+		m_options->SetUsername(m_username->GetValue());
+		m_options->SetPassphrase(m_password1->GetValue());
+
+		m_options->SetMingwPath(mingwPath);
+	}
+	else
+	{
 		wxMessageBox(outputMessage, "Invalid Option", wxOK | wxICON_WARNING);
 	}
-	return validOptions;
-	
+
+	return validOptions;	
 }
 
 void OptionsDialog::InitializeDialog()
