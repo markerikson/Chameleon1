@@ -49,8 +49,6 @@ DirListing Networking::GetDirListing(wxString dirPath, bool forceRefresh, bool i
 
 void Networking::SendFileContents(wxString strng, wxString rfile, wxString rpath)
 {
-	
-
 	//wxString cmd = "cd " + rpath + " && echo \"" + strng + "\" > " + rfile + " ";
 
 	// The "<<ENDOFFILE" says that all input on stdin will be piped to cat until
@@ -65,14 +63,12 @@ void Networking::SendFileContents(wxString strng, wxString rfile, wxString rpath
 	cmd += "\n" + strng + "\n";
 	SSHSendCommand(cmd);
 
-
-
 	return;
 }
 
 
-// if any of these are "" those will be unchanged
-void Networking::SetDetails(wxString hostname, wxString username, wxString passphrase)
+//Maybe this should be requirements for the constructor -- or maybe not, because (in theory) Networking doesn't have to be SSH
+void Networking::SetDetailsNoStatus(wxString hostname, wxString username, wxString passphrase) 
 {
 	if(!hostname.IsEmpty()) {
 		ssh_host = hostname;
@@ -90,6 +86,13 @@ void Networking::SetDetails(wxString hostname, wxString username, wxString passp
 	//if(hostname != "" || username != "") {
 	//	//will need to empty directory cache
 	//}
+}
+
+
+// if any of these are "" those will be unchanged
+void Networking::SetDetails(wxString hostname, wxString username, wxString passphrase)
+{
+	SetDetailsNoStatus(hostname, username, passphrase);
 
 	// Set the status
 	SSHSendCommand("");
@@ -198,29 +201,18 @@ wxString Networking::SSHSendCommand(wxString command) {
 		output.Truncate(output.Length()-21); // remove C_O_M_P_L_E_T_E_D_OK\n
 	}
 	else {
-		//enum NetworkStatus
-		//{
-		//	NET_GOOD = 0,
-		//	NET_UNKNOWN_HOST,  // host finger print not in cache
-		//	NET_ERROR_MESSAGE,
-		//	NET_AUTH_FAILED,   // user+pass did not work on host
-		//	NET_READ_ERROR,
-		//	NET_WRITE_ERROR
-		//};
-		// Means whatever command was sent
 		wxString errlog = ssh_plink->getErrors();
 		wxString message = ssh_plink->getMessage();
+		statusDetails = errlog;
+		statusDetails.RemoveLast(); // "\n"
 
 		if(errlog.Contains("key is not cached") && errlog.Contains("Connection abandoned.") ) {
-			status = NET_UNKNOWN_HOST;
-			// StatusDetail will be the key
-			// Screen-scrape for the key:
-			statusDetails = errlog;
+			status = NET_UNKNOWN_HOST;	// and StatusDetail will be the key
 
+			// Screen-scrape for the key:
 			// these lines doesn't work properly... returns 0xffffff + 1 + 16, result is 0x00000010
 			//int len = 1+ statusDetails.Index("fingerprint is:\n")+16;
 			//statusDetails.Remove(0,len);
-
 			/*	MPE:
 				This regular expression looks for the following:
 				one or more digits (0-9) followed by one more more whitespace characters
@@ -243,18 +235,19 @@ wxString Networking::SSHSendCommand(wxString command) {
 				statusDetails = "*unknown* - could not parse fingerprint";
 			}
 
-			//len = 1+ statusDetails.Index("\n");
-			//statusDetails.Truncate(len);
 		}
 		else if(errlog.Contains("Unable to authenticate")) {
 			status = NET_AUTH_FAILED;
-			statusDetails = errlog;
 			statusDetails.RemoveLast(); // "\n"
 		}
+		//else if() {
+		//	NET_READ_ERROR,
+		//}
+		//else if() {
+		//	NET_WRITE_ERROR
+		//}
 		else {
 			status = NET_ERROR_MESSAGE;
-			statusDetails = errlog;
-			statusDetails.RemoveLast(); // "\n"
 		}
 	}
 
@@ -274,4 +267,6 @@ wxString Networking::GetStatusDetails() {
 
 void Networking::SSHCacheFingerprint() {
 	ssh_plink->acceptCacheFingerprint();
+	// Set the status
+	SSHSendCommand("");
 }

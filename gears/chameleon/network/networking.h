@@ -31,7 +31,8 @@ class Networking {
 
 		//Setup
 		void SetPlinkProg(wxString path_name);
-		void SetDetails(wxString hostname, wxString username, wxString passphrase);
+		void SetDetails(wxString hostname, wxString username, wxString passphrase); // Use Me Most Often
+		void SetDetailsNoStatus(wxString hostname, wxString username, wxString passphrase);
 
 		// Methods
 		NetworkStatus GetStatus();

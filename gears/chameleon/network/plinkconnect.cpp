@@ -133,6 +133,7 @@ void PlinkConnect::sendCommand(wxString command, bool isBatch) {
 		scrubLogs();
 
 		// Set exit status:
+		// ???
 
 		delete proc;
 		rin = NULL;
@@ -177,6 +178,10 @@ void PlinkConnect::acceptCacheFingerprint() {
 
 	// MPE: For some rason, running with this command line doesn't seem to 
 	//		get Plink to properly save the key.  The simple command line does.
+	// DJC: I think because I had "-batch".
+	//      I want to actually do an actual connection sending the command exit
+	//        so that I can also set the StatusFlags from the results
+	
 	//wxString cmd = plinkApp + " -batch -pw password nobody@" + host + " exit";
 
 	// This simple command line does work right
@@ -187,41 +192,11 @@ void PlinkConnect::acceptCacheFingerprint() {
 	proc->Redirect();
 	long pid = wxExecute(cmd, wxEXEC_ASYNC, proc);
 
-	// MPE: leaving this in here in case David needs it in the future
-	/*
-#ifdef _DEBUG
-	wxString tempOutput = "";
-	wxString tempErrlog = "";
-	// Grab the outputs
-	rin = proc->GetInputStream();
-	rerr = proc->GetErrorStream();
-	while(!rin->Eof()) {
-		tempOutput += rin->GetC();
-	}
-	while(!rerr->Eof()) {
-		tempErrlog += rerr->GetC();
-	}
-#endif
-	*/
-
 	sendToStream("y\n");
 
 	// Sending wxSIGTERM to the process is all that's needed to close it out gracefully.
 	// It also takes care of deleting the process, so we don't have to do that manually.
 	proc->Kill(pid, wxSIGTERM);
-
-	/*
-#ifdef _DEBUG
-	while(!rin->Eof()) {
-		tempOutput += rin->GetC();
-	}
-	while(!rerr->Eof()) {
-		tempErrlog += rerr->GetC();
-	}
-	rin = NULL;
-	rerr = NULL;
-#endif
-*/
 }
 
 //Private:
@@ -235,6 +210,4 @@ void PlinkConnect::sendToStream(wxString strng) {
 	//close
 	proc->CloseOutput();
 }
-
-
 
