@@ -4,7 +4,7 @@
 #include <wx/event.h>
 #include <wx/dynarray.h>
 #include "datastructures.h"
-
+#include "ProjectInfo.h"
 
 DECLARE_EVENT_TYPE(wxEVT_DEBUG, wxID_ANY)
 
@@ -19,32 +19,39 @@ class wxDebugEvent : public wxEvent
 		void SetStatus(int status);
 		void SetVariableNames(wxArrayString names);
 		void SetVariableValues(wxArrayString values);
-		void SetSourceFilenames(wxArrayString filenames);
+		void SetVariableTypes(wxArrayString types);
+		//void SetSourceFilenames(wxArrayString filenames);
+		void SetSourceFilename(wxString filename);
 		void SetErrorMessage(wxString message);
-		void SetExecutableFilename(wxString filename);
-		void SetRemoteMode(bool remote);
+		//void SetRemoteMode(bool remote);
 		void SetFileBreakpoints(FileBreakpointHash filebreakpoints);
+		void SetProject(ProjectInfo* project);
 
 		int GetLineNumber() { return m_lineNumber;}
 		int GetStatus() { return m_status;}
 		wxArrayString GetVariableNames() { return m_variableNames; }
 		wxArrayString GetVariableValues() { return m_variableValues; }
-		wxArrayString GetSourceFilenames() { return m_sourceFilenames; }
+		wxArrayString GetVariableTypes() { return m_variableTypes; }
+		//wxArrayString GetSourceFilenames() { return m_sourceFilenames; }
+		wxString GetSourceFilename() { return m_filename; }
 		wxString GetErrorMessage() {return m_errorMessage; }
-		wxString GetExecutableFilename() { return m_executableFilename;}
-		bool IsRemote() { return m_remoteMode; }
+		bool IsRemote() { return m_project->isRemote; }
 		FileBreakpointHash GetFileBreakpoints() { return m_filebreakpoints; }
+		ProjectInfo* GetProject() { return m_project; }
 
 public:
 		int m_lineNumber;
 		int m_status;
 		wxArrayString m_variableNames;
 		wxArrayString m_variableValues;
-		wxArrayString m_sourceFilenames;
+		wxArrayString m_variableTypes;
+		//wxArrayString m_sourceFilenames;
+		wxString m_filename;
 		wxString m_errorMessage;
-		wxString m_executableFilename;
+		//wxString m_executableFilename;
 		bool m_remoteMode;
 		FileBreakpointHash m_filebreakpoints;
+		ProjectInfo* m_project;
 
 
 };

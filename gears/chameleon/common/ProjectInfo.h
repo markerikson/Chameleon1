@@ -8,18 +8,35 @@
 
 class ProjectInfo
 {
+
 public:
+	ProjectInfo(bool singleFile = true);
+	bool FileExistsInProject(wxString filename);
+	void AddFileToProject(wxString filename, FileFilterType fileType);
+	void RemoveFileFromProject(wxString filename, FileFilterType fileType);
+
+	wxString GetExecutableFileName() { return executableName.GetFullPath(wxPATH_UNIX); }
+
+	//void SetHeaderFiles(wxArrayString headers);
+	//void Set
+//private:
 	wxArrayString headerFiles;
 	wxArrayString sourceFiles;
 	wxArrayString libraryFiles;
+
+	EditorPointerArray edPointers;
+
 	bool relativePaths;
 	bool isRemote;
+	bool isSingleFile;
+	bool isCompiled;
+	bool isBeingCompiled;
+	bool isReadOnly;
+
 	wxString projectBasePath;
 	wxString projectName;
 	wxFileName executableName;
 
-	bool FileExistsInProject(wxString filename, bool isRelative);
-	void AddFileToProject(wxString filename, FileFilterType fileType);
-	void RemoveFileFromProject(wxString filename, FileFilterType fileType);
+	
 };
 #endif

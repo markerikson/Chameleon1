@@ -44,27 +44,46 @@ void wxDebugEvent::SetVariableValues(wxArrayString values)
 	m_variableValues = values;
 }
 
+void wxDebugEvent::SetVariableTypes(wxArrayString types)
+{
+	m_variableTypes = types;
+}
+
 void wxDebugEvent::SetErrorMessage(wxString message)
 {
 	m_errorMessage = message;
 }
 
+/*
 void wxDebugEvent::SetExecutableFilename(wxString filename)
 {
 	m_executableFilename = filename;
 }
+
 
 void wxDebugEvent::SetRemoteMode(bool remote)
 {
 	m_remoteMode = remote;
 }
 
+
 void wxDebugEvent::SetSourceFilenames(wxArrayString filenames)
 {
 	m_sourceFilenames = filenames;
 }
+*/
 
 void wxDebugEvent::SetFileBreakpoints(FileBreakpointHash filebreakpoints)
 {
 	m_filebreakpoints = filebreakpoints;
+}
+
+void wxDebugEvent::SetSourceFilename(wxString filename)
+{
+	m_filename = filename;
+}
+
+void wxDebugEvent::SetProject(ProjectInfo* project)
+{
+	m_project = project;
 }
