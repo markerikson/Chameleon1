@@ -61,6 +61,10 @@ bool Networking::GetHomeDirPath(wxString &path)
 				m_statusDetails = "";
 			}
 		}
+		else {
+			// pull for 'cache'
+			path = m_userHomeDir;
+		}
 	}
 
 	return success;
@@ -189,18 +193,23 @@ bool Networking::SCPDoTransfer(wxString from_path_name, wxString to_path_name)
 	wxString cmd = m_options->GetPscpApp() // + " -l " + ssh_user 
 					+ " -pw " + m_currPass + " -batch "
 					+ from_path_name + " " 
-					+ m_currUser + "@" + m_currHost + ":" + to_path_name
-					+ " && echo Chameleon-Transfer-Success";
+					+ m_currUser + "@" + m_currHost + ":" + to_path_name;
+					//+ " && echo Chameleon-Transfer-Success";
 	wxProcess* proc = new wxProcess();
 	proc->Redirect();
-	int pid = wxExecute(cmd, wxEXEC_SYNC, proc);
+	int exitcode = wxExecute(cmd, wxEXEC_SYNC, proc);
 
 	// Determine success:
 	bool success = false;
 
-	if (pid == -1) { // Bad Exit -- Could not start process
+	if(exitcode == -1) { // Bad Exit -- Could not start process
 		m_statusDetails = "Could not start the file transfer process.";
 		//success = false;
+	}
+	else if(exitcode == 0) {
+		// Assumed good
+		success = true;
+		m_statusDetails = "";
 	}
 	else { // Not bad Exit(hopefully good):
 		// Grab the outputs:
