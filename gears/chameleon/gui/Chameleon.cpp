@@ -485,11 +485,11 @@ ChameleonWindow::~ChameleonWindow()
 	
 
 	delete m_optionsDialog;
-	delete m_network;
 	delete m_compiler;
 	delete m_config;
 	delete m_options;
 	delete m_debugger;
+	delete m_network;
 	
 	
 }
@@ -2750,56 +2750,20 @@ void ChameleonWindow::Compile()
 	if(doCompile)
 	{
 		
-		bool isAdvanced = m_options->GetPerms()->isEnabled(PERM_ADVANCEDCOMPILE);
-		
-		/*
-		bool isProj = false;
-		if(m_projMultiFiles != NULL && 
-			m_projMultiFiles->FileExistsInProject(m_currentEd->GetFilenameString(), false) ) 
-		{
-			isProj = true;
-		}
-		*/
-
 		ProjectInfo* projToCompile = m_currentEd->GetProject();
 
-		if(!isAdvanced)
-		{
-			m_compilerTextbox->Clear(); // Not if Advanced?
+		m_compiler->CompileProject(projToCompile, m_outputPanel);
 
-			// TODO Uncomment this line when ready for project compiling
-			//m_compiler->SimpleCompile(projToCompile, m_compilerTextbox);
-			if(m_projMultiFiles != NULL) 
-			{
-				m_compiler->CompileProject(m_projMultiFiles, m_remoteMode, m_compilerTextbox, this);
-			}
-			else 
-			{
-				// TODO Rework to use ONLY projects, as planned
-				m_compiler->CompileFile(m_currentEd->GetFileName(), m_remoteMode, m_compilerTextbox, m_currentEd);
-				m_currentEd->SetCompiled();
-				wxFileName editorFile = m_currentEd->GetFileName();
-				//editorFile.SetFullName(m_options->GetRemoteCompileOut());
-				editorFile.SetExt("out");
-				wxString fullpath = editorFile.GetFullPath(m_remoteMode ? wxPATH_UNIX : wxPATH_DOS);
-				//fullpath.Replace("~", m_network->GetHomeDirPath());
-				m_currentEd->SetExecutableFilename(fullpath);
-			}
+//		wxFileName editorFile = m_currentEd->GetFileName();
+//		//editorFile.SetFullName(m_options->GetRemoteCompileOut());
+//		editorFile.SetExt("out");
+//		wxString fullpath = editorFile.GetFullPath(m_remoteMode ? wxPATH_UNIX : wxPATH_DOS);
+//		//fullpath.Replace("~", m_network->GetHomeDirPath());
+//		m_currentEd->SetExecutableFilename(fullpath);
 
-			//int outputIndex = m_noteTerm->FindPagePosition(m_compilerTextbox);
+		//int outputIndex = m_noteTerm->FindPagePosition(m_compilerTextbox);
 
-			//m_noteTerm->SetSelection(outputIndex);
-		}
-		else 
-		{
-			// Forward Planning
-			wxMessageBox("Advanced Compiling is currently not supported.");
-
-			//m_compilerList->DeleteAllItems();
-
-			// TODO Uncomment this line too
-			//m_compiler->AdvancedCompile(projToCompile, m_compilerList);
-		}
+		//m_noteTerm->SetSelection(outputIndex);
 	}
 }
 

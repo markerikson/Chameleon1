@@ -1,12 +1,17 @@
 ////////////////////////////////////////////////////////////////////
 //
 // Notes:
-//    gcc || echo token <-- token if gcc had errors
 //
 ////////////////////////////////////////////////////////////////////
 #include "compiler.h"
+#include <wx/filename.h>
+#include <wx/txtstrm.h>
 #include "compilerevent.h"
 #include "../common/chameleonprocessevent.h"
+#include "../common/options.h"
+#include "../network/networking.h"
+#include "../common/projectinfo.h"
+#include "../common/fixvsbug.h"
 
 #include "../common/debug.h"
 
@@ -22,173 +27,267 @@ BEGIN_EVENT_TABLE(Compiler, wxEvtHandler)
 END_EVENT_TABLE()
 
 
-Compiler::Compiler(Options* options, Networking* network) {
+Compiler::Compiler(Options* options, Networking* network)
+{
 	m_options = options;
 	m_network = network;
 	m_isCompiling = false;
-	m_compilerStdIn = NULL;
-	m_out = NULL;
-	//m_receivedToken = false;
-	//m_currOutfile = "";
+	m_isLinking = false;
+	m_compilerStdIn = NULL; // used only for forced terminations
 	m_handler = NULL;
+	m_currProj = NULL;
+	m_currFileNum = -2;
+}
+
+Compiler::~Compiler() {
+	if(IsCompiling()) {
+		m_network->ForceKillProcess(m_compilerStdIn);
+	}
 }
 
 
-// Remember, for a remote compilation to be started, the person needs to
-//   have a remote file open (aka. successful user/pw/connection)
-void Compiler::CompileFile(wxFileName file, bool isRemote, wxTextCtrl* textbox,
-						   wxEvtHandler* h) {
-
-	m_out = textbox;
-	SetNextHandler(h);
-	wxString outfile = file.GetName();
-
-	// Set the output file name:
-	if(isRemote) {
-		outfile += ".out"; // extension
-	}
-	else { // Local:
-		outfile += ".exe"; // extension
-	}
-
-	// Signal the user, and get going
-	//proj->SetReadOnly(true);
-	*m_out << "Compiling...\n";
-	*m_out << file.GetFullName() << "\n";
-	m_currOutfile = file;
-	m_currOutfile.SetFullName(outfile);
-
+void Compiler::CompileProject(ProjectInfo* proj, wxEvtHandler* h)
+{
 	m_isCompiling = true;
+	SetNextHandler(h);
+	proj->SetBeingCompiled(true); // prevent user from editing while compiling
 
-	//Unfortunately the shells are not identical:
-	if(isRemote) {
-		CompileRemoteFile(file, outfile);
-	}
-	else { // isLocal
-		CompileLocalFile(file, outfile);
-	}
+	m_currProj = proj;
+	m_currFileNum = 0;
+	m_compilingStatus = CR_OK; // default
 
-}
-
-
-void Compiler::CompileProject(ProjectInfo* proj, bool isRemote, wxTextCtrl* textbox,
-							  wxEvtHandler* h) {
-	m_out = textbox;
-
-	if(isRemote) {
-		// Remote Compilation:
-		*m_out << "Can't compile remote projects yet.";
-
-		//walk through the list of files in the project and call SimpleCompileFile on each
-	}
-	else { // Local Compilation:
-		*m_out << "Can't compile local projects yet.";
-	}
-}
-
-
-// This assumes that I already have a live process (m_proc)
-//Private:
-void Compiler::CompileRemoteFile(wxFileName infile, wxFileName outfile)
-{
-	wxString cmd = wxEmptyString;
-	cmd += "echo S_T_A_R_T_COMPILE ; ";
-	cmd += " g++ "; // compiler (assuming it is in the PATH)
-	cmd += " -g "; // include gdb info
-	cmd += " -o " + outfile.GetFullPath() + " ";
-	cmd +=  infile.GetFullPath(wxPATH_UNIX);
-	cmd +=  " && echo C_O_M_P_I_L_E_SUCCESS ; echo E_N_D-COMPILE\r";
-
-	m_compilerStdIn = m_network->StartRemoteCommand(cmd, this);
+	StartNextFile();
 }
 
 
 //Private:
-void Compiler::CompileLocalFile(wxFileName infile, wxFileName outfile)
+void Compiler::StartNextFile()
 {
-	wxString cmd = wxEmptyString;
-	cmd += "echo S_T_A_R_T_COMPILE & ";
-	cmd +=  "\"" + m_options->GetMingwPath() + "g++.exe\" "; // compiler
-	cmd +=  " -g "; // include gdb info
-	cmd +=  " -o " + outfile.GetFullPath() + " ";
-	cmd +=  infile.GetFullPath();
-	cmd +=  " & echo E_N_D_COMPILE\n";
+	wxArrayString a = m_currProj->GetSourcesToBuild();
+	bool isRemote = m_currProj->IsRemote();
 
-	m_compilerStdIn = m_network->StartLocalCommand(cmd, this);
+	// Create outfile name:
+	wxFileName inFile(a.Item(m_currFileNum));
+	wxFileName outFile(inFile.GetPath(wxPATH_GET_VOLUME, isRemote ? wxPATH_UNIX : wxPATH_DOS) + "/" + inFile.GetName() + ".o");
+
+	// Start the compile:
+	wxString cmd = wxEmptyString;
+	if(isRemote) {
+		cmd += "g++ "; // compiler (assuming it is in the PATH)
+		cmd += " -g -c "; // include gdb info, and don't link
+		cmd += " -o " + outFile.GetFullPath(wxPATH_UNIX) + " ";
+		cmd +=  inFile.GetFullPath(wxPATH_UNIX);
+		cmd +=  " && echo C_O_M_P_I_L_E_SUCCESS || echo C_O_M_P_I_L_E_FAILED";
+	}
+	else {
+		cmd +=  "\"" + m_options->GetMingwPath() + "/bin/g++.exe\" "; // compiler
+		cmd +=  " -g -c ";
+		cmd +=  " -o " + outFile.GetFullPath(wxPATH_DOS) + " ";
+		cmd +=  inFile.GetFullPath(wxPATH_DOS);
+		cmd +=  " && echo C_O_M_P_I_L_E_SUCCESS || echo C_O_M_P_I_L_E_FAILED";
+	}
+	wxLogDebug("Starting to Compile with cmd=" + cmd);
+	m_compilerStdIn = m_network->StartCommand(isRemote, cmd, this);
+
+	m_intermediateFiles.Add(outFile.GetFullPath(isRemote ? wxPATH_UNIX : wxPATH_DOS));
+
+	// Signal User
+	CompilerEvent e(chEVT_COMPILER_START);
+	e.SetRemoteFile(isRemote);
+	e.SetFile(inFile);
+
+	m_currFileNum++; // increment file counter
+}
+
+
+//Private:
+void Compiler::StartLinking() {
+	bool isRemote = m_currProj->IsRemote();
+
+	// Create outfile name:
+	wxString name = m_currProj->GetProjectBasePath();
+	if(isRemote) {
+		name += "/" + m_currProj->GetProjectName() + ".exe";
+	}
+	else {
+		name += "\\" + m_currProj->GetProjectName() + ".out";
+	}
+	wxFileName outFile(name);
+
+	// Assemble inFiles list:
+	wxString inFiles = wxEmptyString;
+	for(int i = 0; i < m_intermediateFiles.Count(); i++) {
+		inFiles += " " + m_intermediateFiles.Item(i);
+	}
+	for(int i = 0; i < m_currProj->GetLibraries().Count(); i++) {
+		inFiles += " " + m_currProj->GetLibraries().Item(i);
+	}
+
+	// Start the linking:
+	wxString cmd = wxEmptyString;
+	if(isRemote) {
+		cmd += "g++ -g -o " + outFile.GetFullPath(wxPATH_UNIX);
+		cmd +=  inFiles;
+		cmd +=  " && echo C_O_M_P_I_L_E_SUCCESS || echo C_O_M_P_I_L_E_FAILED";
+	}
+	else {
+		cmd +=  "\"" + m_options->GetMingwPath() + "/bin/g++.exe\" ";
+		cmd +=  " -g -o " + outFile.GetFullPath(wxPATH_DOS);
+		cmd +=  inFiles;
+		cmd +=  " && echo C_O_M_P_I_L_E_SUCCESS || echo C_O_M_P_I_L_E_FAILED";
+	}
+	wxLogDebug("Starting to Link with cmd=" + cmd);
+	m_compilerStdIn = m_network->StartCommand(isRemote, cmd, this);
+
+	m_intermediateFiles.Add(outFile.GetFullPath(isRemote ? wxPATH_UNIX : wxPATH_DOS));
+
+	// Signal User
+	CompilerEvent e(chEVT_COMPILER_START);
+	e.SetRemoteFile(isRemote);
+	e.SetFile(wxFileName("Linking")); // kind of icky
+
+	m_currFileNum++; // increment file counter
+
+}
+
+
+// This is basically my last step before ending
+//Private:
+void Compiler::RemoveIntermediateFiles() {
+	wxString files = wxEmptyString;
+	for(int i = 0; i < m_intermediateFiles.Count(); i++) {
+		files += " " + m_intermediateFiles.Item(i);
+	}
+
+	if(m_currProj->IsRemote()) {
+//		m_network->StartRemoteCommand("rm " + files, this); //pehaps NULL (instead of this)
+	}
+	else {
+//		m_network->StartLocalCommand("del " + files, this);
+	}
+
+	m_intermediateFiles.Clear();
+
+	SetNextHandler(NULL);
 }
 
 
 //Private:
 void Compiler::OnProcessTerm(ChameleonProcessEvent& e)
 {
-	m_out = NULL;
-	m_isCompiling = false;
 	m_compilerStdIn = NULL;
+
+	if(m_isCompiling) {
+		if(m_compilingStatus == CR_TERMINATED) {
+			//manually terminated
+			m_isCompiling = false;
+			RemoveIntermediateFiles();
+			//signal user
+			CompilerEvent e(chEVT_COMPILER_END);
+			e.SetResult(CR_TERMINATED);
+			AddPendingEvent(e);
+			// End
+			SetNextHandler(NULL);
+		}
+		else {
+			// have I compiled all the files?
+			if( m_currFileNum >= m_currProj->GetSourcesToBuild().GetCount() ) {
+				if(m_compilingStatus == CR_OK) {
+					m_isCompiling = false;
+					m_isLinking = true;
+					StartLinking();
+				}
+				else {
+					//signal user
+					CompilerEvent e(chEVT_COMPILER_END);
+					e.SetResult(CR_ERROR);
+					AddPendingEvent(e);
+					// End
+					SetNextHandler(NULL);
+				}
+			}
+			else {
+				//m_currFileNum is incremented at the end of StartNextFile()
+				//m_compilingStatus == CR_ERROR || m_compilingStatus == CR_OK
+				StartNextFile();
+			}
+		}
+	}
+	else if(m_isLinking) {
+		m_isLinking = false;
+
+		CompilerEvent e(chEVT_COMPILER_END);
+		e.SetResult(CR_ERROR);
+
+		m_currProj->SetCompiled(false); // default
+		if(m_compilingStatus == CR_OK) {
+			m_currProj->SetCompiled(true);
+			m_currProj->SetExecutableName(m_intermediateFiles.Last());
+			e.SetFile(m_intermediateFiles.Last());
+		}
+
+		m_intermediateFiles.Remove(m_intermediateFiles.Count()-1); // remove the executable
+
+		// End
+		AddPendingEvent(e);
+		m_currProj->SetBeingCompiled(false);
+		RemoveIntermediateFiles();
+	}
+	else {
+		wxLogDebug("Compiler Recieved extranious term event");
+		// Probably from the file removal command
+	}
+
+	return;
 }
 
 
+void Compiler::HaltCompiling()
+{
+	if(m_isCompiling) {
+		m_compilerStdIn->WriteString((char)3); // send ^C -- break
+		m_compilingStatus = CR_TERMINATED;
+	}
+}
+
+
+//Private:
 void Compiler::OnProcessOut(ChameleonProcessEvent& e)
 {
-//wxLogDebug("--------------------------------------------\nCompiler Recieved Output\n--------------------------------------------\n" + e.GetOutput());
-	if(m_isCompiling) {
+	wxLogDebug("Compiler Received: %s", e.GetString());
+
+	if(m_isCompiling || m_isLinking) {
 		wxString s = e.GetString();
-		if(!m_receivedToken) {
-			if(s.Contains("S_T_A_R_T_COMPILE\r")) {
-				s.Remove(0,s.Find("S_T_A_R_T_COMPILE\r")+19);
-				m_receivedToken = true;
-			}
+
+		if(s.Contains("C_O_M_P_I_L_E_SUCCESS")) {
+			s.Remove(s.Find("C_O_M_P_I_L_E_SUCCESS"));
+		}
+		else if(s.Contains("C_O_M_P_I_L_E_FAILED")) {
+			s.Remove(s.Find("C_O_M_P_I_L_E_FAILED"));
+			//remove this filename from the intermediate list
+			m_intermediateFiles.Remove(m_intermediateFiles.Count()-1);
+			m_compilingStatus = CR_ERROR;
 		}
 
-		if(m_receivedToken) {
-			if(s.Contains("E_N_D_COMPILE\r")) {
-				
-				bool success = false;
-				wxString resultText = "Done.";
-				if(s.Contains("C_O_M_P_I_L_E_SUCCESS")) {
-					s.Remove(s.Find("C_O_M_P_I_L_E_SUCCESS"), 21);
-					success = true;
-					resultText = m_currOutfile.GetFullName() + " - 0 Errors.";
-				}
-				else {
-					resultText = "\nDone.";
-				}
-
-				s.Remove(s.Find("E_N_D_COMPILE\r"));
-				m_isCompiling = false;
-				m_receivedToken = false;
-
-				// Signal Chameleon
-				CompilerEvent e(chEVT_COMPILER_END);
-				if(success) {
-					e.SetResult(CR_OK);
-				}
-				else {
-					e.SetResult(CR_ERROR);
-				}
-				e.SetFile(wxFileName(m_currOutfile));
-				ProcessEvent(e); // synchronous because I detach in the very next line
-				SetNextHandler(NULL);
-
-				// Signal the User
-				*m_out << resultText;
-
-				// Process will Terminate:
-			}
-			
-			// Display the output:
-			*m_out << s;
-		}
+		ParseCompilerMessages(s);
 	}
 	else {
 		wxLogDebug("Compiler Recieved Output while not compiling: " + e.GetString());
 	}
-
 }
 
 
 void Compiler::OnProcessErr(ChameleonProcessEvent& e)
 {
-	wxLogDebug("Compiler Received STDERR: " + e.GetString());
+	// Doesn't matter where it comes from
+	OnProcessOut(e);
 }
 
 
+//Private:
+void Compiler::ParseCompilerMessages(wxString s)
+{
+	CompilerEvent e(chEVT_COMPILER_PROBLEM);
+	e.SetGCCOutput(s);
+	AddPendingEvent(e);
+}
