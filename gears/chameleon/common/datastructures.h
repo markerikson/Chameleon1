@@ -88,19 +88,20 @@ enum WindowID
 	ID_PROJECT_REMOVE_HEADERFILE,
 	ID_PROJECT_REMOVE_LIBRARYFILE,
 
-	// debugging IDs
+	// debugging command IDs
 	ID_DEBUG_IDS_FIRST,
-	ID_START = ID_DEBUG_IDS_FIRST,
-	ID_STOP,
-	ID_PAUSE,
-	ID_STEPNEXT,
-	ID_STEPOVER,
-	ID_STEPOUT,
+	ID_DEBUG_START = ID_DEBUG_IDS_FIRST,
+	ID_DEBUG_STOP,
+	ID_DEBUG_PAUSE,
+	ID_DEBUG_STEPNEXT,
+	ID_DEBUG_STEPOVER,
+	ID_DEBUG_STEPOUT,
 	ID_DEBUG_IDS_LAST,
 
-	ID_ADD_BREAKPOINT,
-	ID_REMOVE_BREAKPOINT,
-	ID_RUNTOCURSOR,
+
+	ID_DEBUG_ADD_BREAKPOINT,
+	ID_DEBUG_REMOVE_BREAKPOINT,
+	ID_DEBUG_RUNTOCURSOR,
 };
 
 enum modules
@@ -134,6 +135,11 @@ wxString GlobalPermStrings[] = {"Syntax highlighting",
 //								'U', 'V', 'W', 'X', 'Y', 'Z', 'A', 'B', 'C', 'D', 'E', 'F'};
 #endif
 
+typedef struct 
+{
+	int linenumber,
+	wxString sourcefile
+} DebugBreakInfo;
 
 
 WX_DECLARE_HASH_MAP( int,
@@ -147,6 +153,18 @@ WX_DECLARE_HASH_MAP(wxString,
 					wxStringHash,
 					wxStringEqual,
 					StringIntHashmap);
+
+WX_DECLARE_HASH_MAP(int,
+					DebugBreakInfo,
+					wxIntegerHash,
+					wxIntegerEqual,
+					DebugBreakHash);
+
+WX_DECLARE_HASH_MAP(wxString, 
+					wxArrayInt,
+					wxStringHash,
+					wxStringEqual,
+					FileBreakpointHash)
 
 
 WX_DEFINE_ARRAY(wxWindow*, WindowPointerArray);
