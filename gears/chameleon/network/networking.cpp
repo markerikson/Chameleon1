@@ -143,12 +143,12 @@ bool Networking::GetDirListing(wxString dirPath, DirListing &listing, bool force
 
 //Private:
 bool Networking::SSHGetHomeDirPath(wxString &path) {
-	wxString cmd = "cd ~ && pwd && echo Get-tingH_O_M_E_DIR";
+	wxString cmd = "cd ~ && pwd";
 	
 	wxString output;
 
 	if( SSHExecSyncCommand(cmd, output) ) {
-		output.Remove(output.Length()-1); // remove pwd's EOL
+		output.Remove(output.Length()-2); // remove pwd's EOL("\r\n")
 		path = output;
 		m_statusDetails = "";
 		return true;
@@ -163,12 +163,12 @@ bool Networking::SSHGetHomeDirPath(wxString &path) {
 //Private:
 bool Networking::SSHGetFileContents(wxString file, wxString &contents)
 {
-	wxString cmd = "cat " + file + " && echo Fi_Le_Li_St-YEAH";
+	wxString cmd = "cat " + file;
 	wxString output;
 
 	if( SSHExecSyncCommand(cmd, output) ) {
 
-		output.Remove(output.Length()-1); // remove cat's EOL
+		output.Remove(output.Length()-2); // remove cat's EOL("\r\n")
 		contents = output;
 		m_statusDetails = "";
 		return true;
@@ -244,9 +244,9 @@ bool Networking::SSHGetDirListing(wxString dirPath, DirListing &listing,
 	wxString output;
 	
 	if( SSHExecSyncCommand(cmd, output) ) {
-
+		// if returned true, the token will be there
 		int tokenPos = output.Find("N_E_TwOrKiNg-DiRs\r\n");
-		wxString files = output.Left(tokenPos+1);
+		wxString files = output.Left(tokenPos); // +1
 		wxString dirs = output.Mid(tokenPos+19);
 
 		listing.fileNames = ParseFindOutput(files, includeHidden);
@@ -269,38 +269,42 @@ wxArrayString Networking::ParseFindOutput(wxString strng, bool includeHidden)
 	wxArrayString r;
 	r.Empty();
 
-	while(!strng.IsEmpty()) {
+	while(strng.Length() > 2) {
 
-		if(strng.Length() < 2) {
-			return r;
-		}
 		// Get the "./"
 		char c1 = strng.GetChar(0); // peek
 		char c2 = strng.GetChar(1); // peek
 		strng.Remove(0,2); // pop
-		if(c1 != '.' && c2 != '/' || strng.IsEmpty()) {
-			return r;
+
+		if(c1 == '.' && c2 == '\r') {
+			// Special case for . direcrtory
+			strng = "\r" + strng; // push it back on
+			c2 = '/';
 		}
+
+		//if(c1 != '.' && c2 != '/') {
+		//	return r; // unexpected
+		//}
+
+		// Queue-up/Initialize for the loop
+		// There should be at least 2 left: \r\n		
+		c1 = strng.GetChar(0);
+		c2 = strng.GetChar(1);
+		strng.Remove(0,2);
 
 		wxString newitem = "";
 
-		c1 = strng.GetChar(0); // peek
-		strng.Remove(0,1); // pop
-		bool isHidden = false;
-		if(c1 == '.') {
-			isHidden = true;
-		}
-
-		while(c1 != '\r') {
+		while(c1 != '\r' && c2 != '\n') {
 			newitem += c1;
-			c1 = strng.GetChar(0); // peek
+			c1 = c2;
+			c2 = strng.GetChar(0); // peek
 			strng.Remove(0,1); // pop
 		}
 
-		strng.Remove(0,1); // '\n'
-
-		if(!isHidden || includeHidden) {
-			r.Add(newitem);
+		if(newitem != "") {
+			if(newitem.Left(1) != "." || includeHidden) {
+				r.Add(newitem);
+			}
 		}
 	}
 
