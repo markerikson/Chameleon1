@@ -14,6 +14,11 @@
 	{
 		margin-left: 15px;
 	}
+	.code
+	{
+		font-family: Courier New;
+		font-size: medium;
+	}
 	-->
 	</style>
 </head>
@@ -28,23 +33,107 @@ Let's start with the basics.  First, run Chameleon.  Depending on your installat
 Upon first glance, Chameleon may look pretty simple.  In fact, it probably doesn't look a whole lot different than Notepad or Wordpad.  However, Chameleon is far more powerful than either of those.  It has a variety of features that your professor will enable as you get farther into the semester.
 </p>
 <p>
-The main area on the screen is the text editor, where you'll write your code.  Unlike Notepad, Chameleon lets you have multiple files open at once, each in its own tab.  Right now there is one file open, which is lableled "(?) &lt;untitled&gt 1".  When you save or open a file, Chameleon will put its name on that file's tab.  We'll get to what the question mark means in just a minute.  First, try starting a file in a new tab.  To do this, you can either click the "New" button on the left side of the toolbar, or going to the File menu and selecting "New Source File".  A second tab will pop up in the tab list, with the text "(?) &lt;untitled&gt; 2".  
+The main area on the screen is the text editor, where you'll write your code.  Unlike Notepad, Chameleon lets you have multiple files open at once, each in its own tab.  Right now there is one file open, which is labeled <em>(?) &lt;untitled&gt 1</em>.  When you save or open a file, Chameleon will put its name on that file's tab.  We'll get to what the question mark means in just a minute.  First, try starting a file in a new tab.  To do this, you can either click the <em>New</em> button on the left side of the toolbar, or going to the File menu and selecting <em>New Source File</em>.  A second tab will pop up in the tab list, with the text <em>(?) &lt;untitled&gt; 2</em>.  
 </p>
 <p>
-With the second tab active, click in the text area and try typing something.  An asterisk ("*") should appear at the end of the tab label.  This means there have been changes to that file since it was last saved.  Click the tab labeled "(?) &lt;untitled&gt; 1".  The text in the window disappears, because the first file didn't have anything in it.  Click in the text area and press the Enter key a few times.  Each line in the editor is marked on the left side.  As you program, you'll quickly learn that line numbers can greatly help you with your programming.
+With the second tab active, click in the text area and try typing something.  An asterisk should appear at the end of the tab label.  This means there have been changes to that file since it was last saved.  Click the tab labeled <em>(?) &lt;untitled&gt; 1</em>.  The text in the window disappears, because the first file didn't have anything in it.  Click in the text area and press the Enter key a few times.  Each line in the editor is marked on the left side.  As you program, you'll quickly learn that line numbers can greatly help you with your programming.
 </p>
 <p>
-Code files are pretty useless until they're saved.  Save your file by either clicking the "Save" button on the toolbar, or going to the File menu and selecting "Save Source File".  A small window will pop up, asking you whether you want to save this file remotely or locally.  That's our cue to pause and learn about one of the things that makes Chameleon unique.
+Code files are pretty useless until they're saved.  Save your file by either clicking the <em>Save</em> button on the toolbar, or going to the File menu and selecting <em>Save Source File</em>.  A small window will pop up, asking you whether you want to save this file remotely or locally.  That's our cue to pause and learn about one of the things that makes Chameleon unique.
 </p>
 <p>
 Most programs you use keep all their files on whatever computer you happen to be at.  However, as a beginning programming student, most of your code files will be kept on a Linux server somewhere on the campus network.  Chameleon lets you open and save files on either the remote server or on the local computer.  Chameleon keeps track of where each file was last saved.  You can easily see where a file was last saved by looking at the label on that file's tab.  If the file was last saved to the remote server, there will be an 'R' before the file's name.  If the file was last saved on the local computer, there will be an 'L' before the file's name.  However, for a new file that hasn't been saved yet, there will be a '?'.  Once the file has been saved, that will change to either an 'L' or an 'R'.  Now that you know about local and remote modes, let's pick up where we left off.
 </p>
 <p>
-You should still have a dialog on your screen asking where you want to save this file.  Choose "Remote" by either double-clicking the line in the box, or clicking the item once and clicking "OK".  After a second, a message box will pop up, saying that Chameleon couldn't log you in using the current username and password.  Click "OK", then we'll take care of that.  
+You should still have a dialog on your screen asking where you want to save this file.  Choose <em>Remote</em> by either double-clicking the line in the box, or clicking the item once and clicking <em>OK</em>.  After a second, a message box will pop up, saying that Chameleon couldn't log you in using the current username and password.  Click <em>OK</em>, then we'll take care of that.  
 </p>
 <p>
-Click the "Tools" menu, then click "Options".  This will pop up Chameleon's options dialog.  Ignore the "Features" tab for now.  Click the tab labeled "Network".  On this tab are four text fields.  At the moment, they should be blank.  If this information is not filled in correctly, Chameleon can't do anything with files that are on a remote server.  Your professor should have given you the information you need to fill in these fields.  Go ahead and do that now, then click "OK".
+Click the <em>Tools</em> menu, then click <em>Options</em>.  This will pop up Chameleon's options dialog.  Ignore the <em>Features</em> tab for now.  Click the tab labeled <em>Network</em>.  On this tab are four text fields.  At the moment, they should be blank.  If this information is not filled in correctly, Chameleon can't do anything with files that are on a remote server.  Your professor should have given you the information you need to fill in these fields.  Go ahead and do that now, then click <em>OK</em>.
+</p>
+<p>
+Now that Chameleon knows what to connect to, let's try saving that file again.  Click <em>Save</em> and choose <em>Remote</em> again.  This time, a file dialog should appear with the contents of your home directory on the server.  Save the file as tutorial1.cpp.  Once the file is saved, you'll see the tab's label change from <em>(?) &lt;untitled&gt; 1</em> to <em>(R) tutorial1.cpp</em>.
 </p>
 
+<p>
+It would probably be a good idea to save the other file you've opened as well.  Click on the tab that says <em>(?) &lt;untitled&gt; 2</em> and hit <em>Save</em>.  This time, choose <em>Local</em>.  Save it in your My Documents folder as tutorial2.cpp.  The label for this tab should now change to <em>(L) tutorial2.cpp</em>.
+</p>
+
+<p>
+There are two main ways to close an open file.  First, you can go to the File menu and select <em>Close File</em>.  This will close the currently active file.  The other way is to right-click a tab and select <em>Close</em> from the menu that pops up.  Try closing tutorial1.cpp using the right-click method.
+</p>
+
+<p>
+On second thought, perhaps you didn't want to close tutorial1.cpp after all  In fact, now's probably a good time to start actually writing some code.  Go to the File menu and select <em>Open Source File (Remote)</em>.  When the file dialog appears, select tutorial1.cpp.  Once it opens, type in the following lines, then click <em>Save</em>:
+<span class="code">
+<pre>
+#include &lt;iostream&gt
+
+using namespace std;
+
+int main ()
+{
+	cout << "Hello world!" << endl;
+	return 0;
+}
+</pre>
+</span> 
+This is the traditional way to begin learning how to program: writing a program that says, "Hello World".  In fact, your professor has possibly already shown you this program in class.  So... now what?  How do you go from what you just typed to actually running your program?  It's time for Part 2: The Terminal.
+</p>
+
+<h3>Using the Terminal</h3>
+<p>
+You've probably spent the vast majority of your life using computers that run Windows.  Windows is an example of a Graphical User Interface, or GUI.  That basically means that there's a mouse pointer and icons and windows and buttons and lots of stuff like that.  However, the other main way of interacting with a computer is through what's called a Command Line Interface.  If you've ever used the Windows Command Prompt or had experience with DOS, those are command lines.  Instead of pointing and clicking on things, you type in commands for the computer to execute.  There's another operating system called Linux, in which nearly everything is done using a command line.  In fact, you can actually be sitting at one computer and be running commands on a Linux computer on the other side of the world, using what's called a <em>terminal program</em>.  Chameleon has a built-in terminal, which you'll be using quite a bit in the near future.
+</p>
+
+<p>
+In order to use the terminal, you must have the network settings properly filled in in the Options dialog, particularly your password for the other computer.  Without those, Chameleon can't connect properly.  If you've already been opening and saving files to the remote server, then you're ready to go.
+</p>
+<p>
+To begin a terminal session, click the tools menu and select <em>Connect to server</em>.  Some text should appear in the bottom portion of the screen (the area with the black background).  That's the <em>terminal window</em>.  It's where you'll type in commands to be run on the remote server.  The text on the screen right now is the <em>command prompt</em>.  It just says what your username is, what computer you're connected to, and what directory you're in.  For example, if my username was s1278654, and the computer I was connected to was james.myschool.edu, the prompt might read: 
+<span class="code">
+<pre>
+[s1278654@james ~]$
+</pre>
+</span>
+
+or 
+
+<span class="code">
+<pre>
+james%home/s1278654>
+</pre>
+</span>
+
+One key thing you'll want to do while using a terminal is see what files are in a directory.  If you've ever used DOS, you know about the <span class="code">dir</span> command.  In Linux, there's a similar command called <span class="code">ls</span>.  If you type that in and press Enter, you should see a list of files in the current directory appear on the screen.  Odds are there aren't too many files in your directory at the moment, but you should see tutorial1.cpp listed.  Now it's time to actually run the "Hello World" program you wrote earlier.
+</p>
+
+<p>
+Right now, the computer has no way of understanding what you wrote.  It's just a text file.  It needs a special program called a <em>compiler</em> to translate what you wrote into the instructions it understands.  There are lots of different compilers out there for lots of different programming languages.  The one you'll be using is called the GNU C++ Compiler, or g++.  
+</p>
+
+<p>
+Compiling your program is pretty simple.  You just need to type g++, followed by a list of files you want to compile, as well as any options you want to include.  Here's an example:
+
+<span class="code">
+<pre>
+g++ tutorial1.cpp
+</pre>
+</span>
+This tells g++ to compile the file tutorial1.cpp.  Try typing that into the terminal and press Enter.  If everything was typed in correctly, then you should see a second prompt appear.  By default, g++ turns your program into a file called <span class="code">a.out</span>.  Unlike Windows, where a program needs to end with <span class="code">.exe</span> in order to be run, any file in Linux can be marked as an executable file.  To run your program, just type <span class="code">a.out</span> at the prompt and press Enter.  If it prints "Hello World", congratulations.  You've just created your first C++ program!
+</p>
+
+<p>
+I already mentioned that you can use various options with g++.  One useful option is the <span class="code">-o filename</span> option.  This tells g++ to save the executable it creates using the filename you gave it.  For example:
+
+<span class="code">
+<pre>
+g++ tutorial1.cpp -o tutorial1.exe
+</pre>
+</span>
+This tells g++ to compile the file tutorial1.cpp, and save the output as tutorial1.exe.  As I said previously, file extensions don't really matter in Linux, but it can be helpful to save executables with the .exe extension if you're used to Windows.
+</p>
+<p>
+When you're programming, it's a good idea to exit the terminal.  Go to the Tools menu and select <em>Disconnect from server</em>.  That's all for this portion of the tutorial.
+</p>
 </body>
 </html>
