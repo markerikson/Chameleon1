@@ -555,3 +555,35 @@ by: Ben
 	--visible in GDB
 	--messing with ASync
 	--kuddos to Dave!!
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Group Meeting 02/22/2004 11:00pm
+by: Ben
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+>>Status Report!
+	~Mark: tweeks with the editor, new buttons, more commits... 65% done?
+	~Dave: REAL productive weekend... but now it's broken...  Something about deleting null pointers.  Re-wrote the events & now it won't compile.  Before it was working AWESOME!! Sending all the events correctly!  And then... oops.  x_x  Tried to figure out why it crashed on exit.
+	~Ben: majority of debugger code is there!  time to debug  ^_^
+>>Needs for Mark:
+	~For buttons>> details about what to hook up & what return types
+>>Project Discussion
+	~it's all in the GUI (code?)
+	~better to have a seperate class
+>>Misc. Discussion...
+	-user manual: Mark's use cases (yay!).
+	-local/remote: which is default?? what happens if remote isn't an option?  meeting with the customer!
+	-local/remote: on newfile, how do we ask?
+	-local/remote: i have a remote file open, i click a toggle button to switch mode... what happens?
+	-local/remote: expanding the fileMenu with "Save Local".."Save Remote".."Open Local"..
+	-local/remote: adding an open button (local / remote).  CLicking "Save" brings up a small dialoge: "Local / Remote?"
+	-parser: problem with remote parsing of files... it looks for all libraries.  how can we manage this remotely??
+	-parser: caching?  saving local copy of requested file?
+	-parser: research into converitng into C over break
+	-debugger: change from wxProcess -> wxProcess2.  Dave has code for me??
+>>Mark's Patch to wxWindows  (0.0)
+	-we'll have to update & re-compile our wxWindows build (soon to be wxWidgets?)
+>>Friday discussion between Mark & Dave & networking...
+>>wxProcess2() is what we need for debugger...
+>>This week....
+	-Dave: wxProcess2().  Expect thursday for somewhat workable code to assimulate into debug.  3 stage compiling?  1= they type in terminal.  2= insert compile stuff into terminal.  3=background
+	-Mark: Project management
+	-Ben: test debugger with what he's got
