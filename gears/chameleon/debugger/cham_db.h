@@ -184,7 +184,7 @@ class Debugger : public wxEvtHandler
 		wxProcess2 *debugProc;		//holds pointer to process pipe
 		wxInputStream *streamIn;		//GDB to me
 		wxInputStream *streamError;		//problems
-		wxDebugEvent myEvent;		//how i communicate
+		wxDebugEvent* myEvent;		//how i communicate
 
 		//dave code
 		wxTextCtrl* outputScreen;

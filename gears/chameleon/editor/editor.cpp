@@ -139,9 +139,13 @@ ChameleonEditor::ChameleonEditor( ChameleonWindow *mframe,
 
 	m_popupMenu.Append(ID_DEBUG_RUNTOCURSOR, "Run to cursor");
 
-	//int modmask = wxSTC_MOD_DELETETEXT | wxSTC_MOD_INSERTTEXT;
+	int modmask =	wxSTC_MOD_DELETETEXT
+					| wxSTC_MOD_CHANGESTYLE
+					| wxSTC_PERFORMED_USER 
+					| wxSTC_PERFORMED_UNDO 
+					| wxSTC_PERFORMED_REDO;
 
-	//this->SetModEventMask(modmask);
+	this->SetModEventMask(modmask);
 
 }
 
@@ -499,7 +503,7 @@ wxArrayInt ChameleonEditor::GetBreakpoints()
 		}
 	}
 
-	for(int i = 0; i < invalidBreakpoints.GetCount(); i++)
+	for(int i = 0; i < (int)invalidBreakpoints.GetCount(); i++)
 	{
 		m_breakpoints.Remove(invalidBreakpoints[i]);
 	}

@@ -95,6 +95,7 @@ BEGIN_EVENT_TABLE(ChameleonWindow, wxFrame)
 	EVT_MENU						(ID_DEBUG_STEPOVER, ChameleonWindow::OnDebugCommand)
 	EVT_MENU						(ID_DEBUG_STEPOUT, ChameleonWindow::OnDebugCommand)
 	EVT_UPDATE_UI_RANGE				(ID_DEBUG_IDS_FIRST, ID_DEBUG_IDS_LAST - 1, ChameleonWindow::OnUpdateDebug)
+	EVT_DEBUG						(ChameleonWindow::OnDebugEvent)
 
 	
 END_EVENT_TABLE()
@@ -199,7 +200,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 	m_network = new Networking(m_options);
 	m_compiler = new Compiler(m_options, m_network);
-	m_debugger = new Debugger(NULL, this);
+	m_debugger = new Debugger(NULL, m_network, this);
 
 	m_optionsDialog = new OptionsDialog(this, m_options, ID_OPTIONSDIALOG, "Options");
 	//UpdatePermsList();
@@ -879,8 +880,14 @@ void ChameleonWindow::OnDebugCommand(wxCommandEvent &event)
 	{
 		case ID_DEBUG_START:
 		{
+			if(m_debugger->isDebugging() && m_debugger->isPaused())
+			{
+				debugEvent.SetId(ID_DEBUG_CONTINUE);
+				break;
+			}
 			// TODO Make all open files for the current executable read-only
 			//      Need to also check when opening a source file.
+			FileBreakpointHash bphash;
 			if(m_bProjectOpen)
 			{
 				wxArrayString projSources = m_currentProjectInfo->sourceFiles;
@@ -891,6 +898,9 @@ void ChameleonWindow::OnDebugCommand(wxCommandEvent &event)
 					filepath.MakeAbsolute(basepath);
 
 					wxString filename = filepath.GetFullPath(wxPATH_UNIX);
+
+					// TODO Get project stuff working
+					//wxArrayInt linenumbers = m
 					wxLogDebug("Filename %d: %s", i + 1, filename);
 
 					sourcefiles.Add(filename);
@@ -904,14 +914,25 @@ void ChameleonWindow::OnDebugCommand(wxCommandEvent &event)
 			else
 			{
 				wxFileName sourceFile = m_currentEd->GetFileName();
-				sourcefiles.Add(sourceFile.GetFullPath(wxPATH_UNIX));
+				wxString sourceFileName = sourceFile.GetFullPath(wxPATH_UNIX);
+
+				wxString userHome = m_network->GetHomeDirPath();
+
+				sourceFileName.Replace("~", userHome);
+				sourcefiles.Add(sourceFileName);
 				
 				wxFileName executableFile = m_currentEd->GetExecutableFileName();
 				debugEvent.SetExecutableFilename(executableFile.GetFullPath(wxPATH_UNIX));
+
+				wxArrayInt linenumbers = m_currentEd->GetBreakpoints();
+				bphash[sourceFileName] = linenumbers;
 			}
 			debugEvent.SetSourceFilenames(sourcefiles);
+			debugEvent.SetFileBreakpoints(bphash);
 
 			wxToolBar* tb = GetToolBar();
+
+			debugEvent.SetRemoteMode(m_remoteMode);
 
 			//tb->EnableTool(ID_DEBUG_START, false);
 			break;
@@ -926,14 +947,11 @@ void ChameleonWindow::OnDebugCommand(wxCommandEvent &event)
 		{
 			break;
 		}
-		default:
-		{
-			wxLogDebug("Bad value in CW::OnDebugCommand.  Value: %d", eventID);
-			break;
-		}
 			
-		m_debugger->AddPendingEvent(debugEvent);
+		
 	}
+
+	m_debugger->AddPendingEvent(debugEvent);
 
 }
 
@@ -1005,7 +1023,7 @@ void ChameleonWindow::Test(wxCommandEvent& WXUNUSED(event))
 	wxString msg;
 	
 
-	for(int i = 0; i < lines.GetCount(); i++)
+	for(int i = 0; i < (int)lines.GetCount(); i++)
 	{
 		msg << lines[i] << " ";
 	}
@@ -2360,6 +2378,9 @@ void ChameleonWindow::OnCompile(wxCommandEvent &event)
 			{
 				m_compiler->CompileFile(m_currentEd->GetFileName(), m_remoteMode, m_compilerTextbox, m_currentEd);
 				m_currentEd->SetCompiled();
+				wxFileName editorFile = m_currentEd->GetFileName();
+				editorFile.SetFullName(m_options->GetRemoteCompileOut());
+				m_currentEd->SetExecutableFilename(editorFile.GetFullPath(m_remoteMode ? wxPATH_UNIX : wxPATH_DOS));
 			}
 
 			int outputIndex = m_noteTerm->FindPagePosition(m_compilerTextbox);
@@ -2500,13 +2521,14 @@ bool ChameleonWindow::IsDebugging()
 
 void ChameleonWindow::OnDebugEvent(wxDebugEvent &event)
 {
-	int eventID = event.GetId();
+	int eventID = event.GetStatus();
 
 	wxLogDebug("Debug event: %d", eventID);
 
 	switch(eventID)
 	{
-		case ID_DEBUG_STOP:
+		case ID_DEBUG_EXIT_ERROR:
+		case ID_DEBUG_EXIT_NORMAL:
 		{
 			wxToolBar* tb = GetToolBar();
 
@@ -2514,9 +2536,24 @@ void ChameleonWindow::OnDebugEvent(wxDebugEvent &event)
 			{
 				tb->EnableTool(i, false);
 			}
+			wxLogDebug("Debugger exit");
 
 			break;
 		}
+		case ID_DEBUG_BREAKPOINT:
+		{	
+			wxArrayString sourceFiles = event.GetSourceFilenames();
+
+			wxString file = sourceFiles[0];
+
+			int linenumber = event.GetLineNumber();
+
+			wxLogDebug("File: %s, line: %d", file, linenumber);
+			break;
+		}
+		default:
+			wxLogDebug("Default DebugEvent.  Value: %d", eventID);
+			break;
 	}
 }
 
@@ -2528,7 +2565,7 @@ void ChameleonWindow::OnUpdateDebug(wxUpdateUIEvent &event)
 	wxToolBar* tb = GetToolBar();
 	if(isDebugging)
 	{
-		tb->EnableTool(ID_DEBUG_START, false);
+		tb->EnableTool(ID_DEBUG_START, isPaused);
 		tb->EnableTool(ID_DEBUG_STOP, true);
 
 		tb->EnableTool(ID_DEBUG_STEPNEXT, isPaused);
