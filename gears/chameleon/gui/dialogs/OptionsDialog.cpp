@@ -90,7 +90,7 @@ OptionsDialog::OptionsDialog( wxWindow* parent, Options* options, wxWindowID id,
 	m_parentFrame = (ChameleonWindow*)parent;
 	m_options = options;
 
-	wxTextValidator textval(wxFILTER_EXCLUDE_LIST);
+	wxTextValidator textval(wxFILTER_EXCLUDE_CHAR_LIST);
 	wxStringList exclude;
 	exclude.Add("\"");
 	m_password1->SetValidator(textval);
@@ -332,20 +332,15 @@ void OptionsDialog::ExitDialog()
 
 	if(pwd1 == pwd2)
 	{
-		Permission* perms = m_options->GetPerms();
-		for(int i = 0; i < m_checkList->GetCount(); i++)
+		//Permission* perms = m_options->GetPerms();
+		
+		if(EvaluateOptions())
 		{
-			if(m_checkList->IsChecked(i))
-			{
-				perms->enable(m_permMappings[i]);
-			}
-			else
-			{
-				perms->disable(m_permMappings[i]);
-			}
+			UpdateChecklist();
+			EndModal(wxOK);
+			m_optionsNotebook->SetSelection(0);
 		}
-		EndModal(wxOK);
-		m_optionsNotebook->SetSelection(0);
+		
 	}
 	else
 	{
@@ -491,7 +486,7 @@ bool OptionsDialog::EvaluateOptions()
 
 
 	m_options->SetHostname(m_hostname->GetValue());
-	m_options->SetHostname(m_username->GetValue());
+	m_options->SetUsername(m_username->GetValue());
 	m_options->SetPassphrase(m_password1->GetValue());
 	
 	m_options->SetMingwPath(mingwPath);
