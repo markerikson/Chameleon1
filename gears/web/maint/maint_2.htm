@@ -29,8 +29,30 @@
 </ul>
 </p>
 <br>
-<hr><center>
+<h2>2.2 - Debugger</h2>
+<p>Any useful IDE (Integrated Development Environment) has a debugger of some type; a program that allows you to step through your program and watch specific variables as the code executes.  Complex debugger behavior, such as running to a specific line, stepping over functions, finishing functions & stopping one - stack - call - level - up, are usually enough to let a seasoned programmer know what's wrong with buggy code.  But actually programming this type of functionality with compiled code is something entire corporations hire code guru's for.  For this project, we focused on attempting to adapt the <a href="http://www.gnu.org/software/gdb/" target=newWindow()>GNU Project Debugger</a> (or GDB) into our code.
+</p>
+<p>The largest area to learn for using GDB was figuring out how to use it.  Attempts to compile the <a href="http://www.gnu.org/software/gdb/download/">downloadable</a> source code (GDB is openSource) failed, so we moved on to creating a wrapper around GDB that espoused the <a href="http://pc160218/cgi-bin/viewcvs.cgi/*checkout*/gears/web/manual/um_70.htm">major features</a> of a robust debugger.  But even here were a lot of things to be learned:</p>
+<ul>
+	<li>What GDB requires to run</li>
+	<li>How to get GDB to run</li>
+	<li>What commands are used to gain the above functionality</li>
+	<li>How does GDB handle problems or unexpected input</li>
+	<li>How does one send commands from a program to a GDB process</li>
+	<li>How does one communicate with a GUI to a debugger process</li>
+</ul>
+<p>Thankfully the GNU Debugger is marvelously designed and very user friendly.  Making it program friendly has been the challenge of the project, but we have for the most part succeeded.</p>
+<p>Useful Sites:
+<ul>
+	<li><a href="http://www.gnu.org/software/gdb/documentation/">GDB Documentation</a>:It's always good to read the manual.</li>
+	<li><a href="http://www.mingw.org/">MinGW</a>: The binary version of GDB</li>
+	<li><a href="http://chaos4.phy.ohiou.edu/~thomas/ref/info/rx/Posix_Basic_Regular_Expressions.html">POSIX Regular Expressions</a>: When dealing with formated output, regEx is your <b><i>FRIEND</i></b></li>
+</ul></p>
+<br>
+<h2>2.3 - Permissions Manager</h2>
+<p>This was one of the few parts of the project assigned to Ben that was anticipated to be short, quick, and sweet that actually <i>was</i>.  The only thing that was neccesary to learn was C++'s <<a href="http://www.sgi.com/tech/stl/bitset.html">bitwise</a>>class, with a touch of <a href="http://www2.rad.com/networks/1994/err_con/crc.htm">CRC</a> on the side for code # encryption.  But when Ben sat down to code the permissions manager, it's base functionality was done within an hour or two.</p>
 
+<hr><center>
 <table summary="navigation">
 <tbody><tr>
 <td height="100" width="60"><a href="../index.html"><img src="../images/home.gif" align="bottom" alt="Home" border="0">

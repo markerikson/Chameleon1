@@ -8,6 +8,10 @@
 </head>
 <body>
 <h1>3.0 - Quirks, Tips, and Tricks</h1>
+<h2>3.1 - Debugger</h2>
+<p><h3>GDB</h3</p><p>We used some of GDB's built in formating functionality to make it easier for the program to read the output.  In particular is "set confirm off" which enables one to kill a running (but stopped) program without GDB asking for confirmation.  This also turns off a potentially useful function in the "display" command; when "display" is set with confirmation <u>on</u>, GDB returns a formated output string containing the information you wish to automatically display with each step (or an error message).  With confirmation <u>off</u>, "display" returns no output until the next step.  </p><p>Another useful trick is the "set prompt %" command we use.  When sending commands to GDB, the last character returned on the output stream (when it's all been collected) will be a "%" (with some important exceptions... like a run-away program) because of that command.</p>
+<p><h3>The Debugger Class</h3></p><p>One "quirk" that may be confusing to outsiders is the prescence of 2 status variables inside the class.</p><p><b>status</b> contains a generic over-all class status and has a limited number of values.  This is supposed to tell internal functions the general status of the GDB process, as some functions will send commands to GDB given a favorable status, and others won't do anything at all given a bad status.</p><p><b>classStatus</b> is used explicitly for GDB output parsing.  GDB output cannot be parsed soley on the generic class status.  Therefore this variable essentially contains a value related to the function that was last called from within the class.</p><p>Getting these two variables to coincide peacefully and to be set correctly all the time has been stressfull.</p>
+<p><h3>Tip:</h3></p><p>The Debugger class has a LOT of accessor methods.  Many of them go unused within Chameleon, but when developing your own code & using this class, use them liberally to see what's going on inside.</p>
 
 <hr><center>
 
