@@ -28,6 +28,7 @@
 #include "VariableWatchPanel.h"
 #include "AddVariableWatch.h"
 #include "../ChameleonWindow.h"
+#include "../common/fixvsbug.h"
 
 
 ////@begin XPM images

@@ -448,7 +448,7 @@ void RemoteFileDialog::FillListView()
 	// can insert it directly into the listview and give it the folder icon
 	for(int i = 0; i < sortedDirs.GetCount(); i++)
 	{
-		m_list->InsertItem(m_list->GetItemCount(), sortedDirs[i], 0);
+		m_list->InsertItem(m_list->GetItemCount(), sortedDirs[i], ICON_FOLDERCLOSED);
 		m_currentDirs.Add(sortedDirs[i]);
 	}
 	
