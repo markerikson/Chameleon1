@@ -205,7 +205,7 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 	
 	if( eventCommand == ID_DEBUG_ADD_BREAKPOINT ||
 		eventCommand == ID_DEBUG_REMOVE_BREAKPOINT ||
-		eventCommand == ID_DEBUG_RUN_TO_LINE)
+		eventCommand == ID_DEBUG_RUNTOCURSOR)
 	{
 		firstFile = event.GetSourceFilename();
 		eventLineNum = event.GetLineNumber();
@@ -301,7 +301,7 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 		cont();
 		break;
 
-	case ID_DEBUG_RUN_TO_LINE:
+	case ID_DEBUG_RUNTOCURSOR:
 		runToCursor(firstFile, eventLineNum);
 		break;
 
@@ -889,6 +889,8 @@ void Debugger::runToCursor(wxString srcFile, int lineNum)
 		sendCommand(command);
 
 		cont();
+
+		classStatus = RUN_TO_CURSOR;
 	}
 
 	//if not stopped or waiting, then program status is not good for stepOut
@@ -1693,7 +1695,7 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 	wxRegEx reSetBreak = "Breakpoint ([[:digit:]]+)";
 	//!!END variables!!//
 
-	status = DEBUG_WAIT;
+	///status = DEBUG_WAIT;
 
 	//data now has the output...
 	tempHold = e.GetString();
@@ -1799,6 +1801,7 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 			data.Empty();
 			break;
 
+		case RUN_TO_CURSOR:
 		case CONTINUE:
 		case GO:
 		{
@@ -1822,9 +1825,12 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 					break;
 				}
 
-				if(reGoCase.Matches(tempHold))
+				if(classStatus == RUN_TO_CURSOR || reGoCase.Matches(tempHold))
 				{
-					goBreakpoint = reGoCase.GetMatch(tempHold, 1);
+					if(classStatus != RUN_TO_CURSOR)
+					{
+						goBreakpoint = reGoCase.GetMatch(tempHold, 1);
+					}
 
 					if(reCase1.Matches(tempHold))
 					{
@@ -1853,15 +1859,18 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 				}
 				else
 				{
-					error.Printf("program stopped for an unknown reason. ClassStatus %d", classStatus);
-					makeGenericError("go parse: ");
+					if(classStatus != RUN_TO_CURSOR)
+					{
+						error.Printf("program stopped for an unknown reason. ClassStatus %d", classStatus);
+						makeGenericError("go parse: ");
 
 					
-					outputEvent.SetId(ID_DEBUG_EXIT_ERROR);
-					guiPointer->AddPendingEvent(outputEvent);
-					stop(false);
-					break;
-				}
+						outputEvent.SetId(ID_DEBUG_EXIT_ERROR);
+						guiPointer->AddPendingEvent(outputEvent);
+						stop(false);
+						break;
+					}
+				}//end goCase regEx check
 			}
 			else
 			{
@@ -1961,13 +1970,12 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 			{
 				if(classStatus == STOP)
 				{
-
 					outputEvent.SetId(ID_DEBUG_EXIT_NORMAL);
 					guiPointer->AddPendingEvent(outputEvent);
 					stop(false);
 					break;
 				}
-
+				status = DEBUG_WAIT;
 				if(reCase1.Matches(tempHold))
 				{
 					Filename = reCase1.GetMatch(tempHold, 1);
@@ -1985,6 +1993,7 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 					sendWhat();
 
 					noNewWhats = false;
+					status = DEBUG_BREAK;
 				}
 				else if(reCase2.Matches(tempHold))
 				{
