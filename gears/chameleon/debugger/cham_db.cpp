@@ -77,7 +77,8 @@ Debugger::Debugger(wxTextCtrl* outBox, Networking* networking, wxEvtHandler* poi
 
 
 	// ints - "$n = val"
-	varRegExes["int"] = "([[:digit:]]+)";
+	// look for a space first, to make sure we don't grab the GDB print number instead
+	varRegExes["int"] = " ([[:digit:]]+)";
 
 	// ints & - "$n = (int &) val"
 	//note: is this even needed??
@@ -1375,7 +1376,7 @@ bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 				else if(m_varInfo[i].type.Find("[") == -1)
 				{
 					if( m_varInfo[i].type.Find("&") == -1 &&
-						m_varInfo[i].type.Find("*" == -1)
+						m_varInfo[i].type.Find("*") == -1)
 					{
 						wxString regex = varRegExes[m_varInfo[i].type];
 						wxRegEx global = regex;
