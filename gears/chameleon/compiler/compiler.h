@@ -4,15 +4,16 @@
 #include <wx/wx.h>
 #include <wx/txtstrm.h>
 #include "../common/process2.h"
+#include "../common/options.h"
 #include "../network/networking.h"
 #include "../common/projectinfo.h"
 
 class Compiler : public wxEvtHandler
 {
 	public:
-		Compiler(Networking* network);
+		Compiler(Options* options, Networking* network);
 
-		void SimpleCompileFile(wxString file, wxTextCtrl* textbox);
+		void SimpleCompileFile(wxString path, wxString file, wxTextCtrl* textbox);
 		void SimpleCompileProject(ProjectInfo* proj, wxTextCtrl* textbox);
 		//void AdvancedCompileFile(wxString file, CompilerWindow* window);
 		//void AdvancedCompileProject(ProjectInfo* proj, CompilerWindow* window);
@@ -22,7 +23,10 @@ class Compiler : public wxEvtHandler
 		void OnProcessOut(wxProcess2StdOutEvent& e);
 		void OnProcessErr(wxProcess2StdErrEvent& e);
 
+		void CompileRemoteFile(wxString filename, wxString outfile);
+
 		// Data:
+		Options* m_options;
 		Networking* m_network;
 		wxTextCtrl* m_out;
 		wxProcess2* m_proc;

@@ -201,7 +201,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	m_network = new Networking(m_options);
 	//m_network->SetDetailsNoStatus(hostname, username, "");
 
-	m_compiler = new Compiler(m_network);
+	m_compiler = new Compiler(m_options, m_network);
 
 
 	long time3 = stopwatch.Time();
@@ -2590,7 +2590,7 @@ void ChameleonWindow::OnCompile(wxCommandEvent &event)
 	m_compilerOutput->Clear();
 
 	if(m_remoteMode) {
-		m_compiler->SimpleCompileFile(m_currentEd->GetFileNameAndPath(), m_compilerOutput);
+		m_compiler->SimpleCompileFile(m_currentEd->GetFilePath(), m_currentEd->GetFilename(), m_compilerOutput);
 	}
 	else {
 		*m_compilerOutput << "Can't do local files yet.";

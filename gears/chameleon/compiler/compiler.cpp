@@ -14,29 +14,48 @@ BEGIN_EVENT_TABLE(Compiler, wxEvtHandler)
 END_EVENT_TABLE()
 
 
-Compiler::Compiler(Networking* network) {
+Compiler::Compiler(Options* options, Networking* network) {
+	m_options = options;
 	m_network = network;
 	m_isCompiling = false;
 	m_compilePID = -2;
 }
 
-void Compiler::SimpleCompileFile(wxString file, wxTextCtrl* textbox)
+void Compiler::SimpleCompileFile(wxString path, wxString filename, wxTextCtrl* textbox)
 {
+	m_out = textbox;
 	m_proc = m_network->GetPlinkProcess(this);
 	if(m_proc != NULL) {
-		wxTextOutputStream os(* (m_proc->GetOutputStream()) );
-		os.WriteString("echo S_T_A_R_T_COMPILE ; g++ " + file + " ; echo E_N_D_COMPILE\r");
-		m_receivedToken = false;
-		m_isCompiling = true;
-		m_out = textbox;
 		*m_out << "Compiling...\n";
+		wxTextOutputStream os(* (m_proc->GetOutputStream()) );
+		os.WriteString("cd " + path + "\r");
+		CompileRemoteFile(filename, m_options->GetRemoteCompileOut());
 	}
+}
+
+
+//Private:
+void Compiler::CompileRemoteFile(wxString filename, wxString outfile) {
+
+	wxString blank = ""; // ummm this is weird
+	wxString cmd = blank + "echo S_T_A_R_T_COMPILE ; "
+		+ " g++ " // compiler
+		+ " -g "
+		+ " -o " + outfile + " "
+		+ filename
+		+ " ; echo E_N_D_COMPILE\r";
+
+	wxTextOutputStream os(* (m_proc->GetOutputStream()) );
+	os.WriteString(cmd);
+
+	m_receivedToken = false;
+	m_isCompiling = true;
 }
 
 
 void Compiler::SimpleCompileProject(ProjectInfo* proj, wxTextCtrl* textbox)
 {
-	//
+	//walk through the list of files in the project and call SimpleCompileFile on each
 }
 
 

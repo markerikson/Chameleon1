@@ -8,6 +8,7 @@ Options::Options() {
 	m_username = "username";
 	m_hostname = "localhost";
 	m_password = "password";
+	m_remoteCompileOut = "a.out";
 	//wxFileName pscpPath(wxGetCwd(), "pscp.exe");
 	//SetPscpApp(pscpPath.GetFullPath());
 	//wxFileName plinkPath(wxGetCwd(), "plink.exe");
@@ -73,10 +74,17 @@ bool Options::SetPassphrase(wxString pass) {
 }
 
 
+bool Options::SetRemoteCompileOut(wxString path_and_file) {
+	m_remoteCompileOut = path_and_file;
+	return true;
+}
+
+
 //wxString GetPscpApp(); <-- Inlined
 //wxString GetPlinkApp(); <-- Inlined
 //wxString GetMingwPath(); <-- Inlined
 //wxString GetUsername(); <-- Inlined
 //wxString GetHostname(); <-- Inlined
 //wxString GetPassphrase(); <-- Inlined
+//wxString GetCompileOut(); <-- Inlined
 
