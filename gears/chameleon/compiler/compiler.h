@@ -9,6 +9,8 @@
 #include "../network/networking.h"
 #include "../common/projectinfo.h"
 
+class wxEvtHandler;
+
 class Compiler : public wxEvtHandler
 {
 	public:
@@ -25,6 +27,8 @@ class Compiler : public wxEvtHandler
 		void SimpleRemoteCompile(ProjectInfo* proj, wxTextCtrl* textbox);
 		void SimpleLocalCompile(wxString path, wxString file, wxTextCtrl* textbox);
 		void SimpleLocalCompile(ProjectInfo* proj, wxTextCtrl* textbox);
+
+		bool IsCompiling() { return m_isCompiling;}
 
 	private:
 		void OnProcessTerm(wxProcess2EndedEvent& e);
@@ -43,6 +47,7 @@ class Compiler : public wxEvtHandler
 		bool m_receivedToken;
 		long m_compilePID;
 		wxFileName m_currOutfile;
+		wxEvtHandler* m_handler;
 
 
 	DECLARE_EVENT_TABLE()
