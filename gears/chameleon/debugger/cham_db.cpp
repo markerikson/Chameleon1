@@ -600,10 +600,10 @@ void Debugger::startProcess(bool fullRestart, bool mode, wxString fName, wxStrin
 		//initialize GDB
 		tmp.Printf("set prompt %s%s", PROMPT_CHAR.c_str(), returnChar.c_str());
 		initString.Add(tmp);
-		initString.Add("set print pretty on" + returnChar);
+		//initString.Add("set print pretty on" + returnChar);
 		initString.Add("set print address off" + returnChar);
 		initString.Add("set confirm off" + returnChar);
-		initString.Add("set overload-resolution off" + returnChar);
+		//initString.Add("set overload-resolution off" + returnChar);
 
 		//send all initlization commands to GDB
 		for(int currInit = 0; currInit < int(initString.GetCount()); currInit++)
@@ -973,6 +973,8 @@ void Debugger::cont()
 // do you need anything else?  ^_^
 
 //sendWatchVariableCommand(): PRIVATE FUNCTION to simplify [snoopVar()]'s code
+//not used anymore?
+/*
 void Debugger::sendWatchVariableCommand(wxString varName)
 {
 	wxString tmp;
@@ -997,6 +999,7 @@ void Debugger::sendWatchVariableCommand(wxString varName)
 	command.Clear();
 	varCount++;
 }
+*/
 
 //snoopVar(): adds, if not in the array, the given variable.  Actual snooping
 //  is done in [onOutputEvent]
@@ -1024,7 +1027,6 @@ void Debugger::snoopVar(wxString varName, wxString funcName, wxString className,
 	else
 	{
 		//check to see if the variable is already in the array
-
 		for(int i = 0; (i < varCount) && (notFound); i++)
 		{
 			if(m_varInfo[i].name == varName)
@@ -1047,7 +1049,8 @@ void Debugger::snoopVar(wxString varName, wxString funcName, wxString className,
 	}
 
 	//Step 2: if GDB is running, send a "whatis" command to get the type.
-	if(status == DEBUG_BREAK || status == DEBUG_WAIT)
+	if( nofFound &&
+		(status == DEBUG_BREAK || status == DEBUG_WAIT))
 	{
 		command.Printf("whatis %s%s", varName.c_str(), returnChar.c_str());
 		sendCommand(command);
@@ -1265,8 +1268,11 @@ void Debugger::removeVar(wxString varName, wxString funcName, wxString className
 void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 {
 	//variables to hold stuff for parsing...
-	wxString tempHold, Filename, Linenumber, goBreakpoint;
+	wxString tempHold, Filename, Linenumber, goBreakpoint, FuncName;
 	wxArrayString tmpArrayString;
+	
+	wxArrayString varNames, varValue, varType;
+
 	wxString tempString;
 	wxDebugEvent outputEvent;
 
@@ -1279,7 +1285,7 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 		 keepParsing = false;
 
 	//step parsing RegEx
-	wxRegEx reCase1 = "at (([[:alnum:]]|[[:blank:]]|\\.)+):([[:digit:]]+)";
+	wxRegEx reCase1 = ", ([[:alnum:]]) () at (([[:alnum:]]|[[:blank:]]|\\.)+):([[:digit:]]+)";
 	wxRegEx reCase2 = "([[:digit:]]+)[[:blank:]]+";
 
 	//go parsing RegEx
@@ -1417,7 +1423,8 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 
 					if(reCase1.Matches(tempHold))
 					{
-						Filename = reCase1.GetMatch(tempHold, 1);
+						FuncName = reCase1.GetMatch(tempHold, 1);
+						Filename = reCase1.GetMatch(tempHold, 2);
 						currentSourceName = Filename;
 						Linenumber = reCase1.GetMatch(tempHold, 3);
 						status = DEBUG_BREAK;
@@ -1428,11 +1435,12 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 						tmpArrayString.Add(Filename);
 
 						
-						outputEvent.SetLineNumber((int)tmpLong);
+						
+						//outputEvent.SetLineNumber((int)tmpLong);
 						//outputEvent.SetSourceFilenames(tmpArrayString);
-						outputEvent.SetSourceFilename(Filename);
-						outputEvent.SetStatus(ID_DEBUG_BREAKPOINT);
-						guiPointer->AddPendingEvent(outputEvent);
+						//outputEvent.SetSourceFilename(Filename);
+						//outputEvent.SetStatus(ID_DEBUG_BREAKPOINT);
+						//guiPointer->AddPendingEvent(outputEvent);
 						//(*outputScreen)<<"\nCASE1 Matches: fname="<<Filename<<" #="<<Linenumber<<"\n\n";
 					}
 					else
@@ -1475,25 +1483,10 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 			// WATCH_VAR...
 			break;
 
+		case GET_WHAT:
+		case GET_PRINT:
 		case WATCH_VAR:
-		{
-		
-			//the only time this status occurs is after a "print var"
-			//(gdb) command "whatis" returns variable type
-			//in this situation we are looking for:
-
-			wxString regexStart = "$[[:digit:]]+ = ";
-
-//			wxString 
-
-			
-			//once this is parsed, send off the event with the varName / value
-			// pair in the [topVarIndex] position.  BUT DO NOT CHANGE
-			// [topVarIndex]
-			//If we only get text in the stream, raise an error; we tried
-			// to snoop a non-existant variable.
 			break;
-		}
 
 		case STEP:
 		//	(*outputScreen)<<"--Made it to the STEP case--"<<classStatus<<"\n";
@@ -1527,7 +1520,7 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 
 				if(reCase1.Matches(tempHold))
 				{
-					Filename = reCase1.GetMatch(tempHold, 1);
+					Filename = reCase1.GetMatch(tempHold, 2);
 					currentSourceName = Filename;
 					Linenumber = reCase1.GetMatch(tempHold, 3);
 
@@ -1747,12 +1740,6 @@ void Debugger::flushPrivateVar()
 	//gdbVarIndex = 1;
 	//guiVarIndex = 0;
 	//varCount = 0;
-}
-
-//getResult(): handles getting the streamed output... i think...
-wxString Debugger::getResult(int debugFlag)
-{
-	return("0");
 }
 
 //sendCommand(): handles sending a command to the stream.

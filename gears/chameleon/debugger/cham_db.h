@@ -135,15 +135,14 @@ class Debugger : public wxEvtHandler
 		wxString getHistoryItem(int offset);//ditto
 		void flushBuffer();					//flushes the input-data array
 		void flushPrivateVar();				//flushes all private variables
+
 		void sendWhat();					//for use with snoopVar
 		void sendPrint(wxString fromGDB);	//for use with snoopVar as well
-
 		int findBreakpoint(wxString fName, int lineNum, bool andRemove = false);
-		void sendWatchVariableCommand(wxString varName);
+		//void sendWatchVariableCommand(wxString varName);
 		bool checkOutputStream(wxString stream);	//true = okay to parse further
  
 		void sendCommand(wxString send);	//sends command & updates history
-		wxString getResult(int debugFlag);	//gets returned output
 
 		void makeGenericError(wxString comment);
 		void addErrorHist(wxString comment);//updates error history
