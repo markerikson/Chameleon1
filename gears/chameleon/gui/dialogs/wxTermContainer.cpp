@@ -191,16 +191,21 @@ bool wxTermContainer::ShowToolTips()
 
 void wxTermContainer::SetTerminal(wxTerm* terminal)
 {
+	
 	m_terminal = terminal;
 
 	m_sizer->Prepend(m_terminal, 1, wxGROW, 0);
 
 	int termHeight = m_terminal->Height();
 	m_scrollbar->SetScrollbar(100 - termHeight, termHeight, 100, 10);
+	
+	//m_scrollbar->SetScrollbar(90, 10, 100, 10);
 }
 
 void wxTermContainer::OnSize(wxSizeEvent &event)
 {
+	event.Skip();
+	/*
 	int newHeight = 0;
 	int numLinesReceived = 0;
 
@@ -208,6 +213,7 @@ void wxTermContainer::OnSize(wxSizeEvent &event)
 	{
 		m_terminal->UpdateSize(newHeight, numLinesReceived);
 	}
+	*/
 	
 
 }
