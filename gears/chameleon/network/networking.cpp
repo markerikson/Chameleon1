@@ -177,7 +177,7 @@ bool Networking::SSHGetFileContents(wxString file, wxString &contents)
 		output.Replace("\r\n", "\n", true);
 		/////////////
 
-		output.Remove(output.Length()-2); // remove cat's EOL("\r\n")
+		//output.Remove(output.Length()-1); // remove cat's EOL("\r\n")
 		contents = output;
 		m_statusDetails = "";
 		return true;
@@ -397,6 +397,10 @@ NetworkStatus Networking::GetStatus()
 		}
 	}
 
+	while(m_status = NET_STARTING) {
+		wxSafeYield();
+	}
+
 	return m_status;
 }
 
@@ -424,6 +428,9 @@ void Networking::SSHCacheFingerprint()
 	// It also takes care of deleting the process, so we don't have to do that manually.
 	wxKill(pid, wxSIGTERM);
 
+	m_plinks->setLogin("","",""); // reset the status
+
+	delete proc;
 }
 
 
