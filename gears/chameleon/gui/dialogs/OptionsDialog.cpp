@@ -607,11 +607,12 @@ void OptionsDialog::UpdateChecklist()
 		{
 			optionname = perms->getPermName(i);
 			m_checkList->Append(optionname);
+			int checkIndex = m_permMappings.GetCount();
 			m_permMappings.Add(i);
 
 			if(perms->isEnabled(i))
 			{
-				m_checkList->Check(i, true);
+				m_checkList->Check(checkIndex, true);
 			}
 		}		
 	}
