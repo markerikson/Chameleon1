@@ -20,6 +20,12 @@
 //                  numbers and getting interesting authorized results.  i
 //                  also pulled out the little extra code-checking down in
 //                  "setGlobal()".  Why?  It wasn't working right.
+//  ~BSC--03/20/04--adjusted authorization so that if "adv. comp." is enabled,
+//					so is "compilation".  I basically put a small "if()...then"
+//                  statement everywhere the [permCode] is somehow modified.  I
+//                  also set it so that if normal compilation is disabled*, ADV
+//                  compilation is disabled.  I didn't touch authorizations.
+//                  *note- this disabling only occurs of "disable(id)" is called.
 
 //includes
 #include "p.h"
@@ -63,6 +69,11 @@ Permission::Permission(wxString loadAuthCode, wxString loadPermCode)
 
 	permCode = status.to_ulong();
 	authCode = auth.to_ulong();
+
+	if(isEnabled(PERM_ADVANCEDCOMPILE))
+	{
+		enable(PERM_COMPILE);
+	}
 }
 
 //Destructor
@@ -98,8 +109,17 @@ bool Permission::isAuthorized(int id)
 //Output: nothing.  [status] and [permCode] are updated.
 void Permission::enable(int id)
 {
-	status.set(id);
-	permCode = status.to_ulong();
+	if(isAuthorized(id))
+	{
+		status.set(id);
+		permCode = status.to_ulong();
+
+		if(isEnabled(PERM_ADVANCEDCOMPILE))
+		{
+			enable(PERM_COMPILE);
+		}
+	}
+
 }
 
 //disable
@@ -109,6 +129,12 @@ void Permission::disable(int id)
 {
 	status.reset(id);
 	permCode = status.to_ulong();
+
+	if(id == PERM_COMPILE)
+	{
+		status.reset(PERM_ADVANCEDCOMPILE);
+		permCode = status.to_ulong();
+	}
 }
 
 //setGlobal
@@ -156,7 +182,13 @@ bool Permission::setGlobalAuthorized(wxString newAuthCode)
 void Permission::setGlobalEnabled(wxString newEnableCode)
 {
 	newEnableCode.ToLong(&permCode);
-	status = bitset<NUM_MODULES>(permCode);	
+	status = bitset<NUM_MODULES>(permCode);
+
+	if(isEnabled(PERM_ADVANCEDCOMPILE))
+	{
+		enable(PERM_COMPILE);
+	}
+
 }
 
 //getGlobal
