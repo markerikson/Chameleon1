@@ -13,7 +13,7 @@
 
 //includes
 #include<bitset>
-#include <wx/wx.h>
+#include<wx/wx.h>
 #include "../common/datastructures.h"
 
 //globals
@@ -27,13 +27,13 @@ const int NUM_MODULES = 15;
 class Permission
 {
 	public:
-		Permission(long int loadAuthCode, long int loadPermCode);
+		Permission(wxString loadAuthCode, wxString loadPermCode);
 		~Permission();
 		bool isEnabled(int id);		//module-specific permissions request
 		bool isAuthorized(int id);	//module-specific authorization request
 		void enable(int id);		//module-specific enable
 		void disable(int id);		//module-specific disable
-		bool setGlobal(long newAuthCode);//set everything
+		bool setGlobal(wxString newAuthCode);//set everything
 		long getGlobalEnabled();	//what should be visible
 		long getGlobalAuthorized();	//what's allowed to be turned on/off
 
