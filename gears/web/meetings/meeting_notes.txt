@@ -815,3 +815,27 @@ by: Ben
 	--dave: reworking networking
 	--mark: ??
 	--ben: Variable watching functional (??), breakpoints DONE & over, GDB custom view / send function?
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Group Meeting 4/03/2004 11:35pm
+by: Ben
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+>>Status:
+	*Projects -> lookin' pretty good.  done?
+	*Variable watching -> alternative to printing out strings.
+	*Networking -> testing plink class & about to make the event class
+>>Networking Discussion...
+	*networking & Plink has been re-factored, it's lookin' nice
+>>Variable watching
+	*behind schedule, theoretical issues worked...
+>>maint. manual>>
+	*Tuesday meeting at the Lab IN CLASS.
+	*have something?!?
+	*re-do the classes??
+		--member variables have "m_"
+		--class names with capital first letter
+		--function names start with lower case
+>>Tasks
+	*Debugger:: ben is behind, variable watching is tight, so .... do we let it slide per Ben's slacking?
+		--Mark is in favor of "resource re-allocation"
+		--Dave wants Mark to commit things in small chunks so Ben can work on it
+	*Networking: finish!
