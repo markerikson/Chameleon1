@@ -25,8 +25,6 @@ public:
 	void AddEditor(ChameleonEditor* edit);
 	void RemoveEditor(ChameleonEditor* edit);
 
-	void MakeReadOnly(bool makeReadOnly);
-	
 	wxArrayString GetSourcesToBuild();
 
 	wxArrayString GetHeaders() { return m_headerFiles; }
@@ -48,7 +46,7 @@ public:
 	void SetRemote(bool remote) {m_isRemote = remote; }
 	void SetSingleFile(bool singleFile) { m_isSingleFile = singleFile; }
 	void SetCompiled(bool compiled) { m_isCompiled = compiled; }
-	void SetBeingCompiled(bool compiling) {m_isBeingCompiled = compiling; }
+	void SetBeingCompiled(bool compiling);
 	void SetProjectPath(wxString path) {m_projectBasePath = path; }
 	void SetProjectName(wxString projname) {m_projectName = projname; }
 	void SetExecutableName(wxFileName filename) {m_executableName = filename; }
@@ -56,7 +54,8 @@ private:
 
 	wxArrayString* SelectStringArray(FileFilterType filterType);
 	BoolArray* SelectBoolArray(FileFilterType filterType);
-
+	void MakeReadOnly(bool makeReadOnly);
+	
 	wxArrayString m_headerFiles;
 	wxArrayString m_sourceFiles;
 	wxArrayString m_libraryFiles;

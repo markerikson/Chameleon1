@@ -146,3 +146,9 @@ void ProjectInfo::MakeReadOnly(bool makeReadOnly)
 		ed->SetReadOnly(makeReadOnly);
 	}
 }
+
+void ProjectInfo::SetBeingCompiled(bool compiling)
+{
+	m_isBeingCompiled = compiling;
+	MakeReadOnly(compiling);
+}
