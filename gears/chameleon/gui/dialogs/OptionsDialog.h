@@ -94,6 +94,7 @@ public:
     wxString GetUsername();
     wxString GetPassword1();
     wxString GetPassword2();
+	long GetAuthCode();
 
 	void ExitDialog();
 	void OnEnter(wxCommandEvent &event);
@@ -109,6 +110,7 @@ public:
 
 ////@begin OptionsDialog member variables
     wxCheckListBox* m_checkList;
+    wxTextCtrl* m_txtProfCode;
     wxTextCtrl* m_serverAddress;
     wxTextCtrl* m_username;
     wxTextCtrl* m_password1;

@@ -131,9 +131,10 @@ void OptionsDialog::CreateControls()
     item8->Add(item10, 1, wxGROW|wxALL, 5);
     wxBoxSizer* item11 = new wxBoxSizer(wxVERTICAL);
     item7->Add(item11, 0, wxGROW, 5);
-    wxStaticText* item12 = new wxStaticText( item4, wxID_STATIC, _("Enter the code from your professor here\n(note: currently disabled):"), wxDefaultPosition, wxDefaultSize, 0 );
+    wxStaticText* item12 = new wxStaticText( item4, wxID_STATIC, _("Enter the code from your professor here:"), wxDefaultPosition, wxDefaultSize, 0 );
     item11->Add(item12, 0, wxALIGN_CENTER_HORIZONTAL|wxALL|wxADJUST_MINSIZE, 5);
     wxTextCtrl* item13 = new wxTextCtrl( item4, ID_PROFCODE, _(""), wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER );
+    m_txtProfCode = item13;
     item11->Add(item13, 0, wxGROW|wxLEFT|wxRIGHT|wxBOTTOM, 5);
     item3->AddPage(item4, _("Features"));
     wxPanel* item14 = new wxPanel( item3, ID_PANEL, wxDefaultPosition, wxSize(100, 80), wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
@@ -289,4 +290,15 @@ void OptionsDialog::ExitDialog()
 	{
 		wxMessageBox("Please enter the same password in both fields");
 	}
+}
+
+long OptionsDialog::GetAuthCode()
+{
+	wxString authCodeString = m_txtProfCode->GetValue();
+
+	long authCodeLong = 0;
+
+	authCodeString.ToLong(&authCodeLong);
+
+	return authCodeLong;
 }

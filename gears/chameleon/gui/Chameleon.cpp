@@ -1097,6 +1097,7 @@ void ChameleonWindow::ResizeSplitter()
 
 void ChameleonWindow::OnToolsOptions(wxCommandEvent &event)
 {		
+	InitializeOptionsDialog();
 	int result = m_optionsDialog->ShowModal();
 	m_currentEd->SetFocus();
 
@@ -1243,12 +1244,18 @@ void ChameleonWindow::AddDebugButtons()
 
 void ChameleonWindow::InitializeOptionsDialog()
 {
+	/*
 	m_optionsDialog->SetServerAddress("james.cedarville.edu");
 	m_optionsDialog->SetUsername("testuser1");
 	m_optionsDialog->SetPassword1("password");
 	m_optionsDialog->SetPassword2("password");
+	*/
 
 	wxCheckListBox* checkList = m_optionsDialog->GetListBox();
+
+	checkList->Clear();
+	m_permNumMap.clear();
+
 	wxString optionname;
 	wxArrayString optionList;
 
@@ -1277,6 +1284,10 @@ void ChameleonWindow::InitializeOptionsDialog()
 void ChameleonWindow::EvaluateOptions()
 {
 	// update permissions settings from the options dialog
+	long newAuthCode = m_optionsDialog->GetAuthCode();
+
+	m_perms->setGlobal(newAuthCode);
+
 	wxCheckListBox* checkList = m_optionsDialog->GetListBox();
 
 	for(int i = 0; i < checkList->GetCount(); i++)
