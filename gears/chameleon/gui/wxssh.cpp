@@ -28,6 +28,7 @@
 */
 
 #include "wxssh.h"
+#include "../network/networking.h"
 
 BEGIN_EVENT_TABLE(wxSSH, wxTerm)
 	EVT_PROCESS2_STDOUT(wxSSH::OnPlinkOut)
@@ -77,18 +78,22 @@ void wxSSH::Connect(wxString hostname, wxString username, wxString passphrase)
 	}
 
 	Reset();
+	set_mode_flag(CURSORINVISIBLE);
 	Refresh();
 
 	// Start the new Process
-	wxString cmd = "plink.exe ";
+	wxString cmd = m_networking->GetPlinkProg();
 	if(passphrase != "") {
 		cmd += " -pw "+passphrase;
 	}
 	if(username != "") {
-		cmd += " -l "+username;
+		cmd += " " + username + "@" + hostname;
 	}
-	cmd += " "+hostname;
-
+	else
+	{
+		cmd += " " + hostname;
+	}
+	
 	m_plink = new wxProcess2(this);
 	m_plinkPid = wxExecute(cmd, wxEXEC_ASYNC, m_plink);
 
@@ -126,6 +131,8 @@ void wxSSH::Disconnect()
 	//m_plinkPid = -2; // ditto
 
 	Reset();
+	set_mode_flag(CURSORINVISIBLE);
+	GTerm::Update();
 	Refresh();
 }
 
@@ -160,3 +167,7 @@ void wxSSH::OnPlinkTerm(wxProcess2EndedEvent &e)
 	//delete m_plink; <--- wxProcess2 self-destructs
 }
 
+void wxSSH::SetNetworking(Networking* networking)
+{
+	m_networking = networking;
+}

@@ -43,6 +43,8 @@
 #include "wxterm.h"
 #include "wxssh.h"
 
+class Networking;
+
 
 class wxSSH : public wxTerm
 {
@@ -53,6 +55,9 @@ class wxSSH : public wxTerm
 				const wxString& name = "wxSSH");
 		virtual ~wxSSH();
 
+		void SetNetworking(Networking* networking);
+
+		void OnPlinkEvent(wxProcess2StdOutEvent& event);
 		void OnPlinkOut(wxProcess2StdOutEvent& event);
 		void OnPlinkErr(wxProcess2StdErrEvent& event);
 		void OnPlinkTerm(wxProcess2EndedEvent& event);
@@ -66,6 +71,7 @@ class wxSSH : public wxTerm
 	private:
 		bool m_connected;
 		wxProcess2* m_plink;
+		Networking* m_networking;
 		wxString m_host;
 		wxString m_user;
 		long m_plinkPid;
