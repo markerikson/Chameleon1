@@ -112,8 +112,7 @@ class Debugger : public wxEvtHandler
 		void stepOut();					//execute current stack frame to finish
 		void go();						//run program
 		void cont();					//continue debugging
-		void runToCursor(wxString srcFile, int lineNum);	//
-		//CODE IN A RUN-TO-CURSOR function
+		void runToCursor(wxString srcFile, int lineNum);
 
 		//variable management
 		void snoopVar(wxString varName, wxString funcName, wxString className, bool oneShot = true);
@@ -123,8 +122,8 @@ class Debugger : public wxEvtHandler
 		//misc management
 		void stop(bool pleaseRestart);	//kills process & reloads it (?)
 		void kill();					//simple?
-		//int getCurrLine();				//returns current line number on debug
-		//use STEPI ^
+		void sendCustomCommand(wxString cust);	//send a custom command to the process
+		wxString getProcOutput(int numEntries);	//get the process's output to X entries back
 
 	private:
 		void startProcess(bool fullRestart, bool mode, wxString fName, wxString execThis, wxTextCtrl* outBox);
@@ -180,6 +179,7 @@ class Debugger : public wxEvtHandler
 		wxString command;			//holds current / last GDB command
 		wxString returnChar;		//contains the \n or \r for each command
 		wxArrayString data;			//holds data from GDB
+		wxArrayString fullOutput;	//holds ALL data back from the process
 
 		StringStringHashmap varRegExes;
 		wxString Filename, Linenumber, FuncName;	//globals for use in parse

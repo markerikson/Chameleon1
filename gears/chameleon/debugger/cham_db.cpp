@@ -540,7 +540,7 @@ void Debugger::startProcess(bool fullRestart, bool mode, wxString fName, wxStrin
 		fileIsSet = false;
 	}
 	
-	procLives = false;
+	procLives = true;
 	classStatus = NEW_PROC;
 	
 
@@ -588,7 +588,6 @@ void Debugger::startProcess(bool fullRestart, bool mode, wxString fName, wxStrin
 	wxArrayString initString;
 	wxString tmp;
 
-	procLives = true;
 	classStatus = START;
 
 	//initialize GDB
@@ -1485,6 +1484,42 @@ bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 	return(true);
 }
 //END VARIABLE FUNCTIONALITY
+
+//MISC FUNCTIONS:
+//---------------
+//These funcions are random public thingies that don't qualify under any other
+//heading.  "stop()" and "kill()" are listed as "misc" but i include those in
+//step functionality since those affect the running of this class.
+
+//sendCustomCommand(): sends the passed string straight to the process.  Can be
+//  used for user input or custom commands.
+void Debugger::sendCustomCommand(wxString cust)
+{
+	if(procLives == true)
+	{
+		sendCommand(cust);
+	}
+}
+
+//getProcOutput(): gets back X number of output entries.
+//                 -1 for numEntries means get them ALL back.
+wxString Debugger::getProcOutput(int numEntries = -1)
+{
+	wxString tmp = "";
+	int outputCount = (int)fullOutput.GetCount();
+	int loopStop = numEntries;
+	if(outputCount > 0)
+	{
+		if(numEntries == -1)
+		{loopStop = outputCount;}
+
+		for(int i = 0; i < loopStop; i++)
+		{tmp.Append(fullOutput[i]);}
+	}
+
+	return(tmp);
+}
+
 
 //PRIVATE FUNCTIONS:
 //------------------
