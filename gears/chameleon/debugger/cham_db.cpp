@@ -486,8 +486,8 @@ void Debugger::startProcess(bool fullRestart, bool mode, wxString fName, wxStrin
 
 	//begin funky process stuff
 
-	command = execThis + returnChar;
-	sendCommand(command);
+	command = execThis + "<-sent";
+	updateHistory(command);
 
 	//initial commands to GDB
 	
@@ -1309,8 +1309,14 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 	tempHold = e.GetString();
 	data.Add(tempHold);
 	fullOutput.Add(tempHold);
+
+	tempString.Printf("\n---------\nDEBUGGER-> Output:\n%s\n---------\n", tempHold);
+	wxLogDebug(tempString);
+	tempString.Clear();
 	
 
+	//i don't think this code is effectual anymore
+	/*
 	if(classStatus == START)
 	{
 		skipThrough = false;
@@ -1322,7 +1328,7 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 		classStatusBackup = classStatus;
 		classStatus = WAITING;
 	}
-	
+	*/
 	
 	switch(classStatus)
 	{
