@@ -28,7 +28,7 @@
 
 #include "cham_db.h"
 //#include <wx/process.h>
-#include <wx/file.h>
+#include <wx/wfstream.h>
 //#include <iostream>
 
 //using namespace std;
@@ -51,7 +51,6 @@ Debugger::Debugger(wxTextCtrl* outBox)
 	procLives = false;
 	status = DEBUG_DEAD;
 	classStatus = STOP;
-	debugProc = NULL;
 }
 //end constructors
 
@@ -61,25 +60,29 @@ Debugger::~Debugger()
 	//initial stuff to cleanly exit (sorta)
 	stop(false);
 
+	wxString tmp;
 	//dump history & errors into debug file
-	/*
-	wxFile dumpFile("dump.txt");
-	dumpFile.Write("dump v0.1a");
-	for(int off = 0; off < MAX_HIST_ITEMS; off++)
+	wxFile dumpFile;
+	dumpFile.Create("dump.txt",true);
+
+	tmp = "dump v0.1a\n";
+	dumpFile.Write(tmp.c_str(), tmp.Len());
+
+	for(int off = 0; off < histCount; off++)
 	{
-		dumpFile.Write(getHistoryItem(off));
+		tmp = getHistoryItem(off) + "\n";
+		dumpFile.Write(tmp.c_str(), tmp.Len());
 	}
 
-	dumpFile.Write("Errors:");
+	tmp = "Errors:\n";
+	dumpFile.Write(tmp.c_str(), tmp.Len());
 	for(int o = 0; o < errorCount; o++)
 	{
-		dumpFile.Write(errorHist[o]);
+		tmp = errorHist[o] + "\n";
+		dumpFile.Write(tmp.c_str(), tmp.Len());
 	}
 
-	dumpFile.Close();
-	*/
-
-	if(debugProc != NULL) {delete debugProc;}
+	//if(debugProc != NULL) {delete debugProc;}
 }//end ~Debugger
 
 //onDebugEvent(): catches when Mark sends me something...
@@ -383,7 +386,7 @@ void Debugger::startProcess(bool fullRestart, bool mode, wxString fName, wxStrin
 		isRemote = mode;			//false = local
 		currFile = fName;
 	
-		histPointer = 0;
+		histCount = 0;
 	
 		numBreakpoints = 0;
 		gdbBreakpointNum = 1;
@@ -436,7 +439,7 @@ void Debugger::startProcess(bool fullRestart, bool mode, wxString fName, wxStrin
 		classStatus = STOP;
 		error = "Unable to launch.  Process ID not assigned.";
 		makeGenericError("Launch_fail");
-		delete debugProc;
+		//delete debugProc;
 	}
 	else if(pid == -1)
 	{
@@ -444,7 +447,7 @@ void Debugger::startProcess(bool fullRestart, bool mode, wxString fName, wxStrin
 		classStatus = STOP;
 		error = "Unable to launch process.  -1 PID assigned";
 		makeGenericError("Get a real operating system!");
-		delete debugProc;
+		//delete debugProc;
 	}
 	else
 	{
@@ -507,7 +510,7 @@ void Debugger::setBreak(wxString srcFile, int lineNum)
 		}
 		
 		classStatus = S_BREAK;
-		command.Printf("break \"%s:%d%\"s", srcFile, lineNum, returnChar.c_str());	
+		command.Printf("break \"%s:%d\"%s", srcFile, lineNum, returnChar.c_str());	
 		sendCommand(command);
 	
 		//breakpointNum[numBreakpoints] = gdbBreakpointNum;
@@ -604,8 +607,8 @@ int Debugger::findBreakpoint(wxString fName, int lineNum, bool andRemove)
 	{
 		if(andRemove)
 		{
-			lineToNum[fName].lineNumbers.RemoveAt(i);
-			lineToNum[fName].gdbNumbers.RemoveAt(i);
+			lineToNum[fName].lineNumbers.RemoveAt(i - 1);
+			lineToNum[fName].gdbNumbers.RemoveAt(i - 1);
 
 			command.Printf("delete break %d%s", equivNum, returnChar.c_str());
 			sendCommand(command);
@@ -843,10 +846,11 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 	//variables to hold stuff for parsing...
 	wxString tempHold;
 	int classStatusBackup = 0;
+	bool skipThrough = true;
 
 	//STEP parsing...
-	wxString firstCase, secondCase, thirdCase;
-	int initPos, finalPos;
+	wxString firstCase, secondCase, thirdCase, fourthCase;
+	int initPos, finalPos, a, b, c;
 
 	//!!END variables!!//
 
@@ -882,17 +886,17 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 				for(int j = 0; j <= i; j++)
 				{tempHold << data[j];}
 
-				classStatusBackup = GO;
+				skipThrough = false;
 			}
 		}
 	}
 	else
 	{
-		classStatusBackup = GO;
+		skipThrough = false;
 	}
 
 	//check to see if something good was found.
-	if(classStatusBackup != 0)
+	if(skipThrough)
 	{
 		classStatusBackup = classStatus;
 		classStatus = WAITING;
@@ -917,6 +921,7 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 		case HARD_RESET:
 		case NEW_FILE:		//new file to debug
 		case NEW_MODE:		//change in program mode
+			flushBuffer();
 			break;
 
 		case NEW_PROC:		//change in process pointer
@@ -963,12 +968,32 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 			//once one of these items is found, do a check on [topVarIndex > 0]
 			//and update the array;
 
+			//try and remove all return chars from the stream...
+			//(*outputScreen)<<"-Replaced items: "<<(int)tempHold.Replace("\r", "")<<"\n";
+			//(*outputScreen)<<"-Replaced items: "<<(int)tempHold.Replace("\n", "")<<"\n";
+			
 			firstCase = tempHold.Left(14);
 			
+			//get rid of everything if this is a class call...
+			if(tempHold.Find("::") > 0)
+			{
+				tempHold = tempHold.Mid(tempHold.Find("::"));
+			}
+			(*outputScreen)<<"Adjusted temphold: "<<tempHold<<"\n";
+
 			initPos = (tempHold.Find(" at ")) + 4;	//-1 if not there...
 			if(initPos >= 4)
 			{
-				finalPos = tempHold.Find(returnChar);
+				b = tempHold.Find(":") + 1;
+				finalPos = tempHold.Find(":") + 4;
+
+				(*outputScreen)<<"--Case 2 Breakdown -\n";
+				for(int i = initPos; i < (int)tempHold.Len(); i++)
+				{
+					(*outputScreen)<<tempHold.GetChar(i)<<" -> "<<(int)tempHold.GetChar(i)<<"\n";
+				}
+				(*outputScreen)<<"--\n";
+				
 				secondCase = tempHold.Mid(initPos, (initPos - finalPos));
 			}
 			else
@@ -1087,7 +1112,7 @@ void Debugger::onProcessTermEvent(wxProcess2EndedEvent &e)
 		streamIn = NULL;
 		pid = -2; // a nothing pid
 		procLives = false;
-		if(debugProc != NULL){delete debugProc;}
+		//if(debugProc != NULL){delete debugProc;}
 	}
 }
 
@@ -1111,12 +1136,8 @@ void Debugger::flushPrivateVar()
 	//breakpointNum.Empty();
 	lineToNum.empty();
 
-	for(int i = 0; i < MAX_HIST_ITEMS; i++)
-	{
-		commandHistory[i] = "";
-	}
-
-	histPointer = 0;
+	commandHistory.Empty();
+	histCount = 0;
 	error = "";
 	errorHist.Empty();
 	errorCount = 0;
@@ -1171,37 +1192,18 @@ void Debugger::addErrorHist(wxString comment)
 //updateHistory: updates the history storage and pointer
 void Debugger::updateHistory(wxString addMe)
 {
-	commandHistory[histPointer] = addMe;
-	histPointer++;
-
-	if(histPointer >= MAX_HIST_ITEMS)
-		histPointer = 0;
+	commandHistory.Add(addMe);
+	histCount++;
 }
 
 //getHistoryItem: returns the last history item offset by [offset].
-//eg: this will return [commandHistory[histPointer - 1]] which is the last
-//    command.  To get the one before, offset = 1, before that offset = 2
 wxString Debugger::getHistoryItem(int offset = 0)
 {
-	int offsetPointer = histPointer;
-
-	//last command at back of array
-	if(offsetPointer == 0)
+	if(offset > histCount)
 	{
-		offsetPointer = MAX_HIST_ITEMS;
+		offset = histCount;
 	}
-	//adjust offset to wrap around array
-	else if((offsetPointer - offset) < 0)
-	{
-		offset = offset - histPointer;
-		offsetPointer = MAX_HIST_ITEMS;
-	}
-	else	//offset is legal, adjust for the fact that histPointer points
-	{		//to next history position.
-		offset += 1;
-	}
-
-	return(commandHistory[offsetPointer - offset]);
+	return(commandHistory[offset]);
 }
 
 //eof

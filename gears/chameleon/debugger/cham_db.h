@@ -27,7 +27,7 @@
 #include <wx/textctrl.h>
 
 //global declarations
-const int MAX_HIST_ITEMS = 50;
+//const int MAX_HIST_ITEMS = 50;
 const wxString PROMPT_CHAR = "%";
 
 //keywords for parsing output
@@ -158,8 +158,8 @@ class Debugger : public wxEvtHandler
 //		wxArrayInt breakpointNum;	//hold breakpoint line #'s
 		DebugBreakHash lineToNum;
 		
-		wxString commandHistory[MAX_HIST_ITEMS];	//stores command history
-		int histPointer;			//points to current command history
+		wxArrayString commandHistory;	//stores command history
+		int histCount;				//points to current top command
 		
 		wxString error;				//holds error messages
 		wxArrayString errorHist;	//holds ALL error messages ^_^
