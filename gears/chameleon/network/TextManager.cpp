@@ -235,7 +235,7 @@ unsigned short TextManager::GetColor(int y, int x)
 unsigned short TextManager::GetColorAdjusted(int y, int x)
 {
 	int actualLine = AdjustIndex(y);
-	return = m_color[actualLine][x];
+	return m_color[actualLine][x];
 }
 
 void TextManager::SetColor(int y, int x, unsigned short value)
