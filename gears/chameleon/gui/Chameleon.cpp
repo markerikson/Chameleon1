@@ -77,45 +77,22 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 	wxIcon icon(moz_xpm);
 	SetIcon(icon);
-
-	m_config = new wxIniConfig("Chameleon", wxEmptyString, wxGetCwd() + "\\chameleon.ini");
-
-	// Configuration code... I'll get back to it
-
-	/*
-	int value = 0;
-	wxString tempString;
-	m_config->SetPath("Testing");
-	//m_config->Write("test3", "testing blah blah");
-	//m_config->Flush();
-	//tempString = m_config->Read("test2");
-
-	m_config->SetPath("Testing");
-	tempString = m_config->Read("test1");
-	wxString testMessage = "Test1: ";
-	testMessage << value;
-	wxMessageBox(testMessage, "Testing");
-	*/
 	
-
 
 	m_remoteMode = true;
 
-	m_network = new Networking();
-	//m_network->SetPlinkProg(wxGetCwd());
-	wxFileName plinkPath(wxGetCwd(), "plink.exe");
 
-	m_network->SetPlinkProg(plinkPath.GetFullPath());
-	CheckNetworkStatus();
-
-	wxString password = wxGetPasswordFromUser("Password for the current server:", "Password");
-	m_network->SetDetails("james.cedarville.edu", "s1278644", password);
-	CheckNetworkStatus();
 
 	m_perms = new Permission();
 
 	// enable only PERM_AUTOINDENT.  Eventually, will rely only on the provided code.
-	m_perms->setGlobal(0xff);
+
+	int permBitmask = 0;
+
+	permBitmask |= 1 << PERM_AUTOINDENT;
+	permBitmask |= 1 << PERM_REMOTELOCAL;
+
+	m_perms->setGlobal(permBitmask);
 
 	
 	for(int i = PERM_FIRST; i < PERM_LAST; i++)
@@ -125,6 +102,38 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	
 	m_perms->enable(PERM_AUTOINDENT);
 	m_perms->enable(PERM_REMOTELOCAL);
+
+
+
+
+	m_config = new wxIniConfig("Chameleon", wxEmptyString, wxGetCwd() + "\\chameleon.ini");
+
+	wxString hostname = m_config->Read("Network/hostname");
+	wxString username = m_config->Read("Network/username");
+
+	m_network = new Networking();
+	//m_network->SetPlinkProg(wxGetCwd());
+	wxFileName plinkPath(wxGetCwd(), "plink.exe");
+
+	m_network->SetPlinkProg(plinkPath.GetFullPath());
+	//CheckNetworkStatus();
+
+	//wxString password = wxGetPasswordFromUser("Password for the current server:", "Password");
+	m_network->SetDetails(hostname, username, "");
+	//CheckNetworkStatus();
+
+
+
+	m_optionsDialog = new OptionsDialog(this, ID_OPTIONSDIALOG, "Options");
+
+	InitializeOptionsDialog();
+
+	m_optionsDialog->SetServerAddress(hostname);
+	m_optionsDialog->SetUsername(username);
+
+
+
+
 	 
 
 	 //m_openFiles = new wxArrayString();
@@ -222,9 +231,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 #endif
 
 
-	m_optionsDialog = new OptionsDialog(this, ID_OPTIONSDIALOG, "Options");
-
-	InitializeOptionsDialog();
+	
 
 	m_remoteFileDialog = new RemoteFileDialog(this, ID_REMOTEFILEDIALOG);
 	m_remoteFileDialog->SetNetworking(m_network);
@@ -275,6 +282,8 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 ChameleonWindow::~ChameleonWindow()
 {
+	m_config->Flush();
+
 	delete m_perms;
 	//delete m_openFiles;
 	delete m_optionsDialog;
@@ -402,7 +411,21 @@ void ChameleonWindow::CloseFile (int pageNr)
 	if (edit->Modified()) 
 	{
 		wxString fileName = wxFileName(edit->GetFilename()).GetFullName();
-		wxString saveMessage = fileName;
+		wxString saveMessage = "The file ";
+		if(fileName = wxEmptyString)
+		{
+			int selectedTab = m_book->GetSelection();
+			wxString tabText = m_book->GetPageText(selectedTab);
+
+			int idx = tabText.Index('*');
+
+			if(idx != wxNOT_FOUND)
+			{
+				tabText.Remove(idx, 1);
+			}
+			fileName = tabText;
+		}
+		saveMessage += fileName;
 		saveMessage << " has unsaved changes.  Do you want to save them before the file is closed?";
 		if (wxMessageBox (_(saveMessage), _("Close"),
 			wxYES_NO | wxICON_QUESTION) == wxYES) 
@@ -600,10 +623,12 @@ bool ChameleonWindow::GetFileContents(wxString filename, wxString &fileContents)
 	{
 		wxFileName fn(filename);
 
-		wxString remotePath = fn.GetPath(wxPATH_UNIX);
+		wxString remotePath = fn.GetPath(false, wxPATH_UNIX);
 		wxString remoteFile = fn.GetFullName();
 
+		wxBeginBusyCursor();
 		fileContents = m_network->GetFileContents(remoteFile, remotePath);
+		wxEndBusyCursor();
 		CheckNetworkStatus();
 
 		return true;
@@ -894,7 +919,9 @@ void ChameleonWindow::SaveFile(bool saveas)
 			remotePath = m_currentEd->GetRemotePath();
 		}
 
+		wxBeginBusyCursor();
 		m_network->SendFileContents(fileContents, remoteFile, remotePath);
+		wxEndBusyCursor();
 
 		m_currentEd->SetRemoteFileNameAndPath(remotePath, remoteFile);
 
@@ -1155,6 +1182,15 @@ void ChameleonWindow::EvaluateOptions()
 		ChameleonEditor* edit = (ChameleonEditor*)m_book->GetPage(i);
 		edit->UpdateSyntaxHighlighting();
 	}
+
+	wxString hostname = m_optionsDialog->GetServerAddress();
+	wxString username = m_optionsDialog->GetUsername();
+	wxString password1 = m_optionsDialog->GetPassword1();
+	
+	m_network->SetDetails(hostname, username, password1);
+
+	m_config->Write("Network/hostname", hostname);
+	m_config->Write("Network/username", username);
 }
 
 void ChameleonWindow::CheckNetworkStatus()
@@ -1183,21 +1219,21 @@ void ChameleonWindow::CheckNetworkStatus()
 		{
 			wxString message = "The remote file could not be read properly.  The error was: ";
 			message += m_network->GetStatusDetails();
-			wxMessageBox(message, "Remote read error", wxOK);
+			wxMessageBox(message, "Remote read error", wxOK  | wxICON_EXCLAMATION);
 			break;
 		}
 		case NET_WRITE_ERROR:
 		{		
 			wxString message = "The remote file could not be written properly.  The error was: ";
 			message += m_network->GetStatusDetails();
-			wxMessageBox(message, "Remote write error", wxOK);
+			wxMessageBox(message, "Remote write error", wxOK  | wxICON_EXCLAMATION);
 			break;
 		}
 		case NET_ERROR_MESSAGE:
 		{		
 			wxString message = "An unknown network error has occurred.  \nPlease contact mark.erikson@cedarville.edu";
 			message += "\nError details: " + m_network->GetStatusDetails();
-			wxMessageBox(message, "Unknown network error", wxOK);
+			wxMessageBox(message, "Unknown network error", wxOK | wxICON_EXCLAMATION);
 			break;
 		}
 		case NET_AUTH_FAILED:

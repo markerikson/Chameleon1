@@ -252,10 +252,15 @@ void RemoteFileDialog::OnButtonUpClick( wxCommandEvent& event )
 
 	if(numDirs > 0)
 	{
-		m_currentPath.RemoveDir(numDirs - 1);
+		wxString currPath = m_currentPath.GetPath(false, wxPATH_UNIX);
+
+		if(currPath != "~")
+		{
+			m_currentPath.RemoveDir(numDirs - 1);
+		}
 	}
 	wxString path = m_currentPath.GetPath();
-	ShowDirectory(m_currentPath.GetFullPath(wxPATH_UNIX));
+	ShowDirectory(m_currentPath.GetPath(false, wxPATH_UNIX));
 }
 
 wxString RemoteFileDialog::GetRemoteFileNameAndPath()
@@ -274,13 +279,13 @@ void RemoteFileDialog::SetNetworking(Networking* network)
 	m_network = network;
 
 	wxString userHome = m_network->GetHomeDirPath();
-	m_parentFrame->CheckNetworkStatus();
+	//m_parentFrame->CheckNetworkStatus();
 	m_currentPath.AssignDir("~");
 }
 
 void RemoteFileDialog::ShowDirectory(wxString dirname)
 {
-
+	wxBeginBusyCursor();
 // disables VS's 4018 warning: "signed/unsigned mismatch" relating to the GetCount() comparison
 #pragma warning( disable : 4018)
 
@@ -299,10 +304,12 @@ void RemoteFileDialog::ShowDirectory(wxString dirname)
 
 	wxString displayPath = dirname;
 
+	/*
 	if(displayPath.Left(1) != "/")
 	{
 		displayPath = "/" + displayPath;
 	}
+	*/
 
 	m_pathBox->SetValue(displayPath);
 	
@@ -418,6 +425,8 @@ void RemoteFileDialog::ShowDirectory(wxString dirname)
 	m_list->SetFocus();
 
 #pragma warning( default : 4018 )
+
+	wxEndBusyCursor();
 	return;
 }
 
