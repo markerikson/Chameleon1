@@ -269,3 +269,15 @@ by: Ben
 >>needs for next meeting (Thursday)?
 	*Design Document (Dave assigns to us)
 	*Meeting with animated debugger team (Thursday?)
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Group Meeting 10/30/2003 8:33pm
+by: Ben
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+>>Discussion: SDD
+	-change to "global" syntax
+	-error handling: ALL ERRORS in a log file (initially).  Also #if_def them (#if_def testing make log file)
+	-design work on localities of files
+	-keep 6.0 in
+>>for Sunday
+	-alternative meeting time?
+	
