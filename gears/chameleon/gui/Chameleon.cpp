@@ -1179,7 +1179,7 @@ bool ChameleonWindow::SaveFile(bool saveas, FileFilterType filterType)
 			m_currentEd->SetFilename(fn, false);
 			m_currentEd->SaveFile(filename);
 
-			wxString simpleFileName = m_currentEd->GetFilename();
+			wxString simpleFileName = m_currentEd->GetFilenameString();
 
 			int currentTab = m_book->GetSelection();
 
@@ -1222,7 +1222,7 @@ bool ChameleonWindow::SaveFile(bool saveas, FileFilterType filterType)
 		}
 		else
 		{
-			remoteFile = m_currentEd->GetFilename();
+			remoteFile = m_currentEd->GetFilenameString();
 			remotePath = m_currentEd->GetFilePath();
 		}
 
@@ -2156,7 +2156,7 @@ void ChameleonWindow::OnDisconnect(wxCommandEvent &event)
 
 void ChameleonWindow::OnCompile(wxCommandEvent &event)
 {
-	m_compilerTextbox->Clear();
+	m_compilerTextbox->Clear(); // Not if Advanced?
 
 	bool doCompile = true;
 
@@ -2180,7 +2180,7 @@ void ChameleonWindow::OnCompile(wxCommandEvent &event)
 		bool isAdvanced = m_perms->isEnabled(PERM_ADVANCEDCOMPILE);
 		bool isProj = false;
 		if(m_currentProjectInfo != NULL && 
-			m_currentProjectInfo->FileExistsInProject(m_currentEd->GetFilename()) ) 
+			m_currentProjectInfo->FileExistsInProject(m_currentEd->GetFilenameString()) ) 
 		{
 			isProj = true;
 		}
@@ -2193,7 +2193,7 @@ void ChameleonWindow::OnCompile(wxCommandEvent &event)
 			}
 			else 
 			{
-				m_compiler->CompileFile(m_currentEd->GetFilePath(), m_currentEd->GetFilename(), m_remoteMode, m_compilerTextbox);
+				m_compiler->CompileFile(m_currentEd->GetFilePath(), m_currentEd->GetFilenameString(), m_remoteMode, m_compilerTextbox);
 			}
 		}
 		else 

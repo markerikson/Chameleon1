@@ -383,9 +383,13 @@ wxString ChameleonEditor::GetFileNameAndPath()
 	return nameAndPath;
 }
 
-wxString ChameleonEditor::GetFilename()
+wxString ChameleonEditor::GetFilenameString()
 {
 	return m_fileNameAndPath.GetFullName();
+}
+
+wxFileName ChameleonEditor::GetFileName() {
+	return m_fileNameAndPath;
 }
 
 wxString ChameleonEditor::GetFilePath()

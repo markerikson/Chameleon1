@@ -50,7 +50,8 @@ public:
 	//void SetFilename (const wxString &filename) {m_simpleFileName =  filename;};
 
 	wxString GetFileNameAndPath();
-	wxString GetFilename();
+	wxString GetFilenameString();
+	wxFileName GetFileName(); // capital N
 	wxString GetFilePath();
 	//void SetFileNameAndPath(wxString path, wxString name, bool fileIsRemote);
 	void SetFilename(wxFileName filename, bool fileIsRemote);
