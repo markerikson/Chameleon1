@@ -150,10 +150,8 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 	int eventCommand = event.GetId();
 	int eventLineNum;
 	
-
-	
 	wxArrayString gui_var_names;
-	wxString varName;
+	wxString varName, funcName, className;
 	
 	wxArrayInt breakpointLines;
 
@@ -163,19 +161,6 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 	wxString firstFile;
 	wxString sendAllBreakpoints;
 	
-	
-	
-	/*
-	if(eventCommand == ID_DEBUG_START)
-	{
-		firstFile = srcFiles[0];
-
-		if(eventCommand != ID_DEBUG_START)
-		{
-			eventLineNum = event.GetLineNumber();
-		}
-	}
-	else*/ 
 	if((eventCommand == ID_DEBUG_ADD_BREAKPOINT) ||
 			(eventCommand == ID_DEBUG_REMOVE_BREAKPOINT) )
 	{
@@ -193,6 +178,8 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 	{
 		gui_var_names = event.GetVariableNames();
 		varName = gui_var_names[0];
+		funcName = event.GetFunctionName();
+		className = event.GetClassName();
 	}
 
 	//loop vars
@@ -209,6 +196,7 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 		wxArrayString srcFiles = proj->GetSources();//event.GetSourceFilenames();
 		wxString execFile = proj->GetExecutableFileName();//event.GetExecutableFilename();
 		projectBeingDebugged = proj;
+
 		startProcess(true, event.IsRemote(), execFile, "gdb -q", outputScreen);
 
 		//set breakpoints
@@ -228,13 +216,15 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 
 					numBreakpoints++;
 					gdbBreakpointNum++;	
-
 					
 					//~~DEBUG CODE~~//
 					wxLogDebug("--STARTUP: make breakpoint: num=%d, gdb_num=%d--",numBreakpoints, gdbBreakpointNum);
 				}
 			}//end if
 		}
+
+		//~~DEBUG CODE~~//
+		wxLogDebug("--STARTUP: breakpoint string:\n------\n" + sendAllBreakpoints + "\n\n";
 
 
 		sendCommand("list"+returnChar);
@@ -272,11 +262,12 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 		break;
 
 	case ID_DEBUG_ADD_WATCH:
-		snoopVar(varName, false);
+		snoopVar(varName, funcName, className, false);
 		break;
+	}
 
 	case ID_DEBUG_REMOVE_WATCH:
-		removeVar(varName);
+		removeVar(varName, funcName, className);
 		break;
 
 	//case ID_DEBUG_RUNTOCURSOR:
@@ -515,10 +506,10 @@ void Debugger::startProcess(bool fullRestart, bool mode, wxString fName, wxStrin
 	
 		errorCount = 0;
 
-		currDebugLine = 0;
+		//currDebugLine = 0;
 		
-		gdbVarIndex = 1;
-		varCount = 0;
+		//gdbVarIndex = 1;
+		//varCount = 0;
 	
 		firstExecString = execThis;
 	}
@@ -981,68 +972,289 @@ void Debugger::cont()
 // there are only 2 functions here: a snoopVar and a setVar.
 // do you need anything else?  ^_^
 
-//snoopVar(): returns the variable's value, and if oneShot = false
-//  will add it to the watch list.
-void Debugger::snoopVar(wxString varName, bool oneShot)
+//sendWatchVariableCommand(): PRIVATE FUNCTION to simplify [snoopVar()]'s code
+void Debugger::sendWatchVariableCommand(wxString varName)
 {
 	wxString tmp;
+
+	//re-enable confirming so we can force the "display" command
+	//to return a GDB # and value immediately
+	command.Append("set confirm off" + returnChar);
+
+	//get the type
+	tmp.Printf("whatis %s%s", varName.c_str(), returnChar.c_str());
+	command.Append(tmp.c_str());
+
+	//display
+	tmp.Printf("display %s%s", varName.c_str(), returnChar.c_str());
+	command.Append(tmp.c_str());
+
+	//disable confirming for continuing operation
+	command.Append("set confirm off" + returnChar);
+
+	sendCommand(command);
+
+	command.Clear();
+	varCount++;
+}
+
+//snoopVar(): adds, if not in the array, the given variable.  Actual snooping
+//  is done in [onOutputEvent]
+void Debugger::snoopVar(wxString varName, wxString funcName, wxString className, bool oneShot)
+{
+	wxString combinedFunction;
+	VariableInfo variableStruct;
+	bool notFound = true;
+
+	combinedFunction<<className<<"::"<<funcName;
+
+	//Step 1: See if the variable & function/class exists in the structure array
+	if(varCount == 0)
+	{	
+		//we're adding the first item to the array
+		variableStruct.name = varName;
+		variableStruct.functionName = combinedFunction;
+		variableStruct.type = "null";
+		variableStruct.value = "0";
+
+		m_varInfo.Add(variableStruct);
+
+		varCount++;
+	}
+	else
+	{
+		//check to see if the variable is already in the array
+
+		for(int i = 0; (i < varCount) && (notFound); i++)
+		{
+			if(m_varInfo[i].name == varName)
+			{
+				notFound = false;
+			}
+		}
+
+		if(notFound)
+		{
+			variableStruct.name = varName;
+			variableStruct.functionName = combinedFunction;
+			variableStruct.type = "null";
+			variableStruct.value = "0";
+
+			m_varInfo.Add(variableStruct);
+
+			varCount++;
+		}
+	}
+
+	//Step 2: if GDB is running, send a "whatis" command to get the type.
+	if(status == DEBUG_BREAK || status == DEBUG_WAIT)
+	{
+		command.Printf("whatis %s%s", varName.c_str(), returnChar.c_str());
+		sendCommand(command);
+
+		classStatus = GET_WHAT;
+	}
+
+	/*to be touched at a later date?
+
+	wxString tmp;
 	wxDebugEvent outputEvent;
+	bool watchingLocal = false;
+
+	//see if the passed function name / class name matches the stored ones
+	if( m_lastFuncVisited == funcName &&
+		m_lastClassVisited == className)
+	{watchingLocal = true;}
 
 	if(	status == DEBUG_WAIT ||
 		status == DEBUG_BREAK)
 	{
 		classStatus = WATCH_VAR;
 		command.Clear();
-		
-		//get the type
-		tmp.Printf("whatis %s%s", varName.c_str(), returnChar.c_str());
-		command.Append(tmp.c_str());
 
-		tmp.Clear();
-		tmp.Printf("print %s%s", varName.c_str(), returnChar.c_str());
-		command.Append(tmp.c_str());
-		//sendCommand(command);
-
-		if(!oneShot)
+		if(oneShot)
 		{
-			//set it to watching
-			tmp.Clear();
-			tmp.Printf("display %s%s", varName.c_str(), returnChar.c_str());
-			command.Append(tmp.c_str());
-
-			//add the variable being watched to our repository.
-			//this will be used to match up name/value pairs in onProcessOutput
-			varNames.Add(varName);
-			varDispIndex.Add(gdbVarIndex);
-
-			//gdbVarIndex = the # GDB uses
-			//varCount = my index for varNames[] and varValue[]
-			gdbVarIndex++;
-			varCount++;
-
-			if(varCount != (int)varNames.GetCount())
+			if(watchingLocal)
 			{
-				error = "Variable name array mismatched with # of displayed variables\n";
-				makeGenericError("snoopVar: ");
-				error.Printf("Variable count=%d, array count=%d", varCount, (int)varNames.GetCount());
-				makeGenericError("snoopVar: ");
+				command.Printf("print %s%s", varName.c_str(), returnChar.c_str());
+				sendCommand(command);
+			}
+		}
+		else
+		{
+			tmp<<className<<"::"<<funcName;
 
-				outputEvent.SetStatus(ID_DEBUG_EXIT_ERROR);
-				guiPointer->AddPendingEvent(outputEvent);
-				stop(false);
+			//check the function against our repository
+			if(m_varFuncInfo.find(tmp) == m_varFuncInfo.end())
+			{
+				//the function is not in the repository
+				m_varFuncInfo.insert(tmp);
+				m_varFuncInfo[tmp].functionHasBeenVisited = watchingLocal;
+				m_varFuncInfo[tmp].variableDisplayed.Add(watchingLocal);
+				m_varFuncInfo[tmp].variableNames.Add(varName);
+
+				//set it to watching?
+				if(watchingLocal)
+				{
+					sendWatchVariableCommand(varName);
+				}
+			}
+			else	//the function is in the repository...
+			{
+				int varIndex = m_varFuncInfo[tmp].variableNames.Index(varName);
+
+				if(varIndex == wxNOT_FOUND)
+				{
+					//the variable is not in the repository
+					m_varFuncInfo[tmp].variableDisplayed.Add(watchingLocal);
+					m_varFuncInfo[tmp].variableNames.Add(varName);
+
+					//set it to watching?
+					if(watchingLocal)
+					{
+						sendWatchVariableCommand(varName);
+					}
+				}
+				else
+				{
+					//the variable is in the repository!
+					if( !(m_varFuncInfo[tmp].variableDisplayed[varIndex]) &&
+						watchingLocal)
+					{
+						//function has not been visited, and it's the "local" function
+						m_varFuncInfo[tmp].variableDisplayed[varIndex] = true;
+
+						sendWatchVariableCommand(varName);
+					}
+				}
+			}//end function repository check
+		}//end oneShot check
+	}//end status check
+	else//if(status == DEBUG_STOPPED)
+	{
+		//the snoopVar function has been called without a running GDB process
+
+		//COURSE OF ACTION:
+		//
+		we will now fake GDB's numbers using this class's internal [guiVarIndex]??
+		//
+	}
+	*/
+}
+
+void Debugger::setVar(wxString varName, wxString newValue, wxString funcName, wxString className)
+{
+}
+
+//sendWhat(): sends "whatis name" for every variable that doesn't have a 
+//  type set.
+void Debugger::sendWhat()
+{
+	if(varCount > 0)
+	{
+		for(int i = 0; i < varCount; i++)
+		{
+			if(m_varInfo[i].type == "null")
+			{
+				command.Printf("whatis %s%s", m_varInfo[i].name.c_str(), returnChar.c_str());
+				sendCommand(command);
 			}
 		}
 
-		sendCommand(command);
-	}//end status check
+		classStatus = GET_WHAT;
+	}
 }
 
-void Debugger::setVar(wxString varName, wxString newValue)
+//sendPrint(): sends "print name" for every variable that has a type
+//  Also captures the types send from [sendWhat]
+//  NOTE: i'm not sure how this function handles "dirty" input
+void Debugger::sendPrint(wxString fromGDB)
 {
+	wxString singleLine;
+	wxArrayString fromWatch, ignoreVars;
+	int lineBreak = 0, endQuote = 0, fromWatchIndex = 0;
+
+	do
+	{
+		lineBreak = fromGDB.Find("\r");
+
+		if(lineBreak == -1)
+		{
+			fromGDB = PROMPT_CHAR;
+		}
+		else
+		{
+			singleLine = fromGDB.Mid(0, lineBreak);
+			fromGDB.Remove(0, lineBreak);
+
+			if(singleLine.Mid(0,4) == "type")
+			{
+				lineBreak = 2 + singleLine.Find("= ");
+				singleLine = singleLine.Mid(lineBreak);
+
+				fromWatch.Add(singleLine);
+			}
+			else if(singleLine.Mid(0,9) == "No symbol")
+			{
+				lineBreak = singleLine.Find("\"");
+				singleLine = singleLine.Mid(lineBreak + 1);
+
+				endQuote = singleLine.Find("\"");
+				singleLine = singleLine.Mid(0, endQuote);
+
+				ignoreVars.Add(singleLine);
+			}
+
+			fromGDB.Remove(0, 1);	//get rid of the \r we avoided before
+		}
+	}while(fromGDB != PROMPT_CHAR);
+
+
+		for(int i = 0; i < varCount; i++)
+		{
+			if(ignoreVars.Index(m_varInfo[i].name) == wxNOT_FOUND)
+			{
+				//current variable is not in the "ignoreVars" list...
+				if(m_varInfo[i].type == "null")
+				{
+					m_varInfo[i].type = fromWatch[fromWatchIndex];
+					fromWatchIndex++;
+				}
+			}
+		}//end for
+
+		for(i = 0; i < varCount; i++)
+		{
+			command.Printf("print %s%s", m_varInfo[i].name.c_str(), returnChar.c_str());
+			sendCommand(command);
+		}
+
+		classStatus = GET_PRINT;
 }
 
-void Debugger::removeVar(wxString varName)
+//removeVar(): removes a variable from the array list.
+void Debugger::removeVar(wxString varName, wxString funcName, wxString className)
 {
+	//some added verbosity
+	bool notFound = true,
+		 found = false;;
+
+	if(varCount != 0)
+	{
+		for(int i = 0; (i < varCount) && (notFound); i++)
+		{
+			if(m_varInfo[i].name == varName)
+			{
+				notFound = false;
+				found = true;
+			}
+		}
+
+		if(found)
+		{
+			m_varInfo.RemoveAt(i - 1);
+		}
+	}//end varCount if
 }
 
 //PRIVATE FUNCTIONS:
@@ -1516,7 +1728,7 @@ void Debugger::flushPrivateVar()
 	fileIsSet = false;
 	currFile = "";
 	pid = 0;
-	currDebugLine = 0;
+	//currDebugLine = 0;
 	numBreakpoints = 0;
 	gdbBreakpointNum = 1;
 	//breakpointNum.Empty();
@@ -1530,11 +1742,11 @@ void Debugger::flushPrivateVar()
 	command = "";
 	returnChar = "";
 	data.Empty();
-	varNames.Empty();
-	varValue.Empty();
-	varDispIndex.Empty();
-	gdbVarIndex = 0;
-	varCount = 0;
+	//m_lastFuncVisited.Clear();
+	//m_lastClassVisited.Clear();
+	//gdbVarIndex = 1;
+	//guiVarIndex = 0;
+	//varCount = 0;
 }
 
 //getResult(): handles getting the streamed output... i think...
