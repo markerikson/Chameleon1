@@ -27,5 +27,5 @@
 
 # syncmail:
 #
-DEFAULT $CVSROOT/syncmail.pl -m smtp.cedarville.edu %{sVv} dczechowski@cedarville.edu
+DEFAULT $CVSROOT/syncmail -m smtp.cedarville.edu %{sVv} dczechowski@cedarville.edu
 #gears $CVSROOT/syncmail %{sVv} dczechowski@cedarville.edu p1164514@cedarville.edu S1278644@cedarville.edu
