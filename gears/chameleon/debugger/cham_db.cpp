@@ -106,6 +106,8 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 	
 	wxString tmp;
 	wxString firstFile;
+	wxString sendAllBreakpoints;
+	wxString execFile = event.GetExecutableFilename();
 	
 	if( (eventCommand == ID_DEBUG_START) ||
 		(eventCommand == ID_DEBUG_ADD_BREAKPOINT) ||
@@ -123,11 +125,9 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 	{
 		breakpointList = event.GetFileBreakpoints();
 	}
-	wxString sendAllBreakpoints;
-	wxString execFile = event.GetExecutableFilename();
 
 	//loop vars
-	int i, j;
+	int i = 0, j; = 0
 
 	switch(eventCommand)
 	{
@@ -147,7 +147,9 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 				{
 					sendAllBreakpoints<<"break \""<<tmp<<":"<<breakpointLines[j]<<"\""<<returnChar;
 					numBreakpoints++;
-					gdbBreakpointNum++;
+					gdbBreakpointNum++;	
+					//~~DEBUG CODE~~//
+					wxLogDebug("--STARTUP: make breakpoint: num=%d, gdb_num=%d--",numBreakpoints, gdbBreakpointNum);
 				}
 			}//end if
 		}
@@ -164,7 +166,6 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 		break;
 
 	case ID_DEBUG_STEPNEXT:
-		//(*outputScreen)<<"<event> received step command <event>\n";
 		step();
 		break;
 
@@ -556,6 +557,9 @@ void Debugger::setBreak(wxString srcFile, int lineNum)
 		classStatus = S_BREAK;
 		command.Printf("break \"%s:%d\"%s", srcFile, lineNum, returnChar.c_str());	
 		sendCommand(command);
+		//~~DEBUG CODE~~//
+		wxLogDebug("--make breakpoint:(+1 to follow) num=%d, gdb_num=%d--",numBreakpoints, gdbBreakpointNum);
+
 	
 		//breakpointNum[numBreakpoints] = gdbBreakpointNum;
 		//currArrayPos = lineToNum[srcFile].lineNumbers.GetCount();
@@ -923,8 +927,6 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 	//data.Add(e.GetOutput());
 
 	//~~DEBUG CODE~~//
-	//(*outputScreen)<<"-Class Status: "<<classStatus<<"-\n";
-	//(*outputScreen)<<"--Output:\n"<<tempHold<<"\n--end output--\n";
 	wxLogDebug("DB output: %s", tempHold);
 	//tempHold.Empty();
 
@@ -939,7 +941,6 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 			i++)
 		{
 			tempHold = data[i];
-			//(*outputScreen)<<"--DEBUG: tmpHold.Last(): "<<tempHold.Last()<<"--\n";
 			if(tempHold.Last() == PROMPT_CHAR)
 			{
 				tempHold.Empty();
