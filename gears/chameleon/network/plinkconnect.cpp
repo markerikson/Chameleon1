@@ -72,6 +72,10 @@ void PlinkConnect::setUsername(wxString username) {
 
 //Public:
 void PlinkConnect::setPassphrase(wxString passphrase) {
+	if(passphrase.Contains("\"")) {
+		// this user's passphrase just isn't going to work
+	}
+	passphrase = "\"" + passphrase + "\"";
 	pass = passphrase;
 }
 
