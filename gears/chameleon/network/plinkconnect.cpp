@@ -151,7 +151,7 @@ void PlinkConnect::spawnConnection()
 		//delete proc not needed because ASYNC
 	}
 	else { // Process is Live
-		wxLogDebug("Starting a Plink process...");
+		//wxLogDebug("Started another Plink connection - pid(%d)", pid);
 		ProcessInfo* p = new ProcessInfo;
 		p->pid = pid;
 		p->proc = proc;
@@ -216,7 +216,7 @@ wxTextOutputStream* PlinkConnect::executeCmd(wxString command, wxEvtHandler* lis
 	//wxString cmd = "echo St_Ar_Tt_oK_eN ; " + command + " && echo Ch_Ls_Uc_Es_S ; echo En_Dt_oK_eN\r";
 	
 	// Send it:
-//wxLogDebug("PC(%d) cmd is: %s", p->pid, cmd);
+	//wxLogDebug("PC(%d) cmd is: %s", p->pid, cmd);
 	*(p->stdinStream) << cmd;
 	p->state = PC_EXECUTING;
 
@@ -251,8 +251,8 @@ wxString PlinkConnect::executeSyncCommand(wxString command)
 //Private:
 void PlinkConnect::parseOutput(ProcessInfo* p, wxString output, wxString errLog)
 {
-	wxLogDebug("Plink stdout: \"" + output + "\"");
-//	wxLogDebug("Plink stderr: \"" + errLog + "\"");
+	//wxLogDebug("Plink(%d) stdout: \"%s\"", p->pid, output);
+	//wxLogDebug("Plink(%d) stderr: \"%s\"", p->pid, errLog);
 
 	if(p->state != PC_ENDING) {
 		p->outputBuf += output;
@@ -273,7 +273,7 @@ void PlinkConnect::parseOutput(ProcessInfo* p, wxString output, wxString errLog)
 			terminateConnection(p);
 		}
 		else {
-			//*(p->stdinStream) << "echo \"Successful Login\"" << endl; <- backup plan
+			//*(p->stdinStream) << "echo \"Successful Login\"" << endl; <-- backup plan
 			// Do nothing.  Just continue waiting.
 
 			// (in the meantime:)
@@ -284,7 +284,7 @@ void PlinkConnect::parseOutput(ProcessInfo* p, wxString output, wxString errLog)
 
 	if(p->state == PC_READY) {
 		// nothing to do
-//		wxLogDebug("PlinkConnect(%d): extranious output: \"%s\"", p->pid, p->outputBuf);
+		//wxLogDebug("PlinkConnect(%d): extranious output: \"%s\"", p->pid, output.Mid(output.Find("Successful Login"));
 	}
 
 	if(p->state == PC_EXECUTING) {
@@ -340,7 +340,7 @@ void PlinkConnect::parseOutput(ProcessInfo* p, wxString output, wxString errLog)
 			}
 			
 			if(temp != "") {
-//				wxLogDebug("PlinkConnect(%d): extranious output: \"%s\"", p->pid, temp);
+				//wxLogDebug("PlinkConnect(%d): extranious output: \"%s\"", p->pid, temp);
 			}
 		#endif
 	}
@@ -405,7 +405,6 @@ void PlinkConnect::PollTick() {
 		}
 
 		if(output != "" || errout != "") {
-//wxLogDebug("ProcessOutput(%d) - \"%s\"", p->pid, output);
 			parseOutput(p, output, errout);
 		}
 	}
@@ -432,6 +431,7 @@ void PlinkConnect::onTerminate(wxProcessEvent& event) {
 
 	if(found) {
 		//Remove and Delete the process:
+		//wxLogDebug("A Plink Connection Terminated - pid(%d)", pid);
 		delete p->proc;
 		delete p->stdinStream;
 		m_processes.DeleteObject(p);
@@ -439,7 +439,7 @@ void PlinkConnect::onTerminate(wxProcessEvent& event) {
 
 		if(m_processes.GetCount() == 0) {
 			m_isConnected = false;
-			wxLogDebug("All Plink Processes Terminated");
+			//wxLogDebug("All Plink Processes Terminated");
 		}
 	}
 
