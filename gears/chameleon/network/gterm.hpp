@@ -12,8 +12,17 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define MAXWIDTH 200
-#define MAXHEIGHT 200
+#include <vector>
+#include <queue>
+#include <deque>
+#include <string>
+//#include "../common/FixedSizeQueue.h"
+#include "TextManager.h"
+
+using namespace std;
+
+#define MAXWIDTH 160
+#define MAXHEIGHT 100
 
 #ifndef min
 #define min(x,y) ((x)<(y)?(x):(y))
@@ -65,11 +74,20 @@ private:
 	// terminal info
 	int width, height, scroll_top, scroll_bot;
 	unsigned char *text;
+	//unsigned char* alttext;
+	//vector<string> vectext;
+	//deque<string> textq;
+
+	TextManager tm;
+
+	//string stringtext;
 	unsigned short *color;
 	short linenumbers[MAXHEIGHT]; // text at text[linenumbers[y]*MAXWIDTH]
 	unsigned char dirty_startx[MAXHEIGHT], dirty_endx[MAXHEIGHT];
 	int pending_scroll; // >0 means scroll up
 	int doing_update;
+
+	int m_nextLineCounter;
 
 	// terminal state
 	int cursor_x, cursor_y;
@@ -315,6 +333,12 @@ public:
 	virtual void ExposeArea(int x, int y, int w, int h);
 	virtual void Reset();
 
+	void Scroll(int numLines, bool scrollUp);
+	TextManager GetTM();
+	int GetColor();
+	void DecodeColor(int color, int &fg_color, int &bg_color);
+
+	bool IsScrolledUp();
 	int GetMode() { return mode_flags; }
 	void SetMode(int mode) { mode_flags = mode; }
 	void set_mode_flag(int flag);

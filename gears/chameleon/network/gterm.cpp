@@ -6,6 +6,13 @@
 #endif
 
 #include "gterm.hpp"
+#include "../common/debug.h"
+
+#ifdef _DEBUG
+
+#define new DEBUG_NEW
+
+#endif
 
 void GTerm::Update()
 {
@@ -55,22 +62,45 @@ void GTerm::ExposeArea(int x, int y, int w, int h)
 void GTerm::ResizeTerminal(int w, int h)
 {
 	int cx, cy;
-	clear_area(min(width,w), 0, MAXWIDTH-1, MAXHEIGHT-1);
-	clear_area(0, min(height,h), min(width,w)-1, MAXHEIGHT-1);
+	//clear_area(min(width,w), 0, MAXWIDTH-1, MAXHEIGHT-1);
+	//clear_area(0, min(height,h), min(width,w)-1, MAXHEIGHT-1);
+
+
+	//clear_area(0, )
 	width = w;
 	height = h;
 	scroll_bot = height-1;
 	if (scroll_top >= height) scroll_top = 0;
 	cx = min(width-1, cursor_x);
 	cy = min(height-1, cursor_y);
+	tm.Resize(w, h);
 	move_cursor(cx, cy);
+
+	//ExposeArea(0, 0, width - 1, height - 1);
+	//Update();
 }
 
 GTerm::GTerm(int w, int h) : width(w), height(h)
 {
 	int i;
+	m_nextLineCounter = 0;
 
 	doing_update = 0;
+/*
+	string blankline;
+	blankline.resize(MAXWIDTH, ' ');
+	textq = deque<string>(MAXHEIGHT, blankline);
+				   
+	alttext = new unsigned char[MAXWIDTH * MAXHEIGHT];
+
+	stringtext.clear();
+
+	stringtext.resize(MAXWIDTH * MAXHEIGHT, ' ');
+*/
+	TextManager temptm(this, w, h, MAXWIDTH, MAXHEIGHT);
+
+	tm = temptm;
+
 
 	// could make this dynamic
 	text = new unsigned char[MAXWIDTH*MAXHEIGHT];
@@ -96,6 +126,7 @@ GTerm::GTerm(int w, int h) : width(w), height(h)
 
 GTerm::~GTerm()
 {
+	//delete[] alttext;
 	delete[] text;
 	delete[] color;
 #ifdef GTERM_PC
@@ -121,23 +152,36 @@ GTerm::IsSelected(int x, int y)
 {
   if(color && x >= 0 && x < Width() && y >= 0 && y < Height())
     return color[(linenumbers[y] * MAXWIDTH) + x] & SELECTED;
+    //return (tm.GetColorAdjusted(y, x) & SELECTED);
   return 0;
 }
 
 void
 GTerm::Select(int x, int y, int select)
 {
+	unsigned short firstColor = tm.GetColorAdjusted(0, 0);
   if(color && x >= 0 && x < Width() && y >= 0 && y < Height())
+  //if( (firstColor != 0) && x >= 0 && x < Width() && y >= 0 && y < Height())
   {
 	  int idx1 = linenumbers[y];
 	  int idx2 = idx1 * MAXWIDTH;
 	  int idx3 = idx2 + x;
     if(select)
+	{
       //color[(linenumbers[y] * MAXWIDTH) + x] |= SELECTED;
 	  color[idx3] |= SELECTED;
+	  int tempcolor = tm.GetColorAdjusted(y, x);
+	  tempcolor |= SELECTED;
+	  tm.SetColorAdjusted(y, x, tempcolor);
+	}
     else
+	{
      // color[(linenumbers[y] * MAXWIDTH) + x] &= ~SELECTED;
 	 color[idx3] &= ~SELECTED;
+	 int tempcolor = tm.GetColorAdjusted(y, x);
+	 tempcolor &= ~SELECTED;
+	 tm.SetColorAdjusted(y, x, tempcolor);
+	}
     changed_line(y, x, x);
 //    update_changes();
   }
@@ -152,5 +196,30 @@ GTerm::GetChar(int x, int y)
   return 0;
 }
 
+TextManager GTerm::GetTM()
+{
+	return tm;
+}
 
+int GTerm::GetColor()
+{
+	return calc_color(fg_color, bg_color, mode_flags);
+}
 
+void GTerm::DecodeColor(int color, int &fg_color, int &bg_color)
+{
+	fg_color = (color >> 4) & 0xf;
+	bg_color = (color >> 8) & 0xf;
+}
+
+void GTerm::Scroll(int numLines, bool scrollUp)
+{
+	tm.Scroll(numLines, scrollUp);
+	ExposeArea(0, 0, width, height);
+	update_changes();
+}
+
+bool GTerm::IsScrolledUp()
+{
+	return (tm.GetNumLinesScrolled() != 0);
+}
