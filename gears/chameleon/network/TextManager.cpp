@@ -26,8 +26,6 @@ void TextManager::Reset()
 	m_blankline.resize(m_maxWidth, ' ');
 	m_text = deque<string>(m_maxHeight, m_blankline);
 
-	//int color = m_parent->GetColor();
-
 	// black background, white text
 	m_blankColor = 112;
 	vector<unsigned short> colorline(m_maxWidth, m_blankColor);
@@ -38,14 +36,11 @@ void TextManager::Reset()
 	m_numLinesScrolledUp = 0;
 
 	m_cursorLine = 0;
+	m_linesReceived = 0;
 }
 
 void TextManager::AddNewLine()
 {
-	//char buffer[20];
-	//sprintf(buffer, "%d", m_text.size());
-	//string blankline = buffer;
-
 	AddNewLine(m_blankline);
 }
 
@@ -57,10 +52,11 @@ void TextManager::AddNewLine(string newline)
 	}
 	m_text.push_back(newline);
 
-	int blankcolor = m_parent->GetColor();
 	vector<unsigned short> linecolors;
-	linecolors.resize(m_maxWidth, blankcolor);
+	linecolors.resize(m_maxWidth, m_blankColor);
 	m_color.push_back(linecolors);
+
+	m_linesReceived++;
 
 	if((int)m_text.size() > m_maxHeight)
 	{
@@ -81,10 +77,6 @@ void TextManager::AddNewLine(string newline)
 
 string &TextManager::operator [](int index)
 {
-	//int actualLine = m_topLine + index;
-
-	//return m_text[actualLine];
-
 	if(index != m_cursorLine)
 	{
 		//wxLogDebug("m_cursorLine: %d, index: %d", m_cursorLine, index);
@@ -149,14 +141,6 @@ int TextManager::GetSize()
 
 void TextManager::PrintViewport()
 {
-	/*
-	cout << "Viewport (top = " << m_topLine << ", bottom = " << m_bottomLine << "):" << endl;
-	for(int i = m_topLine; i <= m_bottomLine; i++)
-	{
-		cout << m_text[i] << endl;
-	}
-	*/
-
 	wxLogDebug("Viewport (top = %d, bottom = %d)", m_topLine, m_bottomLine);
 
 	for(int i = m_topLine; i <= m_bottomLine; i++)
@@ -177,14 +161,6 @@ void TextManager::PrintContents()
 
 void TextManager::Resize(int width, int height)
 {
-	
-/*
-	for(int i =0; i < (int)m_text.size(); i++)
-	{
-		m_text[i].resize(width, ' ');
-	}
-*/
-
 	if(height == m_viewportHeight)
 	{
 		return;
@@ -259,10 +235,7 @@ unsigned short TextManager::GetColor(int y, int x)
 unsigned short TextManager::GetColorAdjusted(int y, int x)
 {
 	int actualLine = AdjustIndex(y);
-	unsigned short color = m_color[y][x];
-
-	
-	return color;
+	return = m_color[actualLine][x];
 }
 
 void TextManager::SetColor(int y, int x, unsigned short value)
@@ -434,4 +407,23 @@ int TextManager::AdjustIndex(int index)
 int TextManager::GetNumLinesScrolled()
 {
 	return m_numLinesScrolledUp;
+}
+
+void TextManager::SetMaxSize(int newSize)
+{
+	if(newSize < m_viewportHeight)
+	{
+		return;
+	}
+
+	if(newSize < m_maxHeight)
+	{
+		int linesToPitch = m_maxHeight - newSize;
+
+		for(int i = 0; i < linesToPitch; i++)
+		{
+			m_color.pop_front();
+			m_text.pop_front();
+		}
+	}
 }

@@ -83,17 +83,12 @@ void GTerm::normal_input()
     if (mode_flags & INSERT)
         for (i = width - 1; i>=cursor_x + n; i--)
         {
-            text[y + i] = text[y + i - n];
+            //text[y + i] = text[y + i - n];
 
-			//tm[cursor_y][i] = tm[cursor_y][i - n];
 			char c = tm.GetCharAdjusted(cursor_y, i - n);
 			tm.SetCharAdjusted(cursor_y, i, c);
 
-			//alttext[altY + i] = alttext[ altY + i - n];
-			//stringtext[altY + i] = stringtext[altY + i - n];
-			//textq[m_nextLineCounter][i] = textq[m_nextLineCounter][i - n];
-
-            color[y + i] = color[y + i - n];
+            //color[y + i] = color[y + i - n];
 
 			unsigned short tempcolor = tm.GetColorAdjusted(cursor_y, i - n);
 			tm.SetColorAdjusted(cursor_y, i, tempcolor);
@@ -104,16 +99,10 @@ void GTerm::normal_input()
 	// MPE: inserts the new received text, overwriting what was there already
     for (i = 0; i<n; i++)
     {
-        text[y + cursor_x] = input_data[i];
-
-		//tm[cursor_y][cursor_x] = input_data[i];
+        //text[y + cursor_x] = input_data[i];
 		tm.SetCharAdjusted(cursor_y, cursor_x, input_data[i]);
 
-		//alttext[altY + cursor_x] = input_data[i];
-		//stringtext[altY + cursor_x] = input_data[i];
-		//textq[m_nextLineCounter][cursor_x] = input_data[i];
-
-        color[y + cursor_x] = c;
+        //color[y + cursor_x] = c;
 		tm.SetColorAdjusted(cursor_y, cursor_x, c);
         cursor_x++;
     }
@@ -138,16 +127,7 @@ void GTerm::lf()
 		
     }
 
-	//tm.AddNewLine();
 	tm.CursorDown();
-	/*
-	m_nextLineCounter++;
-
-	if(m_nextLineCounter >= MAXHEIGHT)
-	{
-		m_nextLineCounter = 0;
-	}
-	*/
 }
 
 void GTerm::ff()
@@ -192,7 +172,6 @@ void GTerm::bs()
     if (mode_flags & DESTRUCTBS)
     {
         clear_area(cursor_x, cursor_y, cursor_x, cursor_y);
-		//tm[cursor_y][cursor_x] = ' ';
     }
 }
 
@@ -279,21 +258,6 @@ void GTerm::reset()
     move_cursor(0, 0);
 
 	tm.Reset();
-
-	/*
-	string blankline;
-	blankline.resize(MAXHEIGHT, ' ');
-	textq.clear();
-	textq.assign(MAXHEIGHT, blankline);
-
-	for(int i = 0; i < MAXHEIGHT; i++)
-	{
-		memset(alttext + (i * MAXWIDTH), 32, MAXWIDTH);
-		stringtext.replace(i * MAXWIDTH, MAXWIDTH, MAXWIDTH, ' ');		
-	}
-	*/
-
-	
 }
 
 void GTerm::set_q_mode() { q_mode = 1;
@@ -432,7 +396,6 @@ void GTerm::delete_char()
     if (n>=mx)
     {
         clear_area(cursor_x, cursor_y, width - 1, cursor_y);
-		//tm[cursor_y].replace(cursor_x, width -1, width - 1,' ');
     }
     else
     {
@@ -613,53 +576,24 @@ void GTerm::erase_display()
     {
         case 0:
             clear_area(cursor_x, cursor_y, width - 1, cursor_y);
-			//tm[cursor_y].replace(cursor_x, width - 1, width - 1, ' ');
 
             if (cursor_y<height - 1)
 			{
                 clear_area(0, cursor_y + 1, width - 1, height - 1);
-				/*
-				string blankline;
-				blankline.resize(width, ' ');
-				for(int i = cursor_y + 1; i <= height - 1; i++)
-				{					
-					tm[i] = blankline;
-				}
-				*/
 			}
             break;
 
         case 1:
             clear_area(0, cursor_y, cursor_x, cursor_y);
-			//tm[cursor_y].replace(0, cursor_x, cursor_x, ' ');
 
             if (cursor_y>0)
 			{
                 clear_area(0, 0, width - 1, cursor_y - 1);
-
-				/*
-				string blankline;
-				blankline.resize(width, ' ');
-
-				for(int i = 0; i <= cursor_y - 1; i++)
-				{
-					tm[i] = blankline;
-				}
-				*/
 			}
             break;
 
         case 2:
             clear_area(0, 0, width - 1, height - 1);
-			/*
-			string blankline;
-			blankline.resize(width, ' ');
-
-			for(int i = 0; i <= height - 1; i++)
-			{
-				tm[i] = blankline;
-			}
-			*/
             break;
     }
 }
@@ -802,15 +736,11 @@ void GTerm::screen_align()
 
         for (x = 0; x<width; x++)
         {
-            text[yp + x] = 'E';
+            //text[yp + x] = 'E';
 
 			tm[y][x] = 'E';
 
-			//alttext[altY + x] = 'E';
-			//stringtext[altY + x] = 'E';
-			//textq[m_nextLineCounter][x] = 'E';
-
-            color[yp + x] = c;
+            //color[yp + x] = c;
 
 			tm.SetColorAdjusted(y, x, c);
         }
@@ -1007,20 +937,15 @@ void GTerm::pc_arg( void )
                     for (i = 0; i<pc_args[3]; i++)
                     {
 						int idx1 = pc_args[1] + i;
-                        //yp = linenumbers[pc_args[1] + i] * MAXWIDTH;
 						yp = linenumbers[idx1] * MAXWIDTH;
 
 						int idx2 = pc_args[5] + i;
-                        //yp2 = linenumbers[pc_args[5] + i] * MAXWIDTH;
 						yp2 = linenumbers[idx2] * MAXWIDTH;
 
                         memmove(& text[yp2 + pc_args[4]], & text[yp + pc_args[0]], pc_args[2]);
 						
 						string substring = tm[idx1].substr(pc_args[0], pc_args[2]);
 						tm[idx2].replace(pc_args[4], pc_args[2], substring);
-
-						//string substring = textq[idx1].substr(pc_args[0], pc_args[2]);
-						//textq[idx2].replace(pc_args[4], pc_args[2], substring);
 
                         memmove(& color[yp2 + pc_args[4]], & color[yp + pc_args[0]], pc_args[2]);
 						// TODO Need to come up with a working idea here... just a for loop maybe?
@@ -1032,19 +957,15 @@ void GTerm::pc_arg( void )
                     for (i = pc_args[3] - 1; i>=0; i--)
                     {
 						int idx1 = pc_args[1] + i;
-                        //yp = linenumbers[pc_args[1] + i] * MAXWIDTH;
 						yp = linenumbers[idx1] * MAXWIDTH;
 
 						int idx2 = pc_args[5] + i;
-                        //yp2 = linenumbers[pc_args[5] + i] * MAXWIDTH;
 						yp2 = linenumbers[idx2] * MAXWIDTH;
 
                         memmove(& text[yp2 + pc_args[4]], & text[yp + pc_args[0]], pc_args[2]);
 
 						string substring = tm[idx1].substr(pc_args[0], pc_args[2]);
 						tm[idx2].replace(pc_args[4], pc_args[2], substring);
-						//string substring = textq[idx1].substr(pc_args[0], pc_args[2]);
-						//textq[idx2].replace(pc_args[4], pc_args[2], substring);
 
                         memmove(& color[yp2 + pc_args[4]], & color[yp + pc_args[0]], pc_args[2]);
 						// TODO ditto as with previous
@@ -1106,16 +1027,14 @@ void GTerm::pc_data( void )
             if (!(pc_datacount & 1))
             {
                 //printf("pc_data: got char %d\n", *input_data);      
-                text[yp + pc_curx] = * input_data;
+                //text[yp + pc_curx] = * input_data;
 
 				tm[pc_cury][pc_curx] = *input_data;
-				//alttext[altY + pc_curx] = * input_data;
-				//textq[m_nextLineCounter][pc_curx] = *input_data;
             }
             else
             {
                 //printf("pc_data: got attr %d\n", *input_data);
-                color[yp + pc_curx] = * input_data << 4;
+                //color[yp + pc_curx] = * input_data << 4;
 				tm.SetColorAdjusted(pc_cury, pc_curx, (*input_data << 4));
             }
 
@@ -1139,17 +1058,10 @@ void GTerm::pc_data( void )
             yp = linenumbers[pc_cury] * MAXWIDTH;
 			altY = m_nextLineCounter * MAXWIDTH;
 
-            text[yp + pc_curx] = * input_data;
-
+            //text[yp + pc_curx] = * input_data;
 			tm[pc_cury][pc_curx] = *input_data;
-			//alttext[altY + pc_curx] = * input_data;
-			//stringtext[altY + pc_curx] = *input_data;
-			//textq[m_nextLineCounter][pc_curx] = *input_data;
 
-
-
-
-            color[yp + pc_curx] = (unsigned short)pc_args[3] << 4;
+            //color[yp + pc_curx] = (unsigned short)pc_args[3] << 4;
 			tm.SetColorAdjusted(pc_cury, pc_curx, ((unsigned short)pc_args[3] << 4) );
             changed_line(pc_cury, pc_args[0], pc_curx);
             pc_curx++;

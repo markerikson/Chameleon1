@@ -28,6 +28,7 @@ public:
 	void CursorDown();
 	void CursorUp();
 
+	void SetMaxSize(int newSize);
 	void SetCharAdjusted(int y, int x, char c);
 	void SetCursorLine(int line);
 	void SetLine(int index, string line);

@@ -14,7 +14,6 @@ int GTerm::calc_color( int fg, int bg, int flags )
 
 void GTerm::update_changes ()
 {
-	//wxLogDebug("update_changes: NLC: %d", m_nextLineCounter);
     int yp, start_x, mx;
 
     int blank, c, x, y;
@@ -63,8 +62,8 @@ void GTerm::update_changes ()
 
         for( x = start_x; x <= dirty_endx[y]; x++ )
         {
-            if( text[yp + x] != 32 && text[yp + x] )
-			//if( (tm[y][x] != 32) && (tm[y][x]))
+            //if( text[yp + x] != 32 && text[yp + x] )
+			if( (tm.GetCharAdjusted(y,x) != 32) && (tm.GetCharAdjusted(y,x)))
                 blank = 0;
 
             //if( c != color[yp + x] )
@@ -160,7 +159,8 @@ void GTerm::update_changes ()
         //c = color[yp];
 		c = tm.GetColorAdjusted(cursor_y, x);
 
-		unsigned char cursorChar = tm[cursor_y][x];
+		//unsigned char cursorChar = tm[cursor_y][x];
+		unsigned char cursorChar = tm.GetCharAdjusted(cursor_y, x);
         if( mode_flags & PC )
 		{			
 			DrawCursor((c >> 4) & 0xf, (c >> 8) & 0xf, c & 15, x, cursor_y, cursorChar);
@@ -168,8 +168,8 @@ void GTerm::update_changes ()
 		}
         else
 		{
-			//DrawCursor((c >> 4) & 7, (c >> 8) & 7, c & 15, x, cursor_y, cursorChar);
-            DrawCursor((c >> 4) & 7, (c >> 8) & 7, c & 15, x, cursor_y, text[yp]);
+			DrawCursor((c >> 4) & 7, (c >> 8) & 7, c & 15, x, cursor_y, cursorChar);
+            //DrawCursor((c >> 4) & 7, (c >> 8) & 7, c & 15, x, cursor_y, text[yp]);
 		}
     }
 
@@ -242,7 +242,6 @@ void GTerm::scroll_region( int start_y, int end_y, int num )
 
 			lnvalues << linenumbers[y] << " ";
 
-			// 
             if( !fast_scroll || clr )
             {
                 dirty_startx[y] = 0;
@@ -263,22 +262,12 @@ void GTerm::scroll_region( int start_y, int end_y, int num )
 
                 memset(text + yp, 32, width);
 
-				//memset(alttext + altY, 32, width);
-				//stringtext.replace(altY, width, width, ' ');
-
-				/* IMPORTANT Hey... should scroll_region actually do anything
-				 *			 if we're wrapping around?
-				 */
-				//textq[m_nextLineCounter].replace(width, width, ' ');
-
                 for( x = 0; x < width; x++ )
                 {
                     color[yp++] = c;
                 }
             }
         }
-		//wxLogDebug("scroll_region: start_y = %d, end_y = %d", start_y, end_y, lnvalues.c_str());
-		//wxLogDebug(lnvalues);
 	}
 }
 
@@ -292,8 +281,6 @@ void GTerm::shift_text( int y, int start_x, int end_x, int num )
 
     yp = linenumbers[y] * MAXWIDTH;
 	int altY = m_nextLineCounter * MAXWIDTH;
-
-	//int adjustedY = m_next
 
     mx = end_x - start_x + 1;
 
