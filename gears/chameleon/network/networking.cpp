@@ -289,9 +289,16 @@ void Networking::DetermineStatusError(wxString errlog, wxString output)
 		}
 		statusDetails = "Could not write to destination file or directory. (Check permissions)";
 	}
+	else if(errlog.Contains("Connection refused")) {
+		status = NET_CONN_REFUSED;
+		while(errlog.Right(1) == "\n") {
+			errlog.RemoveLast(); // Remove any trailing new-lines for aesthetic purposes
+		}
+		statusDetails = errlog;
+	}
 	else if(false) {
 		status = NET_READ_ERROR;
-		statusDetails = "blah blah blah blah";
+		statusDetails = "Read Error";
 	}
 	//else -- defaults
 

@@ -120,12 +120,13 @@ enum NetworkStatus
 {
 	NET_GOOD = 0,
 	NET_UNKNOWN_HOST,  // host finger print not in cache
-	NET_ERROR_MESSAGE,
+	NET_CONN_REFUSED,  // host exists, but wouldn't allow a connection
 	NET_AUTH_FAILED,   // user+pass did not work on host
 	NET_READ_ERROR,
 	NET_WRITE_ERROR,
 	NET_BAD_PLINK_PROG,
 	NET_BAD_PSCP_PROG,
+	NET_ERROR_MESSAGE, // default/catch-all
 };
 
 enum NetworkCallResult

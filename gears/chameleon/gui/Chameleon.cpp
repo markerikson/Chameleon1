@@ -1440,6 +1440,14 @@ NetworkCallResult ChameleonWindow::CheckNetworkStatus()
 			return NETCALL_FAILED;
 			break;
 		}
+		case NET_CONN_REFUSED:
+		{
+			wxString message = "Connection to the remote server was refused.";
+			message += "\nPlease check the remote hostname in the Options menu and try again.";
+			wxMessageBox(message, "Connection Refused", wxOK | wxICON_EXCLAMATION);
+			return NETCALL_FAILED;
+			break;
+		}
 		default:
 			return NETCALL_WORKED;
 			break;
