@@ -69,7 +69,7 @@ class Debugger : public wxEvtHandler
 {
 	public:
 		//defaults
-		Debugger(wxTextCtrl* outBox);
+		Debugger(wxTextCtrl* outBox, wxEvtHandler* pointer);
 		~Debugger();					//destructor
 
 		void onDebugEvent(wxDebugEvent &event);
@@ -82,9 +82,11 @@ class Debugger : public wxEvtHandler
 		wxString getFile();				//returns current file up for debugging
 
 		int genericStatus();			//returns current debug status
-		int programStatus();
+		int programStatus();			//returns EXACT class status
+
 		bool isDebugging();				//returns whether i'm running or not
 		bool isPaused();				//returns status == DEBUG_WAIT more or less
+
 		wxString errorMsg();			//returns error message, if any
 		bool resetStatus();				//hard reset * USE CAUTIOUSLY *
 		void clearError();				//just resets the status variable
@@ -128,6 +130,7 @@ class Debugger : public wxEvtHandler
 		void flushPrivateVar();				//flushes all private variables
 
 		int findBreakpoint(wxString fName, int lineNum, bool andRemove = false);
+		bool checkOutputStream(wxString stream);	//true = okay to parse further
  
 		void sendCommand(wxString send);	//sends command & updates history
 		wxString getResult(int debugFlag);	//gets returned output
@@ -182,6 +185,9 @@ class Debugger : public wxEvtHandler
 
 		//dave code
 		wxTextCtrl* outputScreen;
+
+		//GUI connectivity
+		wxEvtHandler* guiPointer;
 
 		DECLARE_EVENT_TABLE()
 };

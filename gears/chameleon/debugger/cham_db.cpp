@@ -29,6 +29,7 @@
 #include "cham_db.h"
 //#include <wx/process.h>
 #include <wx/wfstream.h>
+#include <wx/RegEx.h>
 //#include <iostream>
 
 //using namespace std;
@@ -43,11 +44,12 @@ BEGIN_EVENT_TABLE(Debugger, wxEvtHandler)
 END_EVENT_TABLE()
 
 //straight up constructor
-Debugger::Debugger(wxTextCtrl* outBox)
+Debugger::Debugger(wxTextCtrl* outBox, wxEvtHandler* pointer)
 {
 	flushPrivateVar();
 
 	outputScreen = outBox;
+	guiPointer = pointer;
 	procLives = false;
 	status = DEBUG_DEAD;
 	classStatus = STOP;
@@ -65,23 +67,25 @@ Debugger::~Debugger()
 	wxFile dumpFile;
 	dumpFile.Create("dump.txt",true);
 
-	tmp = "dump v0.1a\n";
+	tmp = "dump v0.1a / ";
 	dumpFile.Write(tmp.c_str(), tmp.Len());
 
 	for(int off = 0; off < histCount; off++)
 	{
-		tmp = getHistoryItem(off) + "\n";
+		tmp = getHistoryItem(off) + " / ";
 		dumpFile.Write(tmp.c_str(), tmp.Len());
 	}
 
-	tmp = "Errors:\n";
+	tmp = " *-- Errors: / ";
 	dumpFile.Write(tmp.c_str(), tmp.Len());
 	for(int o = 0; o < errorCount; o++)
 	{
-		tmp = errorHist[o] + "\n";
+		tmp = errorHist[o] + " / ";
 		dumpFile.Write(tmp.c_str(), tmp.Len());
 	}
 
+	//delete outputScreen;
+	//delete guiPointer;
 	//if(debugProc != NULL) {delete debugProc;}
 }//end ~Debugger
 
@@ -132,9 +136,8 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 
 		sendCommand("list"+returnChar);
 		sendCommand(sendAllBreakpoints);
-
-		//assuming all is well...
-		go();
+		sendCommand("something"+returnChar);
+		sendCommand("done"+returnChar);	//tag... not really a command
 		break;
 
 	case ID_DEBUG_STOP:
@@ -142,7 +145,7 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 		break;
 
 	case ID_DEBUG_STEPNEXT:
-		(*outputScreen)<<"<event> received step command <event>\n";
+		//(*outputScreen)<<"<event> received step command <event>\n";
 		step();
 		break;
 
@@ -456,7 +459,7 @@ void Debugger::startProcess(bool fullRestart, bool mode, wxString fName, wxStrin
 		wxString tmp;
 
 		//dave code
-		(*outputScreen) << "Started Process.  PID: " << pid << "\n";
+		//(*outputScreen) << "Started Process.  PID: " << pid << "\n";
 
 		procLives = true;
 		classStatus = START;
@@ -474,7 +477,7 @@ void Debugger::startProcess(bool fullRestart, bool mode, wxString fName, wxStrin
 		//send all initlization commands to GDB
 		for(int currInit = 0; currInit < int(initString.GetCount()); currInit++)
 		{
-			(*outputScreen)<<"INIT COMM: "<<initString[currInit];
+			//(*outputScreen)<<"INIT COMM: "<<initString[currInit];
 			sendCommand(initString.Item(currInit));
 		}
 		
@@ -542,6 +545,8 @@ void Debugger::enableBreak(wxString srcFile, int lineNum)
 	{
 		command.Printf("enable %d%s", equivNum, returnChar.c_str());
 		sendCommand(command);
+
+		classStatus = E_BREAK;
 	}
 }
 
@@ -565,6 +570,8 @@ void Debugger::disableBreak(wxString srcFile, int lineNum)
 	{
 		command.Printf("disable %d%s", equivNum, returnChar.c_str());
 		sendCommand(command);
+
+		classStatus = D_BREAK;
 	}
 }
 
@@ -583,6 +590,8 @@ void Debugger::killBreak(wxString srcFile, int lineNum)
 		error = baka;
 		status = suBaka;
 	}
+
+	classStatus = K_BREAK;
 }
 
 //findBreakpoint(): finds a breakpoint within the hash & returns the GDB #
@@ -844,14 +853,20 @@ void Debugger::removeVar(wxString varName)
 void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 {
 	//variables to hold stuff for parsing...
-	wxString tempHold;
+	wxString tempHold, Filename, Linenumber, goBreakpoint;
+	
 	int classStatusBackup = 0;
-	bool skipThrough = true;
 
-	//STEP parsing...
-	wxString firstCase, secondCase, thirdCase, fourthCase;
-	int initPos, finalPos, a, b, c;
+	bool skipThrough = true, 
+		 keepParsing = false;
 
+	//step parsing RegEx
+	wxRegEx reCase1 = "at (([[:alnum:]]|[[:blank:]]|\\.)+):([[:digit:]]+)";
+	wxRegEx reCase2 = "([[:digit:]]+)[[:blank:]]+";
+
+	//go parsing RegEx
+	wxRegEx reStart = " command: \"done\"";
+	wxRegEx reGoCase = "Breakpoint ([[:digit:]]+)";
 	//!!END variables!!//
 
 	status = DEBUG_WAIT;
@@ -863,8 +878,8 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 	//data.Add(e.GetOutput());
 
 	//~~DEBUG CODE~~//
-	(*outputScreen)<<"-Class Status: "<<classStatus<<"-\n";
-	(*outputScreen)<<"--Output:\n"<<tempHold<<"\n--end output--\n";
+	//(*outputScreen)<<"-Class Status: "<<classStatus<<"-\n";
+	//(*outputScreen)<<"--Output:\n"<<tempHold<<"\n--end output--\n";
 	tempHold.Empty();
 
 	//What we're doing with output events:
@@ -874,11 +889,11 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 	if(classStatus != START)
 	{
 		for(int i = 0; 
-		    i < int(data.GetCount()) && classStatusBackup == 0; 
+		    i < (int)data.GetCount() && skipThrough; 
 			i++)
 		{
 			tempHold = data[i];
-			(*outputScreen)<<"--DEBUG: tmpHold.Last(): "<<tempHold.Last()<<"--\n";
+			//(*outputScreen)<<"--DEBUG: tmpHold.Last(): "<<tempHold.Last()<<"--\n";
 			if(tempHold.Last() == PROMPT_CHAR)
 			{
 				tempHold.Empty();
@@ -895,27 +910,78 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 		skipThrough = false;
 	}
 
+	//(*outputScreen)<<"output: "<<tempHold<<"\n";
+
 	//check to see if something good was found.
 	if(skipThrough)
 	{
 		classStatusBackup = classStatus;
 		classStatus = WAITING;
 	}
-
-	(*outputScreen)<<"<onOutputEvent> class status: "<<classStatus<<" <onOutputEvent>\n";
 	
 	//i need to do parsing here & sending mark stuff i guess...
 	switch(classStatus)
 	{
 		case START:			//program start
-			flushBuffer();
+			if(errorMsg() != "")
+			{
+				if(reStart.Matches(errorMsg()))
+				{
+				//	(*outputScreen)<<"\n\nSTART!\n\n";
+					status = DEBUG_STOPPED;
+					go();
+				}
+				else
+				{
+					//(*outputScreen)<<"\n\nreStart does not match error\n\n";
+				}
+			}
+
+			data.Empty();
 			break;
 
 		case E_BREAK:		//enable break
 		case D_BREAK:		//disable break
 		case K_BREAK:		//kill break
+			//nothing to parse...
+			data.Empty();
+			break;
+
 		case S_BREAK:		//set break
+			data.Empty();
+			break;
+
 		case GO:
+			keepParsing = checkOutputStream(tempHold);
+
+			if(keepParsing)
+			{
+				if(reGoCase.Matches(tempHold))
+				{
+					goBreakpoint = reGoCase.GetMatch(tempHold, 1);
+					//(*outputScreen)<<"\nCaptured GO Breakpoint = "<<goBreakpoint<<"\n\n";
+
+					if(reCase1.Matches(tempHold))
+					{
+						Filename = reCase1.GetMatch(tempHold, 1);
+						Linenumber = reCase1.GetMatch(tempHold, 3);
+						status = DEBUG_BREAK;
+						//(*outputScreen)<<"\nCASE1 Matches: fname="<<Filename<<" #="<<Linenumber<<"\n\n";
+					}
+					else
+					{
+						//(*outputScreen)<<"Unable to grab filename from breakpoint?!\n";
+					}
+				}
+				else
+				{
+					error.Printf("program stopped for an unknown reason. ClassStatus %d", classStatus);
+					makeGenericError("go parse: ");
+				}
+			}
+			data.Empty();
+			break;
+
 		case JUMP:
 		case SOFT_RESET:
 		case HARD_RESET:
@@ -956,8 +1022,10 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 			break;
 
 		case STEP:
-			(*outputScreen)<<"--Made it to the STEP case--"<<classStatus<<"\n";
+		//	(*outputScreen)<<"--Made it to the STEP case--"<<classStatus<<"\n";
 		case STEP_OVER:
+		case STEP_OUT:
+
 			//looking for this heirarchy:
 			// 1) the word "Program" as this indicates a fatal error
 			//  2) the pattern "f_name.ext:ln"
@@ -968,99 +1036,32 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 			//once one of these items is found, do a check on [topVarIndex > 0]
 			//and update the array;
 
-			//try and remove all return chars from the stream...
-			//(*outputScreen)<<"-Replaced items: "<<(int)tempHold.Replace("\r", "")<<"\n";
-			//(*outputScreen)<<"-Replaced items: "<<(int)tempHold.Replace("\n", "")<<"\n";
-			
-			firstCase = tempHold.Left(14);
-			
-			//get rid of everything if this is a class call...
-			if(tempHold.Find("::") > 0)
-			{
-				tempHold = tempHold.Mid(tempHold.Find("::"));
-			}
-			(*outputScreen)<<"Adjusted temphold: "<<tempHold<<"\n";
-
-			initPos = (tempHold.Find(" at ")) + 4;	//-1 if not there...
-			if(initPos >= 4)
-			{
-				b = tempHold.Find(":") + 1;
-				finalPos = tempHold.Find(":") + 4;
-
-				(*outputScreen)<<"--Case 2 Breakdown -\n";
-				for(int i = initPos; i < (int)tempHold.Len(); i++)
-				{
-					(*outputScreen)<<tempHold.GetChar(i)<<" -> "<<(int)tempHold.GetChar(i)<<"\n";
-				}
-				(*outputScreen)<<"--\n";
-				
-				secondCase = tempHold.Mid(initPos, (initPos - finalPos));
-			}
-			else
-			{
-				secondCase = "blank";
-			}
-
-			initPos = tempHold.Find(char(32));
-			thirdCase = tempHold.Mid(0, initPos - 1);
-
-			(*outputScreen)<<"1stcase: "<<firstCase<<"\n";
-			(*outputScreen)<<"2ndcase: "<<secondCase<<"\n";
-			(*outputScreen)<<"3rdcase: "<<thirdCase<<"\n";
+			//kudos to Mark for the RegEx!!
+			keepParsing = checkOutputStream(tempHold);
 
 			//begin testing cases
-			if(firstCase == "Program receiv" ||
-				firstCase == "Program exited")
+			if(keepParsing)
 			{
-				status = DEBUG_ERROR;
-				classStatus = STOP;
-				error = "Problem with program execution: " + tempHold;
-				makeGenericError("Fault in parsing output");
-				break;
-			}
-			else if(secondCase != "blank")
-			{
-				int colonPos = secondCase.Find(':');
-				wxString tmp;
-				wxString mark_fileName = "blank";
-				long mark_lineNum = 0;
-
-				if(colonPos > 0)
+				if(reCase1.Matches(tempHold))
 				{
-					mark_fileName = secondCase.Mid(0, colonPos - 1);
-					tmp = secondCase.Mid(colonPos + 1, finalPos);
-					tmp.ToLong(&mark_lineNum);
-
-					/*DEBUG CODE*/
-					(*outputScreen)<<"Case 2:\n";
-					(*outputScreen)<<"Captured filename: "<<mark_fileName.c_str()<<"\n";
-					(*outputScreen)<<"Captured line num: "<<mark_lineNum<<"\n";
+					Filename = reCase1.GetMatch(tempHold, 1);
+					Linenumber = reCase1.GetMatch(tempHold, 3);
+					//(*outputScreen)<<"\nCASE 1: file="<<Filename<<" line="<<Linenumber<<"\n\n";
+				}
+				else if(reCase2.Matches(tempHold))
+				{
+					Linenumber = reCase2.GetMatch(tempHold, 1);
+					//(*outputScreen)<<"\nCASE 2: #="<<Linenumber<<"\n\n";
 				}
 				else
 				{
-					status = DEBUG_ERROR;
-					classStatus = STOP;
-					error = "Error on parsing: no colon in string";
-					makeGenericError("Parse error: STEP case 2");
-					break;
+					//(*outputScreen)<<"Couldn't parse STEP output\n";
+					error = "Failed to match STEP output";
+					makeGenericError("step parse:");
 				}
 			}
-			else
-			{
-				long mark_lineNum = 0;
-				thirdCase.ToLong(&mark_lineNum);
 
-				/*DEBUG CODE*/
-				(*outputScreen)<<"Case 3:\n";
-				(*outputScreen)<<"Captured line num: "<<mark_lineNum<<"\n";
-			}
-			break;
-
-		case STEP_OUT:
-			//looking for: f_name.ext:ln
-			//where f_name.ext = the filename
-			//      ln = the line number to re-focus on in f_name
-			//if [topVarIndex > 0] we need to grab some variables & ship 'em
+			data.Empty();
 			break;
 
 		case CONTINUE:
@@ -1073,8 +1074,8 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 		case STOP:
 			status = DEBUG_ERROR;
 			classStatus = STOP;
-			error = "Extreme debug error.";
-			makeGenericError("See previous error messages");
+			error = "Extreme debug error OR quit-command sent before output finished: received output with ClassStatus=STOP.";
+			makeGenericError("See previous error messages (if any)");
 			data.Empty();
 			break;
 
@@ -1087,6 +1088,70 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 	}
 }
 
+//checkOutputStream(): function for onOutputEvent, checks stream for common
+//  stream features... like "Program received" or "Breakpoint..."
+bool Debugger::checkOutputStream(wxString stream)
+{
+	wxRegEx reCase1 = "at (([[:alnum:]]|[[:blank:]]|\\.)+):([[:digit:]]+)";
+	wxString thirdCase = stream;
+
+	//(*outputScreen)<<"-thirdCase.Left[8] ->"<<thirdCase.Left(8)<<"\n";
+
+	if(thirdCase.Left(8) == "Program")
+	{
+		thirdCase.Remove(0,9);
+		if(thirdCase.Left(8) == "received")
+		{
+			int newlineIndex = thirdCase.find_first_of("\n");
+			thirdCase.Remove(0, newlineIndex);
+
+			//if we've gotten here, the program has received a message of some type.
+			//either way, not good for further parsing.
+			if(reCase1.Matches(thirdCase))
+			{
+				//(*outputScreen)<<"Match for \"Program recieved\".  match 1 = "<<reCase1.GetMatch(thirdCase, 1)<<", match 2 = "<<reCase1.GetMatch(thirdCase, 3)<<"\n";
+				error = "Received bad program signal.  RegEx: " + reCase1.GetMatch(thirdCase, 1) + ", " + reCase1.GetMatch(thirdCase, 3);
+				makeGenericError("checkOutputStream:  ");
+				return(false);
+			}
+			else
+			{
+				//(*outputScreen)<<"Match for \"Program received\"; regex failed\n";
+				
+				error = "Received bad program signal.  No RegEx.";
+				makeGenericError("checkOutputStream:  ");
+				return(false);
+			}
+		}
+		else if(thirdCase.Left(6) == "exited")
+		{
+			thirdCase.Remove(0,7);
+			if(thirdCase.Matches("normal"))
+			{
+				status = DEBUG_STOPPED;
+				classStatus = STOP;
+				return(false);
+			}
+			else
+			{
+				error.Printf("Program terminated abnormally.  ClassStatus %d", classStatus);
+				makeGenericError("checkOutputStream: ");
+				return(false);
+			}
+		}
+		else
+		{
+			//(*outputScreen)<<"Unknown program signal received; status halted\n";
+			
+			error.Printf("Unknown program signal. ClassStatus %d", classStatus);
+			makeGenericError("checkOutputStream: ");
+			return(false);
+		}
+	}
+
+	return(true);
+}
+
 void Debugger::onProcessErrOutEvent(wxProcess2StdErrEvent &e)
 {
 	status = DEBUG_ERROR;
@@ -1095,7 +1160,7 @@ void Debugger::onProcessErrOutEvent(wxProcess2StdErrEvent &e)
 	error = e.GetError();
 	addErrorHist("Event-Generated error");
 
-	(*outputScreen)<<"Generated Error: "<<error<<"\n";
+	//(*outputScreen)<<"Generated Error: "<<error<<"\n";
 	//again, some event stuff here...
 }
 
@@ -1104,7 +1169,7 @@ void Debugger::onProcessTermEvent(wxProcess2EndedEvent &e)
 	//the process has been killed (aka GDB quit for some reason)
 	if(e.GetPid() == pid) 
 	{
-		(*outputScreen)<<"Process ("<<pid<<") Terminated\n";
+		//(*outputScreen)<<"Process ("<<pid<<") Terminated\n";
 
 		status = DEBUG_DEAD;
 		classStatus = STOP;
@@ -1165,7 +1230,7 @@ void Debugger::sendCommand(wxString send)
 		wxTextOutputStream streamOut(*(debugProc->GetOutputStream()));//me to GDB
 		streamOut.WriteString(send);
 		send = send + "<- sent";
-		(*outputScreen)<<send<<"\n";
+		//(*outputScreen)<<send<<"\n";
 	}
 	else
 	{
