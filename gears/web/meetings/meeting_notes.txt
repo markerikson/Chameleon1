@@ -852,3 +852,27 @@ by: Ben
 >>Code:
 	*DONE BY WEDNESDAY April 14th
 	*Wrap up test prog Dave sent me to put in the Maint. Manual.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Group Meeting 4/15/2004 8:20pm
+by: Ben
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+>>Discussion on Code problems..
+>>STATUS
+	*Our showing off to Dr. Shomper went well today
+	*still working on making code work
+>>FINAL PRESENTATION!!
+	*25-35 minutes
+	*Roles
+		--Dave: Intro, Design, Current Status
+		--Ben: Requirements
+		--Mark: Accomplishments / Major Goals, Demo
+	*DONE BY SUNDAY: 9pm
+>>Work to Get Done
+	*Refine Debugger
+>>Tweaks between Presentation & Hand-in
+	*Install Package
+	-->ZIP FILE!!<--
+	*free install programs...?
+
+>>Meet FRIDAY 9:30pm -->room
+	*code & stamp "DONE"
