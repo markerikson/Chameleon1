@@ -56,6 +56,7 @@ class Networking {
 		wxString SSHSendCommand(wxString command);
 		void SCPDoTransfer(wxString from_path_name, wxString to_path_name);
 		// Helpers:
+		bool MaintainSettings();
 		wxArrayString ParseLS(wxString strng, bool includeHidden);
 		void DetermineStatusError(wxString errlog, wxString output);
 		// Data:

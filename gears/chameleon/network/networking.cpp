@@ -172,6 +172,8 @@ wxArrayString Networking::ParseLS(wxString strng, bool includeHidden)
 //Private:
 wxString Networking::SSHSendCommand(wxString command)
 {
+	MaintainSettings();
+
 	if(command == "") {
 		// because I'm using boolean logic to determine the success of the command
 		//  I need to have at least have true
@@ -266,9 +268,9 @@ void Networking::DetermineStatusError(wxString errlog, wxString output)
 }
 
 
-// I recommend OptionsDialog call this after a change
-NetworkStatus Networking::GetStatus()
-{
+//returns true if any settings have changed.  I need to do this polling because Options is passive.
+//Private:
+bool Networking::MaintainSettings() {
 	wxString newH = m_options->GetHostname();
 	wxString newU = m_options->GetUsername();
 	wxString newP = m_options->GetPassphrase();
@@ -281,10 +283,25 @@ NetworkStatus Networking::GetStatus()
 		m_currPass = newP;
 
 		// Update all the PlinkProcess's
+		//walk the list of pointers
+
+		//Update PlinkConnect
 		ssh_plink->setHostname(newH);
 		ssh_plink->setUsername(newU);
 		ssh_plink->setPassphrase(newP);
 
+		return true;
+	}
+	//else
+	  return false;
+
+}
+
+
+// I recommend OptionsDialog call this after a change
+NetworkStatus Networking::GetStatus()
+{
+	if(MaintainSettings()) {
 		// Update the status
 		SSHSendCommand("");
 	}
