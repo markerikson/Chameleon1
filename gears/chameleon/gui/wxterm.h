@@ -163,7 +163,7 @@ public:
   wxString GetSelection();
   void SelectAll();
 
-  void UpdateSize(wxSizeEvent &event);
+  void UpdateSize(int &termheight, int &linesReceived);
 
   /*
   **  GTerm stuff

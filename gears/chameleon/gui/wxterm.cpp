@@ -389,7 +389,7 @@ BEGIN_EVENT_TABLE(wxTerm, wxWindow)
   EVT_KEY_DOWN(wxTerm::OnKeyDown)
 #endif
 
-  EVT_SIZE						(wxTerm::UpdateSize)
+  //EVT_SIZE						(wxTerm::UpdateSize)
   EVT_SET_FOCUS					(wxTerm::OnGainFocus)
   EVT_KILL_FOCUS				(wxTerm::OnLoseFocus)
 END_EVENT_TABLE()
@@ -1303,9 +1303,9 @@ wxTerm::Bell()
 #endif
 }
 
-void wxTerm::UpdateSize(wxSizeEvent &event)
+void wxTerm::UpdateSize(int &termheight, int &linesReceived)
 {
-	event.Skip();
+	//event.Skip();
 	if(m_inUpdateSize)
 	{		
 		return;
@@ -1348,8 +1348,8 @@ void wxTerm::UpdateSize(wxSizeEvent &event)
 
 		// TODO Obviously this isn't working right.  I'll come back to it when I tackle
 		//		the line history issue
-		GTerm::ExposeArea(0, 0, GTerm::Width() - 1, GTerm::Height() - 1);
-		Refresh();
+		//GTerm::ExposeArea(0, 0, GTerm::Width() - 1, GTerm::Height() - 1);
+		//Refresh();
 		//GTerm::Update();	
 	}
 

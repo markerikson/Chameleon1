@@ -620,7 +620,7 @@ int ChameleonWindow::HandleModifiedFile(int pageNr, bool closingFile)
 
 		
 		// the file hasn't been saved yet, grab the "<untitled> #" bit from the tab
-		if(fileName = wxEmptyString)
+		if(fileName == wxEmptyString)
 		{
 			int selectedTab = m_book->GetSelection();
 			wxString tabText = m_book->GetPageText(selectedTab);
@@ -696,8 +696,13 @@ void ChameleonWindow::OnFileOpen (wxCommandEvent &event)
 	}
 
 	wxArrayString fnames = OpenFile(FILE_ALLSOURCES);
-	OpenSourceFile (fnames);
-	PageHasChanged (m_currentPage);
+
+	if(fnames.Count() > 0)
+	{
+		OpenSourceFile (fnames);
+		PageHasChanged (m_currentPage);
+	}
+	
 }
 
 wxArrayString ChameleonWindow::OpenFile(FileFilterType filterType)
@@ -803,6 +808,18 @@ void ChameleonWindow::OpenSourceFile (wxArrayString fnames)
 		fileNameNoPath = wxEmptyString;
 		int pageNr = GetPageNum(fnames[n]);
 
+		if(!GetFileContents(fnames[n], fileContents, fileNameNoPath))
+		{
+			return;
+		}
+
+		if(fileContents == wxEmptyString)
+		{
+			return;
+		}
+
+		wxFileName newFileName(fnames[n]);
+
 		// filename is already open
 		if (pageNr >= 0) 
 		{
@@ -818,7 +835,9 @@ void ChameleonWindow::OpenSourceFile (wxArrayString fnames)
 			m_setSelection = false;
 			m_currentPage = pageNr;
 			
-			
+			m_currentEd = static_cast< ChameleonEditor * > (m_book->GetPage (m_currentPage));
+			m_currentEd->LoadFileText(fileContents);
+			/*
 			if(GetFileContents(fnames[n], fileContents, fileNameNoPath))
 			{
 				if(fileContents != wxEmptyString)
@@ -826,6 +845,7 @@ void ChameleonWindow::OpenSourceFile (wxArrayString fnames)
 					m_currentEd->LoadFileText(fileContents);
 				}
 			}
+			*/
 		}
 		// current buffer is empty and untouched, so load the file into it
 		else if (m_currentEd && 
@@ -833,40 +853,56 @@ void ChameleonWindow::OpenSourceFile (wxArrayString fnames)
 					 !m_currentEd->HasBeenSaved() && 
 					 m_currentEd->GetText().IsEmpty()) ) 
 		{
+			m_currentEd->LoadFileText(fileContents);
+
+			// TODO this may be redundant.  I'll deal with it when we decide on how to handle remote mode
+			// 2/22/04: Actually, based on our decision, this looks like it is
+			//			probably the right way to handle it
+
+			m_currentEd->SetFilename(newFileName, m_remoteMode);
+			/*			
+			if(m_remoteMode)
+			{
+				wxString remotePath = m_remoteFileDialog->GetRemotePath();
+				wxString remoteFilename = m_remoteFileDialog->GetRemoteFileName();
+				//m_currentEd->SetRemoteFileNameAndPath(remotePath, remoteFilename);
+				//m_currentEd->SetFileNameAndPath(remotePath, remoteFilename, true);
+				m_currentEd->SetFilename(newFileName, true);
+
+			}
+			else
+			{
+				wxFileName localFN(fnames[n]);
+				wxString localFilename = localFN.GetFullName();
+				wxString localPath = localFN.GetPath(false, wxPATH_DOS);
+				//m_currentEd->SetLocalFileNameAndPath(localPath, localFileName);
+				m_currentEd->SetFileNameAndPath(localPath, localFilename, false);
+			}
+			*/
+
+			m_book->SetPageText(m_currentPage, locationPrefix + fileNameNoPath);
+			/*
 			if(GetFileContents(fnames[n], fileContents, fileNameNoPath))
 			{
 				if(fileContents != wxEmptyString)
 				{
-					m_currentEd->LoadFileText(fileContents);
 					
-					// TODO this may be redundant.  I'll deal with it when we decide on how to handle remote mode
-					// 2/22/04: Actually, based on our decision, this looks like it is
-					//			probably the right way to handle it
-					if(m_remoteMode)
-					{
-						wxString remotePath = m_remoteFileDialog->GetRemotePath();
-						wxString remoteFilename = m_remoteFileDialog->GetRemoteFileName();
-						//m_currentEd->SetRemoteFileNameAndPath(remotePath, remoteFilename);
-						m_currentEd->SetFileNameAndPath(remotePath, remoteFilename, true);
-					}
-					else
-					{
-						wxFileName localFN(fnames[n]);
-						wxString localFilename = localFN.GetFullName();
-						wxString localPath = localFN.GetPath(false, wxPATH_DOS);
-						//m_currentEd->SetLocalFileNameAndPath(localPath, localFileName);
-						m_currentEd->SetFileNameAndPath(localPath, localFilename, false);
-					}
-
-					m_book->SetPageText(m_currentPage, locationPrefix + fileNameNoPath);
 				}
 			}
+			*/
 		}
 		// need to create a new buffer for the file
 		else
 		{
 			ChameleonEditor *edit = new ChameleonEditor (this, m_book, -1);
 
+			edit->LoadFileText(fileContents);
+			edit->SetFilename(newFileName, m_remoteMode);
+			m_currentEd = edit;
+			m_currentPage = m_book->GetPageCount();
+			m_book->AddPage (m_currentEd, locationPrefix + fileNameNoPath, true);
+
+			/*
 			if(GetFileContents(fnames[n], fileContents, fileNameNoPath))
 			{
 				if(fileContents != wxEmptyString)
@@ -897,6 +933,7 @@ void ChameleonWindow::OpenSourceFile (wxArrayString fnames)
 			{
 				delete edit;
 			}
+			*/
 		}
 
 		if (firstPageNr < 0)
@@ -1046,13 +1083,13 @@ void ChameleonWindow::OnConnect(wxCommandEvent& WXUNUSED(event))
 // my "I need to try something out, I'll stick it in here" function
 void ChameleonWindow::Test(wxCommandEvent& WXUNUSED(event))
 {
-//	TextManager tm = m_telnet->GetTM();
+	TextManager tm = m_terminal->GetTM();
 
 	//tm.PrintViewport();
 
 	//tm.PrintContents();
 
-//	tm.PrintToBitmap();
+	tm.PrintToBitmap();
 	/*
 	wxString homepath = m_network->GetHomeDirPath();
 	wxString filename = "~/java/numeric/GCD.java";
@@ -1278,6 +1315,8 @@ bool ChameleonWindow::SaveFile(bool saveas, FileFilterType filterType)
 	wxString filename;
 	wxString fileContents;
 
+	bool originalRemoteMode = m_remoteMode;
+
 	bool doSaveAs = saveas || !m_currentEd->HasBeenSaved() || (m_remoteMode != m_currentEd->LastSavedRemotely());
 
 	//bool remoteEnabled = m_perms->isEnabled(PERM_REMOTELOCAL);
@@ -1332,6 +1371,7 @@ bool ChameleonWindow::SaveFile(bool saveas, FileFilterType filterType)
 		else if(choice == wxEmptyString)
 		{
 			// user hit Cancel - don't save
+			m_remoteMode = originalRemoteMode;
 			return false;
 		}
 	}
@@ -1369,7 +1409,14 @@ bool ChameleonWindow::SaveFile(bool saveas, FileFilterType filterType)
 		{		
 			// the last item in a filter's list will be the default extension if none is given
 			// ie, right now, .cpp is the default extension for C++ files
-			wxFileDialog dlg (this, "Save file", "", "", filterString, 
+
+			wxString title = "Save File As";
+
+			if(filterType == FILE_PROJECT)
+			{
+				title = "Save New Project";
+			}
+			wxFileDialog dlg (this, title, "", "", filterString, 
 								wxSAVE | wxOVERWRITE_PROMPT | wxCHANGE_DIR);
 
 			// ie, user clicked cancel
@@ -1400,19 +1447,20 @@ bool ChameleonWindow::SaveFile(bool saveas, FileFilterType filterType)
 			}
 			*/
 		}
-		/*
+		
 		else
 		{
-			m_currentEd->SaveFileLocal();
+			filename = m_currentEd->GetFileNameAndPath();
 		}
-		*/
+		
 		if(isSourceFile)
 		{
 			m_currentEd->SetFocus();
 
 			wxFileName fn(filename);
+			m_currentEd->SetFilename(fn, false);
 
-			m_currentEd->SetFileNameAndPath(fn.GetPath(false, wxPATH_DOS), fn.GetFullName(), false);
+			//m_currentEd->SetFileNameAndPath(fn.GetPath(false, wxPATH_DOS), fn.GetFullName(), false);
 
 			m_currentEd->SaveFile(filename);
 
@@ -1491,7 +1539,9 @@ bool ChameleonWindow::SaveFile(bool saveas, FileFilterType filterType)
 				m_book->SetPageText(currentTab, locationPrefix + remoteFile);
 			}
 
-			m_currentEd->SetFileNameAndPath(remotePath, remoteFile, true);
+			//m_currentEd->SetFileNameAndPath(remotePath, remoteFile, true);
+			wxFileName fn(remotePath, remoteFile, wxPATH_UNIX);
+			m_currentEd->SetFilename(fn, true);
 		}
 		else
 		{
@@ -2503,9 +2553,18 @@ void ChameleonWindow::CloseProjectFile()
 
 	wxString resultContents;
 	size_t streamsize = outputStream.GetSize();
-	char* bufptr = resultContents.GetWriteBuf(streamsize);
-	outputStream.CopyTo(bufptr,streamsize);
-	resultContents.UngetWriteBuf();
+
+	if(streamsize == 0)
+	{
+		resultContents = "[Headers]\n\n[Sources]\n\n[Libraries]\n";
+	}
+	else
+	{
+		char* bufptr = resultContents.GetWriteBuf(streamsize);
+		outputStream.CopyTo(bufptr,streamsize);
+		resultContents.UngetWriteBuf();
+	}
+	
 
 	if(m_currentProjectInfo->isRemote)
 	{
@@ -2589,11 +2648,30 @@ void ChameleonWindow::OnCompile(wxCommandEvent &event)
 {
 	m_compilerOutput->Clear();
 
-	if(m_remoteMode) {
-		m_compiler->SimpleCompileFile(m_currentEd->GetFilePath(), m_currentEd->GetFilename(), m_compilerOutput);
+	bool doCompile = true;
+
+	if(!m_currentEd->HasBeenSaved())
+	{
+		wxMessageBox("Please save this file before trying to compile it.");
+
+		doCompile = false;
 	}
-	else {
-		*m_compilerOutput << "Can't do local files yet.";
+	else if(m_currentEd->Modified())
+	{
+		// yes, same message... this can later be changed to ask about 
+		// saving, then do the appropriate thing.
+		wxMessageBox("Please save this file before trying to compile it.");
+
+		doCompile = false;
+	}
+	else if(!m_currentEd->LastSavedRemotely())
+	{
+		wxMessageBox("Compiling local files is currently not supported.");
+	}
+
+	if(doCompile)
+	{
+		m_compiler->SimpleCompileFile(m_currentEd->GetFilePath(), m_currentEd->GetFilename(), m_compilerOutput);
 	}
 }
 
