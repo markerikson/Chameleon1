@@ -73,14 +73,14 @@ void Compiler::StartNextFile()
 	wxString cmd = wxEmptyString;
 	if(isRemote) {
 		cmd += "g++ "; // compiler (assuming it is in the PATH)
-		cmd += " -g -c "; // include gdb info, and don't link
+		cmd += " -g -c -fmessage-length=0 "; // include gdb info, and don't link
 		cmd += " -o " + outFile.GetFullPath(wxPATH_UNIX) + " ";
 		cmd +=  inFile.GetFullPath(wxPATH_UNIX);
 		cmd +=  " && echo C_O_M_P_I_L_E_SUCCESS || echo C_O_M_P_I_L_E_FAILED";
 	}
 	else {
 		cmd +=  "\"" + m_options->GetMingwPath() + "/bin/g++.exe\" "; // compiler
-		cmd +=  " -g -c ";
+		cmd +=  " -g -c -fmessage-length=0 ";
 		cmd +=  " -o " + outFile.GetFullPath(wxPATH_DOS) + " ";
 		cmd +=  inFile.GetFullPath(wxPATH_DOS);
 		cmd +=  " && echo C_O_M_P_I_L_E_SUCCESS || echo C_O_M_P_I_L_E_FAILED";
@@ -126,13 +126,13 @@ void Compiler::StartLinking() {
 	// Start the linking:
 	wxString cmd = wxEmptyString;
 	if(isRemote) {
-		cmd += "g++ -g -o " + outFile.GetFullPath(wxPATH_UNIX);
+		cmd += "g++ -g -o -fmessage-length=0 " + outFile.GetFullPath(wxPATH_UNIX);
 		cmd +=  inFiles;
 		cmd +=  " && echo C_O_M_P_I_L_E_SUCCESS || echo C_O_M_P_I_L_E_FAILED";
 	}
 	else {
 		cmd +=  "\"" + m_options->GetMingwPath() + "/bin/g++.exe\" ";
-		cmd +=  " -g -o " + outFile.GetFullPath(wxPATH_DOS);
+		cmd +=  " -g -o -fmessage-length=0 " + outFile.GetFullPath(wxPATH_DOS);
 		cmd +=  inFiles;
 		cmd +=  " && echo C_O_M_P_I_L_E_SUCCESS || echo C_O_M_P_I_L_E_FAILED";
 	}
