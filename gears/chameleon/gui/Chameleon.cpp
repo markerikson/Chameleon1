@@ -6,9 +6,10 @@
 #include <windows.h>
 #include "../common/StackWalker.h"
 #endif
-//#define _CRTDBG_MAP_ALLOC
-//#include <stdlib.h>
-//#include <crtdbg.h>
+
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
 
 //#include "../common/StackTrace.h"
 //#include "../common/CommonHeaders.h"
@@ -30,7 +31,7 @@
 #include "dialogs/RemoteFileDialog.h"
 #include "dialogs/wxTermContainer.h"
 #include "dialogs/VariableWatchPanel.h"
-//#include "dialogs/CompilerOutputPanel.h"
+#include "dialogs/CompilerOutputPanel.h"
 #include "../common/ChameleonPrintout.h"
 #include "../perms/p.h"
 #include "../common/ProjectInfo.h"
@@ -41,6 +42,14 @@
 #include "../common/DebugEvent.h"
 //#include "wxtelnet.h"
 #include "wxssh.h"
+
+/*
+#include "../common/exceptions/se_translator.h"
+#include "../common/exceptions/sym_engine.h"
+#include "../common/exceptions/exception2.h"
+#include "../common/exceptions/exception_trap.h"
+#include "../common/exceptions/unhandled_report.h"
+*/
 
 #include "new.xpm"
 #include "open.xpm"
@@ -143,6 +152,9 @@ BEGIN_EVENT_TABLE(ChameleonWindow, wxFrame)
 	
 END_EVENT_TABLE()
 
+//se_translator stackTraceTranslator;
+//exception_trap<unhandled_report> trap(true, unhandled_report());
+
 
 IMPLEMENT_APP(MyApp)
 //----------------------------------------------------------------------
@@ -150,7 +162,7 @@ IMPLEMENT_APP(MyApp)
 
 bool MyApp::OnInit()
 {
-	//OnlyInstallUnhandeldExceptionFilter()
+	//OnlyInstallUnhandeldExceptionFilter();
 #ifdef DEBUG_TRACE_MEMORY_LEAKS
 	//InitAllocCheck(ACOutput_XML);
 #endif
@@ -163,15 +175,38 @@ bool MyApp::OnInit()
 
 int MyApp::OnRun()
 {
+	//se_translator translator;
 	try
 	{
 		return wxApp::OnRun();
 	}
+	
 	catch (...) 
 	{
-		int q = 42;
+		int q = 41;
+		q++;
+
+		return 1;
+	}
+	
+	/*
+	catch(se_translator::access_violation& ex)
+	{			
+		cerr	<< ex.name() << " at 0x" << std::hex << ex.address() 
+			<< ", thread attempts to " << (ex.is_read_op() ? "read" : "write") 
+			<< " at 0x" << std::right << ex.inaccessible_address() << std::endl
+			<< "stack trace : " << std::endl;
+		sym_engine::stack_trace(cerr, ex.info()->ContextRecord);	
 		return -1;
 	}
+	catch(exception2& ex)
+	{
+		cerr  << ex.what() << std::endl
+			<< "stack trace :" << std::endl
+			<< ex.stack_trace() << std::endl;
+		return -1;
+	}
+	*/
 }
 
 MyApp::~MyApp()
@@ -194,7 +229,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	//m_appStarting = true;
 	wxStopWatch stopwatch;
 
-	//_crtBreakAlloc = 9012;
+	//_crtBreakAlloc = 1740;
 	
 	// should be approximately 80x15 for the terminal
 	this->SetSize(800, 600);
@@ -295,6 +330,10 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 									wxDefaultSize, wxTE_RICH | wxTE_MULTILINE | wxTE_READONLY);
 	//m_compilerList = new wxListCtrl( m_noteTerm, ID_COMPILERLISTCTRL, wxDefaultPosition, wxDefaultSize, 
 	//									wxLC_REPORT|wxLC_SINGLE_SEL|wxLC_HRULES|wxSIMPLE_BORDER );
+
+	m_compilerTextbox->Hide();
+	m_outputPanel = new CompilerOutputPanel(m_noteTerm, ID_COMPILEROUTPUT);
+	m_outputPanel->SetAdvanced(perms->isEnabled(PERM_ADVANCEDCOMPILE));
 
 	/*
 	wxListItem itemCol;
@@ -400,12 +439,7 @@ ChameleonWindow::~ChameleonWindow()
 	m_config->Flush();
 
 	//delete m_perms;
-	delete m_optionsDialog;
-	delete m_network;
-	delete m_compiler;
-	delete m_config;
-	delete m_options;
-	delete m_debugger;
+	
 
 	delete g_printData;
 	delete g_pageSetupData;
@@ -421,6 +455,24 @@ ChameleonWindow::~ChameleonWindow()
 		m_updateTimer = NULL;
 	}
 
+	//m_outputPanel->Reparent(NULL);
+	//m_compilerTextbox->Reparent(NULL);
+	//m_watchPanel->Reparent(NULL);
+
+	/*
+#ifdef _DEBUG
+	//logWindow->Reparent(NULL);
+	wxLog::SetActiveTarget(NULL);
+	delete logWindow;
+#endif
+	*/
+
+	
+	//delete m_outputPanel;
+	//delete m_compilerTextbox;
+	//delete m_watchPanel;
+
+	
 	if(m_noteTerm->DestroyChildren())
 	{
 		wxLogDebug("Successfully destroyed notebook children");
@@ -429,6 +481,16 @@ ChameleonWindow::~ChameleonWindow()
 	{
 		wxLogDebug("Notebook children destroy failed");
 	}
+	
+
+	delete m_optionsDialog;
+	delete m_network;
+	delete m_compiler;
+	delete m_config;
+	delete m_options;
+	delete m_debugger;
+	
+	
 }
 
 void ChameleonWindow::OnMenuEvent(wxCommandEvent &event)
@@ -1911,6 +1973,7 @@ void ChameleonWindow::UpdateToolbar()
 	wxToolBar* t = GetToolBar();
 	//t->ClearTools();
 	delete t;
+	SetToolBar(NULL);
 	int style = wxTB_FLAT | wxTB_HORIZONTAL;
 
 	bool showText = m_options->GetShowToolbarText();
@@ -2675,9 +2738,9 @@ void ChameleonWindow::Compile()
 				m_currentEd->SetExecutableFilename(fullpath);
 			}
 
-			int outputIndex = m_noteTerm->FindPagePosition(m_compilerTextbox);
+			//int outputIndex = m_noteTerm->FindPagePosition(m_compilerTextbox);
 
-			m_noteTerm->SetSelection(outputIndex);
+			//m_noteTerm->SetSelection(outputIndex);
 		}
 		else 
 		{
@@ -2736,10 +2799,14 @@ void ChameleonWindow::UpdateTerminalNotebook()
 	bool advCompileEnabled = perms->isEnabled(PERM_ADVANCEDCOMPILE);
 	bool basicCompileEnabled = perms->isEnabled(PERM_COMPILE);
 
-	int compilerTextboxIdx = m_noteTerm->FindPagePosition(m_compilerTextbox);
-	bool compilerTextboxShown = (compilerTextboxIdx != -1);
+	//int compilerTextboxIdx = m_noteTerm->FindPagePosition(m_compilerTextbox);
+	//bool compilerTextboxShown = (compilerTextboxIdx != -1);
 	if(perms->isEnabled(PERM_COMPILE))
 	{
+		m_noteTerm->AddPage(m_outputPanel, "Compiler output");
+		m_outputPanel->SetAdvanced(advCompileEnabled);
+		m_outputPanel->ClearOutput();
+		/*
 		if(advCompileEnabled)
 		{
 			// TODO Advanced compiler listctrl here
@@ -2751,8 +2818,10 @@ void ChameleonWindow::UpdateTerminalNotebook()
 		{
 			m_noteTerm->AddPage(m_compilerTextbox, "Compiler Output");
 		}
+		*/
 
 	}
+	/*
 	else
 	{
 		if(advCompileEnabled)
@@ -2765,6 +2834,7 @@ void ChameleonWindow::UpdateTerminalNotebook()
 			//m_compilerList->Hide();
 		}
 	}
+	*/
 
 	if(perms->isEnabled(PERM_DEBUG))
 	{

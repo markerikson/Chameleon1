@@ -243,6 +243,7 @@ bool RemoteFileDialog::Create( wxWindow* parent, wxWindowID id, const wxString& 
 	
 
 
+	dc.SetPen(wxNullPen);
 
 	((ChameleonWindow*) parent)->PassImageList(transferImageList);
 	

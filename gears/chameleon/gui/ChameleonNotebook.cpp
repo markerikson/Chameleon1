@@ -35,7 +35,7 @@ ChameleonNotebook::ChameleonNotebook(wxWindow* parent, wxWindowID id,
 	m_parent = (ChameleonWindow*)wxTheApp->GetTopWindow();
 
 	// create menu
-	m_nonActiveMenu = new wxMenu();
+	//m_nonActiveMenu = new wxMenu();
 	m_activeMenu = new wxMenu();
 
 	CreateBookMenus();
@@ -44,7 +44,7 @@ ChameleonNotebook::ChameleonNotebook(wxWindow* parent, wxWindowID id,
 
 ChameleonNotebook::~ChameleonNotebook () 
 {
-	delete m_nonActiveMenu;
+	//delete m_nonActiveMenu;
 	delete m_activeMenu;
 }
 
@@ -111,7 +111,7 @@ void ChameleonNotebook::CreateBookMenus () {
 	wxString label;
 
 
-	m_nonActiveMenu->Append(-1, "Non-active menu");
+	//m_nonActiveMenu->Append(-1, "Non-active menu");
 	m_activeMenu->Append(ID_CLOSETAB, "Close");
 	//m_activeMenu->Append(9997, "Active menu");
 	//m_activeMenu->Append(9998, "Active menu - 2");
