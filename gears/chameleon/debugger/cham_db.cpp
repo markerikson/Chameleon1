@@ -80,6 +80,7 @@ Debugger::Debugger(wxTextCtrl* outBox, Networking* networking, wxEvtHandler* poi
 	varRegExes["int"] = "([[:digit:]]+)";
 
 	// ints & - "$n = (int &) val"
+	//note: is this even needed??
 	varRegExes["&"] = ".+ ([[:digit:]]+)";
 
 	// ints * - "$n = val"
@@ -1164,14 +1165,18 @@ void Debugger::sendWhat()
 {
 	if(varCount > 0)
 	{
+		wxString tmp;
+		command.Clear();
 		for(int i = 0; i < varCount; i++)
 		{
 			if(m_varInfo[i].type == "null")
 			{
-				command.Printf("whatis %s%s", m_varInfo[i].name.c_str(), returnChar.c_str());
-				sendCommand(command);
+				tmp.Printf("whatis %s%s", m_varInfo[i].name.c_str(), returnChar.c_str());
+				command.Append(tmp);
 			}
 		}
+
+		sendCommand(command);
 
 		classStatus = GET_WHAT;
 	}
@@ -1207,8 +1212,6 @@ void Debugger::sendPrint(wxString fromGDB)
 				lineBreak = 2 + singleLine.Find("= ");
 				singleLine = singleLine.Mid(lineBreak);
 
-
-				// TODO Do something with pointers here?
 				ampIdx = singleLine.Find(" &");
 				if(ampIdx != -1)
 				{
@@ -1224,7 +1227,6 @@ void Debugger::sendPrint(wxString fromGDB)
 				}
 
 				//~~DEBUG~~
-				//wxLogDebug("--sendPrint: ampIdx:"+ ampIdx +" // singleLine:" +singleLine);
 				wxLogDebug("--sendPrint: ampIdx: %d, singleLine: %s", ampIdx, singleLine);
 
 				fromWatch.Add(singleLine);
@@ -1289,11 +1291,16 @@ void Debugger::sendPrint(wxString fromGDB)
 
 	if(!watchStatus)
 	{
+		wxString tmp;
+		command.Clear();
 		for(int i = 0; i < varCount; i++)
 		{
-			command.Printf("print %s%s", m_varInfo[i].name.c_str(), returnChar.c_str());
-			sendCommand(command);
+			tmp.Printf("print %s%s", m_varInfo[i].name.c_str(), returnChar.c_str());
+			command.Append(tmp);
 		}
+
+		sendCommand(command);
+
 		classStatus = GET_PRINT;
 	}
 }
@@ -1367,17 +1374,57 @@ bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 				}
 				else if(m_varInfo[i].type.Find("[") == -1)
 				{
-					wxString regex = varRegExes[m_varInfo[i].type];
-					wxRegEx global = regex;
-					if(global.Matches(singleLine))
+					if( m_varInfo[i].type.Find("&") == -1 &&
+						m_varInfo[i].type.Find("*" == -1)
 					{
-						match = global.GetMatch(singleLine, 1);
-						varValue.Add(match);
+						wxString regex = varRegExes[m_varInfo[i].type];
+						wxRegEx global = regex;
+						if(global.Matches(singleLine))
+						{
+							match = global.GetMatch(singleLine, 1);
+							varValue.Add(match);
+						}
+						else
+						{
+							varValue.Add("Error Parsing Value ["+singleLine+"]: RegEx miss-match for "+m_varInfo[i].type);
+						}
 					}
 					else
 					{
-						varValue.Add("Error Parsing Value ["+singleLine+"]: RegEx miss-match for "+m_varInfo[i].type);
-					}
+						//we have a pointer dereference or a referenced variable on our hands
+						if(m_varInfo[i].type.Find("&") > 0)
+						{
+							wxString tmp = m_varInfo[i].type.BeforeLast('&');
+							wxString regex = varRegExes[tmp];
+							wxRegEx global = regex;
+							if(global.Matches(singleLine))
+							{
+								match = global.GetMatch(singleLine, 1);
+								varValue.Add(match);
+							}
+							else
+							{
+								varValue.Add("Error Parsing Value ["+singleLine+"]: RegEx miss-match for "+tmp);
+							}
+						}
+						else
+						{
+							//we're assuming it's a dereferenced pointer
+							wxString tmp = m_varInfo[i].type.BeforeLast('*');
+							wxString regex = varRegExes[tmp];
+							wxRegEx global = regex;
+							if(global.Matches(singleLine))
+							{
+								match = global.GetMatch(singleLine, 1);
+								varValue.Add(match);
+							}
+							else
+							{
+								varValue.Add("Error Parsing Value ["+singleLine+"]: RegEx miss-match for "+tmp);
+							}
+
+						}
+					}//end referenced variable test
 				}
 				else
 				{
