@@ -27,17 +27,18 @@ const int NUM_MODULES = 15;
 class Permission
 {
 	public:
-		Permission(long int, long int);
+		Permission(long int loadAuthCode, long int loadPermCode);
 		~Permission();
-		bool isEnabled(int);		//module-specific permissions request
-		bool isAuthorized(int);		//module-specific authorization request
-		void enable(int);			//module-specific enable
-		void disable(int);			//module-specific disable
-		bool setGlobal(long);		//set everything
+		bool isEnabled(int id);		//module-specific permissions request
+		bool isAuthorized(int id);	//module-specific authorization request
+		void enable(int id);		//module-specific enable
+		void disable(int id);		//module-specific disable
+		bool setGlobal(long newAuthCode);//set everything
 		long getGlobalEnabled();	//what should be visible
 		long getGlobalAuthorized();	//what's allowed to be turned on/off
 
-		wxString getPermName(int permEnum);  // returns the string the matches the enumeration
+		//returns the string that matches the enumeration
+		wxString getPermName(int permEnum);
 
 	private:
 		bitset <NUM_MODULES> status;//array for holding module status

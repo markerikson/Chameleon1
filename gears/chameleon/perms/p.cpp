@@ -105,9 +105,9 @@ void Permission::disable(int id)
 //input: a valid authorization code
 //output: TRUE if the code parsed correctly, FALSE otherwise.  [auth] and
 //        [authCode] are updated.
-bool Permission::setGlobal(long code)
+bool Permission::setGlobal(long newAuthCode)
 {
-	long int fuzz = code;
+	long int fuzz = newAuthCode;
 
 	//load up the authorization array with the new permissions
 	bitset<NUM_MODULES> temp(code);
@@ -119,7 +119,7 @@ bool Permission::setGlobal(long code)
 	if(code != fuzz)
 		return(false);
 
-	authCode = code;
+	authCode = newAuthCode;
 	return(true);
 }
 
