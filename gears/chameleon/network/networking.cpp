@@ -9,6 +9,9 @@
 
 #include "networking.h"
 
+#include "../common/debug.h"
+
+
 
 Networking::Networking(Options* options)
 {

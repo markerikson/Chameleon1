@@ -14,6 +14,8 @@
 #include <wx/utils.h>
 #include <wx/txtstrm.h>
 #include "plinkconnect.h"
+#include "../common/debug.h"
+
 
 
 PlinkConnect::PlinkConnect(wxString plinkApplication, wxString hostname,

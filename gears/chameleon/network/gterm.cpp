@@ -223,3 +223,24 @@ bool GTerm::IsScrolledUp()
 {
 	return (tm.GetNumLinesScrolled() != 0);
 }
+
+int GTerm::GetScrollHeight()
+{
+	int scrollHeight = tm.GetLinesReceived();
+
+	if(scrollHeight > MAXHEIGHT)
+	{
+		scrollHeight = MAXHEIGHT;
+	}
+	else
+	{
+		scrollHeight--;
+	}
+	
+	return scrollHeight;
+}
+
+int GTerm::GetScrollPosition()
+{
+	return tm.GetNumLinesScrolled();
+}

@@ -9,6 +9,10 @@
 #include "gterm.hpp"
 #include "../common/debug.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
 using namespace std;
 
 TextManager::TextManager(GTerm* parent, int width, int height, int maxWidth, int maxHeight /* = 50 */)
@@ -36,7 +40,7 @@ void TextManager::Reset()
 	m_numLinesScrolledUp = 0;
 
 	m_cursorLine = 0;
-	m_linesReceived = 0;
+	m_linesReceived = 1;
 }
 
 void TextManager::AddNewLine()
@@ -90,7 +94,8 @@ void TextManager::Scroll(int numLines, bool scrollUp)
 	
 	if(scrollUp)
 	{
-		if(m_topLine == 0)
+		if( ( (m_topLine - m_numLinesScrolledUp) == 0) || 
+			( (m_numLinesScrolledUp + m_viewportHeight) >= (m_linesReceived -1)))
 		{
 			return;
 		}
@@ -217,12 +222,24 @@ void TextManager::SetCharAdjusted(int y, int x, char c)
 {
 	//wxLogDebug("SCA: y: %d, x: %d, c: %s");
 	int actualLine = AdjustIndex(y);
+
+	if( (actualLine > MAXHEIGHT) || (y >= m_viewportHeight))
+	{
+		wxLogDebug("Bad Y value in TM::GCA.  y = %d, viewport height = %d", y, m_viewportHeight);
+		return;
+	}
 	m_text[actualLine][x] = c;
 }
 
 char TextManager::GetCharAdjusted(int y, int x)
 {
 	int actualLine = AdjustIndex(y);
+
+	if( (actualLine > MAXHEIGHT) || (y >= m_viewportHeight))
+	{
+		wxLogDebug("Bad Y value in TM::GCA.  y = %d, viewport height = %d", y, m_viewportHeight);
+		return ' ';
+	}
 
 	return m_text[actualLine][x];
 }
@@ -235,6 +252,12 @@ unsigned short TextManager::GetColor(int y, int x)
 unsigned short TextManager::GetColorAdjusted(int y, int x)
 {
 	int actualLine = AdjustIndex(y);
+
+	if( (actualLine > MAXHEIGHT) || (y >= m_viewportHeight))
+	{
+		wxLogDebug("Bad Y value in TM::GCA.  y = %d, viewport height = %d", y, m_viewportHeight);
+		return 0;
+	}
 	return m_color[actualLine][x];
 }
 
@@ -246,6 +269,12 @@ void TextManager::SetColor(int y, int x, unsigned short value)
 void TextManager::SetColorAdjusted(int y, int x, unsigned short value)
 {
 	int actualLine = AdjustIndex(y);
+
+	if( (actualLine > MAXHEIGHT) || (y >= m_viewportHeight))
+	{
+		wxLogDebug("Bad Y value in TM::SCA.  y = %d, viewport height = %d", y, m_viewportHeight);
+		return;
+	}
 
 	if(value != m_blankColor)
 	{
@@ -390,6 +419,8 @@ void TextManager::CursorDown()
 		int q = 42;
 	}
 	SetCursorLine(m_cursorLine + 1);
+
+	m_linesReceived++;
 	
 }
 
@@ -426,4 +457,10 @@ void TextManager::SetMaxSize(int newSize)
 			m_text.pop_front();
 		}
 	}
+}
+
+
+int TextManager::GetLinesReceived()
+{
+	return m_linesReceived;
 }

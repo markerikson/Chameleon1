@@ -3,12 +3,6 @@
 #include "gterm.hpp"
 #include "../common/debug.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
-
-//#include <stdlib.h>
-
 int GTerm::calc_color( int fg, int bg, int flags )
                            { return (flags & 15) | (fg << 4) | (bg << 8); }
 
@@ -273,7 +267,7 @@ void GTerm::scroll_region( int start_y, int end_y, int num )
 
 void GTerm::shift_text( int y, int start_x, int end_x, int num )
 {
-	wxLogDebug("shift_text");
+	//wxLogDebug("shift_text");
     int x, yp, mx, c;
 
     if( !num )
@@ -376,7 +370,7 @@ void GTerm::clear_area( int start_x, int start_y, int end_x, int end_y )
 		
 		int num = end_x - start_x;
 		
-		wxLogDebug("clear_area: y: %d, start_x: %d, num: %d", start_y, start_x, num);
+		//wxLogDebug("clear_area: y: %d, start_x: %d, num: %d", start_y, start_x, num);
 
 		if(num > 0)
 		{
@@ -391,7 +385,7 @@ void GTerm::clear_area( int start_x, int start_y, int end_x, int end_y )
 	}
 	else
 	{
-		wxLogDebug("clear_area: wiping.  start_y: %d, end_y: %d", start_y, end_y);
+		//wxLogDebug("clear_area: wiping.  start_y: %d, end_y: %d", start_y, end_y);
 
 		for(int i = start_y; i <= end_y; i++)
 		{

@@ -18,6 +18,7 @@ public:
 	int GetMaxSize();
 	int GetHeight();
 	int GetNumLinesScrolled();
+	int GetLinesReceived();
 	string& GetLine(int index);
 	string& GetLineAdjusted(int index);
 	char GetCharAdjusted(int y, int x);

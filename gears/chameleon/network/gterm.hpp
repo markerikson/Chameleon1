@@ -329,11 +329,14 @@ public:
 	virtual void ResizeTerminal(int width, int height);
 	int Width() { return width; }
 	int Height() { return height; }
+	int MaxHeight() { return MAXHEIGHT;	}
 	virtual void Update();
 	virtual void ExposeArea(int x, int y, int w, int h);
 	virtual void Reset();
 
 	void Scroll(int numLines, bool scrollUp);
+	int GetScrollHeight();
+	int GetScrollPosition();
 	TextManager GetTM();
 	int GetColor();
 	void DecodeColor(int color, int &fg_color, int &bg_color);
