@@ -2379,8 +2379,11 @@ void ChameleonWindow::OnCompile(wxCommandEvent &event)
 				m_compiler->CompileFile(m_currentEd->GetFileName(), m_remoteMode, m_compilerTextbox, m_currentEd);
 				m_currentEd->SetCompiled();
 				wxFileName editorFile = m_currentEd->GetFileName();
-				editorFile.SetFullName(m_options->GetRemoteCompileOut());
-				m_currentEd->SetExecutableFilename(editorFile.GetFullPath(m_remoteMode ? wxPATH_UNIX : wxPATH_DOS));
+				//editorFile.SetFullName(m_options->GetRemoteCompileOut());
+				editorFile.SetExt("out");
+				wxString fullpath = editorFile.GetFullPath(m_remoteMode ? wxPATH_UNIX : wxPATH_DOS);
+				fullpath.Replace("~", m_network->GetHomeDirPath());
+				m_currentEd->SetExecutableFilename(fullpath);
 			}
 
 			int outputIndex = m_noteTerm->FindPagePosition(m_compilerTextbox);
