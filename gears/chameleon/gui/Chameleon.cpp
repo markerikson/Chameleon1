@@ -71,7 +71,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	this->SetClientSize(640, 480);
 
 	// Show a log window for all debug messages
-#ifdef DEBUG
+#ifdef _DEBUG
 	logWindow = new wxLogWindow(this, "Debug messages");
 	wxLog::SetActiveTarget(logWindow);
 #endif
