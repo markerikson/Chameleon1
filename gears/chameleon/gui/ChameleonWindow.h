@@ -88,6 +88,8 @@ public:
 	bool IsDebugging();
 	bool IsDebuggerPaused();
 
+	void FocusOnLine(wxString filename, int linenumber, bool showMarker = true, wxString linecontents = wxEmptyString);
+
 	NetworkCallResult CheckNetworkStatus();
 
 	void OpenSourceFile(wxArrayString fnames);
@@ -152,7 +154,6 @@ private:
 	wxRect DeterminePrintSize();
 	
 	wxString ConstructFilterString(FileFilterType filterType);
-	void FocusOnLine(wxString filename, int linenumber, wxString linecontents = wxEmptyString);
 	int FindString(const wxString &findString, int start_pos = -1, int flags = -1, bool highlight = TRUE);
 	int ReplaceAllStrings(const wxString &findString, const wxString &replaceString, int flags = -1);
 

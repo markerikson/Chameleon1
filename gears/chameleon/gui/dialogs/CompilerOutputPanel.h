@@ -30,6 +30,7 @@
  */
 
 ////@begin forward declarations
+class wxBoxSizer;
 class wxGrid;
 ////@end forward declarations
 
@@ -57,6 +58,8 @@ class wxGrid;
 #endif
 
 class CompilerEvent;
+class wxGridEvent;
+class ChameleonWindow;
 
 /*!
  * CompilerOutputPanel class declaration
@@ -70,7 +73,7 @@ class CompilerOutputPanel: public wxPanel
 public:
     /// Constructors
     CompilerOutputPanel( );
-    CompilerOutputPanel( wxWindow* parent, wxWindowID id = SYMBOL_COMPILEROUTPUTPANEL_IDNAME, const wxString& caption = SYMBOL_COMPILEROUTPUTPANEL_TITLE, const wxPoint& pos = SYMBOL_COMPILEROUTPUTPANEL_POSITION, const wxSize& size = SYMBOL_COMPILEROUTPUTPANEL_SIZE, long style = SYMBOL_COMPILEROUTPUTPANEL_STYLE );
+    CompilerOutputPanel( wxWindow* parent, ChameleonWindow* mainFrame, wxWindowID id = SYMBOL_COMPILEROUTPUTPANEL_IDNAME, const wxString& caption = SYMBOL_COMPILEROUTPUTPANEL_TITLE, const wxPoint& pos = SYMBOL_COMPILEROUTPUTPANEL_POSITION, const wxSize& size = SYMBOL_COMPILEROUTPUTPANEL_SIZE, long style = SYMBOL_COMPILEROUTPUTPANEL_STYLE );
 
     /// Creation
     bool Create( wxWindow* parent, wxWindowID id = SYMBOL_COMPILEROUTPUTPANEL_IDNAME, const wxString& caption = SYMBOL_COMPILEROUTPUTPANEL_TITLE, const wxPoint& pos = SYMBOL_COMPILEROUTPUTPANEL_POSITION, const wxSize& size = SYMBOL_COMPILEROUTPUTPANEL_SIZE, long style = SYMBOL_COMPILEROUTPUTPANEL_STYLE );
@@ -94,14 +97,18 @@ public:
 	void OnCompilerStart(CompilerEvent& event);
 	void OnCompilerProblem(CompilerEvent &event);
 	void OnCompilerEnd(CompilerEvent &event);
+	void OnGridDoubleClick(wxGridEvent &event);
 
     /// Should we show tooltips?
     static bool ShowToolTips();
 
 ////@begin CompilerOutputPanel member variables
+    wxBoxSizer* m_sizer;
     wxTextCtrl* m_textbox;
     wxGrid* m_grid;
 ////@end CompilerOutputPanel member variables
+
+	ChameleonWindow* m_mainFrame;
 
 	bool m_isAdvanced;
 	int m_numErrors;

@@ -27,6 +27,7 @@
 #include "wx/generic/gridctrl.h"
 #include "../../compiler/compilerevent.h"
 #include "../../common/datastructures.h"
+#include "../ChameleonWindow.h"
 
 ////@begin XPM images
 ////@end XPM images
@@ -46,8 +47,9 @@ BEGIN_EVENT_TABLE( CompilerOutputPanel, wxPanel )
 ////@begin CompilerOutputPanel event table entries
 ////@end CompilerOutputPanel event table entries
 	EVT_COMPILER_START(CompilerOutputPanel::OnCompilerStart)
-	EVT_COMPILER_PROBLEM(CompilerOutputPanel::OnCompilerEnd)
+	EVT_COMPILER_PROBLEM(CompilerOutputPanel::OnCompilerProblem)
 	EVT_COMPILER_END(CompilerOutputPanel::OnCompilerEnd)
+	EVT_GRID_CELL_LEFT_DCLICK(CompilerOutputPanel::OnGridDoubleClick)
 
 END_EVENT_TABLE()
 
@@ -59,18 +61,22 @@ CompilerOutputPanel::CompilerOutputPanel( )
 {
 }
 
-CompilerOutputPanel::CompilerOutputPanel( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+CompilerOutputPanel::CompilerOutputPanel( wxWindow* parent, ChameleonWindow* mainFrame, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
 {
     Create(parent, id, caption, pos, size, style);
 
+	
 	SetAdvanced(false);
 	m_grid->SetEditable(false);
-	m_grid->EnableGridLines(false);
+	//m_grid->EnableGridLines(false);
+	m_grid->SetGridLineColour(wxColour("black"));
 	m_grid->SetColumnWidth(0, 200);
-	m_grid->SetColumnWidth(2, 500);
+	m_grid->SetColumnWidth(2, 480);
 	m_grid->SetColLabelValue(0, "Filename");
 	m_grid->SetColLabelValue(1, "Line");
 	m_grid->SetColLabelValue(2, "Message");
+
+	m_mainFrame = mainFrame;
 }
 
 /*!
@@ -80,6 +86,7 @@ CompilerOutputPanel::CompilerOutputPanel( wxWindow* parent, wxWindowID id, const
 bool CompilerOutputPanel::Create( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
 {
 ////@begin CompilerOutputPanel member initialisation
+    m_sizer = NULL;
     m_textbox = NULL;
     m_grid = NULL;
 ////@end CompilerOutputPanel member initialisation
@@ -107,6 +114,7 @@ void CompilerOutputPanel::CreateControls()
     CompilerOutputPanel* item1 = this;
 
     wxBoxSizer* item2 = new wxBoxSizer(wxVERTICAL);
+    m_sizer = item2;
     item1->SetSizer(item2);
     item1->SetAutoLayout(TRUE);
 
@@ -116,9 +124,9 @@ void CompilerOutputPanel::CreateControls()
 
     wxGrid* item4 = new wxGrid( item1, ID_COMPILERGRID, wxDefaultPosition, wxSize(200, 150), wxSUNKEN_BORDER );
     m_grid = item4;
-    item4->SetDefaultColSize(50);
-    item4->SetDefaultRowSize(25);
-    item4->SetColLabelSize(25);
+    item4->SetDefaultColSize(80);
+    item4->SetDefaultRowSize(16);
+    item4->SetColLabelSize(16);
     item4->SetRowLabelSize(0);
     item4->CreateGrid(5, 3, wxGrid::wxGridSelectRows);
     item2->Add(item4, 1, wxGROW|wxALL, 5);
@@ -150,16 +158,23 @@ void CompilerOutputPanel::ClearOutput()
 void CompilerOutputPanel::SetAdvanced(bool advanced)
 {
 	m_isAdvanced = advanced;
+
+	m_sizer->Detach(m_grid);
+	m_sizer->Detach(m_textbox);
+
 	if(advanced)
 	{
 		m_textbox->Hide();
+		m_sizer->Add(m_grid, 1, wxGROW|wxALL, 5);
 		m_grid->Show();
 	}
 	else
 	{
 		m_grid->Hide();
+		m_sizer->Add(m_textbox, 1, wxGROW|wxALL, 5);
 		m_textbox->Show();
 	}
+	m_sizer->Layout();
 }
 
 void CompilerOutputPanel::OnCompilerStart(CompilerEvent& event)
@@ -256,4 +271,24 @@ void CompilerOutputPanel::OnCompilerEnd(CompilerEvent &event)
 	{
 		m_textbox->AppendText(compileResult + "\r\n");
 	}
+}
+
+void CompilerOutputPanel::OnGridDoubleClick(wxGridEvent &event)
+{
+	int rownum = event.GetRow();
+	int cellSizeRows = 0;
+	int cellSizeCols = 0;
+	m_grid->GetCellSize(rownum, 0, &cellSizeRows, &cellSizeCols);
+
+	// if this is greater than one, it's a non-problem row
+	if(cellSizeCols == 1)
+	{
+		wxString filename = m_grid->GetCellValue(rownum, 0);
+		wxString linestring = m_grid->GetCellValue(rownum, 1);
+		long linenum = 0;
+		linestring.ToLong(&linenum);
+
+		m_mainFrame->FocusOnLine(filename, (int)linenum, false);
+	}
+	
 }

@@ -604,14 +604,15 @@ void ChameleonEditor::OnCompilerEnded(CompilerEvent &event)
 	}
 }
 
-void ChameleonEditor::FocusOnLine(int linenumber)
+void ChameleonEditor::FocusOnLine(int linenumber, bool showMarker)
 {
 	GotoLine(linenumber);
-	MarkerDeleteAll(MARKER_FOCUSEDLINE);
-
-	MarkerAdd(linenumber, MARKER_FOCUSEDLINE);
+	if(showMarker)
+	{
+		MarkerDeleteAll(MARKER_FOCUSEDLINE);
+		MarkerAdd(linenumber, MARKER_FOCUSEDLINE);
+	}
 }
-
 void ChameleonEditor::CreateBreakpointEvent(int linenumber, bool addBreakpoint)
 {
 	wxDebugEvent dbg;

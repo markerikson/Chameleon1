@@ -43,7 +43,7 @@ public:
 	void OnRightClick(wxMouseEvent &event);
 
 	void UpdateSyntaxHighlighting();
-	void FocusOnLine(int linenumber);
+	void FocusOnLine(int linenumber, bool showMarker = true);
 
 
 	wxString GetFileNameAndPath();
