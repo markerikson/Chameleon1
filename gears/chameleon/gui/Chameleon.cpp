@@ -109,7 +109,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	stopwatch.Start();
 
 
-
+	// Open up the configuration file, assumed to be in the same directory as the executable
 	m_config = new wxIniConfig("Chameleon", wxEmptyString, wxGetCwd() + "\\chameleon.ini");
 
 	wxString hostname = m_config->Read("Network/hostname");
@@ -118,11 +118,8 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	m_network = new Networking();
 	wxFileName plinkPath(wxGetCwd(), "plink.exe");
 	m_network->SetPlinkProg(plinkPath.GetFullPath());
-	//CheckNetworkStatus();
 
-	//wxString password = wxGetPasswordFromUser("Password for the current server:", "Password");
 	m_network->SetDetailsNoStatus(hostname, username, "");
-	//CheckNetworkStatus();
 
 
 	long time3 = stopwatch.Time();
@@ -256,6 +253,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	OnFileNew(ev);
 	PageHasChanged(m_currentPage);
 
+	// set up the terminal portion of the GUI
 	m_noteTerm = new ChameleonNotebook(m_split, ID_NOTEBOOK_TERM);
 	m_telnet = new wxTelnet( m_noteTerm, ID_TELNET, wxPoint(-1, -1), 80, 24);
 	m_noteTerm->AddPage(m_telnet, "Terminal");
@@ -297,6 +295,7 @@ ChameleonWindow::~ChameleonWindow()
 
 }
 
+// create a new blank file
 void ChameleonWindow::OnFileNew (wxCommandEvent &WXUNUSED(event)) 
 {
 	m_fileNum += 1;
@@ -305,12 +304,12 @@ void ChameleonWindow::OnFileNew (wxCommandEvent &WXUNUSED(event))
 	m_currentEd = edit;
 	m_currentPage = m_book->GetPageCount();
 	m_book->AddPage (edit, noname, true);
-	//m_openFiles->Add (noname);
-
 }
 
+// called whenever the active tab is changed
 void ChameleonWindow::PageHasChanged (int pageNr) 
 {
+	// no pages - null out the current ed pointer
 	if (m_book->GetPageCount() == 0) 
 	{
 		m_currentPage = -1;
@@ -319,6 +318,7 @@ void ChameleonWindow::PageHasChanged (int pageNr)
 		return;
 	}
 
+	// no page passed in
 	if (pageNr == -1)
 	{
 		pageNr = m_book->GetSelection();
@@ -330,6 +330,7 @@ void ChameleonWindow::PageHasChanged (int pageNr)
 		pageNr = pageNr - 1;
 	}
 
+	// activate the selected page
 	if (pageNr >= 0) 
 	{
 		m_currentPage = pageNr;
@@ -346,22 +347,23 @@ void ChameleonWindow::PageHasChanged (int pageNr)
 	m_book->Refresh();
 }
 
+// event handler for closing the whole program
 void ChameleonWindow::OnClose(wxCloseEvent &event) 
 {
-	int i;
+	// close all open files
 	int cnt = m_book->GetPageCount();
 
 	m_appClosing = true;
 
-	for (i = 0; i < cnt; i++) 
+	for (int i = 0; i < cnt; i++) 
 	{
 		CloseFile();
 	}
-
 	
 
 	PageHasChanged();
 
+	// double check in case something went wrong
 	if (m_currentEd && m_currentEd->Modified()) 
 	{
 		if (event.CanVeto())
@@ -372,23 +374,6 @@ void ChameleonWindow::OnClose(wxCloseEvent &event)
 		return;
 	}
 
-	/*
-	if (myIsKeyDown (WXK_CONTROL) && !myIsKeyDown ('Q')) 
-	{
-		StoreFrameSize (GetRect ());
-	}
-	*/
-
-	/*
-	if (m_pageTool)
-	{
-		m_files->RemoveCbox (m_pageTool);
-	}
-	*/
-
-	//m_recents->RemoveMenu (m_recentsMenu);
-
-	//((MyApp*)wxTheApp)->RemoveFrame (this);
 	Destroy();
 }
 
@@ -405,17 +390,56 @@ void ChameleonWindow::CloseFile (int pageNr)
 		pageNr = m_book->GetSelection();
 	}
 
+	// gives the user a chance to save if the file has been modified
+	int modifiedFileResult = HandleModifiedFile(pageNr, true);
+
+	// a wxYES result is taken care of inside HandleModifiedFile, and a
+	// wxNO is handled implicitly by the fact that the file isn't saved.
+	if(modifiedFileResult == wxCANCEL)
+	{
+		return;
+	}
+
+	if (m_book->GetPageCount() > 0) 
+	{
+		if ((m_book->GetPageCount() > 1) || m_appClosing) 
+		{
+			m_book->DeletePage (pageNr);
+		}
+		// closing out the last buffer, reset it to act as a new one
+		else
+		{
+			m_fileNum = 1;
+			m_currentEd->ClearAll();
+			m_currentEd->SetSavePoint();
+			m_currentEd->EmptyUndoBuffer();
+			wxString noname = "<untitled> " + wxString::Format ("%d", m_fileNum);
+			m_book->SetPageText (pageNr, noname);
+			m_book->Refresh();
+
+			m_currentEd->SetFilename(wxEmptyString);
+			m_currentEd->SetRemoteFileNameAndPath(wxEmptyString, wxEmptyString);
+			m_currentEd->SetLocalFileNameAndPath(wxEmptyString, wxEmptyString);
+		}
+	}
+}
+
+// gives the user a chance to save if the file's been modified
+int ChameleonWindow::HandleModifiedFile(int pageNr, bool closingFile)
+{
 	ChameleonEditor *edit = (ChameleonEditor *) m_book->GetPage (pageNr);
 
 	if (!edit)
 	{
-		return;
+		return wxCANCEL;
 	}
 
 	if (edit->Modified()) 
 	{
 		wxString fileName = wxFileName(edit->GetFilename()).GetFullName();
 		wxString saveMessage = "The file ";
+
+		// the file hasn't been saved yet, grab the "<untitled> #" bit from the tab
 		if(fileName = wxEmptyString)
 		{
 			int selectedTab = m_book->GetSelection();
@@ -430,13 +454,22 @@ void ChameleonWindow::CloseFile (int pageNr)
 			fileName = tabText;
 		}
 		saveMessage += fileName;
-		saveMessage << " has unsaved changes.  Do you want to save them before the file is closed?";
-		// TODO: Add a Cancel option here
-		int result = wxMessageBox (_(saveMessage), _("Close"), wxYES_NO | wxICON_QUESTION);
+		saveMessage << " has unsaved changes.  Do you want to save them before the file is";
+		
+		if(closingFile)
+		{
+			saveMessage += "closed?";
+		}
+		else
+		{
+			saveMessage += "reloaded?";
+		}
+
+		int result = wxMessageBox (_(saveMessage), _("Close"), wxYES_NO | wxCANCEL | wxICON_QUESTION);
 		if( result == wxYES) 
 		{
-			edit->SaveFileAs();
-			//SaveFileLocal(true);
+			// do a Save As
+			SaveFile(true);
 
 			if (edit->Modified()) 
 			{
@@ -444,37 +477,13 @@ void ChameleonWindow::CloseFile (int pageNr)
 				wxString errorMessage = fileName + " could not be saved!";
 				wxMessageBox (_(errorMessage), _("Close abort"),
 					wxOK | wxICON_EXCLAMATION);
-				return;
 			}
 		}
+
+		return result;
 	}
-
-	//m_files->Remove (edit->GetFilename());
-	if (m_book->GetPageCount() > 0) 
-	{
-		if ((m_book->GetPageCount() > 1) || m_appClosing) 
-		{
-			m_book->DeletePage (pageNr);
-		}
-		else
-		{
-			m_fileNum = 1;
-			m_currentEd->ClearAll();
-			m_currentEd->SetSavePoint();
-			m_currentEd->EmptyUndoBuffer();
-			wxString noname = "<untitled> " + wxString::Format ("%d", m_fileNum);
-			m_book->SetPageText (pageNr, noname);
-			m_book->Refresh();
-
-			m_currentEd->SetFilename(wxEmptyString);
-			m_currentEd->SetRemoteFileNameAndPath(wxEmptyString, wxEmptyString);
-			m_currentEd->SetLocalFileNameAndPath(wxEmptyString, wxEmptyString);
-			//m_currentEd->SetFilename (wxEmptyString);
-
-			
-			//m_files->Add (noname);
-		}
-	}
+	// if I'm here, doesn't matter if I return wxNO or wxYES, just as long as it's not wxCANCEL
+	return wxNO;
 }
 
 void ChameleonWindow::OnFileOpen (wxCommandEvent &WXUNUSED(event)) 
@@ -499,27 +508,22 @@ void ChameleonWindow::OpenFile()
 		{
 			return;
 		}
+		m_currentEd->SetFocus();
 		dlg.GetPaths (fnames);
 	}
+	// in remote mode
 	else
 	{
-		wxBeginBusyCursor();
 		if(m_remoteFileDialog->Prepare(true))
 		{
 			int result = m_remoteFileDialog->ShowModal();
+			m_currentEd->SetFocus();
 
 			if(result != wxOK)
 			{
 				return;
 			}
 
-			//wxString remotePath = m_remoteFileDialog->GetRemotePath();
-			///wxString remoteFile = m_remoteFileDialog->GetRemoteFileName();
-
-			//wxString fileContents = m_network->GetFileContents(remoteFile, remotePath);
-
-			// Need to revise this - assumes old networking API
-			// Actually... I think I can keep this as is for now
 			wxString remoteFileName = m_remoteFileDialog->GetRemoteFileNameAndPath();
 			fnames.Add(remoteFileName);
 		}
@@ -527,11 +531,7 @@ void ChameleonWindow::OpenFile()
 		{
 			return;
 		}
-
-		wxEndBusyCursor();
 	}
-
-
 
 	OpenFile (fnames);
 	PageHasChanged (m_currentPage);
@@ -547,15 +547,18 @@ void ChameleonWindow::OpenFile (wxArrayString fnames)
 	for (size_t n = 0; n < fnames.GetCount(); n++) 
 	{
 		fileNameNoPath = wxEmptyString;
-		//wxFileName w(fnames[n]); 
-		//w.Normalize(); 
-		//fnames[n] = w.GetFullPath();
-		//wxString filename = wxFileName (fnames[n]).GetFullName();
 		int pageNr = GetPageNum(fnames[n]);
 
 		// filename is already open
 		if (pageNr >= 0) 
 		{
+			int modifiedFileResult = HandleModifiedFile(pageNr, false);
+
+			// user canceled the open request, skip the reload
+			if(modifiedFileResult == wxCANCEL)
+			{
+				continue;
+			}
 			m_setSelection = true;
 			m_book->SetSelection (pageNr);
 			m_setSelection = false;
@@ -573,14 +576,14 @@ void ChameleonWindow::OpenFile (wxArrayString fnames)
 		// current buffer is empty and untouched, so load the file into it
 		else if (m_currentEd && (!m_currentEd->Modified() && !m_currentEd->HasBeenSaved() && m_currentEd->GetText().IsEmpty())) 
 		{
-			//m_currentEd->LoadFile(fnames[n]);
-
 			if(GetFileContents(fnames[n], fileContents, fileNameNoPath))
 			{
 				if(fileContents != wxEmptyString)
 				{
 					m_currentEd->LoadFileText(fileContents);
-					m_currentEd->SetFilename(fileNameNoPath);
+					m_currentEd->SetFilename(fnames[n]);
+
+					// TODO this may be redundant.  I'll deal with it when we decide on how to handle remote mode
 					if(m_remoteMode)
 					{
 						wxString remotePath = m_remoteFileDialog->GetRemotePath();
@@ -594,18 +597,10 @@ void ChameleonWindow::OpenFile (wxArrayString fnames)
 						wxString localPath = localFN.GetPath(false, wxPATH_DOS);
 						m_currentEd->SetLocalFileNameAndPath(localPath, localFileName);
 					}
+
 					m_book->SetPageText(m_currentPage, fileNameNoPath);
 				}
 			}
-
-			/*
-			if (m_currentEd->LoadFile (fnames[n])) 
-			{
-				m_book->SetPageText (m_currentPage, filename);
-				//m_files->Replace (fnames[n], m_currentPage);
-			}
-			*/
-			
 		}
 		// need to create a new buffer for the file
 		else
@@ -617,8 +612,9 @@ void ChameleonWindow::OpenFile (wxArrayString fnames)
 				if(fileContents != wxEmptyString)
 				{
 					edit->LoadFileText(fileContents);
-					edit->SetFilename(fileNameNoPath);
+					edit->SetFilename(fnames[n]);
 
+					// TODO ditto as with the previous else
 					if(m_remoteMode)
 					{
 						wxString remotePath = m_remoteFileDialog->GetRemotePath();
@@ -633,38 +629,30 @@ void ChameleonWindow::OpenFile (wxArrayString fnames)
 						m_currentEd->SetLocalFileNameAndPath(localPath, localFileName);
 					}
 					m_currentEd = edit;
-					//m_currentEd->SetDropTarget (new DropFiles (this));
 					m_currentPage = m_book->GetPageCount();
 					m_book->AddPage (m_currentEd, fileNameNoPath, true);
 				}
 			}
-			/*
-			if (edit->LoadFile (fnames[n])) 
-			{
-				m_currentEd = edit;
-				//m_currentEd->SetDropTarget (new DropFiles (this));
-				m_currentPage = m_book->GetPageCount();
-				m_book->AddPage (m_currentEd, filename, true);
-				//m_files->Add (fnames[n]);
-			}
-			*/
+			// failed to load the file contents, zap the new editor
 			else
 			{
 				delete edit;
 			}
 		}
 
-		if (firstPageNr < 0) firstPageNr = m_currentPage;
-		//m_files->SetSelection (m_pageNr);
-		//m_recents->Add (fnames[n]);
+		if (firstPageNr < 0)
+		{
+			firstPageNr = m_currentPage;
+		}
 	}
-	if (firstPageNr >= 0) {
+
+	// show the active tab, new or otherwise
+	if (firstPageNr >= 0) 
+	{
 		m_currentPage = firstPageNr;
 		m_setSelection = true;
 		m_book->SetSelection (m_currentPage);
 		m_setSelection = false;
-		//g_statustext->Clear ();
-		//g_statustext->Append (_("Opened file: ") + fnames[0]);
 	}
 }
 
@@ -672,11 +660,8 @@ void ChameleonWindow::OpenFile (wxArrayString fnames)
 bool ChameleonWindow::GetFileContents(wxString fileToLoad, wxString &fileContents, wxString &fileName)
 {
 	wxFileName fn(fileToLoad);
-	//wxString fileContents;
 	if(m_remoteMode)
 	{
-		//wxFileName fn(fileToLoad);
-
 		wxString remotePath = fn.GetPath(false, wxPATH_UNIX);
 		wxString remoteFile = fn.GetFullName();
 
@@ -698,8 +683,6 @@ bool ChameleonWindow::GetFileContents(wxString fileToLoad, wxString &fileContent
 	}
 	else
 	{
-		//wxString buf;
-
 		wxFile file (fileToLoad);
 
 		if( !file.IsOpened() )
@@ -717,16 +700,16 @@ bool ChameleonWindow::GetFileContents(wxString fileToLoad, wxString &fileContent
 			file.Read(pFileContents, lng);
 
 			fileContents.UngetWriteBuf();
-
-			//InsertText(0, buf);
 		}
 
 	}
 
 	fileName = fn.GetFullName();
-	return true;
+	return true;   
 }
 
+
+// if the filename is already open, return the tab it's in
 int ChameleonWindow::GetPageNum (const wxString &fname) 
 {
 	ChameleonEditor *edit;
@@ -745,7 +728,6 @@ int ChameleonWindow::GetPageNum (const wxString &fname)
 
 void ChameleonWindow::OnPageChange (wxNotebookEvent &WXUNUSED(event)) 
 {
-	//::wxMessageBox("OnPageChange");
 	if (!m_setSelection)
 	{
 		PageHasChanged();
@@ -765,14 +747,17 @@ void ChameleonWindow::OnPageClose (wxCommandEvent &event)
 
 void ChameleonWindow::OnFileClose (wxCommandEvent &WXUNUSED(event)) 
 {
-	if (!m_currentEd) return;
+	if (!m_currentEd) 
+	{
+		return;
+	}
+
 	CloseFile();
 	PageHasChanged();
 }
 
 void ChameleonWindow::OnConnect(wxCommandEvent& WXUNUSED(event))
 {
-	//::wxMessageBox("OnConnect");
 	wxIPV4address local;
 	local.LocalHost();
 
@@ -782,7 +767,7 @@ void ChameleonWindow::OnConnect(wxCommandEvent& WXUNUSED(event))
 }
 
 
-// event handlers
+// my "I need to try something out, I'll stick it in here" function
 void ChameleonWindow::Test(wxCommandEvent& WXUNUSED(event))
 {
 
@@ -805,35 +790,12 @@ void ChameleonWindow::Test(wxCommandEvent& WXUNUSED(event))
 	{
 		wxLogDebug("Invalid regex");
 	}
-	
-	//m_remoteFileDialog->LoadTestData();
-	//OpenFile();
+	}
 
 
-	//wxMessageBox(wxGetCwd());
-}
-
-
+// zap the program frame
 void ChameleonWindow::OnCloseWindow(wxCloseEvent& event)
 {
-	/*
-	if(ed->GetModify())
-	{
-		int answer = ::wxMessageBox("Your file has unsaved changes.  Do you want to save?", "Confirm exit",
-			wxYES_NO | wxCANCEL);
-		if (answer == wxCANCEL)
-		{
-			return;
-		}
-		else
-		{
-			if(answer == wxYES)
-			{
-				SaveFileLocal(false);
-			}
-		}
-	}
-	*/
 	this->Destroy();
 }
 
@@ -846,8 +808,6 @@ void ChameleonWindow::OnQuit(wxCommandEvent& WXUNUSED(event))
 void ChameleonWindow::CloseApp()
 {
 
-	// TRUE is to force the frame to close
-	
 }
 
 void ChameleonWindow::OnUndo(wxCommandEvent &event)
@@ -887,6 +847,7 @@ void ChameleonWindow::OnAbout(wxCommandEvent& WXUNUSED(event))
     wxMessageBox(msg, "About Chameleon", wxOK | wxICON_INFORMATION, this);
 }
 
+// not currently used.  may come into play later regarding terminal resizing
 void ChameleonWindow::CheckSize()
 {
 	int x, y;
@@ -898,6 +859,8 @@ void ChameleonWindow::CheckSize()
 	
 }
 
+// wxWindows calls this repeatedly during empty processing time.  This updates
+// the status of the save button/menu item, as well as the * on the active tab if modified
 void ChameleonWindow::OnUpdateSave(wxUpdateUIEvent &event)
 {
 	bool enable = m_currentEd->Modified();
@@ -914,7 +877,6 @@ void ChameleonWindow::OnUpdateSave(wxUpdateUIEvent &event)
 		{
 			title += "*";
 			m_book->SetPageText(tabNum, title);
-			//this->Refresh();
 			m_book->Refresh();
 		}		
 	}
@@ -928,25 +890,16 @@ void ChameleonWindow::OnUpdateSave(wxUpdateUIEvent &event)
 		}
 	}
 	event.Enable(enable);
-	//ed->GetModify());
 }
 
 
 void ChameleonWindow::OnSave(wxCommandEvent& WXUNUSED(event))
 {
-	//::wxMessageBox("OnSave");
-	//SaveFileLocal(false);
-	//m_currentEd->SaveFileAs();
-
 	SaveFile(false);
 }
 
 void ChameleonWindow::OnSaveAs(wxCommandEvent& WXUNUSED(event))
 {
-	//::wxMessageBox("OnSaveAs");
-	//SaveFileLocal(true);
-	//m_currentEd->SaveFileAs();
-
 	SaveFile(true);
 }
 
@@ -956,6 +909,7 @@ void ChameleonWindow::SaveFile(bool saveas)
 
 	bool doSaveAs = saveas || !m_currentEd->HasBeenSaved();
 
+	// check if we're in local mode or not
 	if(!(m_perms->isEnabled(PERM_REMOTELOCAL) && m_remoteMode))
 	{
 		if(doSaveAs)
@@ -963,13 +917,15 @@ void ChameleonWindow::SaveFile(bool saveas)
 			wxFileDialog dlg (this, _T("Save file"), _T(""), _T(""), _T("Any file (*)|*"),
 							wxSAVE | wxOVERWRITE_PROMPT);
 
+			// ie, user clicked cancel
 			if(dlg.ShowModal() != wxID_OK) 
 			{ 
 				return; 
 			}
 
+			m_currentEd->SetFocus();
 			filename = dlg.GetPath();
-			m_currentEd->SetFilename(wxFileName(filename).GetFullName());
+			m_currentEd->SetFilename(wxFileName(filename).GetFullPath());
 			m_currentEd->SaveFile(filename);
 		}
 		else
@@ -977,6 +933,7 @@ void ChameleonWindow::SaveFile(bool saveas)
 			m_currentEd->SaveFile();
 		}
 	}
+	// remote mode
 	else
 	{
 		wxString remotePath, remoteFile, fileContents;
@@ -987,6 +944,7 @@ void ChameleonWindow::SaveFile(bool saveas)
 			if(m_remoteFileDialog->Prepare(false))
 			{
 				int result = m_remoteFileDialog->ShowModal();
+				m_currentEd->SetFocus();
 
 				if(result != wxOK)
 				{
@@ -1000,9 +958,6 @@ void ChameleonWindow::SaveFile(bool saveas)
 			{
 				return;
 			}
-			
-
-			//m_network->SendFile("est.txt", "c:\\temp", remoteFile, remotePath);
 			
 		}
 		else
@@ -1027,22 +982,20 @@ void ChameleonWindow::SaveFile(bool saveas)
 			return;
 		}
 
+		if(m_currentEd->GetFilename() == wxEmptyString)
+		{
+			int currentTab = m_book->GetSelection();
+			m_book->SetPageText(currentTab, remoteFile);
+		}
+
 		m_currentEd->SetFilename(remoteFile);
 		m_currentEd->SetRemoteFileNameAndPath(remotePath, remoteFile);
-
-		m_currentEd->EmptyUndoBuffer();
-		m_currentEd->SetSavePoint();
-		//m_currentEd->SetTabUnmodified();
-		m_book->Refresh();
 	}
-}
 
-/*
-void ChameleonWindow::SaveFileLocal(bool saveas)
-{
-	::wxMessageBox("SaveFileLocal: obsolete function!");
+	m_currentEd->EmptyUndoBuffer();
+	m_currentEd->SetSavePoint();
+	m_book->Refresh();
 }
-*/
 
 
 void ChameleonWindow::ResizeSplitter()
@@ -1050,31 +1003,29 @@ void ChameleonWindow::ResizeSplitter()
 	/*
 	int x, y;
 	this->GetClientSize(&x, &y);
-	int newsize = (y / 7) * 6;
-
-	
+	int newsize = (y / 7) * 6;	
 
 	split->SetSashPosition(newsize);	
-	*/
-	
-	
+	*/	
 }
 
 void ChameleonWindow::OnToolsOptions(wxCommandEvent &event)
 {		
 	int result = m_optionsDialog->ShowModal();
+	m_currentEd->SetFocus();
 
 	if(result == wxOK)
 	{
-		EvaluateOptions();
-
-		
+		EvaluateOptions();		
 	}
 }
 
 
+// I've got severable integer variables I need to access at various points,
+// so rather than doing a separate Get/Set for each of them, I did this
 void ChameleonWindow::SetIntVar(int variableName, int value)
 {
+	// figure out which integer I'm setting
 	int* target = TargetInt(variableName);
 
 	/*
@@ -1096,6 +1047,7 @@ void ChameleonWindow::SetIntVar(int variableName, int value)
 	*/
 	//*target = value;
 
+	// assuming we assigned it properly, Set it 
 	if(target != NULL)
 	{
 		*target = value;
@@ -1117,6 +1069,7 @@ Networking* ChameleonWindow::GetNetworking()
 }
 */
 
+// same as SetIntVar, only getting
 int ChameleonWindow::GetIntVar(int variableName)
 {
 	int* target = TargetInt(variableName);
@@ -1144,10 +1097,9 @@ int ChameleonWindow::GetIntVar(int variableName)
 	{
 		return 0;
 	}
-	//return (target != null ? *target : 0);
-	
 }
 
+// figure out which integer value I'm wanting to Get/Set
 int* ChameleonWindow::TargetInt(int variableName)
 {
 	switch(variableName)
@@ -1162,7 +1114,7 @@ int* ChameleonWindow::TargetInt(int variableName)
 		return &m_clickedTabNum;
 		break;
 	default:
-		DEBUGLOG("Failed to properly set variable")
+		wxLogDebug("Failed to properly set variable.  variableName = %d", variableName);
 			return NULL;
 	}
 }
@@ -1221,9 +1173,11 @@ void ChameleonWindow::InitializeOptionsDialog()
 			optionname = m_perms->getPermName(i);
 
 			int optionMapNum = checkList->GetCount();
-			checkList->Append(optionname);//optionList.GetCount();
+			checkList->Append(optionname);
 
 			// need to keep track of which perm is which list item
+			// TODO this will probably need to be put somewhere else once the user can
+			// enter a different authorization code
 			m_permNumMap[optionMapNum] = i;
 
 			if(m_perms->isEnabled(i))
@@ -1298,6 +1252,7 @@ void ChameleonWindow::EvaluateOptions()
 	m_config->Write("Network/username", username);
 }
 
+// called after every major network operation
 NetworkCallResult ChameleonWindow::CheckNetworkStatus()
 {
 	NetworkStatus result = m_network->GetStatus();
@@ -1305,8 +1260,7 @@ NetworkCallResult ChameleonWindow::CheckNetworkStatus()
 	switch((int)result)
 	{
 		case NET_UNKNOWN_HOST:
-		{
-			
+		{			
 			wxString hostname = m_optionsDialog->GetServerAddress();
 			wxString fingerprint = m_network->GetStatusDetails();
 

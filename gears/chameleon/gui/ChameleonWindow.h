@@ -171,6 +171,7 @@ private:
 
 	
 	void CloseFile(int pageNr = -1);
+	int HandleModifiedFile(int pageNr, bool closingFile); 
 	void CloseTab();
 	void PageHasChanged (int pageNr = -1);
 	int GetPageNum(const wxString& fname);

@@ -88,31 +88,7 @@ ChameleonEditor::~ChameleonEditor() {
     //this->PopEventHandler(true);
     }
 
-bool ChameleonEditor::SaveFileAs()
-{
-/*
-    // return if no change
-    if( !Modified() )
-        return true;
 
-    // get filename
-    if( !m_filename )
-    {
-        wxFileDialog
-            dlg (this, _T("Save file"), _T(""), _T(""), _T("Any file (*)|*"),
-        wxSAVE | wxOVERWRITE_PROMPT);
-
-        if(dlg.ShowModal() != wxID_OK) { return false; }
-
-        m_filename = dlg.GetPath();
-    }
-
-    // save file
-    return SaveFile(m_filename);
-	*/
-	wxMessageBox("ChameleonEditor::SaveFileAs - deprecated, shouldn't be here");
-	return false;
-}
 
 bool ChameleonEditor::SaveFile()
 {
@@ -148,11 +124,6 @@ bool ChameleonEditor::SaveFile( const wxString & filename )
     EmptyUndoBuffer();
     SetSavePoint();
 
-
-
-	//wxFileName fn;
-	//fn.Assign(m_filename);
-
     m_filetime = fn.GetModificationTime();
 
 	int currentTab = m_parentNotebook->GetSelection();
@@ -161,74 +132,6 @@ bool ChameleonEditor::SaveFile( const wxString & filename )
 	m_parentNotebook->Refresh();
 
     return true;
-}
-
-bool ChameleonEditor::LoadFile ()
-{
-
-	// commented out because I'm moving functionality to ChameleonWindow
-	/*
-    // get filename
-    if( !m_filename )
-    {
-        wxFileDialog dlg (this, _T("Open file"), _T(""), _T(""),
-        _T("Any file (*)|*"), wxOPEN | wxFILE_MUST_EXIST | wxCHANGE_DIR);
-
-        if( dlg.ShowModal() != wxID_OK )
-            return false;
-
-        m_filename = dlg.GetPath();
-    }
-
-    // load file
-    return LoadFile(m_filename);
-
-	*/
-
-	return true;
-}
-
-bool ChameleonEditor::LoadLocalFile( const wxString & filename )
-{
-	/*
-    wxString buf;
-
-    // load file in edit and clear undo
-    if( !filename.IsEmpty() )
-	{
-        m_filename = wxFileName(filename).GetFullName();
-	}
-
-    wxFile file (filename);
-
-    if( !file.IsOpened() )
-	{
-        return false;
-
-	}
-
-    ClearAll();
-
-    long lng = file.Length();
-
-    if( lng > 0 )
-    {
-        char *pBuf = buf.GetWriteBuf(lng);
-
-        file.Read(pBuf, lng);
-
-        buf.UngetWriteBuf();
-
-        //InsertText(0, buf);
-    }
-
-
-	file.Close();
-
-	return LoadFileText(buf);
-	*/ 
-	wxMessageBox("ChameleonEditor::LoadLocalFile - deprecated, shouldn't be here");
-	return false;
 }
 
 bool ChameleonEditor::LoadFileText(wxString fileContents)
@@ -241,9 +144,6 @@ bool ChameleonEditor::LoadFileText(wxString fileContents)
 	}
 
     EmptyUndoBuffer();
-
-
-    //m_filetime = wxFileName(m_filename).GetModificationTime();
 
     // determine and set EOL mode
     int eolMode = -1;
@@ -287,28 +187,14 @@ bool ChameleonEditor::LoadFileText(wxString fileContents)
         {
             ConvertEOLs(eolMode);
 
-           // g_statustext->Clear();
-
+			// set staus bar text
+            // g_statustext->Clear();
             //g_statustext->Append(_("Converted line endings to "));
-
             //g_statustext->Append(eolName);
         }
 
         SetEOLMode(eolMode);
     }
-
-    // determine lexer language
-    //wxFileName fname (m_filename);
-
-    //InitializePrefs(DeterminePrefs(fname.GetFullName()));
-
-	//int currentTab = m_parentNotebook->GetSelection();
-
-	//m_parentNotebook->SetPageText(currentTab, wxFileName(m_filename).GetFullName());
-	//m_parentNotebook->Refresh();
-
-	//SetTabUnmodified();
-
 
 	m_bLoadingFile = false;
 
@@ -327,50 +213,7 @@ bool ChameleonEditor::Modified ()
     return returnModify; 
 }
 
-void ChameleonEditor::OnSetTabModified(wxStyledTextEvent &event)
-{
-	int modType = event.GetModificationType();
-	
-
-	if( (modType & wxSTC_MOD_INSERTTEXT) ||
-		(modType & wxSTC_MOD_DELETETEXT))
-	{
-		bool isModified = this->Modified();
-        		
-
-		if(isModified && !m_bLoadingFile)
-		{
-			int tabNum = m_parentNotebook->GetSelection();
-			wxString title = m_parentNotebook->GetPageText(tabNum);
-
-			if(!title.Contains("*"))
-			{
-				title += "*";
-				m_parentNotebook->SetPageText(tabNum, title);
-				//this->Refresh();
-				m_parentNotebook->Refresh();
-			}
-			else
-			{
-				title.RemoveLast(1);
-				m_parentNotebook->SetPageText(tabNum, title);
-			}
-
-		}
-	}
-}
-
-void ChameleonEditor::SetTabUnmodified()
-{
-	/*
-	int tabNum = m_parentNotebook->GetSelection();
-
-	wxFileName fn(m_filename);
-	m_parentNotebook->SetPageText(tabNum, fn.GetFullName());
-	*/
-
-}
-
+// called every time a character is entered.  currently not actually doing much.
 void ChameleonEditor::OnChar( wxStyledTextEvent &event )
 {
 
@@ -379,6 +222,7 @@ void ChameleonEditor::OnChar( wxStyledTextEvent &event )
 	const int tabWidth = GetTabWidth();
 	const int eolMode = GetEOLMode();
 
+	// TODO Block indent/dedent isn't workng yet.  OnChar not being called?
 
     if( chr == WXK_TAB )
     {
@@ -443,19 +287,6 @@ void ChameleonEditor::OnChar( wxStyledTextEvent &event )
 
 bool ChameleonEditor::HasBeenSaved()
 {
-	/*
-	if(m_mainFrame->InRemoteMode())
-	{
-		wxString remote = m_remoteFileName.GetFullPath();
-		bool result = remote != wxEmptyString;
-		return result;
-	}
-	else
-	{
-		wxString local = m_localFileName.GetFullPath();
-		return local != wxEmptyString;
-	}
-	*/
 	bool result = m_simpleFileName != wxEmptyString;
 	return result;
 }

@@ -23,16 +23,16 @@ public:
 	~ChameleonEditor();
 
 
-	bool LoadFile ();
+	//bool LoadFile ();
 	bool LoadLocalFile (const wxString &filename);
 	bool LoadFileText(wxString fileContents);
-	bool SaveFileAs();
+	//bool SaveFileAs();
 	bool SaveFile(const wxString& filename);
 	bool SaveFile();
 
 	bool Modified();
 
-	void SetTabUnmodified();
+	//void SetTabUnmodified();
 
 	void OnChar(wxStyledTextEvent &event);
 
@@ -53,7 +53,7 @@ public:
 private:
 
 
-	void OnSetTabModified(wxStyledTextEvent &event);
+	//void OnSetTabModified(wxStyledTextEvent &event);
 	
 
 	ChameleonWindow* m_mainFrame;

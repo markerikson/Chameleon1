@@ -109,6 +109,7 @@ bool RemoteFileDialog::Create( wxWindow* parent, wxWindowID id, const wxString& 
 
 	wxImageList* images = new wxImageList(16, 16);
 
+	// put together the file icons for C++ file types
 
 	wxBitmap folder(folder256_xpm);
 	images->Add(folder);
@@ -243,7 +244,6 @@ bool RemoteFileDialog::ShowToolTips()
 
 void RemoteFileDialog::OnButtonUpClick( wxCommandEvent& event )
 {
-    // Insert custom code here
     event.Skip();
 
 	wxPathFormat pathFormat = GetCurrentPathFormat();
@@ -253,7 +253,9 @@ void RemoteFileDialog::OnButtonUpClick( wxCommandEvent& event )
 	if(numDirs > 0)
 	{
 		wxString currPath = m_currentPath.GetPath(false, wxPATH_UNIX);
-
+ 
+		// if we're not at a user's home directory, get rid of the last
+		// directory in the path
 		if(currPath != "~")
 		{
 			m_currentPath.RemoveDir(numDirs - 1);
@@ -277,52 +279,32 @@ wxString RemoteFileDialog::GetLocalFileNameAndPath()
 void RemoteFileDialog::SetNetworking(Networking* network)
 {
 	m_network = network;
-
-	//wxString userHome = m_network->GetHomeDirPath();
-	//m_parentFrame->CheckNetworkStatus();
 	m_currentPath.AssignDir("~");
 }
 
 bool RemoteFileDialog::ShowDirectory(wxString dirname)
 {
-	//wxBeginBusyCursor();
+
 // disables VS's 4018 warning: "signed/unsigned mismatch" relating to the GetCount() comparison
 #pragma warning( disable : 4018)
 
-	/*
-	if(dirname.Contains("/"))
-	{
-		m_currentPath.AssignDir(dirname, wxPATH_UNIX);
-	}
-	else
-	{
-		m_currentPath.AssignDir(dirname, wxPATH_NATIVE);
-	}
-	*/
 
 	m_currentPath.AssignDir(dirname);
-
-	wxString displayPath = dirname;
-
-	/*
-	if(displayPath.Left(1) != "/")
-	{
-		displayPath = "/" + displayPath;
-	}
-	*/
-
-	m_pathBox->SetValue(displayPath);
-	
+	m_pathBox->SetValue(dirname);	
 
 	m_list->ClearAll();
 
 	DirListing dl;	
+	wxBeginBusyCursor();
 	dl= m_network->GetDirListing(dirname);
+	wxEndBusyCursor();
 
 	NetworkCallResult netStatus = m_parentFrame->CheckNetworkStatus();
 	if(netStatus == NETCALL_REDO)
 	{
+		wxBeginBusyCursor();
 		dl = m_network->GetDirListing(dirname);
+		wxEndBusyCursor();
 	}
 	else if(netStatus == NETCALL_FAILED)
 	{
@@ -336,16 +318,22 @@ bool RemoteFileDialog::ShowDirectory(wxString dirname)
 	m_currentDirs.Clear();
 	m_currentFiles.Clear();
 
+	// TODO Could all this be broken off into another function so that after the 
+	//		user has selected a different filter, I can reload the directory
+	//		without needing to do another network call?
 
-
+	
+	// for each directory, get just the name of directory itself, then stick it
+	// into the listview with the folder icon
 	for(int i = 0; i < sortedDirs.GetCount(); i++)
 	{
 		wxString fullDirName = sortedDirs[i];
 
+		// um... this seems to be working at the moment, but it also looks
+		// like I'm using the wrong path separator...
 		wxString lastDir = fullDirName.AfterLast(wxChar('\\'));
 		m_list->InsertItem(m_list->GetItemCount(), lastDir, 0);
 		m_currentDirs.Add(lastDir);
-		//wxLogDebug("Dir: " + sortedDirs[i]);
 	}
 
 	int fileType = m_comboFiletypes->GetSelection();
@@ -354,12 +342,12 @@ bool RemoteFileDialog::ShowDirectory(wxString dirname)
 	wxSortedArrayString cFiles;
 	wxSortedArrayString hFiles;
 
+	// the user's filter selection ("C++ files", "All Files", etc)
 	switch(fileType)
 	{
 		// C++ files
 	case 0:
-
-
+		// go through ALL files, find the C++ files, and sort them according to extension
 		for(int i = 0; i < sortedFiles.GetCount(); i++)
 		{
 			wxFileName currentName(sortedFiles[i]);
@@ -382,25 +370,30 @@ bool RemoteFileDialog::ShowDirectory(wxString dirname)
 			}
 		}
 
+		// insert .C files
 		for(int i = 0; i < cFiles.GetCount(); i++)
 		{
 			m_list->InsertItem(m_list->GetItemCount(), cFiles[i], 1);
 			//wxLogDebug(".C file: " + cFiles[i]);
 		}
 
+		// insert .CPP files
 		for(int i = 0; i < cppFiles.GetCount(); i++)
 		{
 			m_list->InsertItem(m_list->GetItemCount(), cppFiles[i], 2);
 			//wxLogDebug(".CPP file: " + cppFiles[i]);
 		}
 
+		// insert .H files
 		for(int i = 0; i < hFiles.GetCount(); i++)
 		{
 			m_list->InsertItem(m_list->GetItemCount(), hFiles[i], 3);
 			//wxLogDebug(".H file: " + hFiles[i]);
 		}
 		break;
+
 	case 1:
+		// just show ALL files, changing the icon if necessary
 		for(int i = 0; i < m_currentFiles.GetCount(); i++)
 		{
 			wxFileName currentName(m_currentFiles[i]);
@@ -435,9 +428,9 @@ bool RemoteFileDialog::ShowDirectory(wxString dirname)
 	m_pathBox->SetSelection(0,0);
 	m_list->SetFocus();
 
+// turn the size_t warning back on
 #pragma warning( default : 4018 )
 
-	//wxEndBusyCursor();
 	return true;
 }
 
@@ -446,22 +439,17 @@ void RemoteFileDialog::LoadTestData()
 	ShowDirectory("C:\\Projects\\cs4810\\gears\\chameleon\\gui\\");
 }
 
+// save the information for opening a file
 void RemoteFileDialog::OpenRemoteFile()
 {
 	wxString remoteFileName = m_txtFilename->GetValue();
-	//wxString localFileName = m_network->GetFile(remoteFileName, m_currentPath.GetPath());
-
-
-	m_remoteFileNamePath.SetName(remoteFileName);
-	m_remoteFileNamePath.SetPath(m_currentPath.GetFullPath());
-
-	//m_localFileNamePath.Assign(localFileName);
-
+	m_remoteFileNamePath.Assign(m_currentPath.GetPath(false, wxPATH_UNIX), remoteFileName);
 
 	EndModal(wxOK);
 
 }
 
+// save the information for saving a file
 void RemoteFileDialog::SaveRemoteFile()
 {
 	wxString remoteFileName = m_txtFilename->GetValue();
@@ -472,8 +460,6 @@ void RemoteFileDialog::SaveRemoteFile()
 	m_remoteFileNamePath.Assign(m_currentPath.GetPath(false, wxPATH_UNIX), remoteFileName);
 
 	EndModal(wxOK);
-
-	// = m_network->SendFile()
 }
 
 
@@ -487,13 +473,7 @@ void RemoteFileDialog::OnItemSelected( wxListEvent& event )
     event.Skip();
 
 	wxString itemText = event.GetText();
-
-	//int result = m_currentDirs.Index(itemText);
-
-	//if(result == wxNOT_FOUND)
-	//{
-		m_txtFilename->SetValue(itemText);
-	//}	
+	m_txtFilename->SetValue(itemText);
 }
 
 /*!
@@ -509,19 +489,16 @@ void RemoteFileDialog::OnItemActivated( wxListEvent& event )
 
 	m_txtFilename->SetValue(itemText);
 
-	ItemActivated();
-	
-	
+	ItemActivated();	
 }
 
 wxPathFormat RemoteFileDialog::GetCurrentPathFormat()
 {
 	wxPathFormat pathFormat = wxPATH_UNIX;
-
-
 	return pathFormat;
 }
 
+// Sets up the dialog for use as either an open or a save dialog
 bool RemoteFileDialog::Prepare(bool open)
 {
 	m_openMode = open;
@@ -546,17 +523,19 @@ bool RemoteFileDialog::Prepare(bool open)
  * wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTONOPEN
  */
 
-
+// user double-clicked a list item OR hit the open button
 void RemoteFileDialog::ItemActivated()
 {
 	wxString text = m_txtFilename->GetValue();
 
 	int dirResult = m_currentDirs.Index(text);
 
+	// the item name isn't a directory
 	if(dirResult == wxNOT_FOUND)
 	{		
 		int fileResult = m_currentFiles.Index(text);
 
+		// and it's not a file either
 		if(fileResult == wxNOT_FOUND)
 		{
 			// trying to open a non-existent file
