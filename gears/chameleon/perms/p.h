@@ -38,7 +38,7 @@ class Permission
 		void disable(int id);		//module-specific disable
 
 		wxString GetAuthCode() {return(savedAuthCode);}
-		wxString GetPermCode() {return(savedAuthCode);}
+		wxString GetPermCode() {return(savedPermCode);}
 
 		bool setGlobalAuthorized(wxString newAuthCode);//set everything
 		void setGlobalEnabled(wxString newEnableCode);
