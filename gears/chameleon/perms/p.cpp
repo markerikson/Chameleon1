@@ -23,11 +23,14 @@
 
 //includes
 #include "p.h"
-
+#include "../common/Crc16.h"
+#include "../common/debug.h"
 //global variables
 using namespace std;
 
-
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
 
 //@@@@@@@@@
 //@ BEGIN @
@@ -44,11 +47,11 @@ Permission::Permission(wxString loadAuthCode, wxString loadPermCode)
 	loadPermCode.ToLong(&tPCode);
 	loadAuthCode.ToLong(&tACode);
 	
-	permNames = new wxArrayString();
+	//permNames = new wxArrayString();
 
 	for(int i = 0; i < PERM_LAST; i++)
 	{
-		permNames->Add(GlobalPermStrings[i]);
+		permNames.Add(GlobalPermStrings[i]);
 	}
 
 	//load permission code into bitset Array
@@ -71,7 +74,7 @@ Permission::~Permission()
 	permCode = 0;
 	authCode = 0;
 
-	delete permNames;
+	//delete permNames;
 }
 
 //isEnabled
@@ -109,76 +112,51 @@ void Permission::disable(int id)
 }
 
 //setGlobal
-//input: a valid authorization code
+//input: a valid authorization code, defined as a string containing an integer
+//		 with the CRC16 code for that integer's characters prepended to it
 //output: TRUE if the code parsed correctly, FALSE otherwise.  [auth] and
 //        [authCode] are updated.
-bool Permission::setGlobal(wxString newAuthCode)
+bool Permission::setGlobalAuthorized(wxString newAuthCode)
 {
-	//the permcode comes like this:
-	//                                       XX XX NN...NN
-	//we're interested in these chars/nums:  |   | |    ||
-	//                                       c1 c2 1    23
-	char charOne, charTwo;
-	long int specialOne = 0,
-		specialTwo = 0,
-		specialThree = 0;
-	int sLength = int(newAuthCode.Length());
-	int charOnePos = 0,
-		charTwoPos = 0;
-	long int fuzz = 0,
-		attemptedAuthCode = 0;
-	wxString temp;
+	wxString crcPrefix;
+	wxString crcGenerated;
+	wxString numberString;
 
-	newAuthCode.Upper();
-
-	charOne = newAuthCode.GetChar(0);
-	charTwo = newAuthCode.GetChar(3);
-
-	temp = newAuthCode.GetChar(4);
-	temp.ToLong(&specialOne);
-
-	temp = newAuthCode.GetChar(sLength - 2);
-	temp.ToLong(&specialTwo);
-
-	temp = newAuthCode.GetChar(sLength - 1);
-	temp.ToLong(&specialThree);
-
-	//begin test for authentic authorization code
-	//charTwo is the product of [specialOne + specialThree] in relation to
-	//our alphabet, with G = 0.  eg: [s1 + s2] = 6.  Since G=0, then
-	//charTwo should equal M.
-	//charOne is the product of [offset(charTwo) + specialTwo)].  In our
-	//example, if specialTwo = 4 then charOne = Q
-
-	//get position of first character (charOne)
-	while(AuthCodeLookupTable[charOnePos] != charOne)
-	{charOnePos++;}
-
-	charTwoPos = charOnePos - specialTwo; //charOne = [charTwo + specialTwo)]
-	if(charTwoPos < 0)
-	{charTwoPos += 26;}
-
-	//first pass
-	if(AuthCodeLookupTable[charTwoPos] == charTwo)
+	if(newAuthCode.Len() < 4)
 	{
-		//second pass; [specialOne + specialThree] must equal [charTwoPos]
-		if((specialOne + specialThree) == charTwoPos)
-		{
-			//get the new authcode; it's valid.
-			newAuthCode = newAuthCode.Mid(4); //get rid of the first 4 chars
-
-			newAuthCode.ToLong(&fuzz);	//extract the authorization code
-			attemptedAuthCode = fuzz;
-
-			//load up the authorization array with the new permissions
-			bitset<NUM_MODULES> temp(attemptedAuthCode);
-			auth = temp;
-			return(true);
-		}
+		return false;
 	}
 
-	//someone tried to hack our code.  naughty naughty
-	return(false);
+	newAuthCode.MakeUpper();
+	crcPrefix = newAuthCode.Left(4);
+
+	numberString = newAuthCode.Mid(4);
+	wxLogDebug("newAuthCode: %s", newAuthCode);
+	wxLogDebug("numberString: %s", numberString);
+	wxLogDebug("crcPrefix: %s", crcPrefix);
+
+	ClsCrc16 crc;
+	crc.CrcInitialize();
+	crc.CrcAdd((unsigned char *)numberString.GetData(), numberString.Len());
+	
+	crcGenerated.Printf("%X", crc.CrcGet());
+	wxLogDebug("crcGenerated: %s", crcGenerated);
+
+	bool validAuthCode = (crcGenerated == crcPrefix);
+
+	if(validAuthCode)
+	{
+		numberString.ToLong(&authCode);
+		auth = bitset<NUM_MODULES>(authCode);
+	}
+
+	return validAuthCode;
+}
+
+void Permission::setGlobalEnabled(wxString newEnableCode)
+{
+	newEnableCode.ToLong(&permCode);
+	status = bitset<NUM_MODULES>(permCode);	
 }
 
 //getGlobal
@@ -201,9 +179,9 @@ long Permission::getGlobalAuthorized()
 wxString Permission::getPermName(int permEnum)
 {
 	
-	if((int)permNames->Count() > permEnum)
+	if((int)permNames.Count() > permEnum)
 	{
-		return permNames->Item(permEnum);
+		return permNames.Item(permEnum);
 	}
 	return wxEmptyString;
 }

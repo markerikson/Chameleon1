@@ -3,6 +3,9 @@
 #include "../common/CommonHeaders.h"
 #include "ChameleonWindow.h"
 #include <wx/statusbr.h>
+#include <wx/choicdlg.h>
+#include <wx/msgdlg.h>
+#include <wx/msw/tbar95.h>
 
 #include "../editor/editor.h"
 //#include "updateuihandler.h"
@@ -10,9 +13,10 @@
 #include "dialogs/OptionsDialog.h"
 #include "dialogs/RemoteFileDialog.h"
 #include "../perms/p.h"
+
 #include "../network/networking.h"
 #include "wxtelnet.h"
-
+#include "../common/ProjectInfo.h"
 
 #include "new.xpm"
 #include "open.xpm"
@@ -29,6 +33,8 @@
 
 #include "moz.xpm"
 
+#define ID_RANDOMTEXTLABEL 9991
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -36,7 +42,8 @@
 
 BEGIN_EVENT_TABLE(ChameleonWindow, wxFrame)
 	EVT_MENU						(ID_NEW, ChameleonWindow::OnFileNew)
-	EVT_MENU						(ID_OPEN, ChameleonWindow::OnFileOpen)
+	EVT_MENU						(ID_OPEN_SOURCE_LOCAL, ChameleonWindow::OnFileOpen)
+	EVT_MENU						(ID_OPEN_SOURCE_REMOTE, ChameleonWindow::OnFileOpen)
 	EVT_MENU						(ID_QUIT,  ChameleonWindow::OnQuit)
 	EVT_MENU						(ID_ABOUT, ChameleonWindow::OnAbout)
 	EVT_MENU						(ID_TEST, ChameleonWindow::Test)
@@ -59,8 +66,10 @@ BEGIN_EVENT_TABLE(ChameleonWindow, wxFrame)
 	EVT_SPLITTER_DCLICK				(ID_SPLITPROJECTEDITOR, ChameleonWindow::OnSplitterDoubleClick)
 	EVT_SPLITTER_DCLICK				(ID_SPLITEDITOROUTPUT, ChameleonWindow::OnSplitterDoubleClick)
 	EVT_TREE_ITEM_RIGHT_CLICK		(ID_PROJECTTREE, ChameleonWindow::OnTreeItemRightClick)
-	EVT_MENU						(ID_ADDPROJECTFILE, ChameleonWindow::OnAddFileToProject)
+	EVT_MENU						(ID_PROJECT_ADDFILE, ChameleonWindow::OnAddFileToProject)
 	EVT_TREE_ITEM_ACTIVATED			(ID_PROJECTTREE, ChameleonWindow::OnTreeItemActivated)
+	EVT_MENU						(ID_OPEN_PROJECT_LOCAL, ChameleonWindow::OnOpenProjectFile)
+	EVT_MENU						(ID_OPEN_PROJECT_REMOTE, ChameleonWindow::OnOpenProjectFile)
 
 	
 END_EVENT_TABLE()
@@ -89,6 +98,7 @@ bool MyApp::OnInit()
 ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, const wxSize& size)
        : wxFrame((wxFrame *)NULL, -1, title, pos, size)
 {
+	//m_appStarting = true;
 	wxStopWatch stopwatch;
 	this->SetClientSize(640, 480);
 
@@ -108,33 +118,6 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	long time1 = stopwatch.Time();
 	stopwatch.Start();
 
-
-	
-
-	// enable only PERM_AUTOINDENT and PERM_REMOTELOCAL.  Eventually, will rely only on the provided value.
-
-	/*
-	int permBitmask = 0;
-
-	permBitmask |= 1 << PERM_AUTOINDENT;
-	permBitmask |= 1 << PERM_REMOTELOCAL;
-	permBitmask |= 1 << PERM_SYNTAXHIGHLIGHT;
-	permBitmask |= 1 << PERM_TERMINAL;
-
-	m_perms->setGlobalAuthorized(permBitmask);
-
-	
-	for(int i = PERM_FIRST; i < PERM_LAST; i++)
-	{
-		m_perms->disable(i);
-	}
-	
-	m_perms->enable(PERM_AUTOINDENT);
-	m_perms->enable(PERM_REMOTELOCAL);
-	m_perms->enable(PERM_SYNTAXHIGHLIGHT);
-	m_perms->enable(PERM_TERMINAL);
-
-	*/
 	long time2 = stopwatch.Time();
 	stopwatch.Start();
 
@@ -143,28 +126,28 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 	wxString hostname = wxEmptyString; 
 	wxString username = wxEmptyString;
-	long authorizedCode;
-	long enabledCode;
+	wxString authorizedCode = "0";
+	wxString enabledCode = "0";
 
 	// by default, enable nothing
-	long defaultEnableCode = 0x0;
-	long defaultAuthorizedCode = 0x0;
+	wxString defaultAuthorizedCode = "0";
+	wxString defaultEnableCode = "0";
+
+	m_perms = new Permission(defaultAuthorizedCode, defaultEnableCode);
 
 	wxFileName configName(wxGetHomeDir(), "chameleon.ini");
 
-	//wxIniConfig("Chameleon", wxEmptyString, configName.GetFullPath());
 	m_config = new wxFileConfig("Chameleon", wxEmptyString, configName.GetFullPath());
 
 	if(configName.FileExists())
 	{
-
 		hostname = m_config->Read("Network/hostname");
 		username = m_config->Read("Network/username");
-
+		
 		authorizedCode = m_config->Read("Permissions/authorized", defaultAuthorizedCode);
 		enabledCode = m_config->Read("Permissions/enabled", defaultEnableCode);
-		//wxLogDebug("Loaded permissions from config");
-		
+		m_perms->setGlobalAuthorized(authorizedCode);
+		m_perms->setGlobalEnabled(enabledCode);		
 	}
 	else
 	{
@@ -176,11 +159,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 		m_config->Write("Network/username", wxEmptyString);
 		m_config->Write("Permissions/authorized", defaultAuthorizedCode);
 		m_config->Write("Permissions/enabled", defaultEnableCode);
-
 	}
-
-	m_perms = new Permission(authorizedCode, enabledCode);
-	
 
 	m_network = new Networking();
 
@@ -213,13 +192,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
     // Menu creation
     wxMenu* menuFile = new wxMenu();
 
-	menuFile->Append(ID_NEW, "&New\tCtrl-N", "Create a new file");
-	menuFile->Append(ID_OPEN, "&Open\tCtrl-O", "Open an existing file");
-	menuFile->Append(ID_PAGECLOSE, "&Close");
-	menuFile->InsertSeparator(3);
-	menuFile->Append(ID_SAVE, "&Save\tCtrl-S", "Save the current file");
-	menuFile->Append(ID_SAVE_AS, "Save &As", "Save the current file as a different name");
-	menuFile->Append(ID_QUIT, "E&xit\tAlt-X", "Quit this program");
+	
 
 	wxMenu* menuTools = new wxMenu();
 
@@ -246,55 +219,24 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
     helpMenu->Append(ID_ABOUT, "&About...\tCtrl-A", "Show about dialog");
 
     wxMenuBar *menuBar = new wxMenuBar();
+	SetMenuBar(menuBar);
     menuBar->Append(menuFile, "&File");
 	menuBar->Append(menuEdit, "&Edit");
 	menuBar->Append(menuTools, "&Tools");
     menuBar->Append(helpMenu, "&Help");
 
+	// don't want to do this until we've attached the file menu
+	// to the menu bar
+	UpdateFileMenu();
 	
 	wxToolBar* toolBar = CreateToolBar(wxTB_FLAT | wxTB_TEXT);
 
-	wxBitmap bmNew(new_xpm);
-	toolBar->AddTool(ID_NEW, "New File", bmNew);	
-		
-	wxBitmap bmOpen(open_xpm);
-	toolBar->AddTool(ID_OPEN, "Open File", bmOpen);
-
-	wxBitmap bmSave(save_xpm);
-	toolBar->AddTool(ID_SAVE, "Save File", bmSave);
-
-	
-	if(m_perms->isEnabled(PERM_COMPILE))
-	{
-		toolBar->AddSeparator();
-
-		wxBitmap bmBuild(build_xpm);
-		toolBar->AddTool(ID_COMPILE, "Compile", bmBuild);
-	}	
-
-	if(m_perms->isEnabled(PERM_TEST))
-	{
-		toolBar->AddSeparator();
-
-		wxBitmap bmTest(button_xpm);
-		toolBar->AddTool(ID_TEST, "Test", bmTest);
-	}
-	
-
-	if(m_perms->isEnabled(PERM_DEBUG))
-	{
-		AddDebugButtons();
-	}
-
-	toolBar->Realize();
-
 	SetToolBar(toolBar);
+	UpdateToolbar();
 	
-    SetMenuBar(menuBar);
+    
 
     m_statusBar = CreateStatusBar(2);
-	
-
 
 	long time5 = stopwatch.Time();
 	stopwatch.Start();
@@ -328,7 +270,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	
 	if(m_perms->isEnabled(PERM_TERMINAL))
 	{
-		m_splitEditorOutput->SplitHorizontally(m_splitProjectEditor, m_noteTerm, -300);	
+		m_splitEditorOutput->SplitHorizontally(m_splitProjectEditor, m_noteTerm, -160);	
 		m_splitEditorOutput->SetMinimumPaneSize(20);
 
 
@@ -383,8 +325,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	OnFileNew(ev);
 	PageHasChanged(m_currentPage);
 
-	m_projectPopupMenu.SetTitle("Menu title");
-	m_projectPopupMenu.Append(ID_ADDPROJECTFILE, "Add file");
+	m_projectPopupMenu.Append(ID_PROJECT_ADDFILE, "Add file");
 
 
 	m_filterCPPFiles = "C++ source files (*.cpp, *.c)|*.cpp;*.c";
@@ -392,7 +333,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	m_filterProjectFiles = "Chameleon project files (*.cpj)|*.cpj";
 	m_filterAllFiles = "All files (*.*)|*.*";
 
-	
+	m_currentProjectInfo = NULL;
 
 	/*
 	wxLogDebug("Startup timing: initial lines = %d", time1);
@@ -404,6 +345,9 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	wxLogDebug("Startup timing: rfd->SetNetwork = %d", time8);
 	wxLogDebug("Startup timing: notebook and editor = %d", time7);
 	*/
+	m_appStarting = false;
+
+	
 
 }
 
@@ -413,7 +357,6 @@ ChameleonWindow::~ChameleonWindow()
 	m_config->Flush();
 
 	delete m_perms;
-	//delete m_openFiles;
 	delete m_optionsDialog;
 	delete m_network;
 	delete m_config;
@@ -451,11 +394,11 @@ void ChameleonWindow::OnFileNew (wxCommandEvent &WXUNUSED(event))
 void ChameleonWindow::PageHasChanged (int pageNr) 
 {
 	// no pages - null out the current ed pointer
+	// You know, this should really never happen with the current design
 	if (m_book->GetPageCount() == 0) 
 	{
 		m_currentPage = -1;
 		m_currentEd = NULL;
-		//m_openFiles->SetSelection (0);
 		return;
 	}
 
@@ -475,7 +418,7 @@ void ChameleonWindow::PageHasChanged (int pageNr)
 	if (pageNr >= 0) 
 	{
 		m_currentPage = pageNr;
-		m_currentEd = (ChameleonEditor *) m_book->GetPage (m_currentPage);
+		m_currentEd = static_cast< ChameleonEditor * > (m_book->GetPage (m_currentPage));
 		m_book->SetSelection(pageNr);
 		m_currentEd->SetFocus();
 		//m_files->SetSelection (m_currentPage);
@@ -490,8 +433,33 @@ void ChameleonWindow::PageHasChanged (int pageNr)
 	if(m_currentEd != NULL)
 	{
 		m_currentEd->Refresh();
+		wxString tabText = m_book->GetPageText(m_currentPage);
 
 		wxString statusText;
+
+		wxRegEx reModeTest = "\\((R|L|\\?)\\) ";
+
+		if(reModeTest.Matches(tabText))
+		{
+			wxString modeString = reModeTest.GetMatch(tabText, 1);
+			
+			if(modeString == "R")
+			{
+				m_remoteMode = true;
+				statusText = "Remote mode";
+			}
+			else if(modeString == "L")
+			{
+				m_remoteMode = false;
+				statusText = "Local mode";
+			}
+			else if(modeString == "?")
+			{
+				m_remoteMode = true;
+				statusText = "Unsaved file";
+			}
+			m_statusBar->SetStatusText(statusText, 0);
+		}
 		
 		//wxString 
 	}
@@ -557,7 +525,7 @@ void ChameleonWindow::CloseFile (int pageNr)
 		if ((m_book->GetPageCount() > 1) || m_appClosing) 
 		{
 			currentFileName = m_currentEd->GetFileNameAndPath();
-			ChameleonEditor* pEdit = (ChameleonEditor*)m_book->GetPage(pageNr);
+			ChameleonEditor* pEdit = static_cast <ChameleonEditor* >(m_book->GetPage(pageNr));
 			m_book->DeletePage (pageNr);
 		}
 		// closing out the last buffer, reset it to act as a new one
@@ -587,7 +555,7 @@ void ChameleonWindow::CloseFile (int pageNr)
 // gives the user a chance to save if the file's been modified
 int ChameleonWindow::HandleModifiedFile(int pageNr, bool closingFile)
 {
-	ChameleonEditor *edit = (ChameleonEditor *) m_book->GetPage (pageNr);
+	ChameleonEditor *edit = static_cast <ChameleonEditor * > (m_book->GetPage (pageNr));
 
 	if (!edit)
 	{
@@ -661,8 +629,23 @@ int ChameleonWindow::HandleModifiedFile(int pageNr, bool closingFile)
 	return wxNO;
 }
 
-void ChameleonWindow::OnFileOpen (wxCommandEvent &WXUNUSED(event)) 
+void ChameleonWindow::OnFileOpen (wxCommandEvent &event)
 {
+	int id = event.GetId();
+	if( id == ID_OPEN_SOURCE_LOCAL)
+	{
+		m_remoteMode = false;
+	}
+	else if(id == ID_OPEN_SOURCE_REMOTE)
+	{
+		m_remoteMode = true;
+	}
+	else
+	{
+		wxLogDebug("OnFileOpen: Invalid menu ID.  ID: %d", id);
+		return;
+	}
+
 	wxArrayString fnames = OpenFile(FILE_ALLSOURCES);
 	OpenSourceFile (fnames);
 	PageHasChanged (m_currentPage);
@@ -940,7 +923,7 @@ int ChameleonWindow::GetPageNum (const wxString &fname)
 	ChameleonEditor *edit;
 	for (int pageNum = 0; pageNum < m_book->GetPageCount(); pageNum++) 
 	{
-		edit = (ChameleonEditor *) m_book->GetPage(pageNum);
+		edit = static_cast <ChameleonEditor *> (m_book->GetPage(pageNum));
 
 		if (edit && (edit->GetFileNameAndPath() == fname))
 		{			
@@ -999,6 +982,36 @@ void ChameleonWindow::OnConnect(wxCommandEvent& WXUNUSED(event))
 // my "I need to try something out, I'll stick it in here" function
 void ChameleonWindow::Test(wxCommandEvent& WXUNUSED(event))
 {
+	
+	wxToolBar* t = GetToolBar();
+	wxToolBarToolBase* tool = NULL;
+	//tool = 
+	wxControl* c = t->FindControl(ID_RANDOMTEXTLABEL);
+	bool result = t->DeleteTool(ID_RANDOMTEXTLABEL);
+	
+	if(c != NULL)
+	{
+		//t->RemoveChild(c);
+		c->Hide();
+		c->Reparent(NULL);
+		delete c;
+	}
+
+	t->Realize();
+	t->Refresh();
+	
+	
+	/*
+	wxArrayString choices;
+	choices.Add("Remote");
+	choices.Add("Local");
+	wxString choice = wxGetSingleChoice("Test message", "Test caption",choices);
+	wxLogDebug("choice = \"%s\"", choice);
+	*/
+
+	
+	
+
 	/*
 	wxString testText = "(?) <untitled> 1";
 	wxRegEx reTesting = "\\((R|L|\\?)\\) ";
@@ -1182,8 +1195,33 @@ void ChameleonWindow::SaveFile(bool saveas)
 
 	bool doSaveAs = saveas || !m_currentEd->HasBeenSaved() || (m_remoteMode != m_currentEd->LastSavedRemotely());
 
+	bool remoteEnabled = m_perms->isEnabled(PERM_REMOTELOCAL);
+
+	// default to saving locally
+	//bool saveFileRemotely = false;
+	m_remoteMode = false;
+
+	if(doSaveAs && remoteEnabled)
+	{
+		wxArrayString choices;
+		choices.Add("Remote");
+		choices.Add("Local");
+		wxString choice = wxGetSingleChoice("Would you like to save this file: \n\n1) Remotely (on the server) \n2) Locally (on the computer you're sitting at)?", 
+											"Save File - location",choices);
+		if(choice == "Remote")
+		{
+			m_remoteMode = true;
+		}
+		else if(choice == wxEmptyString)
+		{
+			// user hit Cancel - don't save
+			return;
+		}
+
+	}
+
 	// check if we're in local mode or not
-	if(!(m_perms->isEnabled(PERM_REMOTELOCAL) && m_remoteMode))
+	if(!remoteEnabled || !m_remoteMode)
 	{
 		if(doSaveAs)
 		{		
@@ -1427,33 +1465,115 @@ bool ChameleonWindow::InRemoteMode()
 	return m_remoteMode;
 }
 
-void ChameleonWindow::AddDebugButtons()
+void ChameleonWindow::UpdateFileMenu()
 {
-	wxToolBar* toolBar = GetToolBar();
+	wxMenuBar* menuBar = GetMenuBar();
+	int menuIndex = menuBar->FindMenu("&File");
+	if(menuIndex == wxNOT_FOUND)
+	{
+		wxLogDebug("File menu not found");
+		return;
+	}
 
-	toolBar->AddSeparator();
+	wxMenu* menuFile = menuBar->GetMenu(menuIndex);
 
-	wxBitmap bmStart(start_xpm);
-	toolBar->AddTool(ID_START, "Run", bmStart);
-
-	wxBitmap bmPause(pause_xpm);
-	toolBar->AddTool(ID_PAUSE, "Pause", bmPause);
-
-	wxBitmap bmStop(stop_xpm);
-	toolBar->AddTool(ID_STOP, "Stop", bmStop);
-
-	wxBitmap bmStepNext(stepnext_xpm);
-	toolBar->AddTool(ID_STEPNEXT, "Step next", bmStepNext);
-
-	wxBitmap bmStepOver(stepover_xpm);
-	toolBar->AddTool(ID_STEPOVER, "Step over", bmStepOver);
-
-	wxBitmap bmStepOut(stepout_xpm);
-	toolBar->AddTool(ID_STEPOUT, "Step out", bmStepOut);
+	menuFile->Append(ID_NEW, "&New\tCtrl-N", "Create a new file");
+	menuFile->Append(ID_OPEN_SOURCE_LOCAL, "&Open C++ File (Local)", "Open an existing C++ file");
+	menuFile->Append(ID_OPEN_SOURCE_REMOTE, "&Open C++ File (Remote)", "Open an existing C++ file");
+	menuFile->Append(ID_PAGECLOSE, "&Close", "Close the active file");
+	menuFile->AppendSeparator();
+	menuFile->Append(ID_SAVE, "&Save Source File\tCtrl-S", "Save the current file");
+	menuFile->Append(ID_SAVE_AS, "Save Source File &As", "Save the current file as a different name");
+	menuFile->AppendSeparator();
+	menuFile->Append(ID_OPEN_PROJECT_LOCAL, "Open Project File (Local)");
+	menuFile->Append(ID_OPEN_PROJECT_REMOTE, "Open Project File (Remote)");
+	menuFile->AppendSeparator();
+	menuFile->Append(ID_QUIT, "E&xit\tAlt-X", "Quit this program");
 
 }
 
-void ChameleonWindow::UpdateAuthCode()
+void ChameleonWindow::UpdateToolbar()
+{
+	wxToolBar* t = GetToolBar();
+	t->ClearTools();
+
+	/* Since wxWindows 2.4.2 doesn't let us find tools by ID, the
+	 * only way to handle this is to delete the tools to make
+	 * sure they don't exist, then conditionally re-add them.
+	 * Fortunately, if a tool doesn't exist, DeleteTool() does nothing.
+	 * This is made easier in wxWindows 2.5.1, with FindById();
+	 */
+
+	/*
+	t->DeleteTool(ID_TEST);
+
+	t->DeleteTool(ID_COMPILE);
+
+	for(int i = ID_DEBUG_IDS_FIRST; i < ID_DEBUG_IDS_LAST; i++)
+	{
+		t->DeleteTool(i);		
+	}
+	*/
+	
+
+	wxBitmap bmNew(new_xpm);
+	t->AddTool(ID_NEW, "New", bmNew);	
+
+    
+	wxBitmap bmOpen(open_xpm);
+	t->AddTool(ID_OPEN_SOURCE_LOCAL, "Open (L)", bmOpen);
+	t->AddTool(ID_OPEN_SOURCE_REMOTE, "Open (R)", bmOpen);
+
+	wxBitmap bmSave(save_xpm);
+	t->AddTool(ID_SAVE, "Save", bmSave);
+
+
+	if(m_perms->isEnabled(PERM_TEST))
+	{
+		t->AddSeparator();	
+
+		wxBitmap bmTest(button_xpm);
+		t->AddTool(ID_TEST, "Test", bmTest);
+	}
+
+	if(m_perms->isEnabled(PERM_COMPILE))
+	{
+		t->AddSeparator();
+		wxBitmap bmCompile(build_xpm);
+		t->AddTool(ID_COMPILE, "Compile", bmCompile);
+	}
+	
+	if(m_perms->isEnabled(PERM_DEBUG))
+	{
+		t->AddSeparator();
+		wxBitmap bmStart(start_xpm);
+		t->AddTool(ID_START, "Run", bmStart);
+
+		wxBitmap bmPause(pause_xpm);
+		t->AddTool(ID_PAUSE, "Pause", bmPause);
+
+		wxBitmap bmStop(stop_xpm);
+		t->AddTool(ID_STOP, "Stop", bmStop);
+
+		wxBitmap bmStepNext(stepnext_xpm);
+		t->AddTool(ID_STEPNEXT, "Step next", bmStepNext);
+
+		wxBitmap bmStepOver(stepover_xpm);
+		t->AddTool(ID_STEPOVER, "Step over", bmStepOver);
+
+		wxBitmap bmStepOut(stepout_xpm);
+		t->AddTool(ID_STEPOUT, "Step out", bmStepOut);
+	}
+
+
+	
+
+
+	t->Realize();
+
+}
+
+bool ChameleonWindow::UpdateAuthCode()
 {
 	/*
 	m_optionsDialog->SetServerAddress("james.cedarville.edu");
@@ -1462,16 +1582,29 @@ void ChameleonWindow::UpdateAuthCode()
 	m_optionsDialog->SetPassword2("password");
 	*/
 
-	long newAuthCode = m_optionsDialog->GetAuthCode();
+	//long newAuthCode = m_optionsDialog->GetAuthCode();
 
+	/*
 	if(newAuthCode != -1)
 	{
 		m_perms->setGlobal(newAuthCode);
 
 		m_config->Write("Permissions/authorized", newAuthCode);
 	}
+	*/
+	wxString newAuthCode = m_optionsDialog->GetAuthCode();
+	if(m_perms->setGlobalAuthorized(newAuthCode))
+	{
+		m_config->Write("Permissions/authorized", newAuthCode);
+		UpdatePermsList();
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 
-	UpdatePermsList();
+	
 	
 }
 
@@ -1537,27 +1670,9 @@ void ChameleonWindow::EvaluateOptions()
 	m_config->Write("Permissions/enabled", m_perms->getGlobalEnabled());
 
 
+	UpdateToolbar();
 	// update the debug buttons
-	wxToolBar* t = GetToolBar();
 
-	m_remoteMode = m_perms->isEnabled(PERM_REMOTELOCAL);
-
-	bool debugEnabled = m_perms->isEnabled(PERM_DEBUG);
-
-	wxControl* pTool = t->FindControl(ID_DEBUG_IDS_FIRST);
-
-
-	for(int i = ID_DEBUG_IDS_FIRST; i < ID_DEBUG_IDS_LAST; i++)
-	{
-		t->DeleteTool(i);		
-	}
-	
-	
-	if(debugEnabled)
-	{
-		AddDebugButtons();		
-		t->Realize();
-	}	
 
 	// display or hide the terminal as appropriate
 	if(m_perms->isEnabled(PERM_TERMINAL))
@@ -1613,7 +1728,7 @@ void ChameleonWindow::EvaluateOptions()
 
 	for(int i = 0; i < m_book->GetPageCount(); i++)
 	{
-		ChameleonEditor* edit = (ChameleonEditor*)m_book->GetPage(i);
+		ChameleonEditor* edit = static_cast<ChameleonEditor*> (m_book->GetPage(i));
 		edit->UpdateSyntaxHighlighting();
 	}
 
@@ -1774,40 +1889,142 @@ void ChameleonWindow::OnTreeItemRightClick(wxTreeEvent& event)
 
 		}
 
-		m_projectPopupMenu.SetLabel(ID_ADDPROJECTFILE, label);
+		m_projectPopupMenu.SetLabel(ID_PROJECT_ADDFILE, label);
 
-		PopupMenu(&m_projectPopupMenu, event.GetPoint());
+
+		wxPoint p = event.GetPoint();
+		m_projectTree->PopupMenu(&m_projectPopupMenu, p);
 	}
 }
 
 void ChameleonWindow::OnOpenProjectFile(wxCommandEvent &event)
-{
-	/*
+{	
+	int id = event.GetId();
+	if( id == ID_OPEN_PROJECT_LOCAL)
+	{
+		m_remoteMode = false;
+	}
+	else if(id == ID_OPEN_PROJECT_REMOTE)
+	{
+		m_remoteMode = true;
+	}
+	else
+	{
+		wxLogDebug("OnOpenProjectFile: Invalid menu ID.  ID: %d", id);
+		return;
+	}
+
+
+	// TODO Check right here if a project is already open, and if it is,
+	//		ask the user if he wants to replace the open one
+	
+
+	
+
 	wxArrayString fileNames = OpenFile(FILE_PROJECT);
+
+	if(fileNames.Count() < 1)
+	{
+		wxLogDebug("No files selected when adding to project");
+		return;
+	}
+
+	CloseProjectFile();
+
+	m_projectTree->DeleteChildren(m_projectFileFolders[0]);
+	m_projectTree->DeleteChildren(m_projectFileFolders[1]);
+	m_projectTree->DeleteChildren(m_projectFileFolders[2]);
 
 	wxString fileContents;
 	wxString fileName;
 
 	GetFileContents(fileNames[0], fileContents, fileName);
 
+	
+
+	// TODO Relative or absolute file names?
+	m_currentProjectInfo->projectBasePath = wxFileName(fileNames[0]).GetPath(m_remoteMode ? wxPATH_UNIX : wxPATH_DOS);
+
+	wxTreeItemId rootItem = m_projectTree->GetRootItem();
+	m_projectTree->SetItemText(rootItem, fileName);
+	m_projectTree->SetItemBold(rootItem);
 
 	wxMemoryInputStream projectFileStream(fileContents, fileContents.Len());
 	
 	wxFileConfig config(projectFileStream);
-	*/
+
+	int numEntries;
+	
+	config.SetPath("/Headers");
+	numEntries = config.GetNumberOfEntries();
+	wxLogDebug("Header entries: %d", numEntries);
+
+	
+	for(int i = 1; i <= numEntries; i++)
+	{
+		wxString keyname = "header";
+		keyname << i;
+		wxString headerName = config.Read(keyname);
+
+		int iconNum = m_remoteFileDialog->GetIconIndex(wxFileName(headerName).GetExt());
+
+		if(headerName != wxEmptyString)
+		{
+			m_projectTree->AppendItem(m_projectFileFolders[0], headerName, iconNum);
+			m_currentProjectInfo->headerFiles.Add(headerName);
+		}
+	}
+
+	m_projectTree->SortChildren(m_projectFileFolders[0]);
+
+	config.SetPath("/Sources");
+
+	numEntries = config.GetNumberOfEntries();
+	wxLogDebug("Source entries: %d", numEntries);
+
+	for(int i = 1; i <= numEntries; i++)
+	{
+		wxString keyname = "source";
+		keyname << i;
+		wxString sourceName = config.Read(keyname);
+
+		int iconNum = m_remoteFileDialog->GetIconIndex(wxFileName(sourceName).GetExt());
+
+		if(sourceName != wxEmptyString)
+		{
+			m_projectTree->AppendItem(m_projectFileFolders[1], sourceName, iconNum);
+			m_currentProjectInfo->headerFiles.Add(sourceName);
+		}
+	}
+
+	// TODO Library file support, including file icon
 }
+
 
 void ChameleonWindow::OnAddFileToProject(wxCommandEvent &event)
 {
+	wxLogDebug("event id: %d", event.GetId());
 	wxArrayString fileNames = OpenFile(m_projectSelectedFolderType);
 
+	if(fileNames.Count() < 1)
+	{
+		wxLogDebug("No files selected when adding to project");
+		return;
+	}
+
 	// right here, I need to check if the file is in the project already.  
-	// first off, of course, I need to figure out
+	// first off, of course, I need to figure out how I'm storing filenames and such
 
+	int fileExistsInProject;
 
+	if(m_clickedTreeItem == m_projectFileFolders[0])
+	{
+		fileExistsInProject = m_currentProjectInfo->headerFiles.Index(fileNames[0]);
+	}
 
 	wxString fileContents;
 	wxString fileName;
+	
 
 	GetFileContents(fileNames[0], fileContents, fileName);
 
@@ -1817,6 +2034,7 @@ void ChameleonWindow::OnAddFileToProject(wxCommandEvent &event)
 	data->filename = fileNames[0];
 	
 	m_projectTree->AppendItem(m_clickedTreeItem, fileName, iconIndex, -1, data);
+	m_projectTree->SortChildren(m_clickedTreeItem);
 	m_projectTree->Refresh();
 
 
@@ -1845,5 +2063,29 @@ void ChameleonWindow::OnTreeItemActivated(wxTreeEvent &event)
 			OpenSourceFile(filesToOpen);
 		}
 	}
+}
+
+void ChameleonWindow::CloseProjectFile()
+{
+	/*
+	wxMemoryInputStream mis("", 0);
+	wxFileConfig config(mis);
+
+	for(int i = 0; i < m_currentProjectInfo->headerFiles.Count(); i++)
+	{
+		wxString headerName = "header";
+		headerName << i;
+	}
+
+	wxMemoryOutputStream outputStream;
+
+	config.FlushToStream(outputStream);
+
+	wxString resultContents;
+	size_t streamsize = outputStream.GetSize();
+	char* bufptr = resultContents.GetWriteBuf(streamsize);
+	outputStream.CopyTo(bufptr,streamsize);
+	resultContents.UngetWriteBuf();
+	*/
 
 }

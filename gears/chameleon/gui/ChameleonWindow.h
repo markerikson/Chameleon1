@@ -60,6 +60,7 @@ class wxNotebookEvent;
 class wxSplitterEvent;
 class wxTreeEvent;
 class wxStatusBar;
+class ProjectInfo;
 
 //----------------------------------------------------------------------
 
@@ -91,7 +92,7 @@ public:
 	bool InRemoteMode();
 
 	void EvaluateOptions();
-	void UpdateAuthCode();
+	bool UpdateAuthCode();
 
 	NetworkCallResult CheckNetworkStatus();
 
@@ -156,12 +157,14 @@ private:
 
 	
 	void CloseFile(int pageNr = -1);
+	void CloseProjectFile();
 	int HandleModifiedFile(int pageNr, bool closingFile); 
 	void CloseTab();
 	void PageHasChanged (int pageNr = -1);
 	int GetPageNum(const wxString& fname);
 
-	void AddDebugButtons();
+	void UpdateFileMenu();
+	void UpdateToolbar();
 	void UpdatePermsList();
 
 	int* TargetInt(int variableName);
@@ -209,6 +212,7 @@ private:
 
 	Permission*  m_perms;
 	Networking* m_network;
+	ProjectInfo* m_currentProjectInfo;
 
 	//wxArrayPtrVoid* docArray; 
 	//scintillaDocPageHash* docHash;
@@ -222,11 +226,12 @@ private:
 	bool m_appClosing;
 	bool m_setSelection;
 	bool m_remoteMode;
+	bool m_appStarting;
 
 
 	//ChameleonEditor* m_edit;
 
-	wxArrayString* m_openFiles;
+	wxArrayString m_projectFiles;
 
 	wxString m_filterCPPFiles;
 	wxString m_filterHeaderFiles;

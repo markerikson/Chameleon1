@@ -33,7 +33,8 @@ class Permission
 		bool isAuthorized(int id);	//module-specific authorization request
 		void enable(int id);		//module-specific enable
 		void disable(int id);		//module-specific disable
-		bool setGlobal(wxString newAuthCode);//set everything
+		bool setGlobalAuthorized(wxString newAuthCode);//set everything
+		void setGlobalEnabled(wxString newEnableCode);
 		long getGlobalEnabled();	//what should be visible
 		long getGlobalAuthorized();	//what's allowed to be turned on/off
 
@@ -45,7 +46,7 @@ class Permission
 		bitset <NUM_MODULES> auth;	//array for holding what's allowed
 		long permCode;				//int for holding permissions code #
 		long authCode;				//int for holding authorized code #
-		wxArrayString* permNames;    //matches the enumerated perms with a name 
+		wxArrayString permNames;    //matches the enumerated perms with a name 
 };
 
 #endif

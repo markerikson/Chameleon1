@@ -111,7 +111,7 @@ public:
     wxString GetUsername();
     wxString GetPassword1();
     wxString GetPassword2();
-	long GetAuthCode();
+	wxString GetAuthCode();
 
 	void ExitDialog();
 	void OnEnter(wxCommandEvent &event);

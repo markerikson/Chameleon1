@@ -272,7 +272,7 @@ void RemoteFileDialog::CreateControls()
 
     wxButton* item17 = new wxButton( item1, ID_BUTTONCANCEL, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
     m_buttonCancel = item17;
-    item13->Add(item17, 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT, 5);
+    item13->Add(item17, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
 ////@end RemoteFileDialog content construction
 }

@@ -26,10 +26,10 @@
 
 #include "ProfOptionsDialog.h"
 #include "../perms/p.h"
+#include "../common/Crc16.h"
 #include <stdlib.h>
 
 ////@begin XPM images
-
 ////@end XPM images
 
 /*!
@@ -46,6 +46,10 @@ BEGIN_EVENT_TABLE( ProfOptionsDialog, wxDialog )
 
 ////@begin ProfOptionsDialog event table entries
     EVT_BUTTON( ID_GENERATE, ProfOptionsDialog::OnGenerateClick )
+
+    EVT_BUTTON( ID_BUTTON, ProfOptionsDialog::OnButtonCheckAllClick )
+
+    EVT_BUTTON( ID_BUTTON1, ProfOptionsDialog::OnButtonUncheckAllClick )
 
     EVT_BUTTON( ID_EXITBUTTON, ProfOptionsDialog::OnExitbuttonClick )
 
@@ -142,9 +146,20 @@ void ProfOptionsDialog::CreateControls()
     m_genButton = item11;
     item7->Add(item11, 0, wxALIGN_LEFT|wxALL, 5);
 
-    wxButton* item12 = new wxButton( item1, ID_EXITBUTTON, _("Exit"), wxDefaultPosition, wxDefaultSize, 0 );
-    m_exitButton = item12;
-    item7->Add(item12, 0, wxALIGN_RIGHT|wxTOP, 140);
+    wxButton* item12 = new wxButton( item1, ID_BUTTON, _("Check all modules"), wxDefaultPosition, wxSize(120, -1), 0 );
+    m_butCheckAll = item12;
+    item7->Add(item12, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP, 5);
+
+    wxButton* item13 = new wxButton( item1, ID_BUTTON1, _("Uncheck all modules"), wxDefaultPosition, wxSize(120, -1), 0 );
+    m_butUncheckAll = item13;
+    item7->Add(item13, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxBOTTOM, 5);
+
+    wxBoxSizer* item14 = new wxBoxSizer(wxVERTICAL);
+    item7->Add(item14, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 30);
+
+    wxButton* item15 = new wxButton( item1, ID_EXITBUTTON, _("Exit"), wxDefaultPosition, wxDefaultSize, 0 );
+    m_exitButton = item15;
+    item7->Add(item15, 0, wxALIGN_RIGHT|wxLEFT|wxRIGHT|wxTOP, 5);
 
 ////@end ProfOptionsDialog content construction
 }
@@ -180,10 +195,52 @@ void ProfOptionsDialog::OnGenerateClick( wxCommandEvent& event )
 
 		}
 	}
-	wxString message;
-	message.Printf("%u", newCode);
+	wxString newAuthCodeString;
+		
+
+	newAuthCodeString.Printf("%u", newCode);
+	if(newAuthCodeString.Len() < 3)
+	{
+		newAuthCodeString.Prepend("000000");
+	}
 	
-	m_txtGeneratedCode->SetValue(message);
+
+	/*
+	
+	long firstNum;
+	long nextToLastNum;
+	long lastNum;
+	int len = newAuthCodeString.Len();
+	wxString(newAuthCodeString.GetChar(0)).ToLong(&firstNum);
+	wxString(newAuthCodeString.GetChar(len - 2)).ToLong(&nextToLastNum);
+	wxString(newAuthCodeString.GetChar(len - 1)).ToLong(&lastNum);
+
+	long firstResult = firstNum + lastNum;
+	char firstCheckChar = AuthCodeLookupTable[firstResult];
+	
+
+	long secondResult = firstResult + nextToLastNum;
+	if(secondResult > 25)
+	{
+		secondResult -= 26;
+	}
+
+	char secondCheckChar = AuthCodeLookupTable[secondResult];
+
+	char firstRandomChar = (char)( (rand() % 26) + 65);
+	char secondRandomChar = (char)( (rand() % 26) + 65);
+	*/
+
+	ClsCrc16 crc;
+	crc.CrcInitialize();
+	crc.CrcAdd((unsigned char *)(newAuthCodeString.GetData()), newAuthCodeString.Len());
+	wxString prefixChars;
+	//prefixChars << secondCheckChar << firstRandomChar << secondRandomChar << firstCheckChar;
+	prefixChars.Printf("%X", crc.CrcGet());
+
+	newAuthCodeString.Prepend(prefixChars);
+	
+	m_txtGeneratedCode->SetValue(newAuthCodeString);
 }
 
 /*!
@@ -210,3 +267,36 @@ void ProfOptionsDialog::OnQuit(wxCommandEvent &event)
 {
 	Destroy();
 }
+
+/*!
+ * wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON1
+ */
+
+void ProfOptionsDialog::OnButtonUncheckAllClick( wxCommandEvent& event )
+{
+    // Insert custom code here
+    event.Skip();
+	
+	for(int i = 0; i < m_chklstModules->GetCount(); i++)
+	{
+		m_chklstModules->Check(i, false);
+	}
+}
+
+
+/*!
+ * wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON
+ */
+
+void ProfOptionsDialog::OnButtonCheckAllClick( wxCommandEvent& event )
+{
+    // Insert custom code here
+    event.Skip();
+
+	for(int i = 0; i < m_chklstModules->GetCount(); i++)
+	{
+		m_chklstModules->Check(i, true);
+	}
+}
+
+

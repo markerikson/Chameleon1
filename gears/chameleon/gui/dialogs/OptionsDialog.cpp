@@ -329,10 +329,10 @@ void OptionsDialog::ExitDialog()
 	}
 }
 
-long OptionsDialog::GetAuthCode()
+wxString OptionsDialog::GetAuthCode()
 {
-	wxString authCodeString = m_txtProfCode->GetValue();
-
+	return m_txtProfCode->GetValue();
+/*
 	if(authCodeString == wxEmptyString)
 	{
 		return -1;
@@ -344,7 +344,10 @@ long OptionsDialog::GetAuthCode()
 	
 
 	return authCodeLong;
-}/*!
+*/
+}
+
+/*!
  * wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON
  */
 
@@ -353,7 +356,15 @@ void OptionsDialog::OnUpdateAuthCode( wxCommandEvent& event )
     // Insert custom code here
     event.Skip();
 
-	m_parentFrame->UpdateAuthCode();
+	if(!m_parentFrame->UpdateAuthCode())
+	{
+		wxMessageBox("Invalid authorization code.  Please check that it was entered correctly and try again.");
+	}
+	else
+	{
+		wxMessageBox("Authorized features updated.");
+		m_txtProfCode->Clear();
+	}
 
 }
 

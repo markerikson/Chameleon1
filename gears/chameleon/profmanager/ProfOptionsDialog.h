@@ -40,6 +40,8 @@
 #define ID_TXTCODE 10002
 #define ID_RANDOMIZE 10004
 #define ID_GENERATE 10003
+#define ID_BUTTON 10006
+#define ID_BUTTON1 10007
 #define ID_EXITBUTTON 10005
 ////@end control identifiers
 
@@ -64,8 +66,15 @@ public:
     void CreateControls();
 
 ////@begin ProfOptionsDialog event handler declarations
+
     /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_GENERATE
     void OnGenerateClick( wxCommandEvent& event );
+
+    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON
+    void OnButtonCheckAllClick( wxCommandEvent& event );
+
+    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON1
+    void OnButtonUncheckAllClick( wxCommandEvent& event );
 
     /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_EXITBUTTON
     void OnExitbuttonClick( wxCommandEvent& event );
@@ -75,6 +84,7 @@ public:
 	void OnQuit(wxCommandEvent &event);
 
 ////@begin ProfOptionsDialog member function declarations
+
 ////@end ProfOptionsDialog member function declarations
 
     /// Should we show tooltips?
@@ -85,6 +95,8 @@ public:
     wxTextCtrl* m_txtGeneratedCode;
     wxCheckBox* m_chkRandomize;
     wxButton* m_genButton;
+    wxButton* m_butCheckAll;
+    wxButton* m_butUncheckAll;
     wxButton* m_exitButton;
 ////@end ProfOptionsDialog member variables
 };
