@@ -178,9 +178,9 @@ wxString Networking::SSHSendCommand(wxString command) {
 	wxString output = ssh_plink->getOutput();
 
 	// Confirm that all went according to plan
-	if(output.Right(19) == "C_O_M_P_L_E_T_E_D_OK\n") {
+	if(output.Right(21) == "C_O_M_P_L_E_T_E_D_OK\n") {
 		status = NET_GOOD;
-		output.Truncate(output.Length()-19); // remove C_O_M_P_L_E_T_E_D_OK\n
+		output.Truncate(output.Length()-21); // remove C_O_M_P_L_E_T_E_D_OK\n
 	}
 	else {
 		//figure out what went wrong
