@@ -409,9 +409,14 @@ bool RemoteFileDialog::ShowDirectory(wxString dirname, bool refresh, bool showHi
 
 	DirListing dl;	
 	//wxBeginBusyCursor();
-	dl= m_network->GetDirListing(dirname, refresh, showHidden);
+	//dl= m_network->GetDirListing(dirname, refresh, showHidden);
+	if(!m_network->GetDirListing(dirname, dl))
+	{
+		// TODO error stuff here
+	}
 	//wxEndBusyCursor();
 
+	/*
 	NetworkCallResult netStatus = m_parentFrame->CheckNetworkStatus();
 	if(netStatus == NETCALL_REDO)
 	{
@@ -423,6 +428,7 @@ bool RemoteFileDialog::ShowDirectory(wxString dirname, bool refresh, bool showHi
 	{
 		return false;
 	}
+	*/
 
 	m_currentDirListing = dl;
 

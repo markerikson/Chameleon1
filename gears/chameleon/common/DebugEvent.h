@@ -16,7 +16,6 @@ class wxDebugEvent : public wxEvent
 		virtual wxEvent *Clone() const { return new wxDebugEvent(*this); }
 
 		void SetLineNumber(int line);
-		void SetStatus(int status);
 		void SetVariableNames(wxArrayString names);
 		void SetVariableValues(wxArrayString values);
 		void SetVariableTypes(wxArrayString types);
@@ -30,7 +29,6 @@ class wxDebugEvent : public wxEvent
 		void SetProject(ProjectInfo* project);
 
 		int GetLineNumber() { return m_lineNumber;}
-		int GetStatus() { return m_status;}
 		wxArrayString GetVariableNames() { return m_variableNames; }
 		wxArrayString GetVariableValues() { return m_variableValues; }
 		wxArrayString GetVariableTypes() { return m_variableTypes; }
@@ -45,7 +43,6 @@ class wxDebugEvent : public wxEvent
 
 public:
 		int m_lineNumber;
-		int m_status;
 		wxArrayString m_variableNames;
 		wxArrayString m_variableValues;
 		wxArrayString m_variableTypes;

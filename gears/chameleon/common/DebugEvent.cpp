@@ -29,11 +29,6 @@ void wxDebugEvent::SetLineNumber(int line)
 	m_lineNumber = line;
 }
 
-void wxDebugEvent::SetStatus(int status)
-{
-	m_status = status;
-}
-
 void wxDebugEvent::SetVariableNames(wxArrayString names)
 {
 	m_variableNames = names;

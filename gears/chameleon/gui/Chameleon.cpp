@@ -484,7 +484,7 @@ void ChameleonWindow::OnMenuEvent(wxCommandEvent &event)
 			}
 			else 
 			{
-				wxLogDebug("Tried to start Terminal without Networking == good");
+				wxLogDebug("Tried to start Terminal with invalid networking status: %d", isok);
 			}
 			break;
 		}
@@ -964,9 +964,18 @@ wxArrayString ChameleonWindow::OpenFile(FileFilterType filterType)
 
 			wxString remoteFileName = m_remoteFileDialog->GetRemoteFileNameAndPath();
 
-			wxString userHome = m_network->GetHomeDirPath();
-			remoteFileName.Replace("~", userHome);
-			fnames.Add(remoteFileName);
+			wxString userHome;
+			if(!m_network->GetHomeDirPath(userHome))
+			{
+				// TODO error stuff here
+				CheckNetworkStatus();
+			}
+			else
+			{
+				remoteFileName.Replace("~", userHome);
+				fnames.Add(remoteFileName);
+			}
+			
 		}
 		else
 		{
@@ -1098,9 +1107,15 @@ bool ChameleonWindow::GetFileContents(wxString fileToLoad, wxString &fileContent
 		wxString remoteFile = fn.GetFullName();
 
 		wxBeginBusyCursor();
-		fileContents = m_network->GetFileContents(remoteFile, remotePath);
+		//fileContents = m_network->GetFileContents(remoteFile, remotePath);
+		if(!m_network->GetFileContents(fn, fileContents))
+		{
+			// TODO error stuff here
+			CheckNetworkStatus();
+		}
 		wxEndBusyCursor();
 		
+		/*
 		NetworkCallResult netStatus = CheckNetworkStatus();
 		if(netStatus == NETCALL_REDO)
 		{
@@ -1112,6 +1127,7 @@ bool ChameleonWindow::GetFileContents(wxString fileToLoad, wxString &fileContent
 		{
 			return false;
 		}
+		*/
 	}
 	else
 	{
@@ -1233,77 +1249,9 @@ void ChameleonWindow::OnDebugCommand(wxCommandEvent &event)
 // my "I need to try something out, I'll stick it in here" function
 void ChameleonWindow::Test(wxCommandEvent& WXUNUSED(event))
 {
-	
-	wxString case1a = "Breakpoint 1, main () at my program.cpp:65\n65              foo[2] = 'd';";
-	wxString case1b = "AnObject::setData(int) (this=, what=33) at stupid.cpp:13\n13              theData[point] = what;";
-	wxString case2 = "66              foo[3] = 'b'\n%";
-	wxString case3 = "Program received signal SIGFPE, Arithmetic exception.\nmain () at my program.cpp:71\n71              amount = foo[1] / 0;";
-	
-	wxRegEx reCase1 = "at (([[:alnum:]]|[[:blank:]]|\\.)+):([[:digit:]]+)";
-	wxRegEx reCase2 = "([[:digit:]]+)[[:blank:]]+";
+	wxRegEx reCase2 = "(\\n|^)([[:digit:]]+)[[:blank:]]+";
 
-	if(reCase1.Matches(case1a))
-	{
-		wxLogDebug("Case 1a: match 1 = \"%s\", match 2 = \"%s\"", reCase1.GetMatch(case1a, 1), reCase1.GetMatch(case1a, 3));
-	}
-	else
-	{
-		wxLogDebug("No match for case 1");
-	}
-
-	if(reCase1.Matches(case1b))
-	{
-		wxLogDebug("Case 1b: match 1 = \"%s\", match 2 = \"%s\"", reCase1.GetMatch(case1b, 1), reCase1.GetMatch(case1b, 3));
-	}
-	else
-	{
-		wxLogDebug("No match for case 1");
-	}
-
-	if(reCase2.Matches(case2))
-	{
-		wxLogDebug("match 1: \"%s\"", reCase2.GetMatch(case2, 1));
-	}
-	else
-	{
-		wxLogDebug("No match for case 1");
-	}
-
-	wxString case3tmp = case3;
-	if(case3tmp.Left(8) == "Program ")
-	{
-		case3tmp.Remove(0, 8);
-
-		if(case3tmp.Left(8) == "received")
-		{
-			int newlineIndex = case3tmp.find_first_of("\n");
-			case3tmp.Remove(0, newlineIndex);
-
-			if(reCase1.Matches(case3tmp))
-			{
-				wxLogDebug("Match for \"Program recieved\".  match 1 = %s, match 2 = %s", 
-							reCase1.GetMatch(case3tmp, 1), reCase1.GetMatch(case3tmp, 3));
-			}
-			else
-			{
-				wxLogDebug("Found \"Program received\", but regex failed.");
-			}
-		}
-	}
-
-	
-	wxArrayInt lines = m_currentEd->GetBreakpoints();
-
-	wxString msg;
-	
-
-	for(int i = 0; i < (int)lines.GetCount(); i++)
-	{
-		msg << lines[i] << " ";
-	}
-
-	wxLogDebug("Breakpoints: %s", msg);
-
+	wxString text = "step\n58	    str.resize(20, 'Q');\n%";
 
 	//TextManager tm = m_terminal->GetTM();
 	//tm.PrintToBitmap();
@@ -1580,6 +1528,17 @@ bool ChameleonWindow::SaveFile(bool saveas, bool askLocalRemote, FileFilterType 
 
 				remotePath = m_remoteFileDialog->GetRemotePath();
 				remoteFile = m_remoteFileDialog->GetRemoteFileName();
+
+				wxString userHome;
+				if(!m_network->GetHomeDirPath(userHome))
+				{
+					// TODO error stuff here
+					CheckNetworkStatus();
+				}
+				else
+				{
+					remotePath.Replace("~", userHome);
+				}
 			}
 			else
 			{
@@ -1592,10 +1551,16 @@ bool ChameleonWindow::SaveFile(bool saveas, bool askLocalRemote, FileFilterType 
 			remotePath = m_currentEd->GetFilePath();
 		}
 
+		wxFileName remoteFN(remotePath, remoteFile);
 		wxBeginBusyCursor();
-		m_network->SendFileContents(fileContents, remoteFile, remotePath);
+		if(!m_network->SendFileContents(fileContents, remoteFN))
+		{
+			// TODO error stuff here
+			CheckNetworkStatus();
+		}
 		wxEndBusyCursor();
 		
+		/*
 		NetworkCallResult netStatus = CheckNetworkStatus();
 		if(netStatus == NETCALL_REDO)
 		{
@@ -1607,6 +1572,7 @@ bool ChameleonWindow::SaveFile(bool saveas, bool askLocalRemote, FileFilterType 
 		{
 			return false;
 		}
+		*/
 
 		if(isSourceFile)
 		{
@@ -2069,6 +2035,7 @@ NetworkCallResult ChameleonWindow::CheckNetworkStatus()
 			return NETCALL_REDO;
 			break;
 		}
+		/*
 		case NET_READ_ERROR:
 		{
 			wxString message = "The remote file could not be read properly.  The error was: ";
@@ -2085,6 +2052,7 @@ NetworkCallResult ChameleonWindow::CheckNetworkStatus()
 			return NETCALL_FAILED;
 			break;
 		}
+		*/
 		case NET_ERROR_MESSAGE:
 		{		
 			wxString message = "An unknown network error has occurred.";
@@ -2484,7 +2452,8 @@ void ChameleonWindow::CloseProjectFile()
 	wxString projName = m_projMultiFiles->GetProjectName();
 	if(m_projMultiFiles->IsRemote())
 	{
-		m_network->SendFileContents(resultContents, projName, projBasePath);
+		wxFileName fn(projBasePath, projName);
+		m_network->SendFileContents(resultContents, fn);
 	}
 	else
 	{
@@ -2606,7 +2575,7 @@ void ChameleonWindow::Compile()
 				//editorFile.SetFullName(m_options->GetRemoteCompileOut());
 				editorFile.SetExt("out");
 				wxString fullpath = editorFile.GetFullPath(m_remoteMode ? wxPATH_UNIX : wxPATH_DOS);
-				fullpath.Replace("~", m_network->GetHomeDirPath());
+				//fullpath.Replace("~", m_network->GetHomeDirPath());
 				m_currentEd->SetExecutableFilename(fullpath);
 			}
 
@@ -2751,7 +2720,7 @@ void ChameleonWindow::UpdateTerminalNotebook()
 
 void ChameleonWindow::OnDebugEvent(wxDebugEvent &event)
 {
-	int eventID = event.GetStatus();
+	int eventID = event.GetId();
 
 	wxLogDebug("Debug event: %d", eventID);
 
@@ -2806,7 +2775,7 @@ void ChameleonWindow::OnDebugEvent(wxDebugEvent &event)
 				//wxArrayString sources = event.GetSourceFilenames();
 				wxString filename = event.GetSourceFilename();//sources[0];
 
-				filename.Replace("~", m_network->GetHomeDirPath());
+				//filename.Replace("~", m_network->GetHomeDirPath());
 
 				//sources.Clear();
 				//sources.Add(filename);

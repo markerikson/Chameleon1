@@ -14,6 +14,7 @@
 #include "../common/datastructures.h"
 #include "../common/debug.h"
 class wxProcess;
+class wxProcessEvent;
 class PlinkConnect;
 class Options;
 class wxTextOutputStream;

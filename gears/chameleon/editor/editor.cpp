@@ -623,7 +623,7 @@ void ChameleonEditor::CreateBreakpointEvent(int linenumber, bool addBreakpoint)
 	dbg.SetLineNumber(linenumber + 1);
 	int type = addBreakpoint ? ID_DEBUG_ADD_BREAKPOINT : ID_DEBUG_REMOVE_BREAKPOINT;
 	dbg.SetId(type);
-	dbg.SetStatus(type);
+	dbg.SetId(type);
 	dbg.SetProject(m_project);
 	m_mainFrame->AddPendingEvent(dbg);
 }

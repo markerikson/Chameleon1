@@ -218,7 +218,6 @@ void VariableWatchPanel::AddWatch()
 		wxDebugEvent dbg;
 
 		dbg.SetId(ID_DEBUG_ADD_WATCH);
-		dbg.SetStatus(ID_DEBUG_ADD_WATCH);
 
 		wxString varName = avwd.GetVariableName();
 		wxString funcName = avwd.GetFunctionName();
@@ -312,26 +311,17 @@ void VariableWatchPanel::UpdateVariableInfo(wxDebugEvent event)
 			m_list->GetItem(retrievalItem);
 			wxString listedType = retrievalItem.m_text;
 
-			// no type listed, or it matches - assume right value
-			if( (listedType == wxEmptyString) ||
-				(listedType == type) )
+			m_list->SetItem(nameLineNum, 1, type);
+			retrievalItem.m_col = 2;
+			m_list->GetItem(retrievalItem);
+
+			wxString listedValue = retrievalItem.m_text;
+
+			if(listedValue != value)
 			{
-				if(listedType == wxEmptyString)
-				{
-					m_list->SetItem(nameLineNum, 1, type);
-				}				
-
-				retrievalItem.m_col = 2;
-				m_list->GetItem(retrievalItem);
-
-				wxString listedValue = retrievalItem.m_text;
-
-				if(listedValue != value)
-				{
-					m_list->SetItem(nameLineNum, 2, value);
-					m_list->SetItem(textColorItem);
-				}				
-			}			
+				m_list->SetItem(nameLineNum, 2, value);
+				m_list->SetItem(textColorItem);
+			}				
 		}
 	}
 }
