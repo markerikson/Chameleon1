@@ -77,24 +77,9 @@ ChameleonEditor::ChameleonEditor( ChameleonWindow *mframe,
 
     this->EmptyUndoBuffer();
 
-    if( m_mainFrame->IsEnabled(PERM_SYNTAXHIGHLIGHT) )
-    {
-        this->SetLexer(wxSTC_LEX_CPP);
+	UpdateSyntaxHighlighting();
 
-        this->SetKeyWords(0, "asm auto bool break case catch char class const "
-            "const_cast continue default delete do double "
-            "dynamic_cast else enum explicit export extern "
-            "false float for friend goto if inline int long "
-            "mutable namespace new operator private protected "
-            "public register reinterpret_cast return short signed "
-            "sizeof static static_cast struct switch template this "
-            "throw true try typedef typeid typename union unsigned "
-            "using virtual void volatile wchar_t while");
-    }
-	else
-	{
-		this->SetLexer(wxSTC_LEX_CONTAINER);
-	}
+    
 }
 
 ChameleonEditor::~ChameleonEditor() {
@@ -449,4 +434,26 @@ bool ChameleonEditor::HasBeenSaved()
 void ChameleonEditor::SetRemoteFileNameAndPath(wxString path, wxString name)
 {
 	m_remoteFileName.Assign(path, name, wxPATH_UNIX);
+}
+
+void ChameleonEditor::UpdateSyntaxHighlighting()
+{
+	if( m_mainFrame->IsEnabled(PERM_SYNTAXHIGHLIGHT) )
+	{
+		this->SetLexer(wxSTC_LEX_CPP);
+
+		this->SetKeyWords(0, "asm auto bool break case catch char class const "
+			"const_cast continue default delete do double "
+			"dynamic_cast else enum explicit export extern "
+			"false float for friend goto if inline int long "
+			"mutable namespace new operator private protected "
+			"public register reinterpret_cast return short signed "
+			"sizeof static static_cast struct switch template this "
+			"throw true try typedef typeid typename union unsigned "
+			"using virtual void volatile wchar_t while");
+	}
+	else
+	{
+		this->SetLexer(wxSTC_LEX_CONTAINER);
+	}
 }

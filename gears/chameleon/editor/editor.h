@@ -36,6 +36,8 @@ public:
 
 	void OnChar(wxStyledTextEvent &event);
 
+	void UpdateSyntaxHighlighting();
+
 	wxString GetRemoteFileName() { return m_remoteFileName.GetFullName();}
 	wxString GetRemotePath() { return m_remoteFileName.GetPath(wxPATH_UNIX);}
 	wxString GetRemoteFileNameAndPath() { return m_remoteFileName.GetFullPath(wxPATH_UNIX);}
