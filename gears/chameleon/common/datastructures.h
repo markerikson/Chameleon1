@@ -90,6 +90,14 @@ enum modules
 	PERM_LAST
 };
 
+
+struct DirListing
+{
+    wxArrayString dirNames;
+    wxArrayString fileNames;
+};
+
+
 #ifdef PERM___H
 wxString GlobalPermStrings[] = {"Syntax Highlighting", 
 								"Name completion",
