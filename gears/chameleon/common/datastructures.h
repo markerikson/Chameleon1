@@ -102,6 +102,8 @@ enum WindowID
 	ID_DEBUG_ADD_BREAKPOINT,
 	ID_DEBUG_REMOVE_BREAKPOINT,
 	ID_DEBUG_RUNTOCURSOR,
+	ID_DEBUG_EXIT_NORMAL,
+	ID_DEBUG_EXIT_ERROR,
 };
 
 // IMPORTANT!!!  Any changes to this enum need to be reflected in the 
@@ -158,6 +160,8 @@ WX_DECLARE_HASH_MAP(wxString,
 
 
 WX_DEFINE_ARRAY(wxWindow*, WindowPointerArray);
+
+
 
 
 
