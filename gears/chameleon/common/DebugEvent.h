@@ -3,6 +3,7 @@
 
 #include <wx/event.h>
 #include <wx/dynarray.h>
+#include "datastructures.h"
 
 
 DECLARE_EVENT_TYPE(wxEVT_DEBUG, wxID_ANY)
@@ -22,6 +23,7 @@ class wxDebugEvent : public wxEvent
 		void SetErrorMessage(wxString message);
 		void SetExecutableFilename(wxString filename);
 		void SetRemoteMode(bool remote);
+		void SetFileBreakpoints(FileBreakpointHash filebreakpoints);
 
 		int GetLineNumber() { return m_lineNumber;}
 		int GetStatus() { return m_status;}
@@ -31,6 +33,7 @@ class wxDebugEvent : public wxEvent
 		wxString GetErrorMessage() {return m_errorMessage; }
 		wxString GetExecutableFilename() { return m_executableFilename;}
 		bool IsRemote() { return m_remoteMode; }
+		FileBreakpointHash GetFileBreakpoints() { return m_filebreakpoints; }
 
 public:
 		int m_lineNumber;
@@ -41,6 +44,7 @@ public:
 		wxString m_errorMessage;
 		wxString m_executableFilename;
 		bool m_remoteMode;
+		FileBreakpointHash m_filebreakpoints;
 
 
 };

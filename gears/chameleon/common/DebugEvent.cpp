@@ -63,3 +63,8 @@ void wxDebugEvent::SetSourceFilenames(wxArrayString filenames)
 {
 	m_sourceFilenames = filenames;
 }
+
+void wxDebugEvent::SetFileBreakpoints(FileBreakpointHash filebreakpoints)
+{
+	m_filebreakpoints = filebreakpoints;
+}
