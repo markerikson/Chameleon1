@@ -21,6 +21,8 @@
  */
 
 ////@begin includes
+#include "wx/wx.h"
+#include "wx/notebook.h"
 ////@end includes
 
 
@@ -40,6 +42,11 @@ class ChameleonWindow;
 
 ////@begin control identifiers
 #define ID_DIALOG 10000
+#define SYMBOL_OPTIONSDIALOG_STYLE wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX
+#define SYMBOL_OPTIONSDIALOG_TITLE _("Options")
+#define SYMBOL_OPTIONSDIALOG_IDNAME ID_DIALOG
+#define SYMBOL_OPTIONSDIALOG_SIZE wxSize(420, 315)
+#define SYMBOL_OPTIONSDIALOG_POSITION wxPoint(0, 0)
 #define ID_NOTEBOOK 10001
 #define ID_PANEL1 10006
 #define ID_CHECKLISTBOX 10007
