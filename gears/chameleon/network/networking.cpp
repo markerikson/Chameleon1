@@ -100,6 +100,8 @@ void Networking::SetDetailsNoStatus(wxString hostname, wxString username, wxStri
 		ssh_plink->setPassphrase(passphrase);
 	}
 
+	userHomeDir = wxEmptyString;
+
 	//if(hostname != "" || username != "") {
 	//	//will need to empty directory cache
 	//}
@@ -122,6 +124,7 @@ void Networking::SetPlinkProg(wxString path_name)
 {
 	// bool wxFileExists(const wxString& filename)
 	plinkApp = path_name;
+	ssh_plink->setPlinkApp(plinkApp);
 }
 
 
@@ -134,11 +137,15 @@ void Networking::SetPscpProg(wxString path_name)
 
 wxString Networking::GetHomeDirPath()
 {
-	// Does not return a trailing /
-	wxString cmd = "cd ~ && pwd ";
-	wxString r = SSHSendCommand(cmd);
-	r.Remove(r.Length()-1,1); // remove the "\n"
-	return r;
+	if(userHomeDir == wxEmptyString)
+	{
+		// Does not return a trailing /
+		wxString cmd = "cd ~ && pwd ";
+		userHomeDir = SSHSendCommand(cmd);
+		userHomeDir.Remove(userHomeDir.Length()-1,1); // remove the "\n"
+	}
+	
+	return userHomeDir;
 }
 
 
@@ -332,8 +339,10 @@ void Networking::SSHCacheFingerprint()
 void Networking::SCPDoTransfer(wxString from_path_name, wxString to_path_name)
 {
 	// right now this only does local -> remote transfers
-	wxString cmd = pscpApp + " -l " + ssh_user + " -pw " + ssh_pass + " -batch "
-					+ from_path_name + " " + ssh_host + ":" + to_path_name;
+	wxString cmd = pscpApp // + " -l " + ssh_user 
+					+ " -pw " + ssh_pass + " -batch "
+					+ from_path_name + " " 
+					+ ssh_user + "@" + ssh_host + ":" + to_path_name;
 	wxProcess* proc = new wxProcess();
 	proc->Redirect();
 	int pid = wxExecute(cmd, wxEXEC_SYNC, proc);

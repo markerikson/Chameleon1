@@ -7,7 +7,6 @@
 
 #include "gterm.hpp"
 
-
 void GTerm::Update()
 {
 	update_changes();
@@ -97,8 +96,8 @@ GTerm::GTerm(int w, int h) : width(w), height(h)
 
 GTerm::~GTerm()
 {
-	delete text;
-	delete color;
+	delete[] text;
+	delete[] color;
 #ifdef GTERM_PC
         if(pc_machinename)
           delete pc_machinename;
@@ -130,10 +129,15 @@ GTerm::Select(int x, int y, int select)
 {
   if(color && x >= 0 && x < Width() && y >= 0 && y < Height())
   {
+	  int idx1 = linenumbers[y];
+	  int idx2 = idx1 * MAXWIDTH;
+	  int idx3 = idx2 + x;
     if(select)
-      color[(linenumbers[y] * MAXWIDTH) + x] |= SELECTED;
+      //color[(linenumbers[y] * MAXWIDTH) + x] |= SELECTED;
+	  color[idx3] |= SELECTED;
     else
-      color[(linenumbers[y] * MAXWIDTH) + x] &= ~SELECTED;
+     // color[(linenumbers[y] * MAXWIDTH) + x] &= ~SELECTED;
+	 color[idx3] &= ~SELECTED;
     changed_line(y, x, x);
 //    update_changes();
   }

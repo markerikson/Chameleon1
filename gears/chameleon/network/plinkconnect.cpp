@@ -103,9 +103,10 @@ void PlinkConnect::sendCommand(wxString command, bool isBatch) {
 	
 	wxString cmd = plinkApp
 		+ batch
-		+ " -pw " + pass
-		+ " -l " + user
-		+ " " + host + " "
+		+ " -pw " + pass + " "
+		//+ " -l " + user
+		//+ " " + host + " "
+		+ user + "@" + host
 		+ " \"echo cHaMeLeOnCoNnEcTeD ; " //wrapper
 		+ " " + command // <--- command
 		+ " ; echo cHaMeLeOnDoNe\""; // wrapper

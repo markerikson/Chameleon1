@@ -62,6 +62,7 @@ class Networking {
 		//wxString downloadDir;
 		NetworkStatus status;
 		wxString statusDetails;
+		wxString userHomeDir;
 };
 
 
