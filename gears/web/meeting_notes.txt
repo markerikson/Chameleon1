@@ -280,4 +280,66 @@ by: Ben
 	-keep 6.0 in
 >>for Sunday
 	-alternative meeting time?
-	
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Group Meeting 11/02/2003 11:33pm
+by: Ben
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+>>Entry:
+	-SDD 1.0 in.  2.0 due 13th Nov.
+>>Stuff we had to do this week
+	-Dave: exec thread -> problems with Cintella compiler, no success compiling.  Question from Ben about -g option in compilation for compiling.
+	-Mark: in terms of debugging, using wxWindows "logdebug" for watching errors.  Worked on GUI.  Added debug buttons (play, pause, step over, step into, step out).  Did some work on disabling the save button if no modifications.  Knows how to handle events.
+	-Ben: began permissions managing code.  Researched debugger.
+
+>>To do:
+	-Ben-->Bring book & get ready for Tuesday to discuss debugger.  Permissions
+	-Mark->putting logdebug into section 5.5 of SDD.  Work out debugging buttons in sub-window?
+	-Dave->same ole
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Group Meeting 11/06/2003 8:10pm
+by: Ben
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+>>Progress
+	*SDD updated!  W00T!  ;)
+	*Team meetings Tuesday
+		~"Virtual Prof" looks easy to integrate
+		~Animated Debugger?  Dave's skeptical. Low level integrate is plausible, but the high-level integration?  Not gonna happen.  Maybe middle of next semester things'll work out, but otherwise... no worries.
+
+	*The Debugger: as simple as Ben had hoped.  Runs in its own window, so it can be piped.  Mark sees similarities with the networking wrapper.
+
+	*Dave: Progress on the WXProcess.  Not integrated with Plink.
+
+>>File manipulation talk
+	*File open dialogue
+	*SCP Use?  No.  SFTP to list files & port into dialogue.
+	*Threading purposes?  Neccesity?
+	*Plink can list.  SCP for copy files.  Or maybe just SFTP.
+
+>>Questions
+	*Threading with the blocking?
+	*Is the terminal such a big deal?  Will it be hidden in most advanced form?
+	*Where do we need to stand at end of semester?
+		~some semblence of features together & working together.
+		~3 WEEKS... and something needs to be put together
+
+>>Stuff to do: (going to Project Manager)
+	*Mark: wants to Lookup "The linux Development Platform", start list of items to put together
+	*Ben: needs to start coding debugger
+	*Dave?  He knows.  :)
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Group Meeting 11/09/2003 11:26pm
+by: Ben
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+>>Progress?
+	*Mark- found a telnet programmy thingie.  Some problems, e-mailed guy for fixes.
+	*Dave- tried to get the process class going.  Got distracted.
+	*Ben- apparently got the wrong stuff.  Looking for minGW
+
+>>Notes
+	*Talk with Jake: doing same thing we're doing?
+	*Confusion over Jake's group using the Linux box's GDB & not grabbing minGW.
+	*List of specifics working by 20th?
+
+>>To do
+	*List of items working by 20th
+	*Mark: specifics on open-dialogue
