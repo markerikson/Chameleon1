@@ -1321,9 +1321,20 @@ void wxTerm::UpdateSize(wxSizeEvent &event)
 		message.Printf("numCharsInLine: %d, numLinesShown: %d", numCharsInLine, numLinesShown);
 		wxLogDebug(message);
 
-		m_charsInLine = numCharsInLine;
-		m_linesDisplayed = numLinesShown;
-		ResizeTerminal(numCharsInLine, numLinesShown);		
+
+		// FINALLY!  Finally killed the memory leak!  The problem is that somehow a size event
+		// was generating negative numbers for these values, which led to weird things happening.
+		if( (numCharsInLine > 0) && (numLinesShown > 0))
+		{
+			m_charsInLine = numCharsInLine;
+			m_linesDisplayed = numLinesShown;
+			ResizeTerminal(numCharsInLine, numLinesShown);	
+		}
+
+		// TODO Obviously this isn't working right.  I'll come back to it when I tackle
+		//		the line history issue
+		//GTerm::ExposeArea(0, 0, GTerm::Width(), GTerm::Height());
+			
 	}
 
 	m_inUpdateSize = false;
