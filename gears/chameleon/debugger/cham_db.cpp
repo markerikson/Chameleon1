@@ -127,7 +127,7 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 	}
 
 	//loop vars
-	int i = 0, j; = 0
+	int i = 0, j = 0;
 
 	switch(eventCommand)
 	{
