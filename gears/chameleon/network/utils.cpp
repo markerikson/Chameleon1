@@ -1,4 +1,5 @@
 // Copyright Timothy Miller, 1999
+
 #include "gterm.hpp"
 /*
 #ifdef _DEBUG
@@ -137,14 +138,17 @@ void GTerm::scroll_region( int start_y, int end_y, int num )
     if( !num )
         return;
 
+	// number of lines to scroll?
     mx = end_y - start_y + 1;
 
+	// some sort of limiting factor, I think
     if( num > mx )
         num = mx;
 
     if( -num > mx )
         num = -mx;
 
+	// all lines need to be scrolled, so zap it all?
     fast_scroll = (start_y
         == scroll_top && end_y == scroll_bot && !(mode_flags & TEXTONLY));
 
