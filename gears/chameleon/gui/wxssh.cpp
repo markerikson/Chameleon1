@@ -122,6 +122,9 @@ void wxSSH::Disconnect(bool clearDisplay)
 			GTerm::Update();
 			Refresh();
 		}
+		else {
+			set_mode_flag(CURSORINVISIBLE);
+		}
 	}
 }
 
@@ -150,14 +153,11 @@ void wxSSH::OnPlinkOut(ChameleonProcessEvent &e)
 	if(!m_isInESCsequence && !m_startingDebugConnection && !s.Contains((char)27)) {
 		// This test is provided to 'short-circuit' the logic below
 		ProcessInput(len, (unsigned char*)s.c_str());
-		return; // multiple return statements are confusing (sorry)
 	}
 	else {
 		m_inputBuffer += s;
 	}
 
-
-	ProcessInput(len, (unsigned char*)s.c_str());
 	return;
 }
 
