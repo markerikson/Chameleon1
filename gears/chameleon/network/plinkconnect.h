@@ -15,33 +15,9 @@
 #endif
 
 #include <wx/wx.h>
+#include "../common/datastructures.h"
 class wxProcessEvent;
 class wxTextOutputStream;
-
-
-enum PCConnState { // this is used exclusively inside PlinkConnect
-	PC_STARTING,	// Waiting for Login confirmation
-	PC_READY,		// Connection has been established. Nothing going
-					//   on.  Just waiting to be used.
-	PC_EXECUTING,	// Very short phase between sending the command
-					//   and getting the starttoken
-	PC_BUSY,		// Have received the starttoken, so all output is
-					//   sent to the "owner"
-	PC_ENDING		// Have received the endtoken.  Now in doing term
-					//   sequence
-};
-
-typedef struct
-{
-	long pid;
-	wxProcess* proc;
-	PCConnState state;
-	wxTextOutputStream* stdinStream;
-	wxString outputBuf;
-	wxEvtHandler* owner;
-} ProcessInfo;
-
-WX_DECLARE_LIST(ProcessInfo, ProcessInfoList);
 
 
 class PlinkConnect : public wxEvtHandler {
@@ -54,6 +30,7 @@ class PlinkConnect : public wxEvtHandler {
 		// Methods:
 		wxTextOutputStream* executeCommand(wxString command, wxEvtHandler* listener);
 		wxString executeSyncCommand(wxString command);
+		void ForceKillProcess(wxTextOutputStream* w); // <-- ICKY ICKY ICKY
 
 		// Polling:
 		void PollTick();

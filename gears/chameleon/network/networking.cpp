@@ -413,10 +413,6 @@ NetworkStatus Networking::GetStatus()
 		}
 	}
 
-	//while(m_status = NET_STARTING) {
-	//	wxSafeYield();
-	//}
-
 	return m_status;
 }
 
@@ -467,10 +463,10 @@ void Networking::onTimerTick(wxTimerEvent &e) {
 
 
 void Networking::PingOptions() {
-	if(MaintainSettings()) {
-		//GetStatus(); <-- best not to be pre-emptive
-	}
-	//else nothing to update
+	MaintainSettings();
+	// If nothing has changed, nothing will happen.
+	// If settings have changed, the changes will be propagated to PlinkConnect, then
+	//     (asynchronously) PlinkConnect will spawn a connection (if possible)
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -529,7 +525,22 @@ wxString Networking::ExecuteLocalCommand(wxString cmd)
 //    a process
 void Networking::ForceKillProcess(wxTextOutputStream* w)
 {
-	wxLogDebug("David is a dingbat, and NEEDS to implement this!");
+	//Walk m_lprocesses:
+	bool isLocal = false;
+	//for(ProcessInfoList::Node* node = m_processes.GetFirst(); node; node = node->GetNext() ) {
+	//	p = node->GetData();
+	//	if(p->pid == pid) {
+	//		isLocal = true;
+	//		break;
+	//	}
+	//}
+
+	if(isLocal) {
+		//
+	}
+	else {
+		m_plinks->ForceKillProcess(w);
+	}
 }
 
 

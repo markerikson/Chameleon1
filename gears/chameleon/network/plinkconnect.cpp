@@ -242,6 +242,7 @@ void PlinkConnect::parseOutput(ProcessInfo* p, wxString output, wxString errLog)
 			// "FATAL ERROR: Unable to authenticate"
 			m_message += errLog;
 			// this state transition should occur when the process terminates
+//*(p->stdinStream) << "echo \"Last Login:\"" << endl;
 		}
 		
 	}
@@ -316,7 +317,7 @@ void PlinkConnect::terminateConnection(ProcessInfo* p)
 		//   the processes can trap the signals and do as they please
 		// Therefore: (gently) Kill the plink process
 		p->state = PC_ENDING;
-		wxKill(p->pid, wxSIGTERM);
+		wxKill(p->pid, wxSIGKILL); //SIGTERM
 	}
 	else {
 		//send exit:
@@ -399,6 +400,24 @@ void PlinkConnect::onTerminate(wxProcessEvent& event) {
 	}
 
 }
+
+void PlinkConnect::ForceKillProcess(wxTextOutputStream* w)
+{
+	// Determine which process:
+	ProcessInfo* p;
+	for(ProcessInfoList::Node* node = m_processes.GetFirst(); node; node = node->GetNext() ) {
+		p = node->GetData();
+		if( (int)&(*(p->stdinStream)) == (int)(&(*w)) ) { // yeah, this is a hack :(
+			break;
+		}
+	}
+
+	// "terminateConnection(p); will check for any new output before actually killing the proc
+	//    and will cause the event.  Setting NULL will prevent this.
+	p->owner = NULL;
+	terminateConnection(p);
+}
+
 
 
 #ifdef _PC_INTERNAL_TIMER_

@@ -11,6 +11,7 @@
 
 class wxWindow;
 class ChameleonEditor;
+class wxTextOutputStream;
 
 enum VariableNames
 {
@@ -253,6 +254,30 @@ WX_DECLARE_STRING_HASH_MAP(wxString,
 
 WX_DECLARE_OBJARRAY(VariableInfo, VariableInfoArray);
 
+enum PCConnState { // this is used exclusively inside ProcessInfo
+
+	PC_STARTING,	// Waiting for Login confirmation
+	PC_READY,		// Connection has been established. Nothing going
+					//   on.  Just waiting to be used.
+	PC_EXECUTING,	// Very short phase between sending the command
+					//   and getting the starttoken
+	PC_BUSY,		// Have received the starttoken, so all output is
+					//   sent to the "owner"
+	PC_ENDING		// Have received the endtoken.  Now in doing term
+					//   sequence
+};
+
+typedef struct
+{
+	long pid;
+	wxProcess* proc;
+	PCConnState state;
+	wxTextOutputStream* stdinStream;
+	wxString outputBuf;
+	wxEvtHandler* owner;
+} ProcessInfo;
+
+WX_DECLARE_LIST(ProcessInfo, ProcessInfoList);
 
 enum NetworkStatus
 {
@@ -261,10 +286,6 @@ enum NetworkStatus
 	NET_UNKNOWN_HOST,  // host finger print not in cache
 	NET_CONN_REFUSED,  // host wouldn't allow a connection
 	NET_AUTH_FAILED,   // user+pass did not work on host
-//	NET_READ_ERROR,
-//	NET_WRITE_ERROR,
-//	NET_BAD_PLINK_PROG,
-//	NET_BAD_PSCP_PROG,
 	NET_ERROR_MESSAGE, // default/catch-all
 };
 

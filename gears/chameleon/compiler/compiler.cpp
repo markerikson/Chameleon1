@@ -123,6 +123,7 @@ void Compiler::OnProcessTerm(ChameleonProcessEvent& e)
 {
 	m_out = NULL;
 	m_isCompiling = false;
+	m_compilerStdIn = NULL;
 }
 
 
