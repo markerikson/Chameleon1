@@ -1817,7 +1817,7 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 				sendPrint("");
 			}
 			break;
-
+		}
 		case WAITING:		//i'm waiting...
 			classStatus = classStatusBackup;
 			break;
