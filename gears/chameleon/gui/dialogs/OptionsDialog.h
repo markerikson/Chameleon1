@@ -31,6 +31,8 @@
 ////@begin forward declarations
 ////@end forward declarations
 
+class ChameleonWindow;
+
 /*!
  * Control identifiers
  */
@@ -41,6 +43,7 @@
 #define ID_PANEL1 10006
 #define ID_CHECKLISTBOX 10007
 #define ID_PROFCODE 10004
+#define ID_BUTTON 10012
 #define ID_PANEL 10005
 #define ID_TEXTCTRL1 10008
 #define ID_TEXTCTRL2 10009
@@ -71,6 +74,9 @@ public:
     void CreateControls();
 
 ////@begin OptionsDialog event handler declarations
+
+    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON
+    void OnUpdateAuthCode( wxCommandEvent& event );
 
     /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_OK
     void OnButtonOkClick( wxCommandEvent& event );
@@ -111,11 +117,14 @@ public:
 ////@begin OptionsDialog member variables
     wxCheckListBox* m_checkList;
     wxTextCtrl* m_txtProfCode;
+    wxButton* m_butSetAuthCode;
     wxTextCtrl* m_serverAddress;
     wxTextCtrl* m_username;
     wxTextCtrl* m_password1;
     wxTextCtrl* m_password2;
 ////@end OptionsDialog member variables
+
+	ChameleonWindow* m_parentFrame;
 };
 
 #endif

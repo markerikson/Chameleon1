@@ -12,7 +12,7 @@
 	<value name="title" type="string"></value>
 	<value name="author" type="string"></value>
 	<value name="description" type="string"></value>
-	<value name="doc_count" type="Integer">30</value>
+	<value name="doc_count" type="Integer">31</value>
 	<value name="xrc_filename" type="string"></value>
 	<value name="convert_images_to_xpm" type="bool">FALSE</value>
 	<value name="inline_images" type="bool">FALSE</value>
@@ -524,6 +524,50 @@ Here you can see what features are enabled, as well as enter an activation code.
 											<value name="proxy-wxLEFT" type="bool">TRUE</value>
 											<value name="proxy-wxRIGHT" type="bool">TRUE</value>
 											<value name="proxy-wxTOP" type="bool">FALSE</value>
+											<value name="proxy-wxBOTTOM" type="bool">TRUE</value>
+											<value name="proxy-wxSHAPED" type="bool">FALSE</value>
+											<value name="proxy-wxADJUST_MINSIZE" type="bool">FALSE</value>
+										</path>
+										<path name="IDc4f400">
+											<value name="title" type="string">wxButton</value>
+											<value name="id" type="Integer">12907520</value>
+											<value name="type" type="string">dialog-control-document</value>
+											<value name="filename" type="string"></value>
+											<value name="icon-name" type="string">dialogcontrol</value>
+											<value name="is-transient" type="Integer">0</value>
+											<value name="parent" type="Integer">22612840</value>
+											<value name="locked" type="Integer">0</value>
+											<value name="proxy-type" type="string">wbButtonProxy</value>
+											<value name="event-handler-0" type="string">wxEVT_COMMAND_BUTTON_CLICKED|OnUpdateAuthCode</value>
+											<value name="proxy-Id name" type="string">ID_BUTTON</value>
+											<value name="proxy-Id value" type="Integer">10012</value>
+											<value name="proxy-Class" type="string">wxButton</value>
+											<value name="proxy-Member variable name" type="string">m_butSetAuthCode</value>
+											<value name="proxy-Label" type="string">Set authorization code</value>
+											<value name="proxy-Default" type="bool">FALSE</value>
+											<value name="proxy-Help text" type="string"></value>
+											<value name="proxy-Tooltip text" type="string"></value>
+											<value name="proxy-Background colour" type="string"></value>
+											<value name="proxy-Foreground colour" type="string"></value>
+											<value name="proxy-Hidden" type="bool">FALSE</value>
+											<value name="proxy-wxBU_LEFT" type="bool">FALSE</value>
+											<value name="proxy-wxBU_RIGHT" type="bool">FALSE</value>
+											<value name="proxy-wxBU_TOP" type="bool">FALSE</value>
+											<value name="proxy-wxBU_BOTTOM" type="bool">FALSE</value>
+											<value name="proxy-wxBU_EXACTFIT" type="bool">FALSE</value>
+											<value name="proxy-wxWANTS_CHARS" type="bool">FALSE</value>
+											<value name="proxy-wxNO_FULL_REPAINT_ON_RESIZE" type="bool">FALSE</value>
+											<value name="proxy-X" type="Integer">-1</value>
+											<value name="proxy-Y" type="Integer">-1</value>
+											<value name="proxy-Width" type="Integer">120</value>
+											<value name="proxy-Height" type="Integer">-1</value>
+											<value name="proxy-AlignH" type="string">Left</value>
+											<value name="proxy-AlignV" type="string">Centre</value>
+											<value name="proxy-Stretch factor" type="Integer">0</value>
+											<value name="proxy-Border" type="Integer">5</value>
+											<value name="proxy-wxLEFT" type="bool">TRUE</value>
+											<value name="proxy-wxRIGHT" type="bool">TRUE</value>
+											<value name="proxy-wxTOP" type="bool">TRUE</value>
 											<value name="proxy-wxBOTTOM" type="bool">TRUE</value>
 											<value name="proxy-wxSHAPED" type="bool">FALSE</value>
 											<value name="proxy-wxADJUST_MINSIZE" type="bool">FALSE</value>

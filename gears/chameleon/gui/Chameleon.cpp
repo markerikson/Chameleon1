@@ -124,14 +124,16 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	long authorizedCode;
 	long enabledCode;
 
-	// by default, enable pretty much everything
-	long defaultEnableCode = 0xff;
-	long defaultAuthorizedCode = 0xff;
+	// by default, enable nothing
+	long defaultEnableCode = 0x0;
+	long defaultAuthorizedCode = 0x0;
 
 	wxFileName configName(wxGetHomeDir(), "chameleon.ini");
+
+	m_config = new wxIniConfig("Chameleon", wxEmptyString, configName.GetFullPath());
+
 	if(configName.FileExists())
 	{
-		m_config = new wxIniConfig("Chameleon", wxEmptyString, configName.GetFullPath());
 
 		hostname = m_config->Read("Network/hostname");
 		username = m_config->Read("Network/username");
@@ -146,6 +148,12 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 		wxLogDebug("Failed to locate config file, loading default permissions");
 		authorizedCode = defaultAuthorizedCode;
 		enabledCode = defaultEnableCode;
+
+		m_config->Write("Network/hostname", wxEmptyString);
+		m_config->Write("Network/username", wxEmptyString);
+		m_config->Write("Permissions/authorized", defaultAuthorizedCode);
+		m_config->Write("Permissions/enabled", defaultEnableCode);
+
 	}
 
 	m_perms = new Permission(authorizedCode, enabledCode);
@@ -166,7 +174,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	stopwatch.Start();
 	
 	m_optionsDialog = new OptionsDialog(this, ID_OPTIONSDIALOG, "Options");
-	InitializeOptionsDialog();
+	UpdatePermsList();
 
 	m_optionsDialog->SetServerAddress(hostname);
 	m_optionsDialog->SetUsername(username);
@@ -1097,7 +1105,7 @@ void ChameleonWindow::ResizeSplitter()
 
 void ChameleonWindow::OnToolsOptions(wxCommandEvent &event)
 {		
-	InitializeOptionsDialog();
+	//UpdatePermsList();
 	int result = m_optionsDialog->ShowModal();
 	m_currentEd->SetFocus();
 
@@ -1242,7 +1250,7 @@ void ChameleonWindow::AddDebugButtons()
 
 }
 
-void ChameleonWindow::InitializeOptionsDialog()
+void ChameleonWindow::UpdateAuthCode()
 {
 	/*
 	m_optionsDialog->SetServerAddress("james.cedarville.edu");
@@ -1251,6 +1259,21 @@ void ChameleonWindow::InitializeOptionsDialog()
 	m_optionsDialog->SetPassword2("password");
 	*/
 
+	long newAuthCode = m_optionsDialog->GetAuthCode();
+
+	if(newAuthCode != -1)
+	{
+		m_perms->setGlobal(newAuthCode);
+
+		m_config->Write("Permissions/authorized", newAuthCode);
+	}
+
+	UpdatePermsList();
+	
+}
+
+void ChameleonWindow::UpdatePermsList()
+{
 	wxCheckListBox* checkList = m_optionsDialog->GetListBox();
 
 	checkList->Clear();
@@ -1284,9 +1307,7 @@ void ChameleonWindow::InitializeOptionsDialog()
 void ChameleonWindow::EvaluateOptions()
 {
 	// update permissions settings from the options dialog
-	long newAuthCode = m_optionsDialog->GetAuthCode();
-
-	m_perms->setGlobal(newAuthCode);
+	
 
 	wxCheckListBox* checkList = m_optionsDialog->GetListBox();
 
@@ -1309,6 +1330,8 @@ void ChameleonWindow::EvaluateOptions()
 			m_perms->disable(mappedPermNum);
 		}
 	}
+
+	m_config->Write("Permissions/enabled", m_perms->getGlobalEnabled());
 
 
 	// update the debug buttons
@@ -1347,6 +1370,7 @@ void ChameleonWindow::EvaluateOptions()
 
 	m_config->Write("Network/hostname", hostname);
 	m_config->Write("Network/username", username);
+
 }
 
 // called after every major network operation

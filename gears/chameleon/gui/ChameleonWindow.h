@@ -114,6 +114,7 @@ public:
 	bool InRemoteMode();
 
 	void EvaluateOptions();
+	void UpdateAuthCode();
 
 	NetworkCallResult CheckNetworkStatus();
 
@@ -178,7 +179,7 @@ private:
 	int GetPageNum(const wxString& fname);
 
 	void AddDebugButtons();
-	void InitializeOptionsDialog();
+	void UpdatePermsList();
 
 	int* TargetInt(int variableName);
 
