@@ -906,6 +906,11 @@ void ChameleonWindow::OnClose(wxCloseEvent &event)
 		CloseProjectFile();
 	}
 
+	if(m_terminal->IsConnected())
+	{
+		m_terminal->Disconnect();
+	}
+
 	Destroy();
 }
 
