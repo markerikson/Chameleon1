@@ -763,3 +763,16 @@ by: Ben
 	*Tues: Presentation
 	*ADV Compilation. (when local & project compilation are done, local dir. cache, then...)
 	*Mark: Printing?  Eh... we'll see...
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Group Meeting 3/28/2004 11:20pm
+by: Ben
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+>>Status:
+	*Mark: Save As... Remote should work now. / Added flush-config in options dialogue / GUI updated for Debugger!
+	*Dave: Network security... check with Dr. Shomper?  Plink connect -> re-working, progress, still a ways off. / Async progress? Eta- 1.5 hrs.  Adv. Compiling?  THURSDAY is set
+	*Ben: itching over the REST of my homework... and finances... and debugger finishing (APRIL?!).  What classes does he [Shomper] use??  Figure out what primitives he would like to see.  TODO: custom function, user input / output?
+
+>>TODO:
+	*Ben: fix breakpoints, watching variables, user input / output, perfect code, test code.
+	*Dave: Thursday, Adv compiling and async networking
+	*Mark: if he's bored... printing, then the other random functions (pulling out SSH)
