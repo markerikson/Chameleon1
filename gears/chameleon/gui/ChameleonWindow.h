@@ -52,6 +52,8 @@ class Options;
 class wxTermContainer;
 class Debugger;
 class VariableWatchPanel;
+class wxTimer;
+class wxListCtrl;
 
 
 //----------------------------------------------------------------------
@@ -107,10 +109,15 @@ private:
 	void OnUpdateDebugUI(wxUpdateUIEvent &event);
 	void OnUpdateConnectionUI(wxUpdateUIEvent &event);
 	void OnUpdateCompileUI(wxUpdateUIEvent &event);
-	void OnUpdatePrintPreviewUI(wxUpdateUIEvent &event);
+	void OnUpdatePrintPreviewUI(wxUpdateUIEvent &event);	
+	void OnIdle(wxIdleEvent &event);
+	void UpdateStatusBar();
 	
+	void OnStatusTimer(wxTimerEvent &event);
+
 	void OnSplitterDoubleClick(wxSplitterEvent &event);
-	void OnSize(wxSizeEvent &event);
+	void OnTermResize(wxSplitterEvent &event);
+	void OnSize(wxSizeEvent &event);	
 
 	void OnTreeItemRightClick(wxTreeEvent& event);
 	void OnTreeItemActivated(wxTreeEvent &event);
@@ -167,6 +174,7 @@ private:
 	wxSplitterWindow*  m_splitEditorOutput;
 	wxSplitterWindow* m_splitProjectEditor;
 	wxTextCtrl* m_compilerTextbox;
+	wxListCtrl* m_compilerList;
 	wxTermContainer* m_termContainer;
 	VariableWatchPanel* m_watchPanel;
 	wxSSH* m_terminal;
@@ -178,6 +186,7 @@ private:
 
 	wxFileConfig* m_config;
 	wxImageList* m_tempImageList;
+	wxTimer* m_updateTimer;
 
 	IntIntHashmap m_permNumMap;
 	WindowPointerArray m_infoTabTracker;
@@ -198,6 +207,7 @@ private:
 	int m_currentPage;
 	int m_fileNum;
 	int m_clickedTabNum;
+	int m_splitterPos;
 
 	bool m_appClosing;
 	bool m_setSelection;

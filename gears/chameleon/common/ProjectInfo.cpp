@@ -19,6 +19,7 @@ ProjectInfo::ProjectInfo(bool singleFile /* = true */)
 	// isRemote will be set by the creator immediately upon instantiation
 	// in fact, it could almost go in the constructor...
 	m_isRemote = true;
+	m_isBeingCompiled = false;
 }
 
 bool ProjectInfo::FileExistsInProject(wxString filename)

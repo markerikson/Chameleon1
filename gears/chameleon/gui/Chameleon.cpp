@@ -102,7 +102,7 @@ BEGIN_EVENT_TABLE(ChameleonWindow, wxFrame)
 	EVT_FIND_CLOSE					(-1, ChameleonWindow::OnFindEvent)
 	EVT_CLOSE						(ChameleonWindow::OnClose)
 	EVT_NOTEBOOK_PAGE_CHANGED		(ID_NOTEBOOK_ED,   ChameleonWindow::OnPageChange)
-	//EVT_SPLITTER_SASH_POS_CHANGED	(ID_SPLITTER, ChameleonWindow::OnTermResize)
+	EVT_SPLITTER_SASH_POS_CHANGED	(ID_SPLITEDITOROUTPUT, ChameleonWindow::OnTermResize)
 	EVT_SIZE						(ChameleonWindow::OnSize)
 	EVT_SPLITTER_DCLICK				(ID_SPLITPROJECTEDITOR, ChameleonWindow::OnSplitterDoubleClick)
 	EVT_SPLITTER_DCLICK				(ID_SPLITEDITOROUTPUT, ChameleonWindow::OnSplitterDoubleClick)
@@ -117,16 +117,18 @@ BEGIN_EVENT_TABLE(ChameleonWindow, wxFrame)
 	EVT_MENU						(ID_PRINT_SETUP, ChameleonWindow::OnMenuEvent)
 	EVT_MENU						(ID_CLOSE_PROJECT, ChameleonWindow::OnMenuEvent)
 	EVT_MENU						(ID_PROJECT_REMOVEFILE, ChameleonWindow::OnMenuEvent)
-	EVT_MENU						(ID_DEBUG_START, ChameleonWindow::OnMenuEvent)
-	EVT_MENU						(ID_DEBUG_CONTINUE, ChameleonWindow::OnMenuEvent)
-	EVT_MENU						(ID_DEBUG_STOP, ChameleonWindow::OnMenuEvent)
-	EVT_MENU						(ID_DEBUG_STEPNEXT, ChameleonWindow::OnMenuEvent)
-	EVT_MENU						(ID_DEBUG_STEPOVER, ChameleonWindow::OnMenuEvent)
-	EVT_MENU						(ID_DEBUG_STEPOUT, ChameleonWindow::OnMenuEvent)
+	EVT_MENU						(ID_DEBUG_START, ChameleonWindow::OnDebugCommand)
+	EVT_MENU						(ID_DEBUG_CONTINUE, ChameleonWindow::OnDebugCommand)
+	EVT_MENU						(ID_DEBUG_STOP, ChameleonWindow::OnDebugCommand)
+	EVT_MENU						(ID_DEBUG_STEPNEXT, ChameleonWindow::OnDebugCommand)
+	EVT_MENU						(ID_DEBUG_STEPOVER, ChameleonWindow::OnDebugCommand)
+	EVT_MENU						(ID_DEBUG_STEPOUT, ChameleonWindow::OnDebugCommand)
 	EVT_UPDATE_UI_RANGE				(ID_DEBUG_IDS_FIRST, ID_DEBUG_IDS_LAST - 1, ChameleonWindow::OnUpdateDebugUI)
 	EVT_UPDATE_UI_RANGE				(ID_STARTCONNECT, ID_DISCONNECT, ChameleonWindow::OnUpdateConnectionUI)
 	EVT_UPDATE_UI					(ID_COMPILE, ChameleonWindow::OnUpdateCompileUI)
 	EVT_DEBUG						(ChameleonWindow::OnDebugEvent)
+	EVT_IDLE						(ChameleonWindow::OnIdle)
+	EVT_TIMER						(ID_STATUSTIMER, ChameleonWindow::OnStatusTimer)
 
 	
 END_EVENT_TABLE()
@@ -161,13 +163,15 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	//_crtBreakAlloc = 2576;
 	
 	// should be approximately 80x15 for the terminal
-	this->SetSize(660, 736);
+	this->SetSize(800, 600);
 
 	// Show a log window for all debug messages
 #ifdef _DEBUG
 	logWindow = new wxLogWindow(this, "Debug messages");
 	wxLog::SetActiveTarget(logWindow);
 #endif
+
+	m_updateTimer = NULL;
 
 	wxIcon icon(moz_xpm);
 	SetIcon(icon);
@@ -248,6 +252,22 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 	m_compilerTextbox = new wxTextCtrl(m_noteTerm, ID_COMPILERTEXTBOX, wxEmptyString, wxDefaultPosition,
 									wxDefaultSize, wxTE_RICH | wxTE_MULTILINE | wxTE_READONLY);
+	//m_compilerList = new wxListCtrl( m_noteTerm, ID_COMPILERLISTCTRL, wxDefaultPosition, wxDefaultSize, 
+	//									wxLC_REPORT|wxLC_SINGLE_SEL|wxLC_HRULES|wxSIMPLE_BORDER );
+
+	/*
+	wxListItem itemCol;
+	itemCol.m_mask = wxLIST_MASK_TEXT | wxLIST_MASK_WIDTH;
+	itemCol.m_text = _T("File");
+	itemCol.m_width = 120;
+	m_list->InsertColumn(0, itemCol);
+	itemCol.m_text = _T("Line");
+	itemCol.m_width = 80;
+	m_list->InsertColumn(1, itemCol);
+	itemCol.m_text = _T("Error");
+	itemCol.m_width = 400;
+	m_list->InsertColumn(2, itemCol);
+	*/
 
 	m_watchPanel = new VariableWatchPanel(m_noteTerm, this, ID_VARWATCHPANEL);
 
@@ -273,7 +293,21 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 	SetToolBar(toolBar);
 
-	m_statusBar = CreateStatusBar(2);
+	int charWidth = GetCharWidth();
+
+	int fileNameChars = 55;
+	int locationChars = 6;	
+	int readEditChars = 9;
+	int networkStatusChars = 25;
+	int lineColChars = 15;
+
+	const int widths[] = {fileNameChars * charWidth, locationChars * charWidth, readEditChars * charWidth, 
+							networkStatusChars * charWidth, lineColChars * charWidth};
+	m_statusBar = CreateStatusBar (WXSIZEOF(widths), wxST_SIZEGRIP);
+	m_statusBar->SetStatusWidths (WXSIZEOF(widths), widths);
+	SendSizeEvent();
+
+	m_updateTimer = new wxTimer (this, ID_STATUSTIMER);
 
 	m_splitProjectEditor->Initialize(m_book);
 	m_splitEditorOutput->Initialize(m_splitProjectEditor);
@@ -323,6 +357,12 @@ ChameleonWindow::~ChameleonWindow()
 	{
 		delete m_findReplace;
 	}
+
+	if (m_updateTimer) 
+	{
+		delete m_updateTimer;
+		m_updateTimer = NULL;
+	}
 }
 
 void ChameleonWindow::OnMenuEvent(wxCommandEvent &event)
@@ -352,7 +392,7 @@ void ChameleonWindow::OnMenuEvent(wxCommandEvent &event)
 			if(fnames.Count() > 0)
 			{
 				OpenSourceFile (fnames);
-				PageHasChanged (m_currentPage);
+				//PageHasChanged (m_currentPage);
 			}
 			break;
 		}
@@ -661,8 +701,8 @@ void ChameleonWindow::PageHasChanged (int pageNr)
 	if(m_currentEd != NULL)
 	{
 		m_currentEd->Refresh();
-		wxString tabText = m_book->GetPageText(m_currentPage);
 
+		wxString tabText = m_book->GetPageText(m_currentPage);
 		wxString statusText;
 
 		wxRegEx reModeTest = "\\((R|L|\\?)\\) ";
@@ -670,25 +710,20 @@ void ChameleonWindow::PageHasChanged (int pageNr)
 		if(reModeTest.Matches(tabText))
 		{
 			wxString modeString = reModeTest.GetMatch(tabText, 1);
-			
+
 			if(modeString == "R")
 			{
 				m_remoteMode = true;
-				statusText = "Remote mode";
 			}
 			else if(modeString == "L")
 			{
 				m_remoteMode = false;
-				statusText = "Local mode";
 			}
-			else if(modeString == "?")
-			{
-				m_remoteMode = true;
-				statusText = "Unsaved file";
-			}
-			m_statusBar->SetStatusText(statusText, 0);
+			// else assume unsaved file and don't change anything
 		}
 	}
+
+
 }
 
 // event handler for closing the whole program
@@ -1003,10 +1038,11 @@ void ChameleonWindow::OpenSourceFile (wxArrayString fnames)
 	// show the active tab, new or otherwise
 	if (firstPageNr >= 0) 
 	{
-		m_currentPage = firstPageNr;
-		m_setSelection = true;
-		m_book->SetSelection (m_currentPage);
-		m_setSelection = false;
+		//m_currentPage = firstPageNr;
+		//m_setSelection = true;
+		//m_book->SetSelection (m_currentPage);
+		//m_setSelection = false;
+		PageHasChanged(firstPageNr);
 	}
 }
 
@@ -2047,6 +2083,15 @@ void ChameleonWindow::OnSplitterDoubleClick(wxSplitterEvent &event)
 void ChameleonWindow::OnSize(wxSizeEvent &event)
 {
 	event.Skip();	
+
+	//int currentSashPos = m_splitEditorOutput->GetSashPosition();
+	//if(currentSashPos < m_splitterPos)
+
+}
+
+void ChameleonWindow::OnTermResize(wxSplitterEvent &event)
+{
+	//m_splitterPos = event.GetSashPosition();
 }
 
 void ChameleonWindow::PassImageList(wxImageList* imagelist)
@@ -2411,7 +2456,7 @@ void ChameleonWindow::LoadFilesIntoProjectTree(wxString configPath,  FileFilterT
 
 void ChameleonWindow::Compile()
 {
-	m_compilerTextbox->Clear(); // Not if Advanced?
+	
 
 	bool doCompile = true;
 
@@ -2444,8 +2489,14 @@ void ChameleonWindow::Compile()
 		}
 		*/
 
+		ProjectInfo* projToCompile = m_currentEd->GetProject();
+
 		if(!isAdvanced)
 		{
+			m_compilerTextbox->Clear(); // Not if Advanced?
+
+			// TODO Uncomment this line when ready for project compiling
+			//m_compiler->SimpleCompile(projToCompile, m_compilerTextbox);
 			if(m_projMultiFiles != NULL) 
 			{
 				m_compiler->CompileProject(m_projMultiFiles, m_remoteMode, m_compilerTextbox, this);
@@ -2471,6 +2522,11 @@ void ChameleonWindow::Compile()
 		{
 			// Forward Planning
 			wxMessageBox("Advanced Compiling is currently not supported.");
+
+			//m_compilerList->DeleteAllItems();
+
+			// TODO Uncomment this line too
+			//m_compiler->AdvancedCompile(projToCompile, m_compilerList);
 		}
 	}
 }
@@ -2527,7 +2583,8 @@ void ChameleonWindow::UpdateTerminalNotebook()
 		{
 			// TODO Advanced compiler listctrl here
 
-			m_noteTerm->AddPage(m_compilerTextbox, "Compiler Output");
+			//m_noteTerm->AddPage(m_compilerTextbox, "Compiler Output");
+			//m_noteTerm->AddPage(m_compilerList, "Compiler Output");
 		}
 		else
 		{
@@ -2543,7 +2600,8 @@ void ChameleonWindow::UpdateTerminalNotebook()
 		}
 		else
 		{
-			m_compilerTextbox->Hide();
+			//m_compilerTextbox->Hide();
+			//m_compilerList->Hide();
 		}
 	}
 
@@ -2566,7 +2624,7 @@ void ChameleonWindow::UpdateTerminalNotebook()
 	{
 		if(!m_splitEditorOutput->IsSplit())
 		{
-			m_splitEditorOutput->SplitHorizontally(m_splitProjectEditor, m_noteTerm, -330);//-200);
+			m_splitEditorOutput->SplitHorizontally(m_splitProjectEditor, m_noteTerm, -260);//-200);
 			m_splitEditorOutput->SetMinimumPaneSize(20);
 			m_terminal->UpdateSize();
 			m_noteTerm->Show();	
@@ -2756,7 +2814,93 @@ void ChameleonWindow::OnUpdateCompileUI(wxUpdateUIEvent &event)
 	*/
 
 	//tb->EnableTool(ID_COMPILE, enableButton);
-	tb->EnableTool(ID_COMPILE, edProj->IsCompiled() && !edProj->IsBeingCompiled());
+	tb->EnableTool(ID_COMPILE, !edProj->IsCompiled() && !edProj->IsBeingCompiled());
+}
+
+void ChameleonWindow::OnStatusTimer(wxTimerEvent &WXUNUSED(event)) 
+{
+	if (m_updateTimer)
+	{
+		m_updateTimer->Stop();
+	}
+}
+
+void ChameleonWindow::OnIdle(wxIdleEvent &event)
+{
+	if (m_updateTimer && !m_updateTimer->IsRunning ()) 
+	{
+		m_updateTimer->Start (100, wxTIMER_ONE_SHOT);
+		UpdateStatusBar();
+	}
+	event.Skip();
+	
+}
+
+void ChameleonWindow::UpdateStatusBar()
+{
+	if(m_statusBar == NULL)
+	{
+		return;
+	}
+
+	int pageCount = m_book->GetPageCount();
+	if(pageCount < 1 || pageCount <= m_currentPage)
+	{
+		return;
+	}
+	wxString tabText = m_book->GetPageText(m_currentPage);
+	wxString filename;
+	wxString location;
+
+	wxRegEx reModeTest = "\\((R|L|\\?)\\) ";
+
+	if(reModeTest.Matches(tabText))
+	{
+		wxString modeString = reModeTest.GetMatch(tabText, 1);
+
+		if( (modeString == "R") ||
+			(modeString == "L") )
+		{
+			filename = m_currentEd->GetFileNameAndPath();
+			bool isRemote = (modeString == "R");
+			location = isRemote ? "Remote" : "Local";
+		}
+		else if(modeString == "?")
+		{
+			filename = "Unsaved file";
+			location = "N/A";
+		}
+
+		if(filename != m_statusBar->GetStatusText(0))
+		{
+			m_statusBar->SetStatusText(filename, 0);
+		}
+
+		if(location != m_statusBar->GetStatusText(1))
+		{
+			m_statusBar->SetStatusText(location, 1);
+		}
+	}
+
+	bool isEdReadOnly = m_currentEd->GetProject()->IsReadOnly();
+
+	wxString editable = isEdReadOnly ? "Read-only" : "Read-write";
+
+	if(editable != m_statusBar->GetStatusText(2))
+	{
+		m_statusBar->SetStatusText(editable, 2);
+	}
+
+	//m_statusBar->SetStatusText("Waiting for network response...", 3);
+
+	int curLine = m_currentEd->GetCurrentLine();
+	int curPos = m_currentEd->GetCurrentPos() -m_currentEd->PositionFromLine (-curLine);
+	wxString linecol;
+	linecol.Printf (_("Line: %d, Col: %d"), curLine, curPos);
+	if (linecol != m_statusBar->GetStatusText (4)) 
+	{
+		SetStatusText (linecol, 4);
+	}
 }
 
 

@@ -1175,7 +1175,7 @@ void Debugger::sendPrint(wxString fromGDB)
 
 	do
 	{
-		lineBreak = fromGDB.Find("\r");
+		lineBreak = fromGDB.Find("\n");
 
 		if(lineBreak == -1)
 		{
@@ -1191,6 +1191,13 @@ void Debugger::sendPrint(wxString fromGDB)
 				lineBreak = 2 + singleLine.Find("= ");
 				singleLine = singleLine.Mid(lineBreak);
 
+
+				// TODO Do something with pointers here?
+				int ampIdx = singleLine.Find(" &");
+				if(ampIdx != -1)
+				{
+					singleLine = singleLine.Remove(ampIdx);
+				}
 				fromWatch.Add(singleLine);
 			}
 			else if(singleLine.Mid(0,9) == "No symbol")
@@ -1204,7 +1211,8 @@ void Debugger::sendPrint(wxString fromGDB)
 				ignoreVars.Add(singleLine);
 			}
 
-			fromGDB.Remove(0, 1);	//get rid of the \r we avoided before
+			//fromGDB.Remove(0, 1);	//get rid of the \r we avoided before
+			fromGDB = fromGDB.AfterFirst('\n');
 		}
 	}while(fromGDB != PROMPT_CHAR);
 
@@ -1272,9 +1280,9 @@ void Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 	int lineBreak = 0, endQuote = 0, fromWatchIndex = 0;
 	bool parseError = false, stayIn = true;
 
-	for(int i = 0; (i < varCount) && !parseError; i++)
+	for(int i = 0; (i < varCount) && !parseError && fromGDB != wxEmptyString; i++)
 	{
-		lineBreak = fromGDB.Find("\r");
+		lineBreak = fromGDB.Find("\n");
 
 		if(lineBreak == -1)
 		{
@@ -1286,14 +1294,17 @@ void Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 
 			do
 			{
+				lineBreak = fromGDB.Find("\n");
 				singleLine = fromGDB.Mid(0, lineBreak);
 				fromGDB.Remove(0, lineBreak);
 
 				if( singleLine.Mid(0,1) == "$" ||
-					singleLine.Mid(0,9) == "No symbol")
+					singleLine.Mid(0,9) == "No symbol" ||
+					singleLine == wxEmptyString)
 				{stayIn = false;}
 
-				fromGDB.Remove(0, 1);	//get rid of the \r
+				//fromGDB.Remove(0, 1);	//get rid of the \r
+				fromGDB = fromGDB.AfterFirst('\n');
 			}while(stayIn);
 
 			if(singleLine.Mid(0,9) == "No symbol")
@@ -1376,7 +1387,8 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 		 keepParsing = false;
 
 	//step parsing RegEx
-	wxRegEx reCase1 = ", ([[:alnum:]]) () at (([[:alnum:]]|[[:blank:]]|\\.)+):([[:digit:]]+)";
+	// , ([[:alnum:]]) ()
+	wxRegEx reCase1 = " at (([[:alnum:]]|[[:blank:]]|\\.)+):([[:digit:]]+)";
 	wxRegEx reCase2 = "([[:digit:]]+)[[:blank:]]+";
 
 	//go parsing RegEx
@@ -1516,7 +1528,7 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 					{
 						//funcName is for adv. variable watching
 						//FuncName = reCase1.GetMatch(tempHold, 1);
-						Filename = reCase1.GetMatch(tempHold, 2);
+						Filename = reCase1.GetMatch(tempHold, 1);
 						Linenumber = reCase1.GetMatch(tempHold, 3);
 
 						status = DEBUG_BREAK;
@@ -1576,6 +1588,7 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 
 		case GET_WHAT:
 			sendPrint(tempHold);
+			data.Empty();
 			break;
 
 		case GET_PRINT:
@@ -1638,7 +1651,7 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 
 				if(reCase1.Matches(tempHold))
 				{
-					Filename = reCase1.GetMatch(tempHold, 2);
+					Filename = reCase1.GetMatch(tempHold, 1);
 					Linenumber = reCase1.GetMatch(tempHold, 3);
 
 					Linenumber.ToLong(&tmpLong);
@@ -1843,7 +1856,7 @@ void Debugger::flushPrivateVar()
 	//m_lastClassVisited.Clear();
 	//gdbVarIndex = 1;
 	//guiVarIndex = 0;
-	//varCount = 0;
+	varCount = 0;
 }
 
 //sendCommand(): handles sending a command to the stream.

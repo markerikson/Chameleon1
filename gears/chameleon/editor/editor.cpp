@@ -414,6 +414,10 @@ void ChameleonEditor::SetFilename(wxFileName filename, bool fileIsRemote)
 	//m_fileNameAndPath.Assign(path, name, fileIsRemote ? wxPATH_UNIX : wxPATH_DOS);
 	m_fileNameAndPath = filename;
 
+	if(m_project->IsSingleFile())
+	{
+		m_project->AddFileToProject(filename.GetFullPath(fileIsRemote ? wxPATH_UNIX : wxPATH_DOS), FILE_SOURCES);
+	}
 	
 }
 
