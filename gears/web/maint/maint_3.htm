@@ -1,36 +1,51 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <meta name="Template_Author" content="John Cox">
+    <title>Maintenance Manual: Project Overview</title>
+  </head>
 
-  <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+  <body>
+
+    <h1>3.0 - Quirks, Tips, and Tricks</h1>
+
+    <h2>3.1 - Debugger</h2>
+
+    <h3>Tricks</h3>
+    <p>We used some of GDB's built in formating functionality to make it easier to parse the output.  In particular is "set confirm off" which enables one to kill a running (but stopped) program without GDB asking for confirmation.  This also turns off a potentially useful function in the "display" command; when "display" is set with confirmation <u>on</u>, GDB returns a formated output string containing the information you wish to automatically display with each step (or an error message).  With confirmation <u>off</u>, "display" returns no output until the next step.</p>
+    <p>Another useful trick is the "set prompt %" command we use.  When sending commands to GDB, the last character returned on the output stream (when it's all been collected) will be a "%" (with some important exceptions... like a run-away program) because of that command.</p>
+
+    <h3>Tips</h3>
+    <p>The Debugger class has many accessor methods.  Most of them go unused within Chameleon, but when developing your own code and using this class, use them liberally to see what's going on inside.</p>
+
+    <br>
+
+    <h2>3.2 - Networking / Processes</h2>
+
+    <h3>Quirks</h3>
+    <p>Most quirks have been explained within the code.</p>
+
+    <h3>Tricks</h3>
+    <p>Heavy use of start and end tokens are used during remote server execution.</p>
 
 
-  <meta name="Template_Author" content="John Cox">
-  <title>Maintenance Manual: Project Overview</title>
-</head>
-<body>
-<h1>3.0 - Quirks, Tips, and Tricks</h1>
-<h2>3.1 - Debugger</h2>
-<p><h3>GDB</h3</p><p>We used some of GDB's built in formating functionality to make it easier for the program to read the output.  In particular is "set confirm off" which enables one to kill a running (but stopped) program without GDB asking for confirmation.  This also turns off a potentially useful function in the "display" command; when "display" is set with confirmation <u>on</u>, GDB returns a formated output string containing the information you wish to automatically display with each step (or an error message).  With confirmation <u>off</u>, "display" returns no output until the next step.  </p><p>Another useful trick is the "set prompt %" command we use.  When sending commands to GDB, the last character returned on the output stream (when it's all been collected) will be a "%" (with some important exceptions... like a run-away program) because of that command.</p>
-<p><h3>The Debugger Class</h3></p><p>One "quirk" that may be confusing to outsiders is the prescence of 2 status variables inside the class.</p><p><b>status</b> contains a generic over-all class status and has a limited number of values.  This is supposed to tell internal functions the general status of the GDB process, as some functions will send commands to GDB given a favorable status, and others won't do anything at all given a bad status.</p><p><b>classStatus</b> is used explicitly for GDB output parsing.  GDB output cannot be parsed soley on the generic class status.  Therefore this variable essentially contains a value related to the function that was last called from within the class.</p><p>Getting these two variables to coincide peacefully and to be set correctly all the time has been stressfull.</p>
-<p><h3>Tip:</h3></p><p>The Debugger class has a LOT of accessor methods.  Many of them go unused within Chameleon, but when developing your own code & using this class, use them liberally to see what's going on inside.</p>
-
-<hr><center>
-
-<table summary="navigation">
-<tbody><tr>
-<td height="100" width="60"><a href="../index.html"><img src="../images/home.gif" align="bottom" alt="Home" border="0">
-</a></td>
-<td height="100" width="60"><a href="maint.htm"><img src="../images/toc.gif" align="bottom" alt="TOC" border="0"></a></td>
-<td height="100" width="60"><a href="maint_2.htm"><img src="../images/previous.gif" align="bottom" alt="Previous" border="0"></a>
-</td>
-<td height="100" width="60"><a href="maint_4.htm"><img src="../images/next.gif" align="bottom" alt="Next" border="0">
-</a></td>
-</tr>
-</tbody></table>
-</center>
-Document modified on 
-<script type="text/javascript" language="JavaScript">
-<!--
+    <hr>
+    <center>
+      <table summary="navigation"><tr>
+        <td height="100" width="60"><a href="../index.html"><img src="../images/home.gif" align="bottom" alt="Home" border="0"></a></td>
+        <td height="100" width="60"><a href="maint.htm"><img src="../images/toc.gif" align="bottom" alt="TOC" border="0"></a></td>
+        <td height="100" width="60"><a href="maint_2.htm"><img src="../images/prev.gif" align="bottom" alt="Previous" border="0"></a></td>
+        <td height="100" width="60"><a href="maint_4.htm"><img src="../images/next.gif" align="bottom" alt="Next" border="0"></a></td>
+      </tr></table>
+    </center>
+    Document modified on
+    <script type="text/javascript" language="JavaScript">
+      <!--
         document.write(document.lastModified + " GMT")
-// -->
-</script>
-</body></html>
+      // -->
+    </script>
+
+  </body>
+
+</html>

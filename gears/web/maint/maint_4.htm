@@ -1,53 +1,85 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <meta name="Template_Author" content="John Cox">
+    <title>Maintenance Manual</title>
+  </head>
 
-  <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+  <body>
+
+    <h1>4.0 - Project Status</h1>
+
+    <h2>4.1 - Implemented Features</h2>
+    <p>Overall, we did a good job of creating what we set out to do.  All major features exist, and are fairly robust.</p>
+    <dl>
+      <dt><h3>Professor Options Program: Done.</h3></dt>
+        <dd>Simple, useful, and it works. The only time anything about this would change is if new permissions were added, in which case a simple recompile of this program should suffice.</dd>
+      <dt><h3>Dynamically Adapting GUI: Done.</h3></dt>
+        <dd>Enabling and Disabling features make GUI elements appear and disappear. Again, nothing needs to be changed unless new features are added.</dd>
+      <dt><h3>Built-in Terminal: Done.</h3></dt>
+        <dd>Works well for the intended users.  It is possible an advanced user may , limitations may be discovered.</dd>
+      <dt><h3>Syntax Highlighting: Done.</h3></dt>
+        <dd>Internal to the Scintilla Widget.</dd>
+      <dt><h3>Multi-file Projects: Done.</h3></dt>
+        <dd>The code is tied a little more tightly to the GUI than we would have liked.  But, for this Chameleon a project is basically a list of files.  Any additional project related features may require separating this out.</dd>
+      <dt><h3>Integrated Debugger: Done.</h3></dt>
+        <dd>We accomplished what we wanted, which was cross-platform debugging using GDB while inside of Chameleon. It is limited in features, but it works.  Some optimizations could be made inside the debugger regarding how it handles variable watching, but it works fine as-is.</dd>
+      <dt><h3>Editor Features: Done.</h3></dt>
+        <dd>Clipboard manipulation, text manipulation, and the like are all working. There are always more that could be added, but no critical features are missing.</dd>
+      <dt><h3>Compiling: Done.</h3></dt>
+        <dd>Press a button, it compiles.  User is limited to linking with only 1 library.</dd>
+      <dt><h3>Remote File Transparency: Done.</h3></dt>
+        <dd>There are some minor glitches with handling empty files, and the user is limited to their home directory and anything higher in the directory structure.  All else is done, and functions as expected.</dd>
+    </dl>
+
+    <h2>4.2 - Unimplemented Features</h2>
+    <dl>
+      <dt><h3>Auto-Completion/Object Member Completion.  Definately Useful.</h3></dt>
+        <dd>This is not a necessary feature, but if implemented would be useful.  We underestimated the complexity of this feature, and ran out of time.  The Scintilla Widget has the hooks to display popup windows for autocompletion and member completion, which is why this feature was added to the requirements list.  But, the Editor would be responsible for keeping track of what's typed and telling Scintilla to pop up a window with the appropriate information.</dd>
+      <dt><h3>Code Folding.  Potentially Useful.</h3></dt>
+        <dd>Again, Scintilla supports this, and shouldn't be that hard to implement. We just didn't have enough time.</dd>
+    </dl>
+
+    <br>
+
+    <h2>4.3 - Future Enhancements</h2>
+    <dl>
+      <dt><h3>Auto-Completion/Object Member Completion.</h3></dt>
+        <dd>Autocompletion alone would require a lot of work, and Member completion is even more complicated. To list the members of an object, the program needs to have parsed the declaration of that object. Implementing either of these abilities would require a nearly-full C++ parser, few of which are easily accessible. One potential possibility is to adapt the C++ parser from the Dev-CPP IDE (http://sourceforge.net/projects/dev-cpp). Additionally, there are potential issues regarding parsing files that are located on the remote server.</dd>
+      <dt><h3>Code Folding.</h3></dt>
+      <dt><h3>Additional Debugger Features.</h3></dt>
+      <dt><h3>Enable PlinkConnect to reuse connections.</h3></dt>
+        <dd>This would only be an optimization.</dd>
+      <dt><h3>Do directory-listing caching within Networking.</h3></dt>
+        <dd>This would only be an optimization.</dd>
+      <dt><h3>Server-based Options-Enabling.</h3></dt>
+      <dt><h3>Better integration with "Virtual Professor" & "Debugganator".</h3></dt>
+      <dt><h3>Password Saving.</h3></dt>
+        <dd>We chose not to deal with the security issues associated with this feature.  It would have been quite useful during development, since we had to type in our passwords every restart. But, for the average user this probably won't be nearly as much of an issue. One possible way of encrypting the password would be the TEA algorithm, a sample of which is located at http://www.jujusoft.com/tech/tea.html</dd>
+      <dt><h3>Run/Execute Feature.</h3></dt>
+      <dt><h3>Auto-Save/Backup Save.</h3></dt>
+      <dt><h3>Integrate the Plink code more directly into Chameleon instead of running it externally.</h3></dt>
+      <dt><h3>Port to Linux.</h3></dt>
+    </dl>
 
 
-  <meta name="Template_Author" content="John Cox">
-  <title>Maintenance Manual</title>
-</head>
-<body>
-<h1>4.0 - Project Status</h1>
-<h2>4.1 - Implemented Features</h2>
-<p>Overall, we did a pretty good job of creating what we started out to do.  The major features are all there, and they're all done pretty well.
-
-<ul>
-		<li>Professor Options program: 100% done.  Simple, useful, and it works.  The only time anything about this would change is if new permissions were added, in which case a simple recompile of this program should suffice</li>
-		<li>GUI dynamically changes in response to options: 100% done.  Turning stuff on and off makes it disappear and reappear.  Again, nothing needs to be changed unless new features are added.</li>
-		<li>Built-in SSH-based terminal: 100% done.  Works beautifully.</li>
-		<li>Syntax highlighting: 100% done.  Built into Scintilla, so we didn't do much with it.</li>
-		<li>Multi-file projects: 100% done.  The code is tied a little more tightly to the GUI than we would have liked, but since for for our purposes a project is basically a list of files, that's not a big deal.</li>
-		<li>Integrated debugger: 95% done.  We accomplished what we wanted, which was cross-platform debugging using GDB while inside of Chameleon.  It's simple (just the basic breakpoints and stepping, plus very simple variable watching), but it works.  There are a couple of optimizations that could be made inside the debugger regarding how it handles variable watching, but it works fine as-is.</li>
-		<li>General useful editor-related features: 98% done.  Clipboard manipulation, text manipulation, and the like are all in there.  There's always more that could be added, but nothing critical.  Everything that a user would expect to be in a typical editor is there.</li>
-		<li>Compiling: 100% done.  Press a button, it compiles.  Not much else to say.</li>
-</ul>
-
-<h2>4.2 - Unimplemented Features</h2>
-<p>There are a couple things we didn't get around to adding.  The biggest one was word autocompletion / object member completion.  This feature is certainly not a necessary one, but if implemented would be incredibly useful.  We didn't get this one done for two reasons.  First, we flat out ran out of time.  Second, we completely miscalculated the amount of effort and complexity this feature would take.  Scintilla has the hooks to display popup windows for autocompletion and member completion, which is why this feature was added to the requirements list.  However, the program itself is responsible for keeping track of what's typed and telling Scintilla to pop up a window with the appropriate information.  Autocompletion alone would require a lot of work.  Member completion is even more complicated.  In order to list the members of an object, the program needs to have parsed the declaration of that object.  Basically, implementing either of these abilities would require a nearly-full C++ parser, few of which are easily accessible.  There is one main possibility along that route: taking the C++ parser from the Dev-CPP IDE (<a href="http://sourceforge.net/projects/dev-cpp">http://sourceforge.net/projects/dev-cpp</a>), which is written in Delphi, and porting it to C++ (possibly with the aid of <a href="http://ivan.vecerina.com/code/delphi2cpp/">delphi2cpp</a>.  After that, however, there are potential issues regarding parsing files that are located on the remote server.  Overall, while this feature would be useful, it's a decidedly non-trivial task.</p>
-<p>Another item we didn't have a chance to get to was code folding.  Again, this is something Scintilla supports, but this one actually shouldn't be that hard to implement.  We just didn't have enough time.  This one is debatably useful.  It's certainly useful to some people, but others won't bother with it.  If it was implemented, it wouldn't hurt.</p>
-
-
-<h2>4.3 - Future Enhancements</h2>
-<p>The single biggest enhancement that could be made would be auto/member completion.  There are certainly plenty of programmer's editors available which don't have that ability and are quite usable, so it's not like Chameleon is in bad shape because it doesn't have it.  However, having that ability would certainly be useful.  Some form of integration with the Debugginator project would also be interesting and potentially useful.</p>
-<p>One thing we discussed but didn't wind up doing was password encryption.  This would actually have been quite useful during development, since we had to type in our passwords every two or three minutes at some points during testing and coding.  For the average user this probably won't be nearly as much of an issue.  One possible way of encrypting the password would be the TEA algorithm, a sample of which is located at <a href="http://www.jujusoft.com/tech/tea.html">http://www.jujusoft.com/tech/tea.html</a></p>
-<hr><center>
-
-<table summary="navigation">
-<tbody><tr>
-<td height="100" width="60"><a href="../index.html"><img src="../images/home.gif" align="bottom" alt="Home" border="0">
-</a></td>
-<td height="100" width="60"><a href="maint.htm"><img src="../images/toc.gif" align="bottom" alt="TOC" border="0"></a></td>
-<td height="100" width="60"><a href="maint_3.htm"><img src="../images/previous.gif" align="bottom" alt="Previous" border="0"></a>
-</td>
-<td height="100" width="60"><a href="maint_5.htm"><img src="../images/next.gif" align="bottom" alt="Next" border="0">
-</a></td>
-</tr>
-</tbody></table>
-</center>
-Document modified on 
-<script type="text/javascript" language="JavaScript">
-<!--
+    <hr>
+    <center>
+      <table summary="navigation"><tr>
+        <td height="100" width="60"><a href="../index.html"><img src="../images/home.gif" align="bottom" alt="Home" border="0"></a></td>
+        <td height="100" width="60"><a href="maint.htm"><img src="../images/toc.gif" align="bottom" alt="TOC" border="0"></a></td>
+        <td height="100" width="60"><a href="maint_3.htm"><img src="../images/prev.gif" align="bottom" alt="Previous" border="0"></a></td>
+        <td height="100" width="60"><a href="maint_5.htm"><img src="../images/next.gif" align="bottom" alt="Next" border="0"></a></td>
+      </tr></table>
+    </center>
+    Document modified on
+    <script type="text/javascript" language="JavaScript">
+      <!--
         document.write(document.lastModified + " GMT")
-// -->
-</script>
-</body></html>
+      // -->
+    </script>
+
+  </body>
+
+</html>

@@ -1,74 +1,109 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <meta name="Template_Author" content="John Cox">
+    <title>Maintenance Manual</title>
+  </head>
 
-  <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+  <body>
 
+    <h1>2.0 - Project-Related Skills and Knowledge</h1>
 
-  <meta name="Template_Author" content="John Cox">
-  <title>Maintenance Manual</title>
-</head>
-<body>
-<h1>2.0 - Project-Related Skills and Knowledge</h1>
-<h2>2.1 - GUI / Editor</h2>
-<p>The primary area that we had to learn for the GUI was the wxWidgets toolkit (formerly known as wxWindows).  This was mostly an issue for Mark, since he was in charge of the GUI module, but the other team members eventually needed to become familiar with portions of it as well.  While none of us had previously used wxWidgets, Mark's prior experience with other GUI toolkits allowed him to easily transition to wxWidgets.  Some of the important areas of knowledge were general GUI design principles (much of which is learned only through experience), the wxWidgets event model, familiarity with the capabilities of the different wxWidgets classes, and wxWidgets-based "template" datastructure classes.</p>
-<p>Creating the program would have been nearly impossible without the numerous available parts, samples, and third-party programs we were able to find and use.  For the GUI, these include:
-	<ul>
-		<li>The wxWidgets toolkit itself.  Freely available, open-source, and cross-platform.  <a href="http://www.wxwidgets.org">http://www.wxwidgets.org</a></li>
-		<li>Scintilla, a "programmer's text editor" control.  It has built-in syntax highlighting, line numbering, line markers, search and replace, and many more capabilities that we didn't have time to make use of.  Available in wxWidgets as wxStyledTextCtrl.  <a href="http://www.scintilla.org">http://www.scintilla.org</a></li>
-		<li>wxTerm, a vt100-capable terminal widget written using wxWidgets.  wxTerm is based off of GTerm, an abstract vt100 translation library.  Originally written for a Telnet client, we were able to modify it for use in Chameleon.  <a href="http://linux.techassocinc.com/projects/tatelnet/">http://linux.techassocinc.com/projects/tatelnet/</a></li>
-		<li>wxGuide-Editor, a sample program that demonstrates the use of wxStyledTextCtrl.  Code from wxGuide formed the basis for several key areas of Chameleon, including multiple editors using tabs, printing, and find/replace.  <a href="http://wxguide.sourceforge.net">http://wxguide.sourceforge.net</a></li>
-		<li>wxStEdit, another wxStyledTextCtrl-based program.  <a href="http://www.lehigh.edu/~jrl1/wxwindows/wxStEdit/">http://www.lehigh.edu/~jrl1/wxwindows/wxStEdit/</a></li>
-		<li>DialogBlocks, a GUI designer for wxWidgets.  While GUI creation using pure code is possible, laying out dialogs using a designer is almost always better.  DialogBlocks proved invaluable for creating Chameleon's dialogs.  <a href="http://www.anthemion.co.uk/dialogblocks/">http://www.anthemion.co.uk/dialogblocks/</a></li>
-	</ul>
-</p>
-<p>Useful reference sites:
+    <h2>2.1 - GUI / Editor</h2>
+    <p>The primary area that we had to learn for the GUI was the wxWidgets toolkit (formerly known as wxWindows).  This was mostly an issue for Mark, since he was in charge of the GUI module, but the other team members eventually needed to become familiar with portions of it as well.  While none of us had previously used wxWidgets, Mark's prior experience with other GUI toolkits allowed him to easily transition to wxWidgets.  Some of the important areas of knowledge were general GUI design principles (much of which is learned only through experience), familiarity with the capabilities of the different wxWidgets classes, and wxWidgets-based "template" datastructure classes.</p>
+    <p>Creating the program would have been nearly impossible without the numerous available parts, samples, and third-party programs we were able to find and use.  For the GUI, these include:
+      <ul>
+        <li>The wxWidgets toolkit itself.  Freely available, open-source, and cross-platform.  <a href="http://www.wxwidgets.org">http://www.wxwidgets.org</a></li>
+        <li>Scintilla, a "programmer's text editor" widget.  It has built-in syntax highlighting, line numbering, line markers, search and replace, and many more capabilities that we didn't have time to make use of.  Available in wxWidgets as wxStyledTextCtrl.  <a href="http://www.scintilla.org">http://www.scintilla.org</a></li>
+        <li>wxTerm, a vt100-capable terminal widget written using wxWidgets.  wxTerm is based off of GTerm, an abstract vt100 translation library.  Originally written for a Telnet client, we were able to modify it for use in Chameleon.  <a href="http://linux.techassocinc.com/projects/tatelnet/">http://linux.techassocinc.com/projects/tatelnet/</a></li>
+        <li>wxGuide-Editor, a sample program that demonstrates the use of wxStyledTextCtrl.  Code from wxGuide formed the basis for several key areas of Chameleon, including multiple editors using tabs, printing, and find/replace.  <a href="http://wxguide.sourceforge.net">http://wxguide.sourceforge.net</a></li>
+        <li>wxStEdit, another wxStyledTextCtrl-based program.  <a href="http://www.lehigh.edu/~jrl1/wxwindows/wxStEdit/">http://www.lehigh.edu/~jrl1/wxwindows/wxStEdit/</a></li>
+        <li>DialogBlocks, a GUI designer for wxWidgets.  While GUI creation using pure code is possible, laying out dialogs using a designer is almost always better.  DialogBlocks proved invaluable for creating Chameleon's dialogs.  <a href="http://www.anthemion.co.uk/dialogblocks/">http://www.anthemion.co.uk/dialogblocks/</a></li>
+      </ul>
+    </p>
+    <p>Useful References:
+      <ul>
+        <li>The Scintilla reference page: <a href="http://scintilla.sourceforge.net/ScintillaDoc.html">http://scintilla.sourceforge.net/ScintillaDoc.html</a></li>
+        <li>A wxStyledTextCtrl reference at <a href="http://www.yellowbrain.com/stc/index.html">http://www.yellowbrain.com/stc/index.html</a>.  It's focused on the wxPython version, but still highly applicable.</li>
+        <li>The wxWidgets documentation.  Included in the wxWidgets download (%wxdir%\docs\htmlhelp\wx.chm).</li>
+      </ul>
+    </p>
 
-<ul>
-	<li>The Scintilla reference page: <a href="http://scintilla.sourceforge.net/ScintillaDoc.html">http://scintilla.sourceforge.net/ScintillaDoc.html</a></li>
-	<li>A wxStyledTextCtrl reference at <a href="http://www.yellowbrain.com/stc/index.html">http://www.yellowbrain.com/stc/index.html</a>.  It's focused on the wxPython version, but still highly applicable.</li>
-	<li>The wxWidgets documentation.  Included in the wxWidgets download (%wxdir%\docs\htmlhelp\wx.chm).</li>
-</ul>
-</p>
-<br>
-<h2>2.2 - Debugger</h2>
-<p>Any useful IDE (Integrated Development Environment) has a debugger of some type; a program that allows you to step through your program and watch specific variables as the code executes.  Complex debugger behavior, such as running to a specific line, stepping over functions, finishing functions & stopping one - stack - call - level - up, are usually enough to let a seasoned programmer know what's wrong with buggy code.  But actually programming this type of functionality with compiled code is something entire corporations hire code guru's for.  For this project, we focused on attempting to adapt the <a href="http://www.gnu.org/software/gdb/" target=newWindow()>GNU Project Debugger</a> (or GDB) into our code.
-</p>
-<p>The largest area to learn for using GDB was figuring out how to use it.  Attempts to compile the <a href="http://www.gnu.org/software/gdb/download/">downloadable</a> source code (GDB is openSource) failed, so we moved on to creating a wrapper around GDB that espoused the <a href="http://pc160218/cgi-bin/viewcvs.cgi/*checkout*/gears/web/manual/um_70.htm">major features</a> of a robust debugger.  But even here were a lot of things to be learned:</p>
-<ul>
-	<li>What GDB requires to run</li>
-	<li>How to get GDB to run</li>
-	<li>What commands are used to gain the above functionality</li>
-	<li>How does GDB handle problems or unexpected input</li>
-	<li>How does one send commands from a program to a GDB process</li>
-	<li>How does one communicate with a GUI to a debugger process</li>
-</ul>
-<p>Thankfully the GNU Debugger is marvelously designed and very user friendly.  Making it program friendly has been the challenge of the project, but we have for the most part succeeded.</p>
-<p>Useful Sites:
-<ul>
-	<li><a href="http://www.gnu.org/software/gdb/documentation/">GDB Documentation</a>:It's always good to read the manual.</li>
-	<li><a href="http://www.mingw.org/">MinGW</a>: The binary version of GDB</li>
-	<li><a href="http://chaos4.phy.ohiou.edu/~thomas/ref/info/rx/Posix_Basic_Regular_Expressions.html">POSIX Regular Expressions</a>: When dealing with formated output, regEx is your <b><i>FRIEND</i></b></li>
-</ul></p>
-<br>
-<h2>2.3 - Permissions Manager</h2>
-<p>This was one of the few parts of the project assigned to Ben that was anticipated to be short, quick, and sweet that actually <i>was</i>.  The only thing that was neccesary to learn was C++'s <<a href="http://www.sgi.com/tech/stl/bitset.html">bitwise</a>>class, with a touch of <a href="http://www2.rad.com/networks/1994/err_con/crc.htm">CRC</a> on the side for code # encryption.  But when Ben sat down to code the permissions manager, it's base functionality was done within an hour or two.</p>
+    <br>
 
-<hr><center>
-<table summary="navigation">
-<tbody><tr>
-<td height="100" width="60"><a href="../index.html"><img src="../images/home.gif" align="bottom" alt="Home" border="0">
-</a></td>
-<td height="100" width="60"><a href="maint.htm"><img src="../images/toc.gif" align="bottom" alt="TOC" border="0"></a></td>
-<td height="100" width="60"><a href="maint_1.htm"><img src="../images/previous.gif" align="bottom" alt="Previous" border="0"></a>
-</td>
-<td height="100" width="60"><a href="maint_3.htm"><img src="../images/next.gif" align="bottom" alt="Next" border="0">
-</a></td>
-</tr>
-</tbody></table>
-</center>
-Document modified on 
-<script type="text/javascript" language="JavaScript">
-<!--
+    <h2>2.2 - Debugger</h2>
+    <p>Any useful IDE (Integrated Development Environment) has a debugger of some type; a program that allows you to step through your program and watch specific variables as the code executes.  Complex debugger behavior, such as running to a specific line, stepping over functions, finishing functions & stopping one - stack - call - level - up, are usually enough to let a seasoned programmer know what's wrong with buggy code.  But actually programming this type of functionality with compiled code is something entire corporations hire code guru's for.  For this project, we focused on attempting to adapt the <a href="http://www.gnu.org/software/gdb/" target=newWindow()>GNU Project Debugger</a> (or GDB) into our code.</p>
+    <p>The largest area to learn for using GDB was figuring out how to use it.  Attempts to compile the <a href="http://www.gnu.org/software/gdb/download/">downloadable</a> source code (GDB is openSource) failed, so we moved on to creating a wrapper around GDB that espoused the <a href="http://pc160218/cgi-bin/viewcvs.cgi/*checkout*/gears/web/manual/um_70.htm">major features</a> of a robust debugger.  But even here were a lot of things to be learned:</p>
+    <ul>
+      <li>What GDB requires to run</li>
+      <li>How to get GDB to run</li>
+      <li>What commands are used to gain the above functionality</li>
+      <li>How does GDB handle problems or unexpected input</li>
+      <li>How does one send commands from a program to a GDB process</li>
+      <li>How does one communicate with a GUI to a debugger process</li>
+    </ul>
+    <p>Thankfully the GNU Debugger is marvelously designed and very user friendly.  Making it program friendly has been the challenge of the project, but we have for the most part succeeded.</p>
+    <p>Useful References:</p>
+    <ul>
+      <li><a href="http://www.gnu.org/software/gdb/documentation/">GDB Documentation</a>: The Official GDB manual.</li>
+      <li><a href="http://www.mingw.org/">MinGW</a>: The win32 version of GDB</li>
+      <li><a href="http://chaos4.phy.ohiou.edu/~thomas/ref/info/rx/Posix_Basic_Regular_Expressions.html">POSIX Regular Expressions</a>: Knowledge of Regular Expresssions is very helpful when dealing with formated output.</li>
+    </ul>
+
+    <br>
+
+    <h2>2.3 - Permissions Manager</h2>
+    <p>The only thing that was neccesary to learn was C++'s <<a href="http://www.sgi.com/tech/stl/bitset.html">bitwise</a>>class, with a touch of <a href="http://www2.rad.com/networks/1994/err_con/crc.htm">CRC</a> on the side for code number encryption.</p>
+
+    <br>
+
+    <h2>2.4 - Compiler</h2>
+    <p>Similar to the debugger, a compiler wasn't designed, so knowing how to use the GNU Compiler was the most extensive specific knowledge needed.  Additionally, for wrapping the external compiler knowledge of stateful-design and regular expressions for parsing was needed.</p>
+    <p>Useful References:</p>
+    <ul>
+      <li><a href="http://gcc.gnu.org/onlinedocs/gcc/">G++/GCC Documentation</a>: The Official manual.</li>
+      <li><a href="http://www.mingw.org/">MinGW</a>: The win32 version of G++/GCC</li>
+    </ul>
+
+    <br>
+
+    <h2>2.5 - Networking / Processes</h2>
+    <p>Networked communications to the remote server are done over an SSH connection.  Fortunately, making use of the Plink utility allows almost complete abstraction from the details.</p>
+    <p>For using external processes a strong knowledge of managing processes within the wxWidgets toolkit was needed.  This also required an understanding of threading (synchronous and asynchronous) to be able to write thread-safe code.  Additionally, knowing some basic Bash and win32 Commandline commands is needed.</p>
+    <p>Useful References:</p>
+    <ul>
+      <li><a href="http://www.tartarus.org/~simon/puttydoc/Chapter7.html#7">Plink Documentation</a>: The Official manual.</li>
+      <li>wxWidgets Exec Sample.  Included in the wxWidgets download (%wxdir%)\samples\exec</li>
+      <li><a href="http://wiki.wxwidgets.org/wiki.pl?WxProcess">wxWidgets wiki on wxProcess</a> (Our team modified this to keep it accurate.)</li>
+    </ul>
+
+    <br>
+
+    <h2>2.6 - Interfacing</h2>
+    <p>Chameleon is designed around the wxWidgets toolkit event loop.  For inter-feature communications we use the wxEvents and macros.</p>
+    <p>Useful References:</p>
+    <ul>
+      <li><a href="http://wxwindows.org/manuals/2.4.2/wx470.htm#eventhandlingoverview">Event Handling Overview</a>.</li>
+      <li><a href="http://wiki.wxwidgets.org/wiki.pl?Custom_Events">wxWidgets wiki on Custom Events</a> (Also modified by our team).</li>
+    </ul>
+
+    <hr>
+    <center>
+      <table summary="navigation"><tr>
+        <td height="100" width="60"><a href="../index.html"><img src="../images/home.gif" align="bottom" alt="Home" border="0"></a></td>
+        <td height="100" width="60"><a href="maint.htm"><img src="../images/toc.gif" align="bottom" alt="TOC" border="0"></a></td>
+        <td height="100" width="60"><a href="maint_1.htm"><img src="../images/prev.gif" align="bottom" alt="Previous" border="0"></a></td>
+        <td height="100" width="60"><a href="maint_3.htm"><img src="../images/next.gif" align="bottom" alt="Next" border="0"></a></td>
+      </tr></table>
+    </center>
+    Document modified on
+    <script type="text/javascript" language="JavaScript">
+      <!--
         document.write(document.lastModified + " GMT")
-// -->
-</script>
-</body></html>
+      // -->
+    </script>
+
+  </body>
+
+</html>
