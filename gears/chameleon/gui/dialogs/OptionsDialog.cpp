@@ -23,15 +23,18 @@
 #include "../../common/CommonHeaders.h"
 #include "../../common/Options.h"
 
+
 ////@begin includes
 #include "wx/wx.h"
 #include "wx/notebook.h"
 ////@end includes
 
 #include <wx/checklst.h>
+#include <wx/valtext.h>
 #include "OptionsDialog.h"
 #include "../ChameleonWindow.h"
 
+#include "../../perms/p.h"
 #include "../../common/debug.h"
 
 
@@ -86,6 +89,12 @@ OptionsDialog::OptionsDialog( wxWindow* parent, Options* options, wxWindowID id,
     Create(parent, id, caption, pos, size, style);
 	m_parentFrame = (ChameleonWindow*)parent;
 	m_options = options;
+
+	wxTextValidator textval(wxFILTER_EXCLUDE_LIST);
+	wxStringList exclude;
+	exclude.Add("\"");
+	m_password1->SetValidator(textval);
+	m_password2->SetValidator(textval);
 }
 
 /*!
@@ -165,14 +174,14 @@ void OptionsDialog::CreateControls()
     wxStaticText* item20 = new wxStaticText( item17, wxID_STATIC, _("Network server address:"), wxDefaultPosition, wxDefaultSize, 0 );
     item19->Add(item20, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
     wxTextCtrl* item21 = new wxTextCtrl( item17, ID_HOSTNAME, _(""), wxDefaultPosition, wxSize(160, -1), wxTE_PROCESS_ENTER );
-    m_serverAddress = item21;
-    item19->Add(item21, 0, wxALIGN_CENTER_HORIZONTAL|wxLEFT|wxRIGHT|wxBOTTOM, 5);
+    m_hostname = item21;
+    item19->Add(item21, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxBOTTOM, 5);
     wxStaticText* item22 = new wxStaticText( item17, wxID_STATIC, _("Username:"), wxDefaultPosition, wxDefaultSize, 0 );
     item19->Add(item22, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
     wxTextCtrl* item23 = new wxTextCtrl( item17, ID_USERNAME, _(""), wxDefaultPosition, wxSize(160, -1), wxTE_PROCESS_ENTER );
     m_username = item23;
     item19->Add(item23, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxBOTTOM, 5);
-    wxStaticText* item24 = new wxStaticText( item17, wxID_STATIC, _("Password:"), wxDefaultPosition, wxDefaultSize, 0 );
+    wxStaticText* item24 = new wxStaticText( item17, wxID_STATIC, _("Password (no quote marks allowed):"), wxDefaultPosition, wxDefaultSize, 0 );
     item19->Add(item24, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
     wxTextCtrl* item25 = new wxTextCtrl( item17, ID_PASSWORD1, _(""), wxDefaultPosition, wxSize(160, -1), wxTE_PROCESS_ENTER|wxTE_PASSWORD );
     m_password1 = item25;
@@ -230,7 +239,7 @@ wxCheckListBox* OptionsDialog::GetListBox()
 
 wxString OptionsDialog::GetServerAddress()
 {
-    return m_serverAddress->GetValue();
+    return m_hostname->GetValue();
 }
 
 wxString OptionsDialog::GetUsername()
@@ -250,7 +259,7 @@ wxString OptionsDialog::GetPassword2()
 
 void OptionsDialog::SetServerAddress(wxString address)
 {
-	m_serverAddress->SetValue(address);
+	m_hostname->SetValue(address);
 }
 
 void OptionsDialog::SetUsername(wxString username)
@@ -323,6 +332,18 @@ void OptionsDialog::ExitDialog()
 
 	if(pwd1 == pwd2)
 	{
+		Permission* perms = m_options->GetPerms();
+		for(int i = 0; i < m_checkList->GetCount(); i++)
+		{
+			if(m_checkList->IsChecked(i))
+			{
+				perms->enable(m_permMappings[i]);
+			}
+			else
+			{
+				perms->disable(m_permMappings[i]);
+			}
+		}
 		EndModal(wxOK);
 		m_optionsNotebook->SetSelection(0);
 	}
@@ -359,14 +380,43 @@ void OptionsDialog::OnUpdateAuthCode( wxCommandEvent& event )
     // Insert custom code here
     event.Skip();
 
-	if(!m_parentFrame->UpdateAuthCode())
+	wxString newAuthCode = m_txtProfCode->GetValue();
+	newAuthCode.MakeUpper();
+
+	Permission* perms = m_options->GetPerms();
+
+	if(!perms->setGlobalAuthorized(newAuthCode))
 	{
+		
 		wxMessageBox("Invalid authorization code.  Please check that it was entered correctly and try again.");
 	}
 	else
 	{
-		wxMessageBox("Authorized features updated.");
+		m_checkList->Clear();
+		m_permMappings.Clear();
+
+		wxString optionname;
+
+		for(int i = PERM_FIRST; i < PERM_LAST; i++)
+		{		
+			if(perms->isAuthorized(i))
+			{
+				optionname = perms->getPermName(i);
+				m_checkList->Append(optionname);
+				m_permMappings.Add(i);
+
+				if(perms->isEnabled(i))
+				{
+					m_checkList->Check(i, true);
+				}
+			}		
+		}
+
 		m_txtProfCode->Clear();
+		m_authCodeLabel->SetLabel(newAuthCode);
+
+		wxMessageBox("Authorized features updated.");
+		
 	}
 
 }
@@ -375,8 +425,8 @@ void OptionsDialog::OnUpdateAuthCode( wxCommandEvent& event )
 void OptionsDialog::EnableServerSettings()
 {
 	wxColour white("white");
-	m_serverAddress->SetEditable(true);
-	m_serverAddress->SetBackgroundColour(white);
+	m_hostname->SetEditable(true);
+	m_hostname->SetBackgroundColour(white);
 	m_username->SetEditable(true);
 	m_username->SetBackgroundColour(white);
 	m_password1->SetEditable(true);
@@ -388,8 +438,8 @@ void OptionsDialog::EnableServerSettings()
 void OptionsDialog::DisableServerSettings()
 {
 	wxColour grey("light grey");
-	m_serverAddress->SetEditable(false);
-	m_serverAddress->SetBackgroundColour(grey);
+	m_hostname->SetEditable(false);
+	m_hostname->SetBackgroundColour(grey);
 	m_username->SetEditable(false);
 	m_username->SetBackgroundColour(grey);
 	m_password1->SetEditable(false);
@@ -446,6 +496,56 @@ bool OptionsDialog::EvaluateOptions()
 {
 	bool validOptions = true;
 
+	wxString outputMessage = wxEmptyString;
+
+	wxString mingwPath = m_txtMingwPath->GetValue();
+
+	if(!wxFileName::DirExists(mingwPath))
+	{
+		outputMessage = mingwPath + " is not a valid path.";
+		goto end;
+	}
+
+
+
+	m_options->SetHostname(m_hostname->GetValue());
+	m_options->SetHostname(m_username->GetValue());
+	m_options->SetPassphrase(m_password1->GetValue());
+	
+	m_options->SetMingwPath(mingwPath);
+
+	
+	
+end:	
+	
+	if(outputMessage != wxEmptyString)
+	{
+		validOptions = false;
+		wxMessageBox(outputMessage, "Invalid Option", wxOK | wxICON_WARNING);
+	}
 	return validOptions;
 	
+}
+
+void OptionsDialog::InitializeDialog()
+{
+	Permission* perms = m_options->GetPerms();
+
+	for(int i = 0; i < m_checkList->GetCount(); i++)
+	{
+		int mappedPerm = m_permMappings[i];
+		
+		m_checkList->Check(i, perms->isEnabled(mappedPerm));
+	}
+
+	m_hostname->SetValue(m_options->GetHostname());
+	m_username->SetValue(m_options->GetUsername());
+	wxString password = m_options->GetPassphrase();
+	m_password1->SetValue(password);
+	m_password2->SetValue(password);
+
+	m_txtMingwPath->SetValue(m_options->GetMingwPath());
+
+	m_authCodeLabel->SetLabel(perms->GetAuthCode());
+
 }

@@ -39,7 +39,7 @@
 #include "stepnext.xpm"
 #include "stepout.xpm"
 #include "stepover.xpm"
-#include "pause.xpm"
+//#include "pause.xpm"
 
 #include "moz.xpm"
 
@@ -140,11 +140,13 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	wxString enabledCode = "0";
 
 	// by default, enable nothing
-	wxString defaultAuthorizedCode = "0";
+	wxString defaultAuthorizedCode = "10A80000000";
 	wxString defaultEnableCode = "0";
 
-	m_options = new Options;
-	m_perms = new Permission(defaultAuthorizedCode, defaultEnableCode);
+	m_options = new Options();
+
+	Permission* perms = m_options->GetPerms();
+	//m_perms = new Permission(defaultAuthorizedCode, defaultEnableCode);
 
 	wxFileName configName(wxGetHomeDir(), "chameleon.ini");
 
@@ -158,7 +160,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 		authorizedCode = m_config->Read("Permissions/authorized", defaultAuthorizedCode);
 		enabledCode = m_config->Read("Permissions/enabled", defaultEnableCode);
 		
-		if(!m_perms->setGlobalAuthorized(authorizedCode))
+		if(!perms->setGlobalAuthorized(authorizedCode))
 		{
 			wxLogDebug("Authcode initialization failed!  Code: %s", authorizedCode.c_str());
 			authorizedCode = "0";
@@ -167,7 +169,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 		{
 			
 		}
-		m_perms->setGlobalEnabled(enabledCode);		
+		perms->setGlobalEnabled(enabledCode);		
 	}
 	else
 	{
@@ -193,13 +195,15 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	m_debugger = new Debugger(NULL);
 
 	m_optionsDialog = new OptionsDialog(this, m_options, ID_OPTIONSDIALOG, "Options");
-	UpdatePermsList();
+	//UpdatePermsList();
 
+	/*
 	m_optionsDialog->SetServerAddress(m_options->GetHostname());
 	m_optionsDialog->SetUsername(m_options->GetUsername());
 	m_optionsDialog->SetPassword1(wxEmptyString);
 	m_optionsDialog->SetPassword2(wxEmptyString);
 	m_optionsDialog->SetAuthCode(authorizedCode);
+	*/
 
 
 
@@ -228,7 +232,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	m_projectTree = new wxTreeCtrl(m_splitProjectEditor, ID_PROJECTTREE);
 
 	
-	UpdateTerminalNotebook();
+	//UpdateTerminalNotebook();
 
 	m_remoteFileDialog = new RemoteFileDialog(this, ID_REMOTEFILEDIALOG);
 	m_remoteFileDialog->SetNetworking(m_network);
@@ -245,14 +249,29 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	m_appClosing = false;
 	m_setSelection = false;
 
-	UpdateMenuBar();
+	//UpdateMenuBar();
+
+	
 
 	wxToolBar* toolBar = CreateToolBar(wxTB_FLAT | wxTB_TEXT);
 
 	SetToolBar(toolBar);
-	UpdateToolbar();
+	//UpdateToolbar();
 
 	m_statusBar = CreateStatusBar(2);
+
+	//UpdateToolbar();
+	//UpdateMenuBar();
+	//UpdateTerminalNotebook();
+	
+	//m_splitProjectEditor->Unsplit();
+	m_splitProjectEditor->Initialize(m_book);
+	m_splitEditorOutput->Initialize(m_splitProjectEditor);
+	m_splitProjectEditor->Show();
+	m_splitEditorOutput->Show();
+	m_book->Show();
+	EvaluateOptions();
+	
 
 	// create the initial blank open file
 	wxCommandEvent ev;
@@ -275,7 +294,7 @@ ChameleonWindow::~ChameleonWindow()
 {
 	m_config->Flush();
 
-	delete m_perms;
+	//delete m_perms;
 	delete m_optionsDialog;
 	delete m_network;
 	delete m_compiler;
@@ -1371,13 +1390,23 @@ void ChameleonWindow::OnToolsOptions(wxCommandEvent &event)
 		m_optionsDialog->EnableServerSettings();
 	}
 
+	m_optionsDialog->InitializeDialog();
 	int result = m_optionsDialog->ShowModal();
-	m_currentEd->SetFocus();
+	
+
+	Permission* perms = m_options->GetPerms();
+	// because the authorization could be updated and followed by a cancel,
+	// go ahead and write the authcode out.  Odds are it hasn't changed, but
+	// it's worth doing anyway to make sure it's current.
+	m_config->Write("Permissions/authorized", perms->GetAuthCode());
+	
 
 	if(result == wxOK)
 	{
-		EvaluateOptions();		
+		EvaluateOptions();			
 	}
+
+	m_currentEd->SetFocus();
 }
 
 
@@ -1435,7 +1464,8 @@ int* ChameleonWindow::SelectIntVar(int variableName)
 
 bool ChameleonWindow::IsEnabled(int permission)
 {
-	return m_perms->isEnabled(permission);
+
+	return m_options->GetPerms()->isEnabled(permission);
 }
 
 bool ChameleonWindow::InRemoteMode()
@@ -1447,7 +1477,9 @@ void ChameleonWindow::UpdateMenuBar()
 {
 	wxMenuBar* menuBar = GetMenuBar();
 
-	bool localModeEnabled = m_perms->isEnabled(PERM_LOCALMODE);
+	Permission* perms = m_options->GetPerms();
+
+	bool localModeEnabled = perms->isEnabled(PERM_LOCALMODE);
 	if(menuBar != NULL)
 	{
 		SetMenuBar(NULL);
@@ -1473,7 +1505,7 @@ void ChameleonWindow::UpdateMenuBar()
 	menuFile->Append(ID_SAVE_AS, "Save C++ File &As", "Save the current file as a different name");
 	menuFile->AppendSeparator();
 
-	if(m_perms->isEnabled(PERM_PROJECTS))
+	if(perms->isEnabled(PERM_PROJECTS))
 	{
 		menuFile->Append(ID_NEW_PROJECT, "Create New Project");
 
@@ -1519,7 +1551,7 @@ void ChameleonWindow::UpdateMenuBar()
 
 	menuTools->Append(ID_OPTIONS, "&Options");
 
-	if(m_perms->isEnabled(PERM_TERMINAL))
+	if(perms->isEnabled(PERM_TERMINAL))
 	{
 		menuTools->AppendSeparator();
 
@@ -1530,7 +1562,7 @@ void ChameleonWindow::UpdateMenuBar()
 	menuBar->Append(menuTools, "&Tools");
 
 
-	if(m_perms->isEnabled(PERM_COMPILE))
+	if(perms->isEnabled(PERM_COMPILE))
 	{
 		wxMenu* compileMenu = new wxMenu();
 		compileMenu->Append(ID_COMPILE, "Compile File");
@@ -1539,7 +1571,7 @@ void ChameleonWindow::UpdateMenuBar()
 
 
 	/*
-	if(m_perms->isEnabled(PERM_PROJECTS))
+	if(perms->isEnabled(PERM_PROJECTS))
 	{
 		wxMenu* projectMenu = new wxMenu();
 		projectMenu->Append(ID_PROJECT_ADDFILE, "Add file to project");
@@ -1562,6 +1594,8 @@ void ChameleonWindow::UpdateMenuBar()
 
 void ChameleonWindow::UpdateToolbar()
 {
+	Permission* perms = m_options->GetPerms();
+
 	wxToolBar* t = GetToolBar();
 	t->ClearTools();
 
@@ -1590,7 +1624,7 @@ void ChameleonWindow::UpdateToolbar()
     
 	wxBitmap bmOpen(open_xpm);
 
-	if(m_perms->isEnabled(PERM_LOCALMODE))
+	if(perms->isEnabled(PERM_LOCALMODE))
 	{
 		t->AddTool(ID_OPEN_SOURCE_LOCAL, "Open (L)", bmOpen);
 	}
@@ -1600,7 +1634,7 @@ void ChameleonWindow::UpdateToolbar()
 	wxBitmap bmSave(save_xpm);
 	t->AddTool(ID_SAVE, "Save", bmSave);
 
-	if(m_perms->isEnabled(PERM_TERMINAL))
+	if(perms->isEnabled(PERM_TERMINAL))
 	{
 		t->AddSeparator();
 
@@ -1613,7 +1647,7 @@ void ChameleonWindow::UpdateToolbar()
 	}
 
 
-	if(m_perms->isEnabled(PERM_TEST))
+	if(perms->isEnabled(PERM_TEST))
 	{
 		t->AddSeparator();	
 
@@ -1621,21 +1655,18 @@ void ChameleonWindow::UpdateToolbar()
 		t->AddTool(ID_TEST, "Test", bmTest);
 	}
 
-	if(m_perms->isEnabled(PERM_COMPILE))
+	if(perms->isEnabled(PERM_COMPILE))
 	{
 		t->AddSeparator();
 		wxBitmap bmCompile(build_xpm);
 		t->AddTool(ID_COMPILE, "Compile", bmCompile);
 	}
 	
-	if(m_perms->isEnabled(PERM_DEBUG))
+	if(perms->isEnabled(PERM_DEBUG))
 	{
 		t->AddSeparator();
 		wxBitmap bmStart(start_xpm);
 		t->AddTool(ID_DEBUG_START, "Run", bmStart);
-
-		wxBitmap bmPause(pause_xpm);
-		t->AddTool(ID_DEBUG_PAUSE, "Pause", bmPause);
 
 		wxBitmap bmStop(stop_xpm);
 		t->AddTool(ID_DEBUG_STOP, "Stop", bmStop);
@@ -1656,24 +1687,30 @@ void ChameleonWindow::UpdateToolbar()
 
 bool ChameleonWindow::UpdateAuthCode()
 {
-	wxString newAuthCode = m_optionsDialog->GetAuthCode();
+	wxLogDebug("in CW::UpdateAuthCode");
+	//wxString newAuthCode = m_optionsDialog->GetAuthCode();
 
+	/*
 	newAuthCode.MakeUpper();
 	if(m_perms->setGlobalAuthorized(newAuthCode))
 	{
 		m_config->Write("Permissions/authorized", newAuthCode);
-		UpdatePermsList();
+		//UpdatePermsList();
 		m_optionsDialog->SetAuthCode(newAuthCode);
 		return true;
 	}
 	else
 	{
 		return false;
-	}	
+	}
+	*/
+	return true;
 }
 
 void ChameleonWindow::UpdatePermsList()
 {
+	wxLogDebug("CW::UpdatePermsList");
+	/*
 	wxCheckListBox* checkList = m_optionsDialog->GetListBox();
 
 	checkList->Clear();
@@ -1684,7 +1721,7 @@ void ChameleonWindow::UpdatePermsList()
 
 	for(int i = PERM_FIRST; i < PERM_LAST; i++)
 	{		
-		if(m_perms->isAuthorized(i))
+		//if(m_perms->isAuthorized(i))
 		{
 			optionname = m_perms->getPermName(i);
 
@@ -1702,38 +1739,20 @@ void ChameleonWindow::UpdatePermsList()
 			}
 		}		
 	}
+	*/
 }
 
 void ChameleonWindow::EvaluateOptions()
 {
 	// update permissions settings from the options dialog
-	
-	wxCheckListBox* checkList = m_optionsDialog->GetListBox();
 
-	for(int i = 0; i < checkList->GetCount(); i++)
-	{
-		int mappedPermNum = m_permNumMap[i];
-
-		bool enableOption = checkList->IsChecked(i);
-
-		if(enableOption)
-		{
-			m_perms->enable(mappedPermNum);
-		}
-		else
-		{
-			m_perms->disable(mappedPermNum);
-		}
-	}
-
-	m_config->Write("Permissions/enabled", m_perms->getGlobalEnabled());
-
+	Permission* perms = m_options->GetPerms();
 
 	UpdateToolbar();
 	UpdateMenuBar();
 	UpdateTerminalNotebook();
 
-	if(m_perms->isEnabled(PERM_PROJECTS))
+	if(perms->isEnabled(PERM_PROJECTS))
 	{
 		if(!m_projectTree->IsShown())
 		{
@@ -1748,7 +1767,6 @@ void ChameleonWindow::EvaluateOptions()
 		if(m_projectTree->IsShown())
 		{
 			m_splitProjectEditor->Unsplit(m_projectTree);
-			//m_splitProjectEditor->Initialize(m_book);
 			m_projectTree->Hide();
 			m_book->Refresh();
 		}
@@ -1760,19 +1778,9 @@ void ChameleonWindow::EvaluateOptions()
 		edit->UpdateSyntaxHighlighting();
 	}
 
-	m_options->SetHostname(m_optionsDialog->GetServerAddress());
-	m_options->SetUsername(m_optionsDialog->GetUsername());
-	if(! m_options->SetPassphrase(m_optionsDialog->GetPassword1()) ) {
-		// Password has a " in it
-		// Mark, use this as you feel fit.
-	}
-	
-
+	m_config->Write("Permissions/enabled", perms->GetPermCode());
 	m_config->Write("Network/hostname", m_options->GetHostname());
 	m_config->Write("Network/username", m_options->GetUsername());
-
-
-
 }
 
 // called after every major network operation
@@ -2236,7 +2244,8 @@ void ChameleonWindow::OnCompile(wxCommandEvent &event)
 
 	if(doCompile)
 	{
-		bool isAdvanced = m_perms->isEnabled(PERM_ADVANCEDCOMPILE);
+		
+		bool isAdvanced = m_options->GetPerms()->isEnabled(PERM_ADVANCEDCOMPILE);
 		bool isProj = false;
 		if(m_currentProjectInfo != NULL && 
 			m_currentProjectInfo->FileExistsInProject(m_currentEd->GetFilenameString(), false) ) 
@@ -2297,6 +2306,7 @@ void ChameleonWindow::CloseAllFiles()
 
 void ChameleonWindow::UpdateTerminalNotebook()
 {
+	Permission* perms = m_options->GetPerms();
 	int splitterLocation = m_splitEditorOutput->GetSashPosition();
 
 	int numPages = m_noteTerm->GetPageCount();
@@ -2307,17 +2317,17 @@ void ChameleonWindow::UpdateTerminalNotebook()
 		m_noteTerm->RemovePage(0);
 	}
 
-	if(m_perms->isEnabled(PERM_TERMINAL))
+	if(perms->isEnabled(PERM_TERMINAL))
 	{
 		m_noteTerm->AddPage(m_termContainer, "Terminal");
 	}
 
-	bool advCompileEnabled = m_perms->isEnabled(PERM_ADVANCEDCOMPILE);
-	bool basicCompileEnabled = m_perms->isEnabled(PERM_COMPILE);
+	bool advCompileEnabled = perms->isEnabled(PERM_ADVANCEDCOMPILE);
+	bool basicCompileEnabled = perms->isEnabled(PERM_COMPILE);
 
 	int compilerTextboxIdx = m_noteTerm->FindPagePosition(m_compilerTextbox);
 	bool compilerTextboxShown = (compilerTextboxIdx != -1);
-	if(m_perms->isEnabled(PERM_COMPILE))
+	if(perms->isEnabled(PERM_COMPILE))
 	{
 		if(advCompileEnabled)
 		{
@@ -2361,7 +2371,7 @@ void ChameleonWindow::UpdateTerminalNotebook()
 	m_noteTerm->Refresh();
 
 
-	if(m_perms->isEnabled(PERM_PROJECTS))
+	if(perms->isEnabled(PERM_PROJECTS))
 	{
 		if(!m_splitProjectEditor->IsSplit())
 		{

@@ -16,6 +16,9 @@
 #include "plinkconnect.h"
 #include "../common/debug.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
 
 
 PlinkConnect::PlinkConnect(wxString plinkApplication, wxString hostname,

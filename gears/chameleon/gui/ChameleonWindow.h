@@ -237,7 +237,7 @@ private:
 	//wxBoxSizer* sizerPanel;
 	//wxBoxSizer* sizerTab;
 
-	Permission*  m_perms;
+	//Permission*  m_perms;
 	Networking* m_network;
 	Compiler* m_compiler;
 	Options* m_options;

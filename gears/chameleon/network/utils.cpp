@@ -3,6 +3,10 @@
 #include "gterm.hpp"
 #include "../common/debug.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
 int GTerm::calc_color( int fg, int bg, int flags )
                            { return (flags & 15) | (fg << 4) | (bg << 8); }
 

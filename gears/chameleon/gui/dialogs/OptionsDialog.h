@@ -121,6 +121,7 @@ public:
 	void BrowseForDir(wxTextCtrl* textbox, wxString name);
 	bool EvaluateOptions();
 
+	void InitializeDialog();
 	void ExitDialog();
 	void OnEnter(wxCommandEvent &event);
 
@@ -143,7 +144,7 @@ public:
     wxTextCtrl* m_txtProfCode;
     wxButton* m_butSetAuthCode;
     wxStaticText* m_authCodeLabel;
-    wxTextCtrl* m_serverAddress;
+    wxTextCtrl* m_hostname;
     wxTextCtrl* m_username;
     wxTextCtrl* m_password1;
     wxTextCtrl* m_password2;
@@ -153,6 +154,8 @@ public:
 
 	ChameleonWindow* m_parentFrame;
 	Options* m_options;
+
+	wxArrayInt m_permMappings;
 };
 
 #endif

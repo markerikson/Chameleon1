@@ -2,13 +2,15 @@
 
 // Includes:
 #include <wx/filename.h>
+#include "../perms/p.h"
 #include "debug.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
-Options::Options() {
+Options::Options() 
+{
 	// Set Some Default Values (perhaps these should not be set!)
 	m_pscpProg = "pscp.exe";
 	m_plinkProg = "plink.exe";
@@ -17,12 +19,20 @@ Options::Options() {
 	m_hostname = "localhost";
 	m_password = "password";
 	m_remoteCompileOut = "a.out";
+
+	m_perms = new Permission();
+	int q = 42;
 	//wxFileName pscpPath(wxGetCwd(), "pscp.exe");
 	//SetPscpApp(pscpPath.GetFullPath());
 	//wxFileName plinkPath(wxGetCwd(), "plink.exe");
 	//SetPlinkApp(plinkPath.GetFullPath());
 	//wxFileName mingwPath(wxGetCwd());
 	//SetMingwPath(mingwPath.GetFullPath());
+}
+
+Options::~Options()
+{
+	delete m_perms;
 }
 
 

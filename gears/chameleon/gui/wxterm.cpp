@@ -57,6 +57,10 @@
 
 #include "../common/debug.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
 
 void WinMessageBeep();
 

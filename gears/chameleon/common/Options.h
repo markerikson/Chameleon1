@@ -2,12 +2,22 @@
 #define OPTIONS_H
 
 #include <wx/wx.h>
+#include <wx/validate.h>
+#include <wx/valgen.h>
+#include <wx/valtext.h>
+
+class Permission;
 
 
 class Options
 {
+	friend class OptionsDialog;
+	friend class wxValidator;
+	friend class wxTextValidator;
+	friend class wxGenericValidator;
 	public:
 		Options();
+		~Options();
 
 		// Modifiers:
 		bool SetPscpApp(wxString path_and_prog);
@@ -28,6 +38,7 @@ class Options
 		wxString GetPassphrase() { return m_password; }
 		wxString GetRemoteCompileOut() { return m_remoteCompileOut; }
 		wxString GetLocalCompileOut() { return m_localCompileOut; }
+		Permission* GetPerms() { return m_perms; }
 
 	private:
 		wxString m_pscpProg;
@@ -40,6 +51,8 @@ class Options
 
 		wxString m_remoteCompileOut;
 		wxString m_localCompileOut;
+
+		Permission* m_perms;
 };
 
 

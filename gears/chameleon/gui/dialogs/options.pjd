@@ -980,7 +980,7 @@ Here you can see what features are enabled, as well as enter an activation code.
 										<value name="proxy-Id value" type="Integer">5105</value>
 										<value name="proxy-Class" type="string">wxStaticText</value>
 										<value name="proxy-Member variable name" type="string"></value>
-										<value name="proxy-Label" type="string">Password:</value>
+										<value name="proxy-Label" type="string">Password (no quote marks allowed):</value>
 										<value name="proxy-Background colour" type="string"></value>
 										<value name="proxy-Foreground colour" type="string"></value>
 										<value name="proxy-Hidden" type="bool">FALSE</value>

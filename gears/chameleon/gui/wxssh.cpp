@@ -30,6 +30,10 @@
 #include "wxssh.h"
 #include "../common/debug.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
 
 BEGIN_EVENT_TABLE(wxSSH, wxTerm)
 	EVT_PROCESS2_STDOUT(wxSSH::OnPlinkOut)
