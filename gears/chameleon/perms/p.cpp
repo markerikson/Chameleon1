@@ -13,18 +13,16 @@
 //  ~BSC--xx/xx/xx--Altered the error handling of the program to be
 //                  a little more graceful.
 //  ~BSC--11/29/03--Added the authorization bitset variable & implementation
+//  ~BSC--02/09/04--Removed all file access.  User must pass in the # on
+//                  initialization.  Also # encryption removed.
 
 //includes
 #include "p.h"
-#include<fstream>
-#include<string>
-#include<iostream>
 
 //global variables
 using namespace std;
 
-const string PERM_FILE = "perm.dat";
-const int NOISE = 42;
+
 
 //@@@@@@@@@
 //@ BEGIN @
@@ -34,7 +32,7 @@ const int NOISE = 42;
 //Input: Zip right now.
 //Output: Nothing really; just initializes the authorization and permission
 //        codes and arrays.
-Permission::Permission()
+Permission::Permission(long int loadAuthCode, long int loadPermCode)
 {
 	
 	permNames = new wxArrayString();
@@ -46,122 +44,27 @@ Permission::Permission()
 
 
 
-
-	int fuzz, topaz;
-
-	//load the perm level
-	ifstream in;
-	in.open(PERM_FILE.c_str());
-
-	if(!in)
-	{
-		io = false;
-		permCode = -1764;
-		authCode = -729;
-	}
-	else
-	{
-		io = true;
-		in>>fuzz>>fuzz>>permCode>>fuzz;
-		in>>topaz>>authCode>>topaz>>topaz;
-	}
-	
-	in.close();
-
-	//decode the codes (oooh secure)
-	permCode = (permCode / fuzz) + fuzz;
-	fuzz = permCode;
-
-	authCode = (authCode + (topaz * topaz)) / topaz;
-	topaz = authCode;
-
-	//DEBUG CODE//
-	//cout<<"--PERMISSIONS::CONSTRUCTOR fuzz = "<<fuzz<<" |permCode = "<<permCode<<endl;
-
 	//load permission code into bitset Array
 
-	bitset<NUM_MODULES> tempP(permCode);
-	bitset<NUM_MODULES> tempA(authCode);
+	bitset<NUM_MODULES> tempP(loadPermCode);
+	bitset<NUM_MODULES> tempA(loadAuthCode);
 	status = tempP;
 	auth = tempA;
 
-	//DEBUG CODE//
-	//cout<<"--PERMISSIONS::CONSTRUCTOR temp = "<<temp<<endl;
-
 	permCode = status.to_ulong();
 	authCode = auth.to_ulong();
-
-	if(permCode != fuzz)
-	{
-		/* Old Error Handling
-		cout<<"ERROR: Perm code did not de-code into Bitset"<<endl
-			<<"Bitset: "<<permCode<<endl
-			<<"Code:   "<<fuzz<<endl;
-		exit(1);
-		*/
-		//error has occured decoding the permissions code.Reset to null state
-		status.reset();
-	}
-
-	if(authCode != topaz)
-	{
-		auth.reset();
-	}
-
-	//everything loaded correctly!
 }
 
 //Destructor
-//Kills everything.  Also handles saving of the permissions and authorization
-//codes
+//Kills everything.
 Permission::~Permission()
 {
-	ofstream fout;
-	fout.open(PERM_FILE.c_str());
-
-	//unable to generate output file.
-	if(!fout)
-	{
-		io = false;
-	}
-	else
-	{
-		//output file generated.
-		io = true;	//*pointless really*//
-
-		//encode the codes
-		permCode = (permCode - NOISE) * NOISE;
-		authCode = (authCode * (NOISE - 15)) - ((NOISE - 15) * (NOISE - 15));
-
-		fout<<NOISE + NOISE<<endl
-			<<(NOISE / (NOISE - (NOISE / 2)))<<endl
-			<<permCode<<endl
-			<<NOISE<<endl
-			<<(NOISE * NOISE)<<endl
-			<<authCode<<endl
-			<<(NOISE * (NOISE - 15))<<endl
-			<<(NOISE - 15)<<endl;
-	}
-
-	fout.close();
-
-	//DEBUG CODE//
-	//cout<<"--PERMISSIONS::DESTRUCTOR permCode = "<<permCode<<endl;
-
 	status.reset();
 	auth.reset();
 	permCode = 0;
 	authCode = 0;
 
 	delete permNames;
-}
-
-//fileSuccess
-//Input: nothing
-//Output: returns whether the permissions file was successfully parsed.
-bool Permission::fileSuccess()
-{
-	return(io);
 }
 
 //isEnabled
@@ -221,21 +124,18 @@ bool Permission::setGlobal(long code)
 }
 
 //getGlobal
-//input: (this version) nothing
-//output: the current permissions code
-long Permission::getGlobal()
+//input: nothing
+//output: current permissions code stored; this is what is visible
+long Permission::getGlobalEnabled()
 {
 	return(permCode);
 }
 
 //getGlobal 2
-//input: a key number, 0 or otherwise
-//output: the authorization code, either straight or from the bitset array
-long Permission::getGlobal(int mode = 0)
+//input: nothing
+//output: the authorization code.  This is what can be turned on/off.
+long Permission::getGlobalAuthorized()
 {
-	if(mode == 0)
-		return(auth.to_ulong());
-
 	return(authCode);
 }
 
