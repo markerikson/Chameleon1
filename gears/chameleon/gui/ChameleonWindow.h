@@ -206,6 +206,7 @@ private:
 
 
 	IntIntHashmap m_permNumMap;
+	WindowPointerArray m_infoTabTracker;
 	//wxPanel* tcPanel1;
 
 	//wxBoxSizer* sizerPanel;

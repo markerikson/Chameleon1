@@ -6,7 +6,9 @@
 
 #include <wx/hashmap.h>
 #include <wx/string.h>
+#include <wx/dynarray.h>
 
+class wxWindow;
 
 enum VariableNames
 {
@@ -90,17 +92,21 @@ enum modules
 	PERM_DEBUG,
 	PERM_TERMINAL,
 	PERM_REMOTELOCAL,
+	PERM_TELNETTEST,
+	PERM_PROJECTS,
 	PERM_LAST
 };
 
 
 #ifdef PERM___H
-wxString GlobalPermStrings[] = {"Syntax Highlighting", 
+wxString GlobalPermStrings[] = {"Syntax highlighting", 
 								"Name completion",
 								"Auto-indentation",
 								"Debugging",
 								"Terminal",
-								"Remote/Local modes"};
+								"Local mode",
+								"Telnet testing",
+								"Projects"};
 
 #endif
 
@@ -109,6 +115,16 @@ WX_DECLARE_HASH_MAP( int,
 					wxIntegerHash,
 					wxIntegerEqual,
 					IntIntHashmap );
+
+WX_DECLARE_HASH_MAP(wxString, 
+					int,
+					wxStringHash,
+					wxStringEqual,
+					StringIntHashmap);
+
+WX_DEFINE_ARRAY(wxWindow*, WindowPointerArray);
+
+
 
 typedef struct 
 {
@@ -134,6 +150,13 @@ enum NetworkCallResult
 	NETCALL_WORKED,
 	NETCALL_FAILED,
 	NETCALL_REDO,
+};
+
+enum FileDisplayType
+{
+	FILE_SOURCECODE,
+	FILE_PROJECT,
+	FILE_LASTTYPE,
 };
 
 #endif

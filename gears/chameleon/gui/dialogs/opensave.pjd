@@ -24,32 +24,32 @@
 	<value name="copyright_string" type="string"></value>
 	<value name="resource_prefix" type="string"></value>
 	<value name="use_two_step_construction" type="bool">FALSE</value>
-	<path name="IDbc32a8">
+	<path name="IDb7ef40">
 		<value name="title" type="string">Projects</value>
-		<value name="id" type="Integer">12333736</value>
+		<value name="id" type="Integer">12054336</value>
 		<value name="type" type="string">root-document</value>
 		<value name="filename" type="string"></value>
 		<value name="icon-name" type="string">project</value>
 		<value name="is-transient" type="Integer">1</value>
 		<value name="parent" type="Integer">0</value>
 		<value name="locked" type="Integer">0</value>
-		<path name="IDbe6670">
+		<path name="IDb79900">
 			<value name="title" type="string">Dialogs</value>
-			<value name="id" type="Integer">12478064</value>
+			<value name="id" type="Integer">12032256</value>
 			<value name="type" type="string">html-document</value>
 			<value name="filename" type="string"></value>
 			<value name="icon-name" type="string">dialogsfolder</value>
 			<value name="is-transient" type="Integer">1</value>
-			<value name="parent" type="Integer">12333736</value>
+			<value name="parent" type="Integer">12054336</value>
 			<value name="locked" type="Integer">1</value>
-			<path name="ID1565580">
+			<path name="IDba0b68">
 				<value name="title" type="string">Open/Save</value>
-				<value name="id" type="Integer">22435200</value>
+				<value name="id" type="Integer">12192616</value>
 				<value name="type" type="string">dialog-document</value>
 				<value name="filename" type="string"></value>
 				<value name="icon-name" type="string">dialog</value>
 				<value name="is-transient" type="Integer">0</value>
-				<value name="parent" type="Integer">12478064</value>
+				<value name="parent" type="Integer">12032256</value>
 				<value name="locked" type="Integer">0</value>
 				<value name="created" type="string">29/9/2003</value>
 				<value name="proxy-type" type="string">wbDialogProxy</value>
@@ -87,28 +87,28 @@
 				<value name="proxy-Fit to content" type="bool">TRUE</value>
 				<value name="proxy-Width" type="Integer">440</value>
 				<value name="proxy-Height" type="Integer">330</value>
-				<path name="ID159a090">
+				<path name="IDb992d0">
 					<value name="title" type="string">wxBoxSizer V</value>
-					<value name="id" type="Integer">22651024</value>
+					<value name="id" type="Integer">12161744</value>
 					<value name="type" type="string">dialog-control-document</value>
 					<value name="filename" type="string"></value>
 					<value name="icon-name" type="string">sizer</value>
 					<value name="is-transient" type="Integer">0</value>
-					<value name="parent" type="Integer">22435200</value>
+					<value name="parent" type="Integer">12192616</value>
 					<value name="locked" type="Integer">0</value>
 					<value name="proxy-type" type="string">wbBoxSizerProxy</value>
 					<value name="proxy-Orientation" type="string">Vertical</value>
 					<value name="proxy-Member variable name" type="string"></value>
 					<value name="proxy-wxSHAPED" type="bool">FALSE</value>
 					<value name="proxy-wxADJUST_MINSIZE" type="bool">FALSE</value>
-					<path name="ID158ff68">
+					<path name="IDba5b00">
 						<value name="title" type="string">wxBoxSizer H</value>
-						<value name="id" type="Integer">22609768</value>
+						<value name="id" type="Integer">12212992</value>
 						<value name="type" type="string">dialog-control-document</value>
 						<value name="filename" type="string"></value>
 						<value name="icon-name" type="string">sizer</value>
 						<value name="is-transient" type="Integer">0</value>
-						<value name="parent" type="Integer">22651024</value>
+						<value name="parent" type="Integer">12161744</value>
 						<value name="locked" type="Integer">0</value>
 						<value name="proxy-type" type="string">wbBoxSizerProxy</value>
 						<value name="proxy-Orientation" type="string">Horizontal</value>
@@ -123,14 +123,14 @@
 						<value name="proxy-wxBOTTOM" type="bool">FALSE</value>
 						<value name="proxy-wxSHAPED" type="bool">FALSE</value>
 						<value name="proxy-wxADJUST_MINSIZE" type="bool">FALSE</value>
-						<path name="IDc55610">
+						<path name="IDbda058">
 							<value name="title" type="string">wxStaticText</value>
-							<value name="id" type="Integer">12932624</value>
+							<value name="id" type="Integer">12427352</value>
 							<value name="type" type="string">dialog-control-document</value>
 							<value name="filename" type="string"></value>
 							<value name="icon-name" type="string">dialogcontrol</value>
 							<value name="is-transient" type="Integer">0</value>
-							<value name="parent" type="Integer">22609768</value>
+							<value name="parent" type="Integer">12212992</value>
 							<value name="locked" type="Integer">0</value>
 							<value name="proxy-type" type="string">wbStaticTextProxy</value>
 							<value name="proxy-Id name" type="string">wxID_STATIC</value>
@@ -168,14 +168,14 @@
 							<value name="proxy-wxSHAPED" type="bool">FALSE</value>
 							<value name="proxy-wxADJUST_MINSIZE" type="bool">TRUE</value>
 						</path>
-						<path name="ID158b960">
+						<path name="IDc151f8">
 							<value name="title" type="string">wxTextCtrl</value>
-							<value name="id" type="Integer">22591840</value>
+							<value name="id" type="Integer">12669432</value>
 							<value name="type" type="string">dialog-control-document</value>
 							<value name="filename" type="string"></value>
 							<value name="icon-name" type="string">dialogcontrol</value>
 							<value name="is-transient" type="Integer">0</value>
-							<value name="parent" type="Integer">22609768</value>
+							<value name="parent" type="Integer">12212992</value>
 							<value name="locked" type="Integer">0</value>
 							<value name="proxy-type" type="string">wbTextCtrlProxy</value>
 							<value name="proxy-Id name" type="string">ID_PATHBOX</value>
@@ -229,14 +229,14 @@
 							<value name="proxy-wxADJUST_MINSIZE" type="bool">FALSE</value>
 						</path>
 					</path>
-					<path name="ID1590b68">
+					<path name="IDb9d498">
 						<value name="title" type="string">wxListCtrl</value>
-						<value name="id" type="Integer">22612840</value>
+						<value name="id" type="Integer">12178584</value>
 						<value name="type" type="string">dialog-control-document</value>
 						<value name="filename" type="string"></value>
 						<value name="icon-name" type="string">dialogcontrol</value>
 						<value name="is-transient" type="Integer">0</value>
-						<value name="parent" type="Integer">22651024</value>
+						<value name="parent" type="Integer">12161744</value>
 						<value name="locked" type="Integer">0</value>
 						<value name="proxy-type" type="string">wbListCtrlProxy</value>
 						<value name="event-handler-0" type="string">wxEVT_COMMAND_LIST_ITEM_SELECTED|OnItemSelected</value>
@@ -292,14 +292,14 @@
 						<value name="proxy-wxSHAPED" type="bool">FALSE</value>
 						<value name="proxy-wxADJUST_MINSIZE" type="bool">FALSE</value>
 					</path>
-					<path name="IDbe3280">
+					<path name="IDba22d0">
 						<value name="title" type="string">wxBoxSizer V</value>
-						<value name="id" type="Integer">12464768</value>
+						<value name="id" type="Integer">12198608</value>
 						<value name="type" type="string">dialog-control-document</value>
 						<value name="filename" type="string"></value>
 						<value name="icon-name" type="string">sizer</value>
 						<value name="is-transient" type="Integer">0</value>
-						<value name="parent" type="Integer">22651024</value>
+						<value name="parent" type="Integer">12161744</value>
 						<value name="locked" type="Integer">0</value>
 						<value name="proxy-type" type="string">wbBoxSizerProxy</value>
 						<value name="proxy-Orientation" type="string">Vertical</value>
@@ -314,14 +314,14 @@
 						<value name="proxy-wxBOTTOM" type="bool">TRUE</value>
 						<value name="proxy-wxSHAPED" type="bool">FALSE</value>
 						<value name="proxy-wxADJUST_MINSIZE" type="bool">FALSE</value>
-						<path name="IDc3d2b0">
+						<path name="IDba3450">
 							<value name="title" type="string">wxBoxSizer H</value>
-							<value name="id" type="Integer">12833456</value>
+							<value name="id" type="Integer">12203088</value>
 							<value name="type" type="string">dialog-control-document</value>
 							<value name="filename" type="string"></value>
 							<value name="icon-name" type="string">sizer</value>
 							<value name="is-transient" type="Integer">0</value>
-							<value name="parent" type="Integer">12464768</value>
+							<value name="parent" type="Integer">12198608</value>
 							<value name="locked" type="Integer">0</value>
 							<value name="proxy-type" type="string">wbBoxSizerProxy</value>
 							<value name="proxy-Orientation" type="string">Horizontal</value>
@@ -336,14 +336,14 @@
 							<value name="proxy-wxBOTTOM" type="bool">TRUE</value>
 							<value name="proxy-wxSHAPED" type="bool">FALSE</value>
 							<value name="proxy-wxADJUST_MINSIZE" type="bool">FALSE</value>
-							<path name="ID15c7650">
+							<path name="IDc42090">
 								<value name="title" type="string">wxStaticText</value>
-								<value name="id" type="Integer">22836816</value>
+								<value name="id" type="Integer">12853392</value>
 								<value name="type" type="string">dialog-control-document</value>
 								<value name="filename" type="string"></value>
 								<value name="icon-name" type="string">dialogcontrol</value>
 								<value name="is-transient" type="Integer">0</value>
-								<value name="parent" type="Integer">12833456</value>
+								<value name="parent" type="Integer">12203088</value>
 								<value name="locked" type="Integer">0</value>
 								<value name="proxy-type" type="string">wbStaticTextProxy</value>
 								<value name="proxy-Id name" type="string">wxID_STATIC</value>
@@ -381,14 +381,14 @@
 								<value name="proxy-wxSHAPED" type="bool">FALSE</value>
 								<value name="proxy-wxADJUST_MINSIZE" type="bool">FALSE</value>
 							</path>
-							<path name="IDc59580">
+							<path name="IDb98b80">
 								<value name="title" type="string">wxTextCtrl</value>
-								<value name="id" type="Integer">12948864</value>
+								<value name="id" type="Integer">12159872</value>
 								<value name="type" type="string">dialog-control-document</value>
 								<value name="filename" type="string"></value>
 								<value name="icon-name" type="string">dialogcontrol</value>
 								<value name="is-transient" type="Integer">0</value>
-								<value name="parent" type="Integer">12833456</value>
+								<value name="parent" type="Integer">12203088</value>
 								<value name="locked" type="Integer">0</value>
 								<value name="proxy-type" type="string">wbTextCtrlProxy</value>
 								<value name="proxy-Id name" type="string">ID_TXTFILENAME</value>
@@ -441,14 +441,14 @@
 								<value name="proxy-wxSHAPED" type="bool">FALSE</value>
 								<value name="proxy-wxADJUST_MINSIZE" type="bool">FALSE</value>
 							</path>
-							<path name="IDbadec8">
+							<path name="IDbb8af8">
 								<value name="title" type="string">wxStaticLine</value>
-								<value name="id" type="Integer">12246728</value>
+								<value name="id" type="Integer">12290808</value>
 								<value name="type" type="string">dialog-control-document</value>
 								<value name="filename" type="string"></value>
 								<value name="icon-name" type="string">dialogcontrol</value>
 								<value name="is-transient" type="Integer">0</value>
-								<value name="parent" type="Integer">12833456</value>
+								<value name="parent" type="Integer">12203088</value>
 								<value name="locked" type="Integer">0</value>
 								<value name="proxy-type" type="string">wbStaticLineProxy</value>
 								<value name="proxy-Id name" type="string">wxID_STATIC</value>
@@ -483,14 +483,14 @@
 								<value name="proxy-wxSHAPED" type="bool">FALSE</value>
 								<value name="proxy-wxADJUST_MINSIZE" type="bool">FALSE</value>
 							</path>
-							<path name="ID154c980">
+							<path name="IDbbae68">
 								<value name="title" type="string">wxButton</value>
-								<value name="id" type="Integer">22333824</value>
+								<value name="id" type="Integer">12299880</value>
 								<value name="type" type="string">dialog-control-document</value>
 								<value name="filename" type="string"></value>
 								<value name="icon-name" type="string">dialogcontrol</value>
 								<value name="is-transient" type="Integer">0</value>
-								<value name="parent" type="Integer">12833456</value>
+								<value name="parent" type="Integer">12203088</value>
 								<value name="locked" type="Integer">0</value>
 								<value name="proxy-type" type="string">wbButtonProxy</value>
 								<value name="event-handler-0" type="string">wxEVT_COMMAND_BUTTON_CLICKED|OnButtonOpenClick</value>
@@ -528,14 +528,14 @@
 								<value name="proxy-wxADJUST_MINSIZE" type="bool">FALSE</value>
 							</path>
 						</path>
-						<path name="IDbf0218">
+						<path name="IDb83288">
 							<value name="title" type="string">wxBoxSizer H</value>
-							<value name="id" type="Integer">12517912</value>
+							<value name="id" type="Integer">12071560</value>
 							<value name="type" type="string">dialog-control-document</value>
 							<value name="filename" type="string"></value>
 							<value name="icon-name" type="string">sizer</value>
 							<value name="is-transient" type="Integer">0</value>
-							<value name="parent" type="Integer">12464768</value>
+							<value name="parent" type="Integer">12198608</value>
 							<value name="locked" type="Integer">0</value>
 							<value name="proxy-type" type="string">wbBoxSizerProxy</value>
 							<value name="proxy-Orientation" type="string">Horizontal</value>
@@ -550,14 +550,14 @@
 							<value name="proxy-wxBOTTOM" type="bool">TRUE</value>
 							<value name="proxy-wxSHAPED" type="bool">FALSE</value>
 							<value name="proxy-wxADJUST_MINSIZE" type="bool">FALSE</value>
-							<path name="ID158faf8">
+							<path name="IDbc0600">
 								<value name="title" type="string">wxStaticText</value>
-								<value name="id" type="Integer">22608632</value>
+								<value name="id" type="Integer">12322304</value>
 								<value name="type" type="string">dialog-control-document</value>
 								<value name="filename" type="string"></value>
 								<value name="icon-name" type="string">dialogcontrol</value>
 								<value name="is-transient" type="Integer">0</value>
-								<value name="parent" type="Integer">12517912</value>
+								<value name="parent" type="Integer">12071560</value>
 								<value name="locked" type="Integer">0</value>
 								<value name="proxy-type" type="string">wbStaticTextProxy</value>
 								<value name="proxy-Id name" type="string">wxID_STATIC</value>
@@ -595,14 +595,14 @@
 								<value name="proxy-wxSHAPED" type="bool">FALSE</value>
 								<value name="proxy-wxADJUST_MINSIZE" type="bool">FALSE</value>
 							</path>
-							<path name="IDc3dcd8">
+							<path name="IDbe7008">
 								<value name="title" type="string">wxComboBox</value>
-								<value name="id" type="Integer">12836056</value>
+								<value name="id" type="Integer">12480520</value>
 								<value name="type" type="string">dialog-control-document</value>
 								<value name="filename" type="string"></value>
 								<value name="icon-name" type="string">dialogcontrol</value>
 								<value name="is-transient" type="Integer">0</value>
-								<value name="parent" type="Integer">12517912</value>
+								<value name="parent" type="Integer">12071560</value>
 								<value name="locked" type="Integer">0</value>
 								<value name="proxy-type" type="string">wbComboBoxProxy</value>
 								<value name="event-handler-0" type="string">wxEVT_COMMAND_COMBOBOX_SELECTED|OnCombobox1Selected</value>
@@ -610,8 +610,8 @@
 								<value name="proxy-Id value" type="Integer">10004</value>
 								<value name="proxy-Class" type="string">wxComboBox</value>
 								<value name="proxy-Member variable name" type="string">m_comboFiletypes</value>
-								<value name="proxy-Strings" type="string">C++ files (*.h, *.c, *.cpp)|All files (*.*)</value>
-								<value name="proxy-Initial value" type="string">C++ files (*.h, *.c, *.cpp)</value>
+								<value name="proxy-Strings" type="string">C++ source files (*.c, *.cpp)|C++ header files (*.h, *.hpp)|All files (*.*)</value>
+								<value name="proxy-Initial value" type="string">C++ source files (*.c, *.cpp)</value>
 								<value name="proxy-Help text" type="string"></value>
 								<value name="proxy-Tooltip text" type="string"></value>
 								<value name="proxy-Background colour" type="string"></value>
@@ -640,14 +640,14 @@
 								<value name="proxy-wxSHAPED" type="bool">FALSE</value>
 								<value name="proxy-wxADJUST_MINSIZE" type="bool">FALSE</value>
 							</path>
-							<path name="IDc4e008">
+							<path name="IDbe9830">
 								<value name="title" type="string">wxStaticLine</value>
-								<value name="id" type="Integer">12902408</value>
+								<value name="id" type="Integer">12490800</value>
 								<value name="type" type="string">dialog-control-document</value>
 								<value name="filename" type="string"></value>
 								<value name="icon-name" type="string">dialogcontrol</value>
 								<value name="is-transient" type="Integer">0</value>
-								<value name="parent" type="Integer">12517912</value>
+								<value name="parent" type="Integer">12071560</value>
 								<value name="locked" type="Integer">0</value>
 								<value name="proxy-type" type="string">wbStaticLineProxy</value>
 								<value name="proxy-Id name" type="string">wxID_STATIC</value>
@@ -682,14 +682,14 @@
 								<value name="proxy-wxSHAPED" type="bool">FALSE</value>
 								<value name="proxy-wxADJUST_MINSIZE" type="bool">FALSE</value>
 							</path>
-							<path name="ID1576588">
+							<path name="IDbebea0">
 								<value name="title" type="string">wxButton</value>
-								<value name="id" type="Integer">22504840</value>
+								<value name="id" type="Integer">12500640</value>
 								<value name="type" type="string">dialog-control-document</value>
 								<value name="filename" type="string"></value>
 								<value name="icon-name" type="string">dialogcontrol</value>
 								<value name="is-transient" type="Integer">0</value>
-								<value name="parent" type="Integer">12517912</value>
+								<value name="parent" type="Integer">12071560</value>
 								<value name="locked" type="Integer">0</value>
 								<value name="proxy-type" type="string">wbButtonProxy</value>
 								<value name="event-handler-0" type="string">wxEVT_COMMAND_BUTTON_CLICKED|OnButtonCancelClick</value>
@@ -731,14 +731,14 @@
 				</path>
 			</path>
 		</path>
-		<path name="IDbe6b18">
+		<path name="IDb92ad8">
 			<value name="title" type="string">Images</value>
-			<value name="id" type="Integer">12479256</value>
+			<value name="id" type="Integer">12135128</value>
 			<value name="type" type="string">html-document</value>
 			<value name="filename" type="string"></value>
 			<value name="icon-name" type="string">bitmapsfolder</value>
 			<value name="is-transient" type="Integer">1</value>
-			<value name="parent" type="Integer">12333736</value>
+			<value name="parent" type="Integer">12054336</value>
 			<value name="locked" type="Integer">1</value>
 		</path>
 	</path>

@@ -33,6 +33,13 @@
 #include "RemoteFileDialog.h"
 #include "../ChameleonWindow.h"
 #include "../../network/networking.h"
+
+
+#include <wx/arrimpl.cpp> // this is a magic incantation which must be done!
+WX_DEFINE_OBJARRAY(TwoDStringVector)
+WX_DEFINE_OBJARRAY(ThreeDStringVector)
+
+
 //#include "../../editor/editor.h"
 
 ////@begin XPM images
@@ -94,6 +101,45 @@ RemoteFileDialog::RemoteFileDialog( wxWindow* parent, wxWindowID id, const wxStr
 	m_openMode = true;
 
 	m_currentFilterIndex = 0;
+	// "All files (*.*) will always be the last item in the dropdown box
+	m_filterAllFilesIndex = m_comboFiletypes->GetCount() - 1;
+
+	m_filterList.Add("C++ source files (*.c, *.cpp)");
+	m_filterList.Add("C++ header files (*.h, *.hpp)");
+	m_filterList.Add("All files (*.*)");
+
+	TwoDStringVector dsv;
+	wxArrayString as;
+
+	as.Add("c");
+	as.Add("cpp");
+	dsv.Add(as);
+
+	as.Clear();
+	as.Add("h");
+	as.Add("hpp");
+
+	dsv.Add(as);
+
+	as.Clear();
+	as.Add("*.*");
+
+	dsv.Add(as);
+
+	m_fileExtensionList.Add(dsv);
+
+	dsv.Clear();
+
+	as.Add("cpj");
+	dsv.Add(as);
+
+	as.Clear();
+	as.Add("*.*");
+	dsv.Add(as);
+
+	m_fileExtensionList.Add(dsv);
+
+	
 }
 
 /*!
@@ -120,16 +166,26 @@ bool RemoteFileDialog::Create( wxWindow* parent, wxWindowID id, const wxString& 
 
 	wxBitmap folder(folder256_xpm);
 	images->Add(folder);
+	
 
+	m_iconExtensionMapping["c"] = images->GetImageCount();
+	
 	wxBitmap standardc(c_xpm);
 	images->Add(standardc);
 
+	m_iconExtensionMapping["cpp"] = images->GetImageCount();
 	wxBitmap cpp(cpp_xpm);
 	images->Add(cpp);
 
+	m_iconExtensionMapping["hpp"] = images->GetImageCount();
+	m_iconExtensionMapping["h"] = images->GetImageCount();
 	wxBitmap h(h_xpm);
 	images->Add(h);	
 
+	// TODO add bitmap for project files here
+	// until then, use default image
+	m_iconExtensionMapping["cpj"] = images->GetImageCount();
+	m_iconExtensionMapping["DEFAULTFILEEXTENSION"] = images->GetImageCount();
 	wxBitmap defaultfile(defaultfile_xpm);
 	images->Add(defaultfile);
 
@@ -216,12 +272,13 @@ void RemoteFileDialog::CreateControls()
     item13->Add(item14, 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT, 5);
 
     wxString item15Strings[] = {
-        _("C++ files (*.h, *.c, *.cpp)"),
+        _("C++ source files (*.c, *.cpp)"),
+        _("C++ header files (*.h, *.hpp)"),
         _("All files (*.*)")
     };
-    wxComboBox* item15 = new wxComboBox( item1, ID_COMBOBOX1, _("C++ files (*.h, *.c, *.cpp)"), wxDefaultPosition, wxSize(246, -1), 2, item15Strings, wxCB_READONLY );
+    wxComboBox* item15 = new wxComboBox( item1, ID_COMBOBOX1, _("C++ source files (*.c, *.cpp)"), wxDefaultPosition, wxSize(246, -1), 3, item15Strings, wxCB_READONLY );
     m_comboFiletypes = item15;
-    item15->SetStringSelection(_("C++ files (*.h, *.c, *.cpp)"));
+    item15->SetStringSelection(_("C++ source files (*.c, *.cpp)"));
     item13->Add(item15, 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT, 5);
 
     wxStaticLine* item16 = new wxStaticLine( item1, wxID_STATIC, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL );
@@ -359,95 +416,48 @@ void RemoteFileDialog::FillListView()
 		m_list->InsertItem(m_list->GetItemCount(), sortedDirs[i], 0);
 		m_currentDirs.Add(sortedDirs[i]);
 	}
+	
 
-	//int fileType = m_comboFiletypes->GetSelection();
+	TwoDStringVector dsv = m_fileExtensionList[m_currentDisplayType];
+	wxArrayString currentExtensionList = dsv[m_currentFilterIndex];
 
-	wxSortedArrayString cppFiles;
-	wxSortedArrayString cFiles;
-	wxSortedArrayString hFiles;
-
-	// the user's filter selection ("C++ files", "All Files", etc)
-	switch(m_currentFilterIndex)
+	wxSortedArrayString currentFileSet;
+	
+	for(int j = 0; j < currentExtensionList.Count(); j++)
 	{
-		// C++ files
-	case 0:
-		// go through ALL files, find the C++ files, and sort them according to extension
+		wxString currentExtensionType = currentExtensionList[j];
+
+		int currentExtensionIconNumber;
+
+		if(m_iconExtensionMapping.find(currentExtensionType) != m_iconExtensionMapping.end())
+		{
+			currentExtensionIconNumber = m_iconExtensionMapping[currentExtensionType];
+		}
+		else
+		{
+			currentExtensionIconNumber = m_iconExtensionMapping["DEFAULTFILEEXTENSION"];
+		}
+
 		for(int i = 0; i < sortedFiles.GetCount(); i++)
 		{
 			wxFileName currentName(sortedFiles[i]);
-			wxString ext = currentName.GetExt();
-			wxString file = currentName.GetFullName();
-			m_currentFiles.Add(file);
-
-
-			if(ext == "cpp")
+			wxString currentFileExtension = currentName.GetExt();
+			if( (currentFileExtension == currentExtensionType) ||
+				(currentExtensionType == "*.*"))
 			{
-				cppFiles.Add(file);
-			}
-			else if(ext == "c")
-			{
-				cFiles.Add(file);
-			}
-			else if(ext == "h")
-			{
-				hFiles.Add(file);
+				wxString file = currentName.GetFullName();
+				m_currentFiles.Add(file);
+				currentFileSet.Add(file);
 			}
 		}
 
-		// insert .C files
-		for(int i = 0; i < cFiles.GetCount(); i++)
+		for(int k = 0; k < currentFileSet.Count(); k++)
 		{
-			m_list->InsertItem(m_list->GetItemCount(), cFiles[i], 1);
-			//wxLogDebug(".C file: " + cFiles[i]);
+			m_list->InsertItem(m_list->GetItemCount(), currentFileSet[k], currentExtensionIconNumber);
 		}
-
-		// insert .CPP files
-		for(int i = 0; i < cppFiles.GetCount(); i++)
-		{
-			m_list->InsertItem(m_list->GetItemCount(), cppFiles[i], 2);
-			//wxLogDebug(".CPP file: " + cppFiles[i]);
-		}
-
-		// insert .H files
-		for(int i = 0; i < hFiles.GetCount(); i++)
-		{
-			m_list->InsertItem(m_list->GetItemCount(), hFiles[i], 3);
-			//wxLogDebug(".H file: " + hFiles[i]);
-		}
-		break;
-
-	case 1:
-		// just show ALL files, changing the icon if necessary
-		for(int i = 0; i < sortedFiles.GetCount(); i++)
-		{
-			wxFileName currentName(sortedFiles[i]);
-			wxString ext = currentName.GetExt();
-			wxString file = currentName.GetFullName();
-			m_currentFiles.Add(file);
-
-			int iconNum = 4; // default file icon
-
-			if(ext == "c")
-			{
-				iconNum = 1;
-			}
-			else if(ext == "cpp")
-			{
-				iconNum = 2;
-			}
-			else if(ext == "h")
-			{
-				iconNum = 3;
-			}
-
-			m_list->InsertItem(m_list->GetItemCount(), file, iconNum);
-			//wxLogDebug("All files: " + file);
-		}
-		break;
-	default:
-		wxLogDebug("RemoteFileDialog::LoadTestData: file type dropdown hit default");
-		break;
+		currentFileSet.Clear();
 	}
+
 
 	m_pathBox->SetSelection(0,0);
 	m_list->SetFocus();
@@ -461,6 +471,7 @@ void RemoteFileDialog::LoadTestData()
 	ShowDirectory("C:\\Projects\\cs4810\\gears\\chameleon\\gui\\");
 }
 
+/*
 // save the information for opening a file
 void RemoteFileDialog::OpenRemoteFile()
 {
@@ -470,27 +481,12 @@ void RemoteFileDialog::OpenRemoteFile()
 	EndModal(wxOK);
 
 }
+*/
 
 // save the information for saving a file
-void RemoteFileDialog::SaveRemoteFile()
+void RemoteFileDialog::StoreFileName(wxString filename)
 {
-	wxString remoteFileName = m_txtFilename->GetValue();
-
-	if(m_currentFilterIndex == 0)
-	{
-		wxFileName fn;
-
-		fn.SetFullName(remoteFileName);
-		wxString ext = fn.GetExt();
-
-		if(ext == wxEmptyString)
-		{
-			fn.SetExt("cpp");
-			remoteFileName = fn.GetFullName();
-		}
-		
-	}
-	m_remoteFileNamePath.Assign(m_currentPath.GetPath(false, wxPATH_UNIX), remoteFileName);
+	m_remoteFileNamePath.Assign(m_currentPath.GetPath(false, wxPATH_UNIX), filename);
 
 	EndModal(wxOK);
 }
@@ -532,7 +528,7 @@ wxPathFormat RemoteFileDialog::GetCurrentPathFormat()
 }
 
 // Sets up the dialog for use as either an open or a save dialog
-bool RemoteFileDialog::Prepare(bool open)
+bool RemoteFileDialog::Prepare(bool open, FileDisplayType displayType)
 {
 	m_openMode = open;
 
@@ -546,6 +542,34 @@ bool RemoteFileDialog::Prepare(bool open)
 		SetTitle("Save File As");
 		m_buttonOpen->SetLabel("Save");
 	}
+	m_comboFiletypes->Clear();
+
+	switch(displayType)
+	{
+		case FILE_SOURCECODE:
+		{		
+			m_comboFiletypes->Append("C++ source files (*.c, *.cpp)");
+			m_comboFiletypes->Append("C++ header files (*.h, *.hpp)");
+			break;
+		}
+		case FILE_PROJECT:
+		{		
+			m_comboFiletypes->Append("Chameleon project files (*.cpj)");
+			break;
+		}
+		default:
+		{
+			wxLogDebug("RemoteFileDialog::Prepare: non-valid display type.  displayType=%d", displayType);
+			break;			
+		}
+	}
+
+	m_comboFiletypes->Append("All files (*.*)");
+	m_comboFiletypes->SetSelection(0);
+
+	m_filterAllFilesIndex = m_comboFiletypes->FindString("All files (*.*)");
+
+	m_currentDisplayType = displayType;
 
 	wxPathFormat format = GetCurrentPathFormat();
 
@@ -560,14 +584,65 @@ bool RemoteFileDialog::Prepare(bool open)
 // user double-clicked a list item OR hit the open button
 void RemoteFileDialog::ItemActivated()
 {
-	wxString text = m_txtFilename->GetValue();
+	wxString userFileName = m_txtFilename->GetValue();
 
-	int dirResult = m_currentDirListing.dirNames.Index(text); //m_currentDirs.Index(text);
+	wxFileName fn;
+
+	int dirResult = m_currentDirListing.dirNames.Index(userFileName); //m_currentDirs.Index(text);
 
 	// the item name isn't a directory
 	if(dirResult == wxNOT_FOUND)
 	{		
-		int fileResult = m_currentDirListing.fileNames.Index(text);//m_currentFiles.Index(text);
+
+		// if we're trying to save a file and the filter isn't "All files (*.*)
+		if(!m_openMode && (m_currentFilterIndex != m_filterAllFilesIndex))
+		{
+			fn.SetFullName(userFileName);
+			wxString ext = fn.GetExt();
+
+			if(ext == wxEmptyString)
+			{
+				switch(m_currentDisplayType)
+				{
+					case FILE_SOURCECODE:
+					{					
+						switch(m_currentFilterIndex)
+						{
+							case 0:
+								fn.SetExt("cpp");
+								break;
+							case 1:
+								fn.SetExt("h");
+								break;
+							default:
+								wxLogDebug("RemoteFileDialog::ItemActivated: hit default filter index.  displayType=%d, Index=%d", 
+									m_currentDisplayType, m_currentFilterIndex);
+								break;
+						}
+						break;
+					}
+					case FILE_PROJECT:
+					{
+						switch(m_currentFilterIndex)
+						{
+							case 0:
+								fn.SetExt("cpj");
+								break;
+							default:
+								wxLogDebug("RemoteFileDialog::ItemActivated: hit default filter index.  displayType=%d, Index=%d", 
+									m_currentDisplayType, m_currentFilterIndex);
+								break;
+						}
+						break;
+					}
+				}		
+
+				userFileName = fn.GetFullName();
+			}
+
+		}
+
+		int fileResult = m_currentDirListing.fileNames.Index(userFileName);//m_currentFiles.Index(text);
 
 		// and it's not a file either
 		if(fileResult == wxNOT_FOUND)
@@ -575,7 +650,7 @@ void RemoteFileDialog::ItemActivated()
 			// trying to open a non-existent file
 			if(m_openMode)
 			{
-				wxString errorMessage = "\"" + text + "\" was not found.  Please enter or select a valid file name.";
+				wxString errorMessage = "\"" + userFileName + "\" was not found.  Please enter or select a valid file name.";
 				
 				wxMessageBox(errorMessage, "Open", wxOK | wxICON_EXCLAMATION);
 				return;
@@ -583,7 +658,7 @@ void RemoteFileDialog::ItemActivated()
 			// trying to save a file and it's a new file
 			else
 			{
-				SaveRemoteFile();
+				StoreFileName(userFileName);
 			}
 		}
 		else
@@ -591,17 +666,17 @@ void RemoteFileDialog::ItemActivated()
 			// filename found, open it
 			if(m_openMode)
 			{
-				OpenRemoteFile();
+				StoreFileName(userFileName);
 			}
 			// file already exists - confirm overwrite
 			else
 			{
-				wxString confirmMessage = text + " already exists.  Do you want to replace it?";
+				wxString confirmMessage = userFileName + " already exists.  Do you want to replace it?";
 				int result = wxMessageBox(confirmMessage, "Save As", wxYES_NO | wxICON_QUESTION);
 
 				if(result == wxYES)
 				{
-					OpenRemoteFile();
+					StoreFileName(userFileName);
 				}
 				else
 				{
@@ -613,7 +688,7 @@ void RemoteFileDialog::ItemActivated()
 	else
 	{
 		// call ShowDirectory w/ new directory
-		m_currentPath.AppendDir(text);
+		m_currentPath.AppendDir(userFileName);
 
 		ShowDirectory(m_currentPath.GetPath(false, wxPATH_UNIX));
 	}

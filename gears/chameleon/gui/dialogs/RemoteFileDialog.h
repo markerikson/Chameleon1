@@ -26,7 +26,20 @@
 #include <wx/filename.h>
 #include <wx/toolbar.h>
 
+
+
 #include "../../common/datastructures.h"
+
+
+#include <wx/dynarray.h>
+
+// each wxArrayString will hold the extensions for that file class (ie, .C and .CPP for "C++ source files")
+WX_DECLARE_OBJARRAY(wxArrayString, TwoDStringVector);
+
+// each TwoDStringVector holds the information for a file grouping (FILE_SOURCECODE, FILE_PROJECT)
+WX_DECLARE_OBJARRAY(TwoDStringVector, ThreeDStringVector);
+
+
 /*!
  * Forward declarations
  */
@@ -119,9 +132,9 @@ public:
 
 	wxString GetRemoteFileNameAndPath();
 
-	void OpenRemoteFile();
-	void SaveRemoteFile();
-	bool Prepare(bool open);
+	//void OpenRemoteFile();
+	void StoreFileName(wxString filename);
+	bool Prepare(bool open, FileDisplayType displayType);
 
 	bool ShowDirectory(wxString dirname, bool refresh = false, bool showHidden = false);
 	void FillListView();
@@ -134,6 +147,7 @@ private:
 
 	wxPathFormat GetCurrentPathFormat();
 	void ItemActivated();
+	//void 
 
 ////@begin RemoteFileDialog member variables
     wxBoxSizer* m_sizToolbar;
@@ -152,12 +166,18 @@ private:
 	bool m_openMode;
 
 	int m_currentFilterIndex;
+	int m_filterAllFilesIndex;
+	FileDisplayType m_currentDisplayType;
 	DirListing m_currentDirListing;
 
 	wxFileName m_localFileNamePath;
 	wxFileName m_remoteFileNamePath;
 	wxSortedArrayString m_currentDirs;
 	wxSortedArrayString m_currentFiles;
+	wxArrayString m_filterList;
+	ThreeDStringVector m_fileExtensionList;
+	StringIntHashmap m_iconExtensionMapping;
+
 	ChameleonWindow* m_parentFrame;
 	Networking* m_network;
 };

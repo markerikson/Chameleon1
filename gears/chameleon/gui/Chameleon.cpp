@@ -140,8 +140,8 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 		authorizedCode = m_config->Read("Permissions/authorized", defaultAuthorizedCode);
 		enabledCode = m_config->Read("Permissions/enabled", defaultEnableCode);
-		wxLogDebug("Loaded permissions from config: authorizedCode = %u, enabledCode = %u", authorizedCode, enabledCode);
-
+		//wxLogDebug("Loaded permissions from config");
+		
 	}
 	else
 	{
@@ -202,6 +202,10 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 	menuTools->Append(ID_OPTIONS, "&Options");
 
+	if(m_perms->isEnabled(PERM_TELNETTEST))
+	{
+		menuTools->Append(ID_STARTCONNECT, "&Connect");
+	}
 	//menuTools->Append(ID_STARTCONNECT, "&Connect");
 	//menuTools->InsertSeparator(2);
 
@@ -303,13 +307,19 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	PageHasChanged(m_currentPage);
 
 	// set up the terminal portion of the GUI
+
 	m_noteTerm = new ChameleonNotebook(m_split, ID_NOTEBOOK_TERM);
-	m_telnet = new wxTelnet( m_noteTerm, ID_TELNET, wxPoint(-1, -1), 80, 24);
-	m_noteTerm->AddPage(m_telnet, "Terminal");
+	
 	
 	if(m_perms->isEnabled(PERM_TERMINAL))
 	{
 		m_split->SplitHorizontally(m_book, m_noteTerm, -200);		
+
+		m_telnet = new wxTelnet( m_noteTerm, ID_TELNET, wxPoint(-1, -1), 80, 24);
+		m_noteTerm->AddPage(m_telnet, "Terminal");
+
+		m_infoTabTracker.Add(m_telnet);
+
 		//m_split->SetMinimumPaneSize(200);
 
 
@@ -317,6 +327,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	else
 	{
 		m_split->Initialize(m_book);
+		m_telnet = NULL;
 	}
 	
 	long time7 = stopwatch.Time();
@@ -335,6 +346,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 ChameleonWindow::~ChameleonWindow()
 {
+	//m_config->Write("Testing1/Testing2/Testing3", "Blah blah");
 	m_config->Flush();
 
 	delete m_perms;
@@ -591,7 +603,7 @@ void ChameleonWindow::OpenFile()
 		SetStatusText("Showing remote file dialog...");
 		wxBeginBusyCursor();
 
-		if(m_remoteFileDialog->Prepare(true))
+		if(m_remoteFileDialog->Prepare(true, FILE_SOURCECODE))
 		{
 			wxEndBusyCursor();
 			int result = m_remoteFileDialog->ShowModal();
@@ -1037,7 +1049,7 @@ void ChameleonWindow::SaveFile(bool saveas)
 		fileContents = m_currentEd->GetText();
 		if(doSaveAs)
 		{
-			if(m_remoteFileDialog->Prepare(false))
+			if(m_remoteFileDialog->Prepare(false, FILE_SOURCECODE))
 			{
 				int result = m_remoteFileDialog->ShowModal();
 				m_currentEd->SetFocus();
@@ -1324,9 +1336,9 @@ void ChameleonWindow::EvaluateOptions()
 
 		bool enableOption = checkList->IsChecked(i);
 
-		wxLogDebug("Setting permissions: %s = %s", 
+		/*wxLogDebug("Setting permissions: %s = %s", 
 			m_perms->getPermName(mappedPermNum),
-			enableOption ? "true" : "false");
+			enableOption ? "true" : "false");*/
 
 		if(enableOption)
 		{
@@ -1362,6 +1374,48 @@ void ChameleonWindow::EvaluateOptions()
 		AddDebugButtons();		
 		t->Realize();
 	}	
+
+	if(m_perms->isEnabled(PERM_TERMINAL))
+	{
+		if(m_telnet == NULL)
+		{
+			m_telnet = new wxTelnet( m_noteTerm, ID_TELNET, wxPoint(-1, -1), 80, 24);
+		}
+
+		if(m_infoTabTracker.Index(m_telnet) == -1)
+		{
+			//m_telnet = new wxTelnet( m_noteTerm, ID_TELNET, wxPoint(-1, -1), 80, 24);
+			m_noteTerm->AddPage(m_telnet, "Terminal");
+
+			m_infoTabTracker.Add(m_telnet);
+
+			m_noteTerm->Reparent(m_split);
+			m_split->SplitHorizontally(m_book, m_noteTerm, -200);
+			m_noteTerm->Show();			
+			//m_split->Refresh();
+			m_telnet->Show();
+		}
+	}
+	else
+	{
+		if(m_infoTabTracker.Index(m_telnet) != -1)
+		{
+			int termIndex = m_infoTabTracker.Index(m_telnet);
+			m_infoTabTracker.Remove(m_telnet);
+			m_noteTerm->RemovePage(termIndex);
+
+			//delete m_telnet;
+			//m_telnet = NULL;
+			
+
+			if(m_noteTerm->GetPageCount() == 0)
+			{
+				m_split->Unsplit();
+			}
+		}
+		
+		
+	}
 
 	for(int i = 0; i < m_book->GetPageCount(); i++)
 	{

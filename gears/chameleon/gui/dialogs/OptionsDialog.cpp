@@ -286,6 +286,8 @@ void OptionsDialog::OnEnter( wxCommandEvent& event )
 
 void OptionsDialog::ExitDialog()
 {
+	m_txtProfCode->Clear();
+
 	wxString pwd1 = m_password1->GetValue();
 	wxString pwd2 = m_password2->GetValue();
 
@@ -311,6 +313,7 @@ long OptionsDialog::GetAuthCode()
 	long authCodeLong = 0;
 
 	authCodeString.ToLong(&authCodeLong);
+	
 
 	return authCodeLong;
 }/*!
