@@ -59,8 +59,9 @@ wxString GlobalPermStrings[] = {"Syntax highlighting",
 Permission::Permission()
 {
 	//this is a valid "everything unauthorized" code
-	setGlobalAuthorized("10A80000000");
-	setGlobalEnabled("0");
+	//setGlobalAuthorized("10A80000000");
+	//setGlobalEnabled("0");
+	Permission("10A80000000", "0");
 }
 
 Permission::Permission(wxString loadAuthCode, wxString loadPermCode)
