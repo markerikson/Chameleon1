@@ -1,4 +1,4 @@
-
+#define CHAMELEON__CPP
 
 #include "../common/CommonHeaders.h"
 #include "ChameleonWindow.h"
@@ -18,6 +18,8 @@
 #include "../network/networking.h"
 #include "../compiler/compiler.h"
 #include "../common/Options.h"
+#include "../debugger/cham_db.h"
+#include "../common/DebugEvent.h"
 //#include "wxtelnet.h"
 #include "wxssh.h"
 
@@ -45,6 +47,11 @@
 
 #include "../common/debug.h"
 
+#ifdef _DEBUG
+
+#define new DEBUG_NEW
+
+#endif
 
 BEGIN_EVENT_TABLE(ChameleonWindow, wxFrame)
 	EVT_MENU						(ID_NEW_SOURCE, ChameleonWindow::OnFileNew)
@@ -183,8 +190,9 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 	m_network = new Networking(m_options);
 	m_compiler = new Compiler(m_options, m_network);
+	m_debugger = new Debugger(NULL);
 
-	m_optionsDialog = new OptionsDialog(this, ID_OPTIONSDIALOG, "Options");
+	m_optionsDialog = new OptionsDialog(this, m_options, ID_OPTIONSDIALOG, "Options");
 	UpdatePermsList();
 
 	m_optionsDialog->SetServerAddress(m_options->GetHostname());
@@ -273,6 +281,7 @@ ChameleonWindow::~ChameleonWindow()
 	delete m_compiler;
 	delete m_config;
 	delete m_options;
+	delete m_debugger;
 }
 
 // create a new blank file
@@ -831,6 +840,57 @@ void ChameleonWindow::OnConnect(wxCommandEvent& WXUNUSED(event))
 
 }
 
+void ChameleonWindow::OnDebugCommand(wxCommandEvent &event)
+{
+	int eventID = event.GetId();
+
+	wxDebugEvent debugEvent;
+
+	debugEvent.SetId(eventID);
+	wxArrayString sourcefiles;
+
+	switch(eventID)
+	{
+		case ID_DEBUG_START:
+			// TODO Make all open files for the current executable read-only
+			//      Need to also check when opening a source file.
+			if(m_bProjectOpen)
+			{
+				wxArrayString projSources = m_currentProjectInfo->sourceFiles;
+				wxString basepath = m_currentProjectInfo->projectBasePath;
+				for(int i = 0; i < (int)projSources.GetCount(); i++)
+				{
+					wxFileName filepath(projSources[i]);
+					filepath.MakeAbsolute(basepath);
+
+					wxString filename = filepath.GetFullPath(wxPATH_UNIX);
+
+					sourcefiles.Add(filename);
+				}
+				debugEvent.SetSourceFilenames(sourcefiles);
+
+				wxFileName outputFile(basepath, m_currentProjectInfo->executableName.GetFullPath(wxPATH_UNIX));
+
+				debugEvent.SetExecutableFilename(outputFile.GetFullPath(wxPATH_UNIX));
+			}
+			else
+			{
+				wxFileName sourceFile = m_currentEd->GetFileName();
+				sourcefiles.Add(sourceFile.GetFullPath(wxPATH_UNIX));
+				
+				wxFileName executableFile = m_currentEd->GetExecutableFileName();
+				debugEvent.SetExecutableFilename(executableFile.GetFullPath(wxPATH_UNIX));
+			}
+			debugEvent.SetSourceFilenames(sourcefiles);
+			break;
+		case ID_DEBUG_ADD_BREAKPOINT:
+			// TODO The editor is going to need to know if the user is debugging or not
+			break;
+			
+	}
+
+}
+
 
 // my "I need to try something out, I'll stick it in here" function
 void ChameleonWindow::Test(wxCommandEvent& WXUNUSED(event))
@@ -1326,7 +1386,7 @@ void ChameleonWindow::OnToolsOptions(wxCommandEvent &event)
 void ChameleonWindow::SetIntVar(int variableName, int value)
 {
 	// figure out which integer I'm setting
-	int* target = TargetInt(variableName);
+	int* target = SelectIntVar(variableName);
 
 	// assuming we assigned it properly, Set it 
 	if(target != NULL)
@@ -1339,7 +1399,7 @@ void ChameleonWindow::SetIntVar(int variableName, int value)
 // same as SetIntVar, only getting
 int ChameleonWindow::GetIntVar(int variableName)
 {
-	int* target = TargetInt(variableName);
+	int* target = SelectIntVar(variableName);
 
 	if(target != NULL)
 	{
@@ -1352,7 +1412,7 @@ int ChameleonWindow::GetIntVar(int variableName)
 }
 
 // figure out which integer value I'm wanting to Get/Set
-int* ChameleonWindow::TargetInt(int variableName)
+int* ChameleonWindow::SelectIntVar(int variableName)
 {
 	switch(variableName)
 	{
@@ -1572,22 +1632,22 @@ void ChameleonWindow::UpdateToolbar()
 	{
 		t->AddSeparator();
 		wxBitmap bmStart(start_xpm);
-		t->AddTool(ID_START, "Run", bmStart);
+		t->AddTool(ID_DEBUG_START, "Run", bmStart);
 
 		wxBitmap bmPause(pause_xpm);
-		t->AddTool(ID_PAUSE, "Pause", bmPause);
+		t->AddTool(ID_DEBUG_PAUSE, "Pause", bmPause);
 
 		wxBitmap bmStop(stop_xpm);
-		t->AddTool(ID_STOP, "Stop", bmStop);
+		t->AddTool(ID_DEBUG_STOP, "Stop", bmStop);
 
 		wxBitmap bmStepNext(stepnext_xpm);
-		t->AddTool(ID_STEPNEXT, "Step next", bmStepNext);
+		t->AddTool(ID_DEBUG_STEPNEXT, "Step next", bmStepNext);
 
 		wxBitmap bmStepOver(stepover_xpm);
-		t->AddTool(ID_STEPOVER, "Step over", bmStepOver);
+		t->AddTool(ID_DEBUG_STEPOVER, "Step over", bmStepOver);
 
 		wxBitmap bmStepOut(stepout_xpm);
-		t->AddTool(ID_STEPOUT, "Step out", bmStepOut);
+		t->AddTool(ID_DEBUG_STEPOUT, "Step out", bmStepOut);
 	}
 
 	t->Realize();
@@ -1710,6 +1770,8 @@ void ChameleonWindow::EvaluateOptions()
 
 	m_config->Write("Network/hostname", m_options->GetHostname());
 	m_config->Write("Network/username", m_options->GetUsername());
+
+
 
 }
 
@@ -1876,9 +1938,6 @@ void ChameleonWindow::OnOpenProjectFile(wxCommandEvent &event)
 		wxLogDebug("OnOpenProjectFile: Invalid menu ID.  ID: %d", id);
 		return;
 	}
-
-	// TODO Check right here if a project is already open, and if it is,
-	//		ask the user if he wants to replace the open one
 	
 	if(m_bProjectOpen)
 	{
@@ -1975,7 +2034,7 @@ void ChameleonWindow::OnAddFileToProject(wxCommandEvent &event)
 	wxFileName relativeFilePath(fileToOpen);
 	relativeFilePath.MakeRelativeTo(basePath, currentPathFormat);
 
-	if(m_currentProjectInfo->FileExistsInProject(relativeFilePath.GetFullPath(currentPathFormat)))
+	if(m_currentProjectInfo->FileExistsInProject(relativeFilePath.GetFullPath(currentPathFormat), false))
 	{
 		wxString message = "The file " + fileNames[0] + " already exists in this project, so it was not added.";
 		wxMessageBox(message, "File already in project", wxOK | wxCENTRE | wxICON_EXCLAMATION);
@@ -2180,7 +2239,7 @@ void ChameleonWindow::OnCompile(wxCommandEvent &event)
 		bool isAdvanced = m_perms->isEnabled(PERM_ADVANCEDCOMPILE);
 		bool isProj = false;
 		if(m_currentProjectInfo != NULL && 
-			m_currentProjectInfo->FileExistsInProject(m_currentEd->GetFilenameString()) ) 
+			m_currentProjectInfo->FileExistsInProject(m_currentEd->GetFilenameString(), false) ) 
 		{
 			isProj = true;
 		}
@@ -2213,7 +2272,7 @@ void ChameleonWindow::OnRemoveFileFromProject(wxCommandEvent &event)
 {
 	FileNameTreeData* treeData = static_cast<FileNameTreeData*> (m_projectTree->GetItemData(m_clickedTreeItem));
 
-	if(m_currentProjectInfo->FileExistsInProject(treeData->filename))
+	if(m_currentProjectInfo->FileExistsInProject(treeData->filename, false))
 	{
 		m_currentProjectInfo->RemoveFileFromProject(treeData->filename, m_projectSelectedFolderType);
 		m_projectTree->Delete(m_clickedTreeItem);
@@ -2295,6 +2354,7 @@ void ChameleonWindow::UpdateTerminalNotebook()
 		{
 			m_splitEditorOutput->SplitHorizontally(m_splitProjectEditor, m_noteTerm, -330);//-200);
 			m_splitEditorOutput->SetMinimumPaneSize(20);
+			m_terminal->UpdateSize();
 			m_noteTerm->Show();	
 		}		
 	}
@@ -2319,4 +2379,16 @@ void ChameleonWindow::UpdateTerminalNotebook()
 	}
 	m_book->Refresh();
 
+}
+
+bool ChameleonWindow::IsDebugging()
+{
+	return m_debugger->isDebugging();
+}
+
+void ChameleonWindow::OnDebugEvent(wxDebugEvent &event)
+{
+	int eventID = event.GetId();
+
+	wxLogDebug("Debug event: %d", eventID);
 }

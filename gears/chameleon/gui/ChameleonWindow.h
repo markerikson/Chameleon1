@@ -32,6 +32,7 @@
 #endif
 
 #include "../common/datastructures.h"
+#include "../common/DebugEvent.h"
 #include <wx/treectrl.h>
 
 // forward declarations
@@ -65,6 +66,7 @@ class ProjectInfo;
 class wxSSH;
 class Options;
 class wxTermContainer;
+class Debugger;
 
 //----------------------------------------------------------------------
 
@@ -92,8 +94,12 @@ public:
 	void SetIntVar(int variableName, int value);
 	int GetIntVar(int variableName);
 
+	//void SetBoolVar(int variableName, bool value);
+	//bool GetBoolVar(int variableName);
+
 	bool IsEnabled(int permission);
 	bool InRemoteMode();
+	bool IsDebugging();
 
 	void EvaluateOptions();
 	bool UpdateAuthCode();
@@ -158,6 +164,9 @@ private:
 	void OnFileNewProject(wxCommandEvent &event);
 	void OnFileRecents (wxCommandEvent &event);
 
+	void OnDebugCommand(wxCommandEvent &event);
+	void OnDebugEvent(wxDebugEvent &event);
+
 	// edit menu functions
 	void OnCut(wxCommandEvent &event);
 	void OnCopy(wxCommandEvent &event);
@@ -181,7 +190,8 @@ private:
 	void UpdatePermsList();
 	void UpdateTerminalNotebook();
 
-	int* TargetInt(int variableName);
+	int* SelectIntVar(int variableName);
+	//bool* SelectBoolVar(int variableName);
 
 
 	//wxStyledTextCtrl* ed;
@@ -232,6 +242,7 @@ private:
 	Compiler* m_compiler;
 	Options* m_options;
 	ProjectInfo* m_currentProjectInfo;
+	Debugger* m_debugger;
 
 	//wxArrayPtrVoid* docArray; 
 	//scintillaDocPageHash* docHash;
@@ -247,6 +258,7 @@ private:
 	bool m_remoteMode;
 	bool m_appStarting;
 	bool m_bProjectOpen;
+	bool m_currentlyDebugging;
 
 
 	//ChameleonEditor* m_edit;
