@@ -124,8 +124,13 @@ void PlinkConnect::spawnConnection()
 	wxProcess* proc = new wxProcess(this);
 	proc->Redirect();
 
+	wxString p = m_pass;
+	if(m_pass == "") {
+		p = "password";
+	}
+
 	wxString cmd = m_plinkApp
-		+ " -pw " + m_pass + " "
+		+ " -pw " + p + " "
 		+ m_user + "@" + m_host;
 
 	long pid = wxExecute(cmd, wxEXEC_ASYNC, proc);

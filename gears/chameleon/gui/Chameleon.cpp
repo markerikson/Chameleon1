@@ -594,6 +594,10 @@ void ChameleonWindow::OnMenuEvent(wxCommandEvent &event)
 			{ 
 				m_terminal->Connect(wxEmptyString, wxEmptyString, wxEmptyString);
 				wxLogDebug("Connected: %d", m_terminal->IsConnected());
+				//Highlight Terminal:
+				int terminalIndex = m_noteTerm->FindPagePosition(m_termContainer);
+				m_noteTerm->SetSelection(terminalIndex);
+				m_terminal->SetFocus();
 			}
 			else 
 			{
@@ -2785,9 +2789,9 @@ void ChameleonWindow::Compile()
 //		//fullpath.Replace("~", m_network->GetHomeDirPath());
 //		m_currentEd->SetExecutableFilename(fullpath);
 
-		//int outputIndex = m_noteTerm->FindPagePosition(m_compilerTextbox);
-
-		//m_noteTerm->SetSelection(outputIndex);
+		//Highlight CompilerOutputPanel:
+		int outputIndex = m_noteTerm->FindPagePosition(m_outputPanel);
+		m_noteTerm->SetSelection(outputIndex);
 	}
 }
 

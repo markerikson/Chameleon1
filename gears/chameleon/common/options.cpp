@@ -17,7 +17,7 @@ Options::Options()
 	m_mingwPath = "C:\\Program Files\\MinGW\\bin\\";
 	m_username = "username";
 	m_hostname = "localhost";
-	m_password = "password";
+	m_password = "";
 	m_remoteCompileOut = "a.out";
 
 	// Default to printing with black text, white background
