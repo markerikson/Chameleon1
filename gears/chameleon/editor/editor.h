@@ -53,6 +53,7 @@ public:
 	wxString GetFilePath();
 	wxArrayInt GetBreakpoints();
 	ProjectInfo* GetProject(){ return m_project; }
+	FileFilterType GetFileType();
 
 
 	//void SetFileNameAndPath(wxString path, wxString name, bool fileIsRemote);

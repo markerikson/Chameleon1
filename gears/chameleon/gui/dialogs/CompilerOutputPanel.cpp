@@ -179,7 +179,7 @@ void CompilerOutputPanel::SetAdvanced(bool advanced)
 
 void CompilerOutputPanel::OnCompilerStart(CompilerEvent& event)
 {
-	ClearOutput();
+	//ClearOutput();
 
 	wxFileName fn = event.GetFile();
 	wxString filename = fn.GetFullPath(event.IsRemoteFile() ? wxPATH_UNIX : wxPATH_DOS);
@@ -242,13 +242,13 @@ void CompilerOutputPanel::OnCompilerEnd(CompilerEvent &event)
 	switch(cr)
 	{
 		case CR_OK:
-			compileResult += "successful compilation.";
+			compileResult += "compiled successfully.";
 			break;
 		case CR_ERROR:
 		{
 		
 			wxString errorResult;
-			errorResult.Printf("compilation failed. %d total errors.", m_numErrors);
+			errorResult.Printf("compilation failed. %d total errors / warnings.", m_numErrors);
 			compileResult += errorResult;
 			break;
 		}

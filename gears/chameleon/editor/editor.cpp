@@ -417,9 +417,40 @@ void ChameleonEditor::SetFilename(wxFileName filename, bool fileIsRemote)
 
 	if(m_project->IsSingleFile())
 	{
-		m_project->AddFileToProject(filename.GetFullPath(fileIsRemote ? wxPATH_UNIX : wxPATH_DOS), FILE_SOURCES);
-	}
-	
+		wxString oldFileName = m_fileNameAndPath.GetFullPath(m_bLastSavedRemotely ? wxPATH_UNIX : wxPATH_DOS);
+
+		if(m_project->FileExistsInProject(oldFileName))
+		{
+			FileFilterType oldFilterType;
+			wxString oldExtension = m_fileNameAndPath.GetExt();
+			if(oldExtension.StartsWith("h"))
+			{
+				oldFilterType = FILE_HEADERS;
+			}
+			else if(oldExtension.StartsWith("c"))
+			{
+				oldFilterType = FILE_SOURCES;
+			}
+
+			m_project->RemoveFileFromProject(oldFileName, oldFilterType);
+		}
+
+		wxString newFileName = filename.GetFullPath(fileIsRemote ? wxPATH_UNIX : wxPATH_DOS);
+		if(!m_project->FileExistsInProject(newFileName))
+		{
+			FileFilterType newFilterType;
+			wxString newExtension = filename.GetExt();
+			if(newExtension.StartsWith("h"))
+			{
+				newFilterType = FILE_HEADERS;
+			}
+			else if(newExtension.StartsWith("c"))
+			{
+				newFilterType = FILE_SOURCES;
+			}
+			m_project->AddFileToProject(newFileName, newFilterType);
+		}		
+	}	
 }
 
 wxString ChameleonEditor::GetFileNameAndPath()
@@ -645,4 +676,9 @@ void ChameleonEditor::SetProject(ProjectInfo* project)
 void ChameleonEditor::SetExecutableFilename(wxFileName filename)
 {
 	m_project->SetExecutableName(filename);
+}
+
+FileFilterType ChameleonEditor::GetFileType()
+{
+	return FILE_ALLSOURCETYPES;
 }

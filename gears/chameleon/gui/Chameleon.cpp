@@ -2751,6 +2751,7 @@ void ChameleonWindow::Compile()
 	{
 		
 		ProjectInfo* projToCompile = m_currentEd->GetProject();
+		m_outputPanel->ClearOutput();
 
 		m_compiler->CompileProject(projToCompile, m_outputPanel);
 
