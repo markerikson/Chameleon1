@@ -324,6 +324,8 @@ void Networking::SCPDoTransfer(wxString from_path_name, wxString to_path_name)
 	if (pid == -1) {
 		// Bad Exit
 		// Could not start process
+		status = NET_ERROR_MESSAGE;
+		statusDetails = "Could not start the file transfer process.";
 		delete proc;
 	}
 	else { // Not bad Exit(hopefully good):
