@@ -58,6 +58,8 @@ void Compiler::CompileFile(wxFileName file, bool isRemote, wxTextCtrl* textbox,
 	m_currOutfile = file;
 	m_currOutfile.SetFullName(outfile);
 
+	m_isCompiling = true;
+
 	//Unfortunately the shells are not identical:
 	if(isRemote) {
 		CompileRemoteFile(file, outfile);
@@ -94,7 +96,7 @@ void Compiler::CompileRemoteFile(wxFileName infile, wxFileName outfile)
 	cmd += " g++ "; // compiler (assuming it is in the PATH)
 	cmd += " -g "; // include gdb info
 	cmd += " -o " + outfile.GetFullPath() + " ";
-	cmd +=  infile.GetFullPath();
+	cmd +=  infile.GetFullPath(wxPATH_UNIX);
 	cmd +=  " && echo C_O_M_P_I_L_E_SUCCESS ; echo E_N_D-COMPILE\r";
 
 	m_compilerStdIn = m_network->StartRemoteCommand(cmd, this);
@@ -155,8 +157,8 @@ void Compiler::OnProcessOut(ChameleonProcessEvent& e)
 				m_receivedToken = false;
 
 				// Signal Chameleon
-				wxCompilerEndedEvent e(success, m_currOutfile);
-				ProcessEvent(e); // synchronous because I detach in the very next line
+				wxCompilerEndedEvent evt(success, m_currOutfile);
+				ProcessEvent(evt); // synchronous because I detach in the very next line
 				SetNextHandler(NULL);
 
 				// Signal the User
