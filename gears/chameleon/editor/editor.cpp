@@ -598,7 +598,7 @@ void ChameleonEditor::SetCompiled()
 
 void ChameleonEditor::OnCompilerEnded(CompilerEvent &event)
 {
-	if(event.GetTrinary() == TRI_OK) {
+	if(event.GetResult() == CR_OK) {
 		m_bHasBeenCompiled = true;
 		m_executableFilename = event.GetFile();
 	}
