@@ -41,6 +41,24 @@ int CompareInts(int n1, int n2)
 
 
 
+//////////////////////////////////////////////////////////////////////////////
+///  public constructor ChameleonEditor
+///  <TODO: insert text here>
+///
+///  @param  mframe  ChameleonWindow * <TODO: insert text here>
+///  @param  options Options *         <TODO: insert text here>
+///  @param  project ProjectInfo *     <TODO: insert text here>
+///  @param  parent  wxWindow *        <TODO: insert text here>
+///  @param  id      wxWindowID        <TODO: insert text here>
+///  @param  pos     const wxPoint &   [=wxDefaultPosition] <TODO: insert text here>
+///  @param  size    const wxSize &    [=wxDefaultSize] <TODO: insert text here>
+///  @param  style   long              [=0] <TODO: insert text here>
+///  @param  name    const wxString &  [=wxSTCNameStr] <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 ChameleonEditor::ChameleonEditor( ChameleonWindow *mframe,
 								 Options* options,
 								 ProjectInfo* project,
@@ -161,6 +179,14 @@ ChameleonEditor::ChameleonEditor( ChameleonWindow *mframe,
 
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public destructor ~ChameleonEditor
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 ChameleonEditor::~ChameleonEditor() 
 {
     if(m_project->IsSingleFile())
@@ -175,11 +201,29 @@ ChameleonEditor::~ChameleonEditor()
 
 
 
+//////////////////////////////////////////////////////////////////////////////
+///  public SaveFileLocal
+///  <TODO: insert text here>
+///
+///  @return bool <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 bool ChameleonEditor::SaveFileLocal()
 {
 	return SaveFile(m_fileNameAndPath.GetFullPath());
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public SaveFile
+///  <TODO: insert text here>
+///
+///  @param  filename const wxString & <TODO: insert text here>
+///
+///  @return bool     <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 bool ChameleonEditor::SaveFile( const wxString & filename )
 {
 
@@ -214,6 +258,16 @@ bool ChameleonEditor::SaveFile( const wxString & filename )
     return true;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public LoadFileText
+///  <TODO: insert text here>
+///
+///  @param  fileContents wxString  <TODO: insert text here>
+///
+///  @return bool         <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 bool ChameleonEditor::LoadFileText(wxString fileContents)
 {
 	if(fileContents.Length() > 0)
@@ -281,6 +335,14 @@ bool ChameleonEditor::LoadFileText(wxString fileContents)
     return true;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public Modified
+///  <TODO: insert text here>
+///
+///  @return bool <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 bool ChameleonEditor::Modified () 
 {
     // return modified state
@@ -295,6 +357,16 @@ bool ChameleonEditor::Modified ()
 }
 
 // called every time a character is entered.  currently not actually doing much.
+//////////////////////////////////////////////////////////////////////////////
+///  public OnChar
+///  <TODO: insert text here>
+///
+///  @param  event wxStyledTextEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonEditor::OnChar( wxStyledTextEvent &event )
 {
 
@@ -366,6 +438,14 @@ void ChameleonEditor::OnChar( wxStyledTextEvent &event )
 	return;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public HasBeenSaved
+///  <TODO: insert text here>
+///
+///  @return bool <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 bool ChameleonEditor::HasBeenSaved()
 {
 	bool result = m_fileNameAndPath.GetFullPath() != wxEmptyString;
@@ -384,6 +464,14 @@ void ChameleonEditor::SetLocalFileNameAndPath(wxString path, wxString name)
 }
 */
 
+//////////////////////////////////////////////////////////////////////////////
+///  public UpdateSyntaxHighlighting
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonEditor::UpdateSyntaxHighlighting()
 {
 	if( m_mainFrame->IsEnabled(PERM_SYNTAXHIGHLIGHT) )
@@ -409,6 +497,17 @@ void ChameleonEditor::UpdateSyntaxHighlighting()
 }
 
 //void ChameleonEditor::SetFileNameAndPath(wxString path, wxString name, bool fileIsRemote)
+//////////////////////////////////////////////////////////////////////////////
+///  public SetFilename
+///  <TODO: insert text here>
+///
+///  @param  filename     wxFileName  <TODO: insert text here>
+///  @param  fileIsRemote bool        <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonEditor::SetFilename(wxFileName filename, bool fileIsRemote)
 {
 	m_bLastSavedRemotely = fileIsRemote;
@@ -455,26 +554,66 @@ void ChameleonEditor::SetFilename(wxFileName filename, bool fileIsRemote)
 	m_fileNameAndPath = filename;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public GetFileNameAndPath
+///  <TODO: insert text here>
+///
+///  @return wxString <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 wxString ChameleonEditor::GetFileNameAndPath()
 {
 	wxString nameAndPath = m_fileNameAndPath.GetFullPath(m_bLastSavedRemotely ? wxPATH_UNIX : wxPATH_DOS);
 	return nameAndPath;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public GetFilenameString
+///  <TODO: insert text here>
+///
+///  @return wxString <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 wxString ChameleonEditor::GetFilenameString()
 {
 	return m_fileNameAndPath.GetFullName();
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public GetFileName
+///  <TODO: insert text here>
+///
+///  @return wxFileName <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 wxFileName ChameleonEditor::GetFileName() {
 	return m_fileNameAndPath;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public GetFilePath
+///  <TODO: insert text here>
+///
+///  @return wxString <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 wxString ChameleonEditor::GetFilePath()
 {
 	return m_fileNameAndPath.GetPath(false, m_bLastSavedRemotely ? wxPATH_UNIX : wxPATH_DOS);
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public ResetEditor
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonEditor::ResetEditor()
 {
 	ClearAll();
@@ -498,6 +637,16 @@ void ChameleonEditor::ResetEditor()
 	m_project = new ProjectInfo();
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public OnRightClick
+///  <TODO: insert text here>
+///
+///  @param  event wxMouseEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonEditor::OnRightClick(wxMouseEvent &event)
 {
 	m_lastRightClick = event.GetPosition();
@@ -531,28 +680,31 @@ void ChameleonEditor::OnRightClick(wxMouseEvent &event)
 	PopupMenu(&m_popupMenu, m_lastRightClick);
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private OnEditorModified
+///  <TODO: insert text here>
+///
+///  @param  event wxStyledTextEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonEditor::OnEditorModified(wxStyledTextEvent &event)
 {
-	/*
-	int modType = event.GetModificationType();
-
-	wxString debugMessage;
-	wxString message;
-
-	switch(modType)
-	{
-		case wxSTC_MOD_INSERTTEXT:
-			message = "Insert mod.";
-			break;
-		case wxSTC_MOD_DELETETEXT:
-			message = "Delete mod.";
-			break;
-	}	
-	*/
-	//m_bHasBeenCompiled = false;
 	m_project->SetCompiled(false);
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private OnAddBreakpoint
+///  <TODO: insert text here>
+///
+///  @param  event wxCommandEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonEditor::OnAddBreakpoint(wxCommandEvent &event)
 {
 	int charpos = PositionFromPoint(m_lastRightClick);
@@ -564,6 +716,16 @@ void ChameleonEditor::OnAddBreakpoint(wxCommandEvent &event)
 	CreateBreakpointEvent(linenum, true);	
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private OnRemoveBreakpoint
+///  <TODO: insert text here>
+///
+///  @param  event wxCommandEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonEditor::OnRemoveBreakpoint(wxCommandEvent &event)
 {
 	int charpos = PositionFromPoint(m_lastRightClick);
@@ -575,6 +737,16 @@ void ChameleonEditor::OnRemoveBreakpoint(wxCommandEvent &event)
 	CreateBreakpointEvent(linenum, false);
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private OnClearBreakpoints
+///  <TODO: insert text here>
+///
+///  @param  event wxCommandEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonEditor::OnClearBreakpoints(wxCommandEvent &event)
 {
 	// m_breakpoints should have been cleared of any orphaned marker
@@ -590,6 +762,14 @@ void ChameleonEditor::OnClearBreakpoints(wxCommandEvent &event)
 	}
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public GetBreakpoints
+///  <TODO: insert text here>
+///
+///  @return wxArrayInt <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 wxArrayInt ChameleonEditor::GetBreakpoints()
 {
 	wxArrayInt linenumbers;
@@ -621,18 +801,42 @@ wxArrayInt ChameleonEditor::GetBreakpoints()
 	return linenumbers;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public HasBeenCompiled
+///  <TODO: insert text here>
+///
+///  @return bool <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 bool ChameleonEditor::HasBeenCompiled()
 {
-	//return m_bHasBeenCompiled;
 	return m_project->IsCompiled();
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public SetCompiled
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonEditor::SetCompiled()
 {
-	//m_bHasBeenCompiled = true;
 	m_project->SetCompiled(true);
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private OnCompilerEnded
+///  <TODO: insert text here>
+///
+///  @param  event CompilerEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonEditor::OnCompilerEnded(CompilerEvent &event)
 {
 	if(event.GetResult() == CR_OK) {
@@ -641,6 +845,17 @@ void ChameleonEditor::OnCompilerEnded(CompilerEvent &event)
 	}
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public FocusOnLine
+///  <TODO: insert text here>
+///
+///  @param  linenumber int   <TODO: insert text here>
+///  @param  showMarker bool  [=true] <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonEditor::FocusOnLine(int linenumber, bool showMarker)
 {
 	GotoLine(linenumber);
@@ -650,6 +865,17 @@ void ChameleonEditor::FocusOnLine(int linenumber, bool showMarker)
 		MarkerAdd(linenumber, MARKER_FOCUSEDLINE);
 	}
 }
+//////////////////////////////////////////////////////////////////////////////
+///  private CreateBreakpointEvent
+///  <TODO: insert text here>
+///
+///  @param  linenumber    int   <TODO: insert text here>
+///  @param  addBreakpoint bool  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonEditor::CreateBreakpointEvent(int linenumber, bool addBreakpoint)
 {
 	wxDebugEvent dbg;
@@ -667,6 +893,16 @@ void ChameleonEditor::CreateBreakpointEvent(int linenumber, bool addBreakpoint)
 }
 
 
+//////////////////////////////////////////////////////////////////////////////
+///  public SetProject
+///  <TODO: insert text here>
+///
+///  @param  project ProjectInfo * <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonEditor::SetProject(ProjectInfo* project)
 {
 	if(m_project != NULL && m_project->IsSingleFile())
@@ -679,6 +915,16 @@ void ChameleonEditor::SetProject(ProjectInfo* project)
 	m_project->AddEditor(this);
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public SetExecutableFilename
+///  <TODO: insert text here>
+///
+///  @param  filename wxFileName  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonEditor::SetExecutableFilename(wxFileName filename)
 {
 	m_project->SetExecutableName(filename);
@@ -689,6 +935,16 @@ FileFilterType ChameleonEditor::GetFileType()
 	return FILE_ALLSOURCETYPES;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private OnRunToCursor
+///  <TODO: insert text here>
+///
+///  @param  event wxCommandEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonEditor::OnRunToCursor(wxCommandEvent &event)
 {
 	int charpos = PositionFromPoint(m_lastRightClick);

@@ -64,6 +64,17 @@ wxString GlobalPermStrings[] = {"Syntax highlighting",
 	//Permission("10A80000000", "0");
 //}
 
+//////////////////////////////////////////////////////////////////////////////
+///  public constructor Permission
+///  <TODO: insert text here>
+///
+///  @param  loadAuthCode wxString  [="0"] <TODO: insert text here>
+///  @param  loadPermCode wxString  [="0"] <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Ben Carhart @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 Permission::Permission(wxString loadAuthCode, wxString loadPermCode)
 {
 	long tPCode, tACode;
@@ -96,6 +107,14 @@ Permission::Permission(wxString loadAuthCode, wxString loadPermCode)
 
 //Destructor
 //Kills everything.
+//////////////////////////////////////////////////////////////////////////////
+///  public destructor ~Permission
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Ben Carhart @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 Permission::~Permission()
 {
 	status.reset();
@@ -109,6 +128,16 @@ Permission::~Permission()
 //isEnabled
 //Input: a valid module ID
 //Output: a boolean TRUE if the [status] bit is set, FALSE otherwise
+//////////////////////////////////////////////////////////////////////////////
+///  public isEnabled
+///  <TODO: insert text here>
+///
+///  @param  id   int  <TODO: insert text here>
+///
+///  @return bool <TODO: insert text here>
+///
+///  @author Ben Carhart @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 bool Permission::isEnabled(int id)
 {
 	return(status.test(id) && auth.test(id));
@@ -117,6 +146,16 @@ bool Permission::isEnabled(int id)
 //isAuthorized
 //Input: a valid module ID
 //Output: a boolean TRUE if the [auth] bit is set, FALSE otherwise
+//////////////////////////////////////////////////////////////////////////////
+///  public isAuthorized
+///  <TODO: insert text here>
+///
+///  @param  id   int  <TODO: insert text here>
+///
+///  @return bool <TODO: insert text here>
+///
+///  @author Ben Carhart @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 bool Permission::isAuthorized(int id)
 {
 	return(auth.test(id));
@@ -125,6 +164,16 @@ bool Permission::isAuthorized(int id)
 //enable
 //Input: a valid module ID
 //Output: nothing.  [status] and [permCode] are updated.
+//////////////////////////////////////////////////////////////////////////////
+///  public enable
+///  <TODO: insert text here>
+///
+///  @param  id   int  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Ben Carhart @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 void Permission::enable(int id)
 {
 	if(isAuthorized(id))
@@ -143,6 +192,16 @@ void Permission::enable(int id)
 //disable
 //input: a valid module ID
 //output: nothing.  [status] and [permCode] are updated
+//////////////////////////////////////////////////////////////////////////////
+///  public disable
+///  <TODO: insert text here>
+///
+///  @param  id   int  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Ben Carhart @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 void Permission::disable(int id)
 {
 	status.reset(id);
@@ -160,6 +219,16 @@ void Permission::disable(int id)
 //		 with the CRC16 code for that integer's characters prepended to it
 //output: TRUE if the code parsed correctly, FALSE otherwise.  [auth] and
 //        [authCode] are updated.
+//////////////////////////////////////////////////////////////////////////////
+///  public setGlobalAuthorized
+///  <TODO: insert text here>
+///
+///  @param  newAuthCode wxString  <TODO: insert text here>
+///
+///  @return bool        <TODO: insert text here>
+///
+///  @author Ben Carhart @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 bool Permission::setGlobalAuthorized(wxString newAuthCode)
 {
 	wxString crcPrefix;
@@ -198,6 +267,16 @@ bool Permission::setGlobalAuthorized(wxString newAuthCode)
 	return validAuthCode;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public setGlobalEnabled
+///  <TODO: insert text here>
+///
+///  @param  newEnableCode wxString  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Ben Carhart @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 void Permission::setGlobalEnabled(wxString newEnableCode)
 {
 	newEnableCode.ToLong(&permCode);
@@ -214,6 +293,14 @@ void Permission::setGlobalEnabled(wxString newEnableCode)
 //getGlobal
 //input: nothing
 //output: current permissions code stored; this is what is visible
+//////////////////////////////////////////////////////////////////////////////
+///  public getGlobalEnabled
+///  <TODO: insert text here>
+///
+///  @return long <TODO: insert text here>
+///
+///  @author Ben Carhart @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 long Permission::getGlobalEnabled()
 {
 	return(permCode);
@@ -222,12 +309,30 @@ long Permission::getGlobalEnabled()
 //getGlobal 2
 //input: nothing
 //output: the authorization code.  This is what can be turned on/off.
+//////////////////////////////////////////////////////////////////////////////
+///  public getGlobalAuthorized
+///  <TODO: insert text here>
+///
+///  @return long <TODO: insert text here>
+///
+///  @author Ben Carhart @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 long Permission::getGlobalAuthorized()
 {
 	return(authCode);
 }
 
 
+//////////////////////////////////////////////////////////////////////////////
+///  public getPermName
+///  <TODO: insert text here>
+///
+///  @param  permEnum int  <TODO: insert text here>
+///
+///  @return wxString <TODO: insert text here>
+///
+///  @author Ben Carhart @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 wxString Permission::getPermName(int permEnum)
 {
 	

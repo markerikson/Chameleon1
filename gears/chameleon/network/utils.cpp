@@ -10,6 +10,14 @@
 int GTerm::calc_color( int fg, int bg, int flags )
                            { return (flags & 15) | (fg << 4) | (bg << 8); }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private update_changes
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Timothy Miller @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 void GTerm::update_changes ()
 {
     int yp, start_x, mx;
@@ -174,6 +182,18 @@ void GTerm::update_changes ()
     doing_update = 0;
 }
 // num is the number of lines to scroll at a time
+//////////////////////////////////////////////////////////////////////////////
+///  private scroll_region
+///  <TODO: insert text here>
+///
+///  @param  start_y int  <TODO: insert text here>
+///  @param  end_y   int  <TODO: insert text here>
+///  @param  num     int  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Timothy Miller @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 void GTerm::scroll_region( int start_y, int end_y, int num )
 {
 	//wxLogDebug("scroll_region");
@@ -269,6 +289,19 @@ void GTerm::scroll_region( int start_y, int end_y, int num )
 	}
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private shift_text
+///  <TODO: insert text here>
+///
+///  @param  y       int  <TODO: insert text here>
+///  @param  start_x int  <TODO: insert text here>
+///  @param  end_x   int  <TODO: insert text here>
+///  @param  num     int  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Timothy Miller @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 void GTerm::shift_text( int y, int start_x, int end_x, int num )
 {
 	//wxLogDebug("shift_text");
@@ -355,6 +388,19 @@ void GTerm::shift_text( int y, int start_x, int end_x, int num )
     changed_line(y, start_x, end_x);
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private clear_area
+///  <TODO: insert text here>
+///
+///  @param  start_x int  <TODO: insert text here>
+///  @param  start_y int  <TODO: insert text here>
+///  @param  end_x   int  <TODO: insert text here>
+///  @param  end_y   int  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Timothy Miller @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 void GTerm::clear_area( int start_x, int start_y, int end_x, int end_y )
 {
 	//wxLogDebug("clear_area");
@@ -448,6 +494,17 @@ void GTerm::changed_line( int y, int start_x, int end_x )
         dirty_endx[y] = end_x;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private move_cursor
+///  <TODO: insert text here>
+///
+///  @param  x    int  <TODO: insert text here>
+///  @param  y    int  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Timothy Miller @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 void GTerm::move_cursor( int x, int y )
 {
     if( cursor_x >= width )

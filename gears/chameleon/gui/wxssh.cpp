@@ -17,6 +17,22 @@ BEGIN_EVENT_TABLE(wxSSH, wxTerm)
 	EVT_PROCESS_ENDED(wxSSH::OnPlinkTerm)
 END_EVENT_TABLE()
 
+//////////////////////////////////////////////////////////////////////////////
+///  public constructor wxSSH
+///  <TODO: insert text here>
+///
+///  @param  parent  wxWindow *       <TODO: insert text here>
+///  @param  id      wxWindowID       <TODO: insert text here>
+///  @param  network Networking *     <TODO: insert text here>
+///  @param  pos     const wxPoint &  [=wxDefaultPosition] <TODO: insert text here>
+///  @param  width   int              [=80] <TODO: insert text here>
+///  @param  height  int              [=25] <TODO: insert text here>
+///  @param  name    const wxString & [="wxSSH"] <TODO: insert text here>
+///
+///  @return void
+///
+///  @author David Czechowski @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 wxSSH::wxSSH(wxWindow* parent, wxWindowID id, Networking* network, const wxPoint& pos, int width, int height, const wxString& name)
 	: wxTerm(parent, id, pos, width, height, name)
 {
@@ -28,6 +44,14 @@ wxSSH::wxSSH(wxWindow* parent, wxWindowID id, Networking* network, const wxPoint
 	m_startingDebugConnection = false;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public virtual destructor ~wxSSH
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author David Czechowski @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 wxSSH::~wxSSH()
 {
 	if(m_connected)
@@ -39,6 +63,17 @@ wxSSH::~wxSSH()
 	}
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public virtual SendBack
+///  <TODO: insert text here>
+///
+///  @param  len  int    <TODO: insert text here>
+///  @param  data char * <TODO: insert text here>
+///
+///  @return void
+///
+///  @author David Czechowski @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void wxSSH::SendBack(int len, char *data)
 {
 	if(m_connected) {
@@ -47,6 +82,14 @@ void wxSSH::SendBack(int len, char *data)
 	}
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public virtual Connect
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author David Czechowski @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void wxSSH::Connect()
 {
 	m_startingDebugConnection = false;
@@ -69,6 +112,14 @@ void wxSSH::Connect()
 }
 
 
+//////////////////////////////////////////////////////////////////////////////
+///  public ConnectForDebug
+///  <TODO: insert text here>
+///
+///  @return wxString <TODO: insert text here>
+///
+///  @author David Czechowski @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 wxString wxSSH::ConnectForDebug()
 {
 	m_startingDebugConnection = true;
@@ -106,6 +157,16 @@ wxString wxSSH::ConnectForDebug()
 }
 
 
+//////////////////////////////////////////////////////////////////////////////
+///  public virtual Disconnect
+///  <TODO: insert text here>
+///
+///  @param  clearDisplay bool  [=true] <TODO: insert text here>
+///
+///  @return void
+///
+///  @author David Czechowski @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void wxSSH::Disconnect(bool clearDisplay)
 {
 	if(m_connected)
@@ -145,6 +206,16 @@ bool wxSSH::IsConnected(void)
 // Currently the plan is just to surpress them because they aren't relevant to Chameleon
 //wxSSH should override the input mechanism, and when any of the xterm escape sequences are issued it should eat them(into a buffer).  If a max STRING length is reached with out getting BEL the buffer can be 're-issued'.
 // **Note: if a vt52 printscreen is sent, the screen will be blank until MAX characters are sent
+//////////////////////////////////////////////////////////////////////////////
+///  public OnPlinkOut
+///  <TODO: insert text here>
+///
+///  @param  event ChameleonProcessEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author David Czechowski @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void wxSSH::OnPlinkOut(ChameleonProcessEvent &e)
 {
 	wxString s = e.GetString();
@@ -173,11 +244,31 @@ void wxSSH::OnPlinkOut(ChameleonProcessEvent &e)
 	return;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public OnPlinkErr
+///  <TODO: insert text here>
+///
+///  @param  event ChameleonProcessEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author David Czechowski @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void wxSSH::OnPlinkErr(ChameleonProcessEvent &e)
 {
 	wxLogDebug("Terminal-StdError: "+e.GetString());
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public OnPlinkTerm
+///  <TODO: insert text here>
+///
+///  @param  event ChameleonProcessEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author David Czechowski @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void wxSSH::OnPlinkTerm(ChameleonProcessEvent &e)
 {
 	wxLogDebug("Terminal's External Process Terminated!");

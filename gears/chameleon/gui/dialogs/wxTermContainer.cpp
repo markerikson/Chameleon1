@@ -136,6 +136,16 @@ void wxTermContainer::CreateControls()
  * wxEVT_SCROLL_LINEUP event handler for ID_SCROLLBAR
  */
 
+//////////////////////////////////////////////////////////////////////////////
+///  public OnScrollbarScrollLineUp
+///  <TODO: insert text here>
+///
+///  @param  event wxScrollEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void wxTermContainer::OnScrollbarScrollLineUp( wxScrollEvent& event )
 {
     // Insert custom code here
@@ -149,6 +159,16 @@ void wxTermContainer::OnScrollbarScrollLineUp( wxScrollEvent& event )
  * wxEVT_SCROLL_LINEDOWN event handler for ID_SCROLLBAR
  */
 
+//////////////////////////////////////////////////////////////////////////////
+///  public OnScrollbarScrollLineDown
+///  <TODO: insert text here>
+///
+///  @param  event wxScrollEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void wxTermContainer::OnScrollbarScrollLineDown( wxScrollEvent& event )
 {
     // Insert custom code here
@@ -161,6 +181,16 @@ void wxTermContainer::OnScrollbarScrollLineDown( wxScrollEvent& event )
  * wxEVT_SCROLL_PAGEUP event handler for ID_SCROLLBAR
  */
 
+//////////////////////////////////////////////////////////////////////////////
+///  public OnScrollbarScrollPageUp
+///  <TODO: insert text here>
+///
+///  @param  event wxScrollEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void wxTermContainer::OnScrollbarScrollPageUp( wxScrollEvent& event )
 {
     // Insert custom code here
@@ -173,6 +203,16 @@ void wxTermContainer::OnScrollbarScrollPageUp( wxScrollEvent& event )
  * wxEVT_SCROLL_PAGEDOWN event handler for ID_SCROLLBAR
  */
 
+//////////////////////////////////////////////////////////////////////////////
+///  public OnScrollbarScrollPageDown
+///  <TODO: insert text here>
+///
+///  @param  event wxScrollEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void wxTermContainer::OnScrollbarScrollPageDown( wxScrollEvent& event )
 {
     // Insert custom code here
@@ -184,6 +224,16 @@ void wxTermContainer::OnScrollbarScrollPageDown( wxScrollEvent& event )
  * wxEVT_SCROLL_THUMBTRACK event handler for ID_SCROLLBAR
  */
 
+//////////////////////////////////////////////////////////////////////////////
+///  public OnScrollbarScrollThumbtrack
+///  <TODO: insert text here>
+///
+///  @param  event wxScrollEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void wxTermContainer::OnScrollbarScrollThumbtrack( wxScrollEvent& event )
 {
     // Insert custom code here
@@ -218,6 +268,16 @@ bool wxTermContainer::ShowToolTips()
   return TRUE;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public SetTerminal
+///  <TODO: insert text here>
+///
+///  @param  terminal wxTerm * <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void wxTermContainer::SetTerminal(wxTerm* terminal)
 {
 	
@@ -256,6 +316,16 @@ void wxTermContainer::OnSize(wxSizeEvent &event)
 
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public OnUpdateUI
+///  <TODO: insert text here>
+///
+///  @param  event wxUpdateUIEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void wxTermContainer::OnUpdateUI(wxUpdateUIEvent &event)
 {
 	bool enableScrollbar = true;

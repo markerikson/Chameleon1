@@ -10,6 +10,16 @@
 #define new DEBUG_NEW
 #endif
 
+//////////////////////////////////////////////////////////////////////////////
+///  public constructor ProjectInfo
+///  <TODO: insert text here>
+///
+///  @param  singleFile bool  [=1] <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 ProjectInfo::ProjectInfo(bool singleFile /* = true */)
 {
 	m_isSingleFile = singleFile;
@@ -36,6 +46,16 @@ ProjectInfo::ProjectInfo(bool singleFile /* = true */)
 	}
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public FileExistsInProject
+///  <TODO: insert text here>
+///
+///  @param  filename wxString  <TODO: insert text here>
+///
+///  @return bool     <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 bool ProjectInfo::FileExistsInProject(wxString filename)
 {
 	bool fileInProject = false;
@@ -56,6 +76,16 @@ bool ProjectInfo::FileExistsInProject(wxString filename)
 	return fileInProject;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private SelectStringArray
+///  <TODO: insert text here>
+///
+///  @param  filterType      FileFilterType  <TODO: insert text here>
+///
+///  @return wxArrayString * <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 wxArrayString* ProjectInfo::SelectStringArray(FileFilterType filterType)
 {
 	switch(filterType)
@@ -72,6 +102,16 @@ wxArrayString* ProjectInfo::SelectStringArray(FileFilterType filterType)
 	return NULL;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private SelectBoolArray
+///  <TODO: insert text here>
+///
+///  @param  filterType  FileFilterType  <TODO: insert text here>
+///
+///  @return BoolArray * <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 BoolArray* ProjectInfo::SelectBoolArray(FileFilterType filterType)
 {
 	switch(filterType)
@@ -87,6 +127,17 @@ BoolArray* ProjectInfo::SelectBoolArray(FileFilterType filterType)
 	return NULL;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public AddFileToProject
+///  <TODO: insert text here>
+///
+///  @param  filename wxString        <TODO: insert text here>
+///  @param  fileType FileFilterType  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 void ProjectInfo::AddFileToProject(wxString filename, FileFilterType filterType)
 {
 	if(FileExistsInProject(filename)) {
@@ -107,6 +158,17 @@ void ProjectInfo::AddFileToProject(wxString filename, FileFilterType filterType)
 	}
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public RemoveFileFromProject
+///  <TODO: insert text here>
+///
+///  @param  filename wxString        <TODO: insert text here>
+///  @param  fileType FileFilterType  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 void ProjectInfo::RemoveFileFromProject(wxString filename, FileFilterType filterType)
 {
 	wxArrayString* filelist = SelectStringArray(filterType);
@@ -118,6 +180,17 @@ void ProjectInfo::RemoveFileFromProject(wxString filename, FileFilterType filter
 	enablelist->RemoveAt(index);
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public FileIncludedInBuild
+///  <TODO: insert text here>
+///
+///  @param  filename   wxString        <TODO: insert text here>
+///  @param  filterType FileFilterType  <TODO: insert text here>
+///
+///  @return bool       <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 bool ProjectInfo::FileIncludedInBuild(wxString filename, FileFilterType filterType)
 {
 	wxArrayString* filelist = SelectStringArray(filterType);
@@ -127,6 +200,18 @@ bool ProjectInfo::FileIncludedInBuild(wxString filename, FileFilterType filterTy
 	return enablelist->Item(index);
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public SetFileBuildInclusion
+///  <TODO: insert text here>
+///
+///  @param  filename   wxString        <TODO: insert text here>
+///  @param  filterType FileFilterType  <TODO: insert text here>
+///  @param  enable     bool            <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 void ProjectInfo::SetFileBuildInclusion(wxString filename, FileFilterType filterType, bool enable)
 {
 	wxArrayString* filelist = SelectStringArray(filterType);
@@ -136,6 +221,14 @@ void ProjectInfo::SetFileBuildInclusion(wxString filename, FileFilterType filter
 	(*enablelist)[index] = enable;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public GetSourcesToBuild
+///  <TODO: insert text here>
+///
+///  @return wxArrayString <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 wxArrayString ProjectInfo::GetSourcesToBuild()
 {
 	wxArrayString sourcesToBuild;
@@ -152,16 +245,46 @@ wxArrayString ProjectInfo::GetSourcesToBuild()
 }
 
 
+//////////////////////////////////////////////////////////////////////////////
+///  public AddEditor
+///  <TODO: insert text here>
+///
+///  @param  edit ChameleonEditor * <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 void ProjectInfo::AddEditor(ChameleonEditor* edit)
 {
 	m_edPointers.Add(edit);
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public RemoveEditor
+///  <TODO: insert text here>
+///
+///  @param  edit ChameleonEditor * <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 void ProjectInfo::RemoveEditor(ChameleonEditor* edit)
 {
 	m_edPointers.Remove(edit);
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private MakeReadOnly
+///  <TODO: insert text here>
+///
+///  @param  makeReadOnly bool  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 void ProjectInfo::MakeReadOnly(bool makeReadOnly)
 {
 	m_isReadOnly = makeReadOnly;
@@ -172,6 +295,16 @@ void ProjectInfo::MakeReadOnly(bool makeReadOnly)
 	}
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public SetBeingCompiled
+///  <TODO: insert text here>
+///
+///  @param  compiling bool  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 void ProjectInfo::SetBeingCompiled(bool compiling)
 {
 	m_isBeingCompiled = compiling;

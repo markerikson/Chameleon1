@@ -18,8 +18,7 @@ public:
 						const wxString& name = "notebook");
 	~ChameleonNotebook();
 
-	int HitTest(const wxPoint& pt, long& flags);
-	void TestMenu(wxCommandEvent& evt);
+	//int HitTest(const wxPoint& pt, long& flags);
 	int FindPagePosition(wxNotebookPage* page);
 
 	void OnTabActivate (wxMouseEvent &event);
@@ -27,47 +26,12 @@ public:
 	void OnSize(wxSizeEvent &event);
 
 private:
-	void CreateBookMenus();
-
-
+	//void CreateBookMenus();
 
 	ChameleonWindow* m_parent;
 
-	wxMenu* m_nonActiveMenu;
-	wxMenu* m_activeMenu;
-
 
 	DECLARE_EVENT_TABLE()
 };
-
-/*
-class AppBook: public wxNotebook {
-
-public:
-	//! constructor
-	AppBook (wxWindow *parent,
-		wxWindowID id = -1,
-		const wxPoint& pos = wxDefaultPosition,
-		const wxSize& size = wxDefaultSize,
-		long style = 0);
-
-	//! destructor
-	~AppBook ();
-
-	// event handlers
-	void OnTabActivate (wxMouseEvent &event);
-
-private:
-	AppFrame *m_frame;
-
-	// context menu of the tab region
-	wxMenu *m_bookMenu1;
-	wxMenu *m_bookMenu2;
-	void CreateBookMenus ();
-
-	DECLARE_EVENT_TABLE()
-};
-*/
-
 
 #endif

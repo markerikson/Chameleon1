@@ -27,6 +27,16 @@ BEGIN_EVENT_TABLE(Networking, wxEvtHandler)
 END_EVENT_TABLE()
 
 
+//////////////////////////////////////////////////////////////////////////////
+///  public constructor Networking
+///  <TODO: insert text here>
+///
+///  @param  options Options * <TODO: insert text here>
+///
+///  @return void
+///
+///  @author David Czechowski @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 Networking::Networking(Options* options)
 {
 	m_options = options;
@@ -41,12 +51,30 @@ Networking::Networking(Options* options)
 }
 
 
+//////////////////////////////////////////////////////////////////////////////
+///  public destructor ~Networking
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author David Czechowski @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 Networking::~Networking()
 {
 	delete m_plinks;
 }
 
 
+//////////////////////////////////////////////////////////////////////////////
+///  public GetHomeDirPath
+///  <TODO: insert text here>
+///
+///  @param  homeDir wxString & <TODO: insert text here>
+///
+///  @return bool    <TODO: insert text here>
+///
+///  @author David Czechowski @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 bool Networking::GetHomeDirPath(wxString &path)
 {
 	bool success = false;
@@ -72,6 +100,17 @@ bool Networking::GetHomeDirPath(wxString &path)
 }
 
 
+//////////////////////////////////////////////////////////////////////////////
+///  public GetFileContents
+///  <TODO: insert text here>
+///
+///  @param  file     wxFileName  <TODO: insert text here>
+///  @param  contents wxString &  <TODO: insert text here>
+///
+///  @return bool     <TODO: insert text here>
+///
+///  @author David Czechowski @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 bool Networking::GetFileContents(wxFileName file, wxString &contents)
 {
 	if(GetStatus() == NET_GOOD) {
@@ -85,6 +124,17 @@ bool Networking::GetFileContents(wxFileName file, wxString &contents)
 }
 
 
+//////////////////////////////////////////////////////////////////////////////
+///  public SendFileContents
+///  <TODO: insert text here>
+///
+///  @param  strng wxString    <TODO: insert text here>
+///  @param  file  wxFileName  <TODO: insert text here>
+///
+///  @return bool  <TODO: insert text here>
+///
+///  @author David Czechowski @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 bool Networking::SendFileContents(wxString strng, wxFileName file)
 {
 	bool success = false;
@@ -127,6 +177,19 @@ bool Networking::SendFileContents(wxString strng, wxFileName file)
 }
 
 
+//////////////////////////////////////////////////////////////////////////////
+///  public GetDirListing
+///  <TODO: insert text here>
+///
+///  @param  dirPath       wxString     <TODO: insert text here>
+///  @param  list          DirListing & <TODO: insert text here>
+///  @param  forceRefresh  bool         [=false] <TODO: insert text here>
+///  @param  includeHidden bool         [=false] <TODO: insert text here>
+///
+///  @return bool          <TODO: insert text here>
+///
+///  @author David Czechowski @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 bool Networking::GetDirListing(wxString dirPath, DirListing &listing, bool forceRefresh,
 							   bool includeHidden)
 {
@@ -147,6 +210,16 @@ bool Networking::GetDirListing(wxString dirPath, DirListing &listing, bool force
 
 
 //Private:
+//////////////////////////////////////////////////////////////////////////////
+///  private SSHGetHomeDirPath
+///  <TODO: insert text here>
+///
+///  @param  homeDir wxString & <TODO: insert text here>
+///
+///  @return bool    <TODO: insert text here>
+///
+///  @author David Czechowski @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 bool Networking::SSHGetHomeDirPath(wxString &path) {
 	wxString cmd = "cd ~ && pwd";
 	
@@ -166,6 +239,17 @@ bool Networking::SSHGetHomeDirPath(wxString &path) {
 
 
 //Private:
+//////////////////////////////////////////////////////////////////////////////
+///  private SSHGetFileContents
+///  <TODO: insert text here>
+///
+///  @param  file     wxString   <TODO: insert text here>
+///  @param  contents wxString & <TODO: insert text here>
+///
+///  @return bool     <TODO: insert text here>
+///
+///  @author David Czechowski @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 bool Networking::SSHGetFileContents(wxString file, wxString &contents)
 {
 	wxString cmd = "cat " + file;
@@ -177,7 +261,6 @@ bool Networking::SSHGetFileContents(wxString file, wxString &contents)
 		output.Replace("\r\n", "\n", true);
 		/////////////
 
-		//output.Remove(output.Length()-1); // remove cat's EOL("\r\n")
 		contents = output;
 		m_statusDetails = "";
 		return true;
@@ -192,6 +275,17 @@ bool Networking::SSHGetFileContents(wxString file, wxString &contents)
 
 // Re-write this to use: "output = ExecuteLocalCommand(cmd);"
 //Private:
+//////////////////////////////////////////////////////////////////////////////
+///  private SCPDoTransfer
+///  <TODO: insert text here>
+///
+///  @param  from_path_name wxString  <TODO: insert text here>
+///  @param  to_path_name   wxString  <TODO: insert text here>
+///
+///  @return bool           <TODO: insert text here>
+///
+///  @author David Czechowski @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 bool Networking::SCPDoTransfer(wxString from_path_name, wxString to_path_name)
 {
 	// right now this only does local -> remote transfers
@@ -248,6 +342,18 @@ bool Networking::SCPDoTransfer(wxString from_path_name, wxString to_path_name)
 //    tell from this what is a dir, and what is a file.  I could later use that with "-l"
 //    and parse for the "d"
 //Private:
+//////////////////////////////////////////////////////////////////////////////
+///  private SSHGetDirListing
+///  <TODO: insert text here>
+///
+///  @param  dirPath       wxString     <TODO: insert text here>
+///  @param  listing       DirListing & <TODO: insert text here>
+///  @param  includeHidden bool         [=false] <TODO: insert text here>
+///
+///  @return bool          <TODO: insert text here>
+///
+///  @author David Czechowski @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 bool Networking::SSHGetDirListing(wxString dirPath, DirListing &listing,
 									bool includeHidden)
 {
@@ -278,6 +384,17 @@ bool Networking::SSHGetDirListing(wxString dirPath, DirListing &listing,
 //   in the integrity of the string I'm parsing, because I know
 //   what's coming in.
 // Private:
+//////////////////////////////////////////////////////////////////////////////
+///  private ParseFindOutput
+///  <TODO: insert text here>
+///
+///  @param  strng         wxString  <TODO: insert text here>
+///  @param  includeHidden bool      <TODO: insert text here>
+///
+///  @return wxArrayString <TODO: insert text here>
+///
+///  @author David Czechowski @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 wxArrayString Networking::ParseFindOutput(wxString strng, bool includeHidden)
 {
 	wxArrayString r;
@@ -327,6 +444,17 @@ wxArrayString Networking::ParseFindOutput(wxString strng, bool includeHidden)
 
 
 //Private:
+//////////////////////////////////////////////////////////////////////////////
+///  private SSHExecSyncCommand
+///  <TODO: insert text here>
+///
+///  @param  command wxString   <TODO: insert text here>
+///  @param  output  wxString & <TODO: insert text here>
+///
+///  @return bool    <TODO: insert text here>
+///
+///  @author David Czechowski @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 bool Networking::SSHExecSyncCommand(wxString command, wxString &output) {
 	command += " && echo Su_CC_ess-CMD";
 
@@ -371,6 +499,14 @@ bool Networking::MaintainSettings() {
 
 
 // I might recommend OptionsDialog call this after a change
+//////////////////////////////////////////////////////////////////////////////
+///  public GetStatus
+///  <TODO: insert text here>
+///
+///  @return NetworkStatus <TODO: insert text here>
+///
+///  @author David Czechowski @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 NetworkStatus Networking::GetStatus()
 {
 	if(MaintainSettings() || m_status == NET_STARTING) {
@@ -413,11 +549,18 @@ NetworkStatus Networking::GetStatus()
 			}
 		}
 	}
-
 	return m_status;
 }
 
 
+//////////////////////////////////////////////////////////////////////////////
+///  public GetStatusDetails
+///  <TODO: insert text here>
+///
+///  @return wxString <TODO: insert text here>
+///
+///  @author David Czechowski @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 wxString Networking::GetStatusDetails()
 {
 	return m_statusDetails;
@@ -427,6 +570,14 @@ wxString Networking::GetStatusDetails()
 // I am assuming!!! that the connection should work, and I'm just doing this to
 //  accept the cache.
 //Public:
+//////////////////////////////////////////////////////////////////////////////
+///  public SSHCacheFingerprint
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author David Czechowski @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void Networking::SSHCacheFingerprint()
 {
 	//Start the program asynchonously, answer "y" to caching, then Kill it:
@@ -464,6 +615,14 @@ void Networking::onTimerTick(wxTimerEvent &e) {
 
 
 // This function can NOT be SYNCHRONOUS (especially not locking -- wxSafeYield)
+//////////////////////////////////////////////////////////////////////////////
+///  public PingOptions
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author David Czechowski @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void Networking::PingOptions() {
 	// If nothing has changed, nothing will happen.
 	if( MaintainSettings() || m_status == NET_STARTING) {
@@ -479,6 +638,18 @@ void Networking::PingOptions() {
 /////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////
 
+//////////////////////////////////////////////////////////////////////////////
+///  public StartCommand
+///  <TODO: insert text here>
+///
+///  @param  isRemote             bool           <TODO: insert text here>
+///  @param  cmd                  wxString       <TODO: insert text here>
+///  @param  owner                wxEvtHandler * <TODO: insert text here>
+///
+///  @return wxTextOutputStream * <TODO: insert text here>
+///
+///  @author David Czechowski @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 wxTextOutputStream* Networking::StartCommand(bool isRemote, wxString cmd, wxEvtHandler* owner)
 {
 	if(isRemote) {
@@ -490,12 +661,34 @@ wxTextOutputStream* Networking::StartCommand(bool isRemote, wxString cmd, wxEvtH
 }
 
 
+//////////////////////////////////////////////////////////////////////////////
+///  public StartRemoteCommand
+///  <TODO: insert text here>
+///
+///  @param  cmd                  wxString       <TODO: insert text here>
+///  @param  owner                wxEvtHandler * <TODO: insert text here>
+///
+///  @return wxTextOutputStream * <TODO: insert text here>
+///
+///  @author David Czechowski @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 wxTextOutputStream* Networking::StartRemoteCommand(wxString cmd, wxEvtHandler* owner)
 {
 	return m_plinks->executeCommand(cmd, owner);
 }
 
 
+//////////////////////////////////////////////////////////////////////////////
+///  public StartLocalCommand
+///  <TODO: insert text here>
+///
+///  @param  cmd                  wxString       <TODO: insert text here>
+///  @param  owner                wxEvtHandler * <TODO: insert text here>
+///
+///  @return wxTextOutputStream * <TODO: insert text here>
+///
+///  @author David Czechowski @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 wxTextOutputStream* Networking::StartLocalCommand(wxString cmd, wxEvtHandler* owner)
 {
 	wxLogDebug("Local Process Execution still missing.");
@@ -504,6 +697,17 @@ wxTextOutputStream* Networking::StartLocalCommand(wxString cmd, wxEvtHandler* ow
 
 
 // A very simple method
+//////////////////////////////////////////////////////////////////////////////
+///  public ExecuteCommand
+///  <TODO: insert text here>
+///
+///  @param  isRemote bool      <TODO: insert text here>
+///  @param  cmd      wxString  <TODO: insert text here>
+///
+///  @return wxString <TODO: insert text here>
+///
+///  @author David Czechowski @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 wxString Networking::ExecuteCommand(bool isRemote, wxString cmd)
 {
 	if(isRemote) {
@@ -515,12 +719,32 @@ wxString Networking::ExecuteCommand(bool isRemote, wxString cmd)
 }
 
 
+//////////////////////////////////////////////////////////////////////////////
+///  public ExecuteRemoteCommand
+///  <TODO: insert text here>
+///
+///  @param  cmd      wxString  <TODO: insert text here>
+///
+///  @return wxString <TODO: insert text here>
+///
+///  @author David Czechowski @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 wxString Networking::ExecuteRemoteCommand(wxString cmd)
 {
 	return m_plinks->executeSyncCommand(cmd);
 }
 
 
+//////////////////////////////////////////////////////////////////////////////
+///  public ExecuteLocalCommand
+///  <TODO: insert text here>
+///
+///  @param  cmd      wxString  <TODO: insert text here>
+///
+///  @return wxString <TODO: insert text here>
+///
+///  @author David Czechowski @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 wxString Networking::ExecuteLocalCommand(wxString cmd)
 {
 	wxLogDebug("Local Process Execution still missing.");
@@ -530,6 +754,16 @@ wxString Networking::ExecuteLocalCommand(wxString cmd)
 
 // This is certainly not a common-sense thing to pass when desiring to terminate
 //    a process
+//////////////////////////////////////////////////////////////////////////////
+///  public ForceKillProcess
+///  <TODO: insert text here>
+///
+///  @param  w    wxTextOutputStream * <TODO: insert text here>
+///
+///  @return void
+///
+///  @author David Czechowski @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void Networking::ForceKillProcess(wxTextOutputStream* w)
 {
 	//Walk m_lprocesses:

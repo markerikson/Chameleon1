@@ -19,6 +19,17 @@ void GTerm::Update()
 	update_changes();
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public virtual ProcessInput
+///  <TODO: insert text here>
+///
+///  @param  len  int             <TODO: insert text here>
+///  @param  data unsigned char * <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Timothy Miller @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void GTerm::ProcessInput(int len, unsigned char *data)
 {
 //printf("ProcessInput called...\n");
@@ -52,6 +63,19 @@ void GTerm::Reset()
 	reset();
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public virtual ExposeArea
+///  <TODO: insert text here>
+///
+///  @param  x    int  <TODO: insert text here>
+///  @param  y    int  <TODO: insert text here>
+///  @param  w    int  <TODO: insert text here>
+///  @param  h    int  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Timothy Miller @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void GTerm::ExposeArea(int x, int y, int w, int h)
 {
 	int i;
@@ -59,6 +83,17 @@ void GTerm::ExposeArea(int x, int y, int w, int h)
 	if (!(mode_flags & DEFERUPDATE)) update_changes();
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public virtual ResizeTerminal
+///  <TODO: insert text here>
+///
+///  @param  width  int  <TODO: insert text here>
+///  @param  height int  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Timothy Miller @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void GTerm::ResizeTerminal(int w, int h)
 {
 	int cx, cy;
@@ -80,6 +115,17 @@ void GTerm::ResizeTerminal(int w, int h)
 	//Update();
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public constructor GTerm
+///  <TODO: insert text here>
+///
+///  @param  w    int  <TODO: insert text here>
+///  @param  h    int  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Timothy Miller @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 GTerm::GTerm(int w, int h) : width(w), height(h)
 {
 	int i;
@@ -124,6 +170,14 @@ GTerm::GTerm(int w, int h) : width(w), height(h)
 	reset();
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public virtual destructor ~GTerm
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Timothy Miller @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 GTerm::~GTerm()
 {
 	//delete[] alttext;
@@ -147,15 +201,38 @@ GTerm::SetMachineName(char *machinename)
 }
 #endif // GTERM_PC
 
+//////////////////////////////////////////////////////////////////////////////
+///  public virtual IsSelected
+///  <TODO: insert text here>
+///
+///  @param  x   int  <TODO: insert text here>
+///  @param  y   int  <TODO: insert text here>
+///
+///  @return int <TODO: insert text here>
+///
+///  @author Timothy Miller @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 int
 GTerm::IsSelected(int x, int y)
 {
   if(color && x >= 0 && x < Width() && y >= 0 && y < Height())
-    return color[(linenumbers[y] * MAXWIDTH) + x] & SELECTED;
-    //return (tm.GetColorAdjusted(y, x) & SELECTED);
+    //return color[(linenumbers[y] * MAXWIDTH) + x] & SELECTED;
+    return (tm.GetColorAdjusted(y, x) & SELECTED);
   return 0;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public virtual Select
+///  <TODO: insert text here>
+///
+///  @param  x      int  <TODO: insert text here>
+///  @param  y      int  <TODO: insert text here>
+///  @param  select int  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Timothy Miller @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void
 GTerm::Select(int x, int y, int select)
 {
@@ -191,7 +268,8 @@ unsigned char
 GTerm::GetChar(int x, int y)
 {
   if(text && x >= 0 && x < Width() && y >= 0 && y < Height())
-    return text[(linenumbers[y] * MAXWIDTH) + x];
+    //return text[(linenumbers[y] * MAXWIDTH) + x];
+	return tm.GetCharAdjusted(y, x);
 
   return 0;
 }
@@ -224,6 +302,14 @@ bool GTerm::IsScrolledUp()
 	return (tm.GetNumLinesScrolled() != 0);
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public GetScrollHeight
+///  <TODO: insert text here>
+///
+///  @return int <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 int GTerm::GetScrollHeight()
 {
 	int scrollHeight = tm.GetLinesReceived();

@@ -21,6 +21,9 @@
  */
 
 ////@begin includes
+#include "wx/wx.h"
+#include "wx/listctrl.h"
+#include "wx/statline.h"
 ////@end includes
 
 
@@ -31,11 +34,13 @@
 
 #include <wx/dynarray.h>
 
+
 // each wxArrayString will hold the extensions for that file class (ie, .C and .CPP for "C++ source files")
 WX_DECLARE_OBJARRAY(wxArrayString, TwoDStringVector);
 
 // each TwoDStringVector holds the information for a file grouping (FILE_SOURCECODE, FILE_PROJECT)
 WX_DECLARE_OBJARRAY(TwoDStringVector, ThreeDStringVector);
+
 
 
 /*!
@@ -80,6 +85,11 @@ class wxFileName;
 
 ////@begin control identifiers
 #define ID_DIALOG 10000
+#define SYMBOL_REMOTEFILEDIALOG_STYLE wxCAPTION|wxSYSTEM_MENU|wxCLOSE_BOX
+#define SYMBOL_REMOTEFILEDIALOG_TITLE _("Open/Save")
+#define SYMBOL_REMOTEFILEDIALOG_IDNAME ID_DIALOG
+#define SYMBOL_REMOTEFILEDIALOG_SIZE wxSize(440, 330)
+#define SYMBOL_REMOTEFILEDIALOG_POSITION wxPoint(0, 0)
 #define ID_PATHBOX 10002
 #define ID_LISTCTRL 10001
 #define ID_TXTFILENAME 10008
@@ -130,7 +140,7 @@ public:
     void OnButtonOpenClick( wxCommandEvent& event );
 
     /// wxEVT_COMMAND_COMBOBOX_SELECTED event handler for ID_COMBOBOX1
-    void OnCombobox1Selected( wxCommandEvent& event );
+    void OnFileTypeSelected( wxCommandEvent& event );
 
     /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTONCANCEL
     void OnButtonCancelClick( wxCommandEvent& event );
@@ -146,7 +156,7 @@ public:
 ////@end RemoteFileDialog member function declarations
 
 	void SetNetworking(Networking* network);
-	wxString GetLocalFileNameAndPath();
+	//wxString GetLocalFileNameAndPath();
 	wxString GetRemoteFileName() { return m_remoteFileNamePath.GetFullName();}
 	wxString GetRemotePath() { return m_remoteFileNamePath.GetPath(false, wxPATH_UNIX);}
 
@@ -167,7 +177,7 @@ public:
 
 private:
 
-	wxPathFormat GetCurrentPathFormat();
+	//wxPathFormat GetCurrentPathFormat();
 	void ItemActivated();
 	//void 
 

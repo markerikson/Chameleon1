@@ -27,6 +27,17 @@ BEGIN_EVENT_TABLE(Compiler, wxEvtHandler)
 END_EVENT_TABLE()
 
 
+//////////////////////////////////////////////////////////////////////////////
+///  public constructor Compiler
+///  <TODO: insert text here>
+///
+///  @param  options Options *    <TODO: insert text here>
+///  @param  network Networking * <TODO: insert text here>
+///
+///  @return void
+///
+///  @author David Czechowski @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 Compiler::Compiler(Options* options, Networking* network)
 {
 	m_options = options;
@@ -38,6 +49,14 @@ Compiler::Compiler(Options* options, Networking* network)
 	m_currFileNum = -2;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public destructor ~Compiler
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author David Czechowski @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 Compiler::~Compiler() {
 	if(IsCompiling()) {
 		m_network->ForceKillProcess(m_compilerStdIn);
@@ -45,6 +64,17 @@ Compiler::~Compiler() {
 }
 
 
+//////////////////////////////////////////////////////////////////////////////
+///  public CompileProject
+///  <TODO: insert text here>
+///
+///  @param  proj ProjectInfo *  <TODO: insert text here>
+///  @param  h    wxEvtHandler * <TODO: insert text here>
+///
+///  @return void
+///
+///  @author David Czechowski @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 void Compiler::CompileProject(ProjectInfo* proj, wxEvtHandler* h)
 {
 	m_isCompiling = true;
@@ -60,6 +90,14 @@ void Compiler::CompileProject(ProjectInfo* proj, wxEvtHandler* h)
 
 
 //Private:
+//////////////////////////////////////////////////////////////////////////////
+///  private StartNextFile
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author David Czechowski @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 void Compiler::StartNextFile()
 {
 	wxArrayString a = m_currProj->GetSourcesToBuild();
@@ -101,6 +139,14 @@ void Compiler::StartNextFile()
 
 
 //Private:
+//////////////////////////////////////////////////////////////////////////////
+///  private StartLinking
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author David Czechowski @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 void Compiler::StartLinking() {
 	bool isRemote = m_currProj->IsRemote();
 
@@ -154,6 +200,14 @@ void Compiler::StartLinking() {
 
 // This is basically my last step before ending
 //Private:
+//////////////////////////////////////////////////////////////////////////////
+///  private RemoveIntermediateFiles
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author David Czechowski @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 void Compiler::RemoveIntermediateFiles() {
 	wxString files = wxEmptyString;
 	for(unsigned int i = 0; i < m_intermediateFiles.Count(); i++) {
@@ -172,6 +226,16 @@ void Compiler::RemoveIntermediateFiles() {
 
 
 //Private:
+//////////////////////////////////////////////////////////////////////////////
+///  private OnProcessTerm
+///  <TODO: insert text here>
+///
+///  @param  e    ChameleonProcessEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author David Czechowski @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 void Compiler::OnProcessTerm(ChameleonProcessEvent& e)
 {
 	m_compilerStdIn = NULL;
@@ -239,6 +303,14 @@ void Compiler::OnProcessTerm(ChameleonProcessEvent& e)
 }
 
 
+//////////////////////////////////////////////////////////////////////////////
+///  public HaltCompiling
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author David Czechowski @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 void Compiler::HaltCompiling()
 {
 	if(m_isCompiling) {
@@ -249,6 +321,16 @@ void Compiler::HaltCompiling()
 
 
 //Private:
+//////////////////////////////////////////////////////////////////////////////
+///  private OnProcessOut
+///  <TODO: insert text here>
+///
+///  @param  e    ChameleonProcessEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author David Czechowski @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 void Compiler::OnProcessOut(ChameleonProcessEvent& e)
 {
 	//wxLogDebug("Compiler Received: %s", e.GetString());
@@ -274,6 +356,16 @@ void Compiler::OnProcessOut(ChameleonProcessEvent& e)
 }
 
 
+//////////////////////////////////////////////////////////////////////////////
+///  private OnProcessErr
+///  <TODO: insert text here>
+///
+///  @param  e    ChameleonProcessEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author David Czechowski @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 void Compiler::OnProcessErr(ChameleonProcessEvent& e)
 {
 	// Doesn't matter where it comes from
@@ -282,6 +374,16 @@ void Compiler::OnProcessErr(ChameleonProcessEvent& e)
 
 
 //Private:
+//////////////////////////////////////////////////////////////////////////////
+///  private ParseCompilerMessages
+///  <TODO: insert text here>
+///
+///  @param  s    wxString  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author David Czechowski @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 void Compiler::ParseCompilerMessages(wxString s)
 {
 	CompilerEvent e(chEVT_COMPILER_PROBLEM);

@@ -25,6 +25,21 @@ BEGIN_EVENT_TABLE(ChameleonNotebook, wxNotebook)
 
 END_EVENT_TABLE()
 
+//////////////////////////////////////////////////////////////////////////////
+///  public constructor ChameleonNotebook
+///  <TODO: insert text here>
+///
+///  @param  parent wxWindow *       <TODO: insert text here>
+///  @param  id     wxWindowID       <TODO: insert text here>
+///  @param  pos    const wxPoint &  [=wxDefaultPosition] <TODO: insert text here>
+///  @param  size   const wxSize &   [=wxDefaultSize] <TODO: insert text here>
+///  @param  style  long             [=0] <TODO: insert text here>
+///  @param  name   const wxString & [="notebook"] <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 ChameleonNotebook::ChameleonNotebook(wxWindow* parent, wxWindowID id, 
 									 const wxPoint& pos /* = wxDefaultPosition */, 
 									 const wxSize& size /* = wxDefaultSize */, 
@@ -34,20 +49,23 @@ ChameleonNotebook::ChameleonNotebook(wxWindow* parent, wxWindowID id,
 {
 	m_parent = (ChameleonWindow*)wxTheApp->GetTopWindow();
 
-	// create menu
-	//m_nonActiveMenu = new wxMenu();
-	m_activeMenu = new wxMenu();
-
-	CreateBookMenus();
+	//CreateBookMenus();
 
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public destructor ~ChameleonNotebook
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 ChameleonNotebook::~ChameleonNotebook () 
 {
-	//delete m_nonActiveMenu;
-	delete m_activeMenu;
 }
 
+/*
 int ChameleonNotebook::HitTest(const wxPoint& pt, long& flags)
 {
 	TC_HITTESTINFO hitTestInfo;
@@ -65,46 +83,38 @@ int ChameleonNotebook::HitTest(const wxPoint& pt, long& flags)
 
 	return item;
 }
+*/
 
+//////////////////////////////////////////////////////////////////////////////
+///  public OnTabActivate
+///  <TODO: insert text here>
+///
+///  @param  event wxMouseEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonNotebook::OnTabActivate (wxMouseEvent &event) 
 {
-//#define TESTMACRO(s) \
-//	wxString tempstring(s);  \
-//	::wxMessageBox(tempstring);
-
-	
-
-	//TESTMACRO("Testing stuff");
-	//::wxMessageBox("OnTabActivate");
 	wxPoint pt;
 	pt.x = event.GetX();
 	pt.y = event.GetY();
-	// wxNotebook::HitTest might not be supported
-	//#if NOTEBOOK_HITTEST
+
 	long flags = 0;
-	int pageNum = this->HitTest (pt, flags);
-	if (pageNum < 0) return;
-	//m_frame->m_hitNr = pageNr;
+	int pageNum = this->HitTest (pt, &flags);
+	if (pageNum < 0)
+	{
+		return;
+	}
+
 	m_parent->SetIntVar(VN_CLICKEDTAB, pageNum);
-	/*
-	if (pageNum == m_parent->GetIntVar(VN_CURRENTPAGE)) 
-	{
-		PopupMenu (m_activeMenu, pt);
-	}
-	else
-	{
-		PopupMenu (m_nonActiveMenu, pt);
-	}
-	*/
-	PopupMenu(m_activeMenu, pt);
-	//#endif
+	wxMenu popupMenu;
+	popupMenu.Append(ID_CLOSETAB, "Close");
+	PopupMenu(&popupMenu, pt);
 }
 
-void ChameleonNotebook::TestMenu(wxCommandEvent& evt)
-{
-	::wxMessageBox("Test Menu");
-}
-
+/*
 void ChameleonNotebook::CreateBookMenus () {
 
 	wxMenuBar *menuBar = m_parent->GetMenuBar();
@@ -117,7 +127,7 @@ void ChameleonNotebook::CreateBookMenus () {
 	//m_activeMenu->Append(9998, "Active menu - 2");
 
 	// create menu 1
-	/*
+	
 	if (menuBar->FindItem (wxID_SAVE)) {
 		label = menuBar->GetLabel (wxID_SAVE);
 		m_bookMenu1->Append (wxID_SAVE, label);
@@ -141,9 +151,10 @@ void ChameleonNotebook::CreateBookMenus () {
 #if NOTEBOOK_DELETEPAGE
 	m_bookMenu2->Append (myID_PAGECLOSE, _("Close"));
 #endif
-	*/
+	
 
 }
+*/
 
 void ChameleonNotebook::OnSize(wxSizeEvent &event)
 {
@@ -151,6 +162,16 @@ void ChameleonNotebook::OnSize(wxSizeEvent &event)
 }
 
 // Find the position of the wxNotebookPage, -1 if not found.
+//////////////////////////////////////////////////////////////////////////////
+///  public FindPagePosition
+///  <TODO: insert text here>
+///
+///  @param  page wxNotebookPage * <TODO: insert text here>
+///
+///  @return int  <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 int ChameleonNotebook::FindPagePosition(wxNotebookPage* page)
 {
 	int nPageCount = GetPageCount();

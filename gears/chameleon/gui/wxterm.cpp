@@ -396,13 +396,27 @@ BEGIN_EVENT_TABLE(wxTerm, wxWindow)
   EVT_KILL_FOCUS				(wxTerm::OnLoseFocus)
 END_EVENT_TABLE()
 
+//////////////////////////////////////////////////////////////////////////////
+///  public constructor wxTerm
+///  <TODO: insert text here>
+///
+///  @param  parent wxWindow *       <TODO: insert text here>
+///  @param  id     wxWindowID       <TODO: insert text here>
+///  @param  pos    const wxPoint &  [=wxDefaultPosition] <TODO: insert text here>
+///  @param  width  int              [=80] <TODO: insert text here>
+///  @param  height int              [=24] <TODO: insert text here>
+///  @param  name   const wxString & [="wxTerm"] <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Derry Bryson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 wxTerm::wxTerm(wxWindow* parent, wxWindowID id,
                const wxPoint& pos,
                int width, int height,
                const wxString& name) :
-  //wxScrolledWindow(parent, id, pos, wxSize(-1, -1), wxHSCROLL | wxVSCROLL | wxWANTS_CHARS, name),
   wxWindow(parent, id, pos, wxSize(-1, -1), wxWANTS_CHARS, name),
-  GTerm/*lnet*/(width, height)
+  GTerm(width, height)
 {
   int
     i;
@@ -484,6 +498,14 @@ wxTerm::wxTerm(wxWindow* parent, wxWindowID id,
   UpdateSize();
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public virtual destructor ~wxTerm
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Derry Bryson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 wxTerm::~wxTerm()
 {
   if(m_bitmap)
@@ -493,6 +515,16 @@ wxTerm::~wxTerm()
   }
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public SetBoldStyle
+///  <TODO: insert text here>
+///
+///  @param  boldStyle wxTerm::BOLDSTYLE & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Derry Bryson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void
 wxTerm::SetBoldStyle(wxTerm::BOLDSTYLE boldStyle)
 {
@@ -508,6 +540,16 @@ wxTerm::SetBoldStyle(wxTerm::BOLDSTYLE boldStyle)
   Refresh();
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public SetFont
+///  <TODO: insert text here>
+///
+///  @param  font const wxFont & <TODO: insert text here>
+///
+///  @return bool <TODO: insert text here>
+///
+///  @author Derry Bryson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 bool
 wxTerm::SetFont(const wxFont& font)
 {
@@ -529,6 +571,17 @@ wxTerm::SetFont(const wxFont& font)
   return TRUE;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public GetDfVTColors
+///  <TODO: insert text here>
+///
+///  @param  colors wxColour [] <TODO: insert text here>
+///  @param  boldStyle wxTerm::BOLDSTYLE <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Derry Bryson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void
 wxTerm::GetDefVTColors(wxColour colors[16], wxTerm::BOLDSTYLE boldStyle)
 {
@@ -587,6 +640,16 @@ wxTerm::GetDefVTColors(wxColour colors[16], wxTerm::BOLDSTYLE boldStyle)
   }
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public GetVTColors
+///  <TODO: insert text here>
+///
+///  @param  colors wxColour [] <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Derry Bryson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void
 wxTerm::GetVTColors(wxColour colors[16])
 {
@@ -597,6 +660,16 @@ wxTerm::GetVTColors(wxColour colors[16])
     colors[i] = m_vt_colors[i];
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public SetVTColors
+///  <TODO: insert text here>
+///
+///  @param  colors wxColour [] <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Derry Bryson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void
 wxTerm::SetVTColors(wxColour colors[16])
 {
@@ -617,6 +690,16 @@ wxTerm::SetVTColors(wxColour colors[16])
   Refresh();
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public GetDefPCColors
+///  <TODO: insert text here>
+///
+///  @param  colors wxColour [] <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Derry Bryson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void
 wxTerm::GetDefPCColors(wxColour colors[16])
 {
@@ -674,6 +757,16 @@ wxTerm::GetDefPCColors(wxColour colors[16])
 #endif
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public GetPCColors
+///  <TODO: insert text here>
+///
+///  @param  colors wxColour [] <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Derry Bryson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void
 wxTerm::GetPCColors(wxColour colors[16])
 {
@@ -684,6 +777,16 @@ wxTerm::GetPCColors(wxColour colors[16])
     colors[i] = m_pc_colors[i];
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public SetPCColors
+///  <TODO: insert text here>
+///
+///  @param  colors wxColour [] <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Derry Bryson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void
 wxTerm::SetPCColors(wxColour colors[16])
 {
@@ -704,6 +807,16 @@ wxTerm::SetPCColors(wxColour colors[16])
   Refresh();
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public SetCursorBlinkRate
+///  <TODO: insert text here>
+///
+///  @param  rate int  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Derry Bryson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void
 wxTerm::SetCursorBlinkRate(int rate)
 {
@@ -722,6 +835,16 @@ wxTerm::SetCursorBlinkRate(int rate)
   m_init = 0;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private OnChar
+///  <TODO: insert text here>
+///
+///  @param  event wxKeyEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Derry Bryson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void
 wxTerm::OnChar(wxKeyEvent& event)
 {
@@ -816,6 +939,16 @@ wxTerm::OnChar(wxKeyEvent& event)
   }
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private OnKeyDown
+///  <TODO: insert text here>
+///
+///  @param  event wxKeyEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Derry Bryson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void
 wxTerm::OnKeyDown(wxKeyEvent& event)
 {
@@ -831,6 +964,16 @@ wxTerm::OnKeyDown(wxKeyEvent& event)
     event.Skip();
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private OnPaint
+///  <TODO: insert text here>
+///
+///  @param  event wxPaintEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Derry Bryson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void
 wxTerm::OnPaint(wxPaintEvent& WXUNUSED(event))
 {
@@ -842,31 +985,61 @@ wxTerm::OnPaint(wxPaintEvent& WXUNUSED(event))
   m_curDC = 0;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private OnLeftDown
+///  <TODO: insert text here>
+///
+///  @param  event wxMouseEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Derry Bryson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void
 wxTerm::OnLeftDown(wxMouseEvent& event)
 {
-	/*
+	
   ClearSelection();
   m_selx1 = m_selx2 = event.GetX() / m_charWidth;
   m_sely1 = m_sely2 = event.GetY() / m_charHeight;
   m_selecting = TRUE;
   CaptureMouse();
-  */
+  
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private OnLeftUp
+///  <TODO: insert text here>
+///
+///  @param  event wxMouseEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Derry Bryson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void
 wxTerm::OnLeftUp(wxMouseEvent& event)
 {
-	/*
+	
   m_selecting = FALSE;
   if(GetCapture() == this)
   {
 	ReleaseMouse();
   }
-  */
+  
   
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private OnMouseMove
+///  <TODO: insert text here>
+///
+///  @param  event wxMouseEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Derry Bryson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void
 wxTerm::OnMouseMove(wxMouseEvent& event)
 {
@@ -883,6 +1056,14 @@ wxTerm::OnMouseMove(wxMouseEvent& event)
   }
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public ClearSelection
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Derry Bryson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void
 wxTerm::ClearSelection()
 {
@@ -914,6 +1095,14 @@ wxTerm::ClearSelection()
   }
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private MarkSelection
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Derry Bryson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void
 wxTerm::MarkSelection()
 {
@@ -981,6 +1170,14 @@ wxTerm::MarkSelection()
   m_marking = FALSE;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public HasSelection
+///  <TODO: insert text here>
+///
+///  @return bool <TODO: insert text here>
+///
+///  @author Derry Bryson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 bool
 wxTerm::HasSelection()
 {
@@ -988,6 +1185,14 @@ wxTerm::HasSelection()
 }
 
 wxString
+//////////////////////////////////////////////////////////////////////////////
+///  public GetSelection
+///  <TODO: insert text here>
+///
+///  @return wxString <TODO: insert text here>
+///
+///  @author Derry Bryson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 wxTerm::GetSelection()
 {
   int
@@ -1033,6 +1238,14 @@ wxTerm::GetSelection()
   return sel;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public SelectAll
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Derry Bryson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void
 wxTerm::SelectAll()
 {
@@ -1046,6 +1259,22 @@ wxTerm::SelectAll()
 /*
 **  GTelnet stuff
 */
+//////////////////////////////////////////////////////////////////////////////
+///  public virtual DrawText
+///  <TODO: insert text here>
+///
+///  @param  fg_color int             <TODO: insert text here>
+///  @param  bg_color int             <TODO: insert text here>
+///  @param  flags    int             <TODO: insert text here>
+///  @param  x        int             <TODO: insert text here>
+///  @param  y        int             <TODO: insert text here>
+///  @param  len      int             <TODO: insert text here>
+///  @param  string   unsigned char * <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Derry Bryson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void
 wxTerm::DrawText(int fg_color, int bg_color, int flags,
                  int x, int y, int len, unsigned char *string)
@@ -1118,6 +1347,21 @@ wxTerm::DrawText(int fg_color, int bg_color, int flags,
     m_curDC->DrawText(str, x + 1, y);
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private DoDrawCursor
+///  <TODO: insert text here>
+///
+///  @param  fg_color int            <TODO: insert text here>
+///  @param  bg_color int            <TODO: insert text here>
+///  @param  flags    int            <TODO: insert text here>
+///  @param  x        int            <TODO: insert text here>
+///  @param  y        int            <TODO: insert text here>
+///  @param  c        unsigned char  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Derry Bryson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void
 wxTerm::DoDrawCursor(int fg_color, int bg_color, int flags,
                    int x, int y, unsigned char c)
@@ -1184,6 +1428,21 @@ wxTerm::DoDrawCursor(int fg_color, int bg_color, int flags,
     m_curDC->DrawText(str, x + 1, y);
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public virtual DrawCursor
+///  <TODO: insert text here>
+///
+///  @param  fg_color int            <TODO: insert text here>
+///  @param  bg_color int            <TODO: insert text here>
+///  @param  flags    int            <TODO: insert text here>
+///  @param  x        int            <TODO: insert text here>
+///  @param  y        int            <TODO: insert text here>
+///  @param  c        unsigned char  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Derry Bryson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void
 wxTerm::DrawCursor(int fg_color, int bg_color, int flags,
                    int x, int y, unsigned char c)
@@ -1207,6 +1466,16 @@ wxTerm::DrawCursor(int fg_color, int bg_color, int flags,
   }
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private OnTimer
+///  <TODO: insert text here>
+///
+///  @param  event wxTimerEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Derry Bryson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void
 wxTerm::OnTimer(wxTimerEvent& WXUNUSED(event))
 {
@@ -1247,6 +1516,21 @@ wxTerm::OnTimer(wxTimerEvent& WXUNUSED(event))
   }
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public virtual MoveChars
+///  <TODO: insert text here>
+///
+///  @param  sx   int  <TODO: insert text here>
+///  @param  sy   int  <TODO: insert text here>
+///  @param  dx   int  <TODO: insert text here>
+///  @param  dy   int  <TODO: insert text here>
+///  @param  w    int  <TODO: insert text here>
+///  @param  h    int  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Derry Bryson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void
 wxTerm::MoveChars(int sx, int sy, int dx, int dy, int w, int h)
 {
@@ -1264,6 +1548,20 @@ wxTerm::MoveChars(int sx, int sy, int dx, int dy, int w, int h)
   m_curDC->Blit(dx, dy, w, h, &m_memDC, 0, 0);
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public virtual ClearChars
+///  <TODO: insert text here>
+///
+///  @param  bg_color int  <TODO: insert text here>
+///  @param  x        int  <TODO: insert text here>
+///  @param  y        int  <TODO: insert text here>
+///  @param  w        int  <TODO: insert text here>
+///  @param  h        int  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Derry Bryson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void
 wxTerm::ClearChars(int bg_color, int x, int y, int w, int h)
 {
@@ -1292,6 +1590,16 @@ wxTerm::ClearChars(int bg_color, int x, int y, int w, int h)
   }
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public virtual ModeChange
+///  <TODO: insert text here>
+///
+///  @param  state int  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Derry Bryson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void
 wxTerm::ModeChange(int state)
 {
@@ -1310,6 +1618,14 @@ wxTerm::ModeChange(int state)
   GTerm/*lnet*/::ModeChange(state);
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public virtual Bell
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Derry Bryson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void
 wxTerm::Bell()
 {
@@ -1320,6 +1636,14 @@ wxTerm::Bell()
 #endif
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public UpdateSize
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void wxTerm::UpdateSize()
 {
 	if(m_inUpdateSize)
@@ -1373,6 +1697,17 @@ void wxTerm::UpdateSize()
 	}
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public virtual ResizeTerminal
+///  <TODO: insert text here>
+///
+///  @param  w    int  <TODO: insert text here>
+///  @param  h    int  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Derry Bryson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void
 wxTerm::ResizeTerminal(int width, int height)
 {
@@ -1434,12 +1769,34 @@ wxTerm::ResizeTerminal(int width, int height)
   }
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public virtual RequestSizeChange
+///  <TODO: insert text here>
+///
+///  @param  w    int  <TODO: insert text here>
+///  @param  h    int  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Derry Bryson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void
 wxTerm::RequestSizeChange(int w, int h)
 {
   ResizeTerminal(w, h);
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public virtual ProcessInput
+///  <TODO: insert text here>
+///
+///  @param  len  int             <TODO: insert text here>
+///  @param  data unsigned char * <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Derry Bryson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void
 wxTerm::ProcessInput(int len, unsigned char *data)
 {
@@ -1452,6 +1809,16 @@ wxTerm::ProcessInput(int len, unsigned char *data)
   m_curDC = 0;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private MapKeyCode
+///  <TODO: insert text here>
+///
+///  @param  keyCode int  <TODO: insert text here>
+///
+///  @return int     <TODO: insert text here>
+///
+///  @author Derry Bryson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 int
 wxTerm::MapKeyCode(int keyCode)
 {
@@ -1464,6 +1831,16 @@ wxTerm::MapKeyCode(int keyCode)
   return 0;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public virtual SelectPrinter
+///  <TODO: insert text here>
+///
+///  @param  PrinterName char * <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Derry Bryson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void
 wxTerm::SelectPrinter(char *PrinterName)
 {
@@ -1494,6 +1871,17 @@ wxTerm::SelectPrinter(char *PrinterName)
   }
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public virtual PrintChars
+///  <TODO: insert text here>
+///
+///  @param  len  int             <TODO: insert text here>
+///  @param  data unsigned char * <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Derry Bryson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void
 wxTerm::PrintChars(int len, unsigned char *data)
 {
@@ -1533,11 +1921,31 @@ wxTerm::PrintChars(int len, unsigned char *data)
   }
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private OnActivate
+///  <TODO: insert text here>
+///
+///  @param  event wxActivateEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void wxTerm::OnActivate(wxActivateEvent &event)
 {
 	m_isActive = event.GetActive();
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private OnGainFocus
+///  <TODO: insert text here>
+///
+///  @param  event wxFocusEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void wxTerm::OnGainFocus(wxFocusEvent &event)
 {
 	this->clear_mode_flag(CURSORINVISIBLE);
@@ -1545,6 +1953,16 @@ void wxTerm::OnGainFocus(wxFocusEvent &event)
 	GTerm::Update();
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private OnLoseFocus
+///  <TODO: insert text here>
+///
+///  @param  event wxFocusEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void wxTerm::OnLoseFocus(wxFocusEvent &event)
 {
 	this->set_mode_flag(CURSORINVISIBLE);
@@ -1552,6 +1970,17 @@ void wxTerm::OnLoseFocus(wxFocusEvent &event)
 	GTerm::Update();
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public ScrollTerminal
+///  <TODO: insert text here>
+///
+///  @param  numLines int   <TODO: insert text here>
+///  @param  scrollUp bool  [=true] <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void wxTerm::ScrollTerminal(int numLines, bool scrollUp /* = true */)
 {
 	GTerm::Scroll(numLines, scrollUp);
@@ -1559,6 +1988,16 @@ void wxTerm::ScrollTerminal(int numLines, bool scrollUp /* = true */)
 
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private OnSize
+///  <TODO: insert text here>
+///
+///  @param  event wxSizeEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void wxTerm::OnSize(wxSizeEvent &event)
 {
 	UpdateSize();

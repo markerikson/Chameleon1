@@ -15,6 +15,20 @@
 
 using namespace std;
 
+//////////////////////////////////////////////////////////////////////////////
+///  public constructor TextManager
+///  <TODO: insert text here>
+///
+///  @param  parent    GTerm * [=0] <TODO: insert text here>
+///  @param  width     int     [=80] <TODO: insert text here>
+///  @param  height    int     [=24] <TODO: insert text here>
+///  @param  maxWidth  int     [=160] <TODO: insert text here>
+///  @param  maxHeight int     [=100] <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 TextManager::TextManager(GTerm* parent, int width, int height, int maxWidth, int maxHeight /* = 50 */)
 	:m_parent(parent), m_viewportWidth(width), m_viewportHeight(height), m_maxWidth(maxWidth), m_maxHeight(maxHeight)
 {
@@ -25,6 +39,14 @@ TextManager::TextManager(GTerm* parent, int width, int height, int maxWidth, int
 	
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public Reset
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void TextManager::Reset()
 {
 	m_blankline.resize(m_maxWidth, ' ');
@@ -43,11 +65,29 @@ void TextManager::Reset()
 	m_linesReceived = 1;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public overloaded AddNewLine
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 void TextManager::AddNewLine()
 {
 	AddNewLine(m_blankline);
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public overloaded AddNewLine
+///  <TODO: insert text here>
+///
+///  @param  newline string  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void TextManager::AddNewLine(string newline)
 {
 	if(newline.size() != m_maxWidth)
@@ -79,6 +119,16 @@ void TextManager::AddNewLine(string newline)
 	}
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public operator []
+///  <TODO: insert text here>
+///
+///  @param  index    int  <TODO: insert text here>
+///
+///  @return string & <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 string &TextManager::operator [](int index)
 {
 	if(index != m_cursorLine)
@@ -88,6 +138,17 @@ string &TextManager::operator [](int index)
 	return GetLineAdjusted(index);
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public Scroll
+///  <TODO: insert text here>
+///
+///  @param  numLines int   <TODO: insert text here>
+///  @param  scrollUp bool  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 void TextManager::Scroll(int numLines, bool scrollUp)
 {
 	int actualLinesToScroll = numLines;
@@ -139,31 +200,30 @@ void TextManager::Scroll(int numLines, bool scrollUp)
 	}	
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public GetSize
+///  <TODO: insert text here>
+///
+///  @return int <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 int TextManager::GetSize()
 {
 	return m_text.size();
 }
 
-void TextManager::PrintViewport()
-{
-	wxLogDebug("Viewport (top = %d, bottom = %d)", m_topLine, m_bottomLine);
-
-	for(int i = m_topLine; i <= m_bottomLine; i++)
-	{
-		wxLogDebug("%s", m_text[i].c_str());
-	}
-}
-
-void TextManager::PrintContents()
-{
-	wxLogDebug("TextManager contents:");
-
-	for(int i = 0; i < (int)m_text.size(); i++)
-	{
-		wxLogDebug("%s", m_text[i].c_str());
-	}
-}
-
+//////////////////////////////////////////////////////////////////////////////
+///  public Resize
+///  <TODO: insert text here>
+///
+///  @param  width  int  <TODO: insert text here>
+///  @param  height int  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 void TextManager::Resize(int width, int height)
 {
 	if(height == m_viewportHeight)
@@ -171,11 +231,24 @@ void TextManager::Resize(int width, int height)
 		return;
 	}
 
+	int oldCursorLocation = m_topLine + m_cursorLine;
+
 	int oldViewportHeight = m_viewportHeight;
 	m_viewportHeight = height;
 
 	m_bottomLine = m_maxHeight - 1;	
 	m_topLine = m_bottomLine - m_viewportHeight + 1;
+
+	//int newCursorLine;
+
+	// TODO Need to do some more recalculations... this case here
+	// is going to ripple off into stuff like SetCursorLine and so on
+	// Hmm... maybe set m_topLine to the new cursor line and pop
+	// off the bottom lines as necessary?
+	if(m_topLine > oldCursorLocation)
+	{
+
+	}
 
 	if(m_numLinesScrolledUp > 0)
 	{
@@ -195,22 +268,64 @@ void TextManager::Resize(int width, int height)
 }
 
 
+//////////////////////////////////////////////////////////////////////////////
+///  public GetLine
+///  <TODO: insert text here>
+///
+///  @param  index    int  <TODO: insert text here>
+///
+///  @return string & <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 string& TextManager::GetLine(int index)
 {
 	return m_text[index];
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public GetLineAdjusted
+///  <TODO: insert text here>
+///
+///  @param  index    int  <TODO: insert text here>
+///
+///  @return string & <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 string& TextManager::GetLineAdjusted(int index)
 {
 	int actualLine = AdjustIndex(index);
 	return m_text[actualLine];
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public SetLine
+///  <TODO: insert text here>
+///
+///  @param  index int     <TODO: insert text here>
+///  @param  line  string  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 void TextManager::SetLine(int index, string line)
 {
 	m_text[index] = line;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public SetLineAdjusted
+///  <TODO: insert text here>
+///
+///  @param  index int     <TODO: insert text here>
+///  @param  line  string  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 void TextManager::SetLineAdjusted(int index, string line)
 {
 	int actualLine = AdjustIndex(index);
@@ -218,6 +333,18 @@ void TextManager::SetLineAdjusted(int index, string line)
 	m_text[actualLine] = line;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public SetCharAdjusted
+///  <TODO: insert text here>
+///
+///  @param  y    int   <TODO: insert text here>
+///  @param  x    int   <TODO: insert text here>
+///  @param  c    char  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 void TextManager::SetCharAdjusted(int y, int x, char c)
 {
 	//wxLogDebug("SCA: y: %d, x: %d, c: %s");
@@ -231,6 +358,17 @@ void TextManager::SetCharAdjusted(int y, int x, char c)
 	m_text[actualLine][x] = c;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public GetCharAdjusted
+///  <TODO: insert text here>
+///
+///  @param  y    int  <TODO: insert text here>
+///  @param  x    int  <TODO: insert text here>
+///
+///  @return char <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 char TextManager::GetCharAdjusted(int y, int x)
 {
 	int actualLine = AdjustIndex(y);
@@ -244,11 +382,33 @@ char TextManager::GetCharAdjusted(int y, int x)
 	return m_text[actualLine][x];
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public GetColor
+///  <TODO: insert text here>
+///
+///  @param  y              int  <TODO: insert text here>
+///  @param  x              int  <TODO: insert text here>
+///
+///  @return unsigned short <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 unsigned short TextManager::GetColor(int y, int x)
 {
 	return m_color[y][x];
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public GetColorAdjusted
+///  <TODO: insert text here>
+///
+///  @param  y              int  <TODO: insert text here>
+///  @param  x              int  <TODO: insert text here>
+///
+///  @return unsigned short <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 unsigned short TextManager::GetColorAdjusted(int y, int x)
 {
 	int actualLine = AdjustIndex(y);
@@ -261,11 +421,35 @@ unsigned short TextManager::GetColorAdjusted(int y, int x)
 	return m_color[actualLine][x];
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public SetColor
+///  <TODO: insert text here>
+///
+///  @param  y     int             <TODO: insert text here>
+///  @param  x     int             <TODO: insert text here>
+///  @param  value unsigned short  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 void TextManager::SetColor(int y, int x, unsigned short value)
 {
 	m_color[y][x] = value;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public SetColorAdjusted
+///  <TODO: insert text here>
+///
+///  @param  y     int             <TODO: insert text here>
+///  @param  x     int             <TODO: insert text here>
+///  @param  value unsigned short  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 void TextManager::SetColorAdjusted(int y, int x, unsigned short value)
 {
 	int actualLine = AdjustIndex(y);
@@ -283,104 +467,16 @@ void TextManager::SetColorAdjusted(int y, int x, unsigned short value)
 	m_color[actualLine][x] = value;
 }
 
-void TextManager::PrintToBitmap()
-{
-	wxColour colors[16];
-
-	colors[0] = wxColour(0, 0, 0);                             // black
-	colors[1] = wxColour(170, 0, 0);                           // red
-	colors[2] = wxColour(0, 170, 0);                           // green
-	colors[3] = wxColour(170, 0, 170);                         // yellow
-	colors[4] = wxColour(0, 0, 170);                           // blue
-	colors[5] = wxColour(170, 170, 0);                         // magenta
-	colors[6] = wxColour(0, 170, 170);                         // cyan
-	colors[7] = wxColour(192, 192, 192);                       // white
-	colors[8] = wxColour(85, 85, 85);                          // bold black
-	colors[9] = wxColour(255, 0, 0);                         // bold red
-	colors[10] = wxColour(0, 255, 0);                        // bold green
-	colors[11] = wxColour(255, 0, 255);                       // bold yellow
-	colors[12] = wxColour(0, 0, 255);                        // bold blue
-	colors[13] = wxColour(255, 255, 0);                       // bold magenta
-	colors[14] = wxColour(0, 255, 255);                       // bold cyan
-	colors[15] = wxColour(255, 255, 255); 
-
-	wxMemoryDC dc;
-
-	wxFont monospacedFont(10, wxMODERN, wxNORMAL, wxNORMAL, false, "Courier New");
-	dc.SetFont(monospacedFont);
-
-	long charWidth;
-	long charHeight;
-
-	dc.GetTextExtent("M", &charWidth, &charHeight);
-
-	int bitmapWidth = charWidth * m_maxWidth;
-	int bitmapHeight = charHeight * m_maxHeight;
-
-	wxBitmap bm(bitmapWidth, bitmapHeight, 32);
-
-	dc.SelectObject(bm);
-
-	dc.SetBackgroundMode(wxSOLID);
-
-	wxFile fout("c:\\temp\\characters.txt", wxFile::write);
-
-	for(int y = 0; y < m_maxHeight; y++)
-	{
-		if(y == 95)
-		{
-			int q = 42;
-		}
-		wxString line;
-		for(int x = 0; x < m_maxWidth; x++)
-		{
-			wxString character;
-			char c = m_text[y][x];
-			wxString str(c);
-
-			unsigned short color = m_color[y][x];
-
-			int bg_color;
-			int fg_color;
-
-			m_parent->DecodeColor(color, fg_color, bg_color);
-			wxColour background = colors[bg_color];
-			wxColour foreground = colors[fg_color];
-			dc.SetTextBackground(background);
-			dc.SetTextForeground(foreground);
-
-			dc.DrawText(str, x * charWidth, y * charHeight);
-
-			character.Printf("%s %2d %2d", str.c_str(), fg_color, bg_color);
-
-			line += character;
-
-			if(x != m_maxWidth - 1)
-			{
-				line += ", ";
-			}
-
-		}
-
-		line += "\n";
-
-		fout.Write(line);
-
-
-	}
-
-	fout.Close();
-
-	
-	wxImage image = bm.ConvertToImage();
-
-	wxInitAllImageHandlers();
-
-	image.SaveFile("c:\\temp\\textoutput.png", wxBITMAP_TYPE_PNG);
-	
-
-}
-
+//////////////////////////////////////////////////////////////////////////////
+///  public SetCursorLine
+///  <TODO: insert text here>
+///
+///  @param  line int  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 void TextManager::SetCursorLine(int line)
 {
 	//wxLogDebug("line: %d", line);
@@ -409,6 +505,14 @@ void TextManager::SetCursorLine(int line)
 
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public CursorDown
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 void TextManager::CursorDown()
 {
 	string bottomLine = GetLineAdjusted(m_cursorLine);
@@ -424,22 +528,58 @@ void TextManager::CursorDown()
 	
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public CursorUp
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 void TextManager::CursorUp()
 {
 	SetCursorLine(m_cursorLine - 1);
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private AdjustIndex
+///  <TODO: insert text here>
+///
+///  @param  index int  <TODO: insert text here>
+///
+///  @return int   <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 int TextManager::AdjustIndex(int index)
 {
 	int adjustedIndex = m_topLine + index - m_numLinesScrolledUp;
 	return adjustedIndex;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public GetNumLinesScrolled
+///  <TODO: insert text here>
+///
+///  @return int <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 int TextManager::GetNumLinesScrolled()
 {
 	return m_numLinesScrolledUp;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public SetMaxSize
+///  <TODO: insert text here>
+///
+///  @param  newSize int  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 void TextManager::SetMaxSize(int newSize)
 {
 	if(newSize < m_viewportHeight)
@@ -460,6 +600,14 @@ void TextManager::SetMaxSize(int newSize)
 }
 
 
+//////////////////////////////////////////////////////////////////////////////
+///  public GetLinesReceived
+///  <TODO: insert text here>
+///
+///  @return int <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 int TextManager::GetLinesReceived()
 {
 	return m_linesReceived;

@@ -12,6 +12,14 @@
 // For efficiency, this grabs all printing characters from buffer, up to
 // the end of the line or end of buffer
 
+//////////////////////////////////////////////////////////////////////////////
+///  private normal_input
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Timothy Miller @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void GTerm::normal_input()
 {
     int n, n_taken, i, c, y;
@@ -535,20 +543,10 @@ void GTerm::delete_line()
     if (n>=mx)
     {
         clear_area(0, cursor_y, width - 1, scroll_bot);
-
-		string blankline;
-		blankline.resize(width, ' ');
-		
-		for(int i = cursor_y; i <= scroll_bot; i++)
-		{
-			//tm[i] = blankline;
-		}
     }
     else
     {
         scroll_region(cursor_y, scroll_bot, n);
-
-		
     }
 }
 

@@ -74,7 +74,7 @@
 #include "stepover.xpm"
 //#include "pause.xpm"
 
-#include "moz.xpm"
+//#include "moz.xpm"
 
 #define ID_RANDOMTEXTLABEL 9991
 
@@ -233,6 +233,18 @@ MyApp::~MyApp()
 
 
 // frame constructor
+//////////////////////////////////////////////////////////////////////////////
+///  public constructor ChameleonWindow
+///  <TODO: insert text here>
+///
+///  @param  title const wxString & <TODO: insert text here>
+///  @param  pos   const wxPoint &  <TODO: insert text here>
+///  @param  size  const wxSize &   <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, const wxSize& size)
        : wxFrame((wxFrame *)NULL, -1, title, pos, size)
 {
@@ -252,7 +264,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 	m_updateTimer = NULL;
 
-	wxIcon icon(moz_xpm);
+	wxIcon icon(wxICON(IDI_APPICON));
 	SetIcon(icon);
 	
 	m_remoteMode = true;
@@ -436,6 +448,14 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	//m_bProjectOpen = false;	
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public destructor ~ChameleonWindow
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 ChameleonWindow::~ChameleonWindow()
 {
 	m_config->Flush();
@@ -495,6 +515,16 @@ ChameleonWindow::~ChameleonWindow()
 	
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private OnMenuEvent
+///  <TODO: insert text here>
+///
+///  @param  event wxCommandEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonWindow::OnMenuEvent(wxCommandEvent &event)
 {
 	int id = event.GetId();
@@ -721,7 +751,17 @@ void ChameleonWindow::OnMenuEvent(wxCommandEvent &event)
 		}
 
 		case ID_COMPILE:
-			Compile();
+		{
+			if(m_compiler->IsCompiling())
+			{
+				m_compiler->HaltCompiling();
+			}
+			else
+			{
+				Compile();
+			}
+			
+		}
 			break;
 
 		case ID_PROJECT_ADDFILE:
@@ -810,6 +850,14 @@ void ChameleonWindow::OnMenuEvent(wxCommandEvent &event)
 }
 
 // create a new blank file
+//////////////////////////////////////////////////////////////////////////////
+///  private NewFile
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonWindow::NewFile() 
 {
 	m_fileNum += 1;
@@ -825,6 +873,16 @@ void ChameleonWindow::NewFile()
 }
 
 // called whenever the active tab is changed
+//////////////////////////////////////////////////////////////////////////////
+///  private PageHasChanged
+///  <TODO: insert text here>
+///
+///  @param  pageNr int  [=-1] <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonWindow::PageHasChanged (int pageNr) 
 {
 	// no pages - null out the current ed pointer
@@ -892,6 +950,16 @@ void ChameleonWindow::PageHasChanged (int pageNr)
 }
 
 // event handler for closing the whole program
+//////////////////////////////////////////////////////////////////////////////
+///  private OnClose
+///  <TODO: insert text here>
+///
+///  @param  event wxCloseEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonWindow::OnClose(wxCloseEvent &event) 
 {
 	m_appClosing = true;
@@ -933,6 +1001,14 @@ void ChameleonWindow::OnClose(wxCloseEvent &event)
 	Destroy();
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private CloseTab
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonWindow::CloseTab()
 {
 	int tab = GetIntVar(VN_CLICKEDTAB);
@@ -940,6 +1016,16 @@ void ChameleonWindow::CloseTab()
 	m_book->Refresh();
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private CloseFile
+///  <TODO: insert text here>
+///
+///  @param  pageNr int  [=-1] <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonWindow::CloseFile (int pageNr) 
 {
 	if (pageNr == -1)
@@ -991,6 +1077,17 @@ void ChameleonWindow::CloseFile (int pageNr)
 }
 
 // gives the user a chance to save if the file's been modified
+//////////////////////////////////////////////////////////////////////////////
+///  private HandleModifiedFile
+///  <TODO: insert text here>
+///
+///  @param  pageNr      int   <TODO: insert text here>
+///  @param  closingFile bool  <TODO: insert text here>
+///
+///  @return int         <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 int ChameleonWindow::HandleModifiedFile(int pageNr, bool closingFile)
 {
 	ChameleonEditor *edit = static_cast <ChameleonEditor * > (m_book->GetPage (pageNr));
@@ -1062,6 +1159,16 @@ int ChameleonWindow::HandleModifiedFile(int pageNr, bool closingFile)
 	return wxNO;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private OpenFile
+///  <TODO: insert text here>
+///
+///  @param  filterType    FileFilterType  <TODO: insert text here>
+///
+///  @return wxArrayString <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 wxArrayString ChameleonWindow::OpenFile(FileFilterType filterType)
 {
 	wxArrayString fnames;
@@ -1126,6 +1233,16 @@ wxArrayString ChameleonWindow::OpenFile(FileFilterType filterType)
 	return fnames;	
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public OpenSourceFile
+///  <TODO: insert text here>
+///
+///  @param  fnames wxArrayString  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonWindow::OpenSourceFile (wxArrayString fnames) 
 {
 	int firstPageNr = -1;
@@ -1237,6 +1354,18 @@ void ChameleonWindow::OpenSourceFile (wxArrayString fnames)
 }
 
 // abstracts out retrieving a file's contents
+//////////////////////////////////////////////////////////////////////////////
+///  private GetFileContents
+///  <TODO: insert text here>
+///
+///  @param  fileToLoad   wxString   <TODO: insert text here>
+///  @param  fileContents wxString & <TODO: insert text here>
+///  @param  fileName     wxString & <TODO: insert text here>
+///
+///  @return bool         <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 bool ChameleonWindow::GetFileContents(wxString fileToLoad, wxString &fileContents, wxString &fileName)
 {
 	wxFileName fn(fileToLoad);
@@ -1297,6 +1426,18 @@ bool ChameleonWindow::GetFileContents(wxString fileToLoad, wxString &fileContent
 
 
 // if the filename is already open, return the tab it's in
+//////////////////////////////////////////////////////////////////////////////
+///  private GetPageNum
+///  <TODO: insert text here>
+///
+///  @param  fn               wxFileName  <TODO: insert text here>
+///  @param  compareWholePath bool        [=true] <TODO: insert text here>
+///  @param  startingTab      int         [=0] <TODO: insert text here>
+///
+///  @return int              <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 int ChameleonWindow::GetPageNum(wxFileName fn,  bool compareWholePath, int startingTab)
 {
 	ChameleonEditor *edit;
@@ -1326,6 +1467,16 @@ int ChameleonWindow::GetPageNum(wxFileName fn,  bool compareWholePath, int start
 	return -1;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private OnPageChange
+///  <TODO: insert text here>
+///
+///  @param  event wxNotebookEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonWindow::OnPageChange (wxNotebookEvent &WXUNUSED(event)) 
 {
 	if (!m_setSelection)
@@ -1334,6 +1485,16 @@ void ChameleonWindow::OnPageChange (wxNotebookEvent &WXUNUSED(event))
 	}
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private OnDebugCommand
+///  <TODO: insert text here>
+///
+///  @param  event wxCommandEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonWindow::OnDebugCommand(wxCommandEvent &event)
 {
 	int eventID = event.GetId();
@@ -1392,165 +1553,8 @@ void ChameleonWindow::OnDebugCommand(wxCommandEvent &event)
 // my "I need to try something out, I'll stick it in here" function
 void ChameleonWindow::Test(wxCommandEvent& WXUNUSED(event))
 {
-	CompilerEvent c1(chEVT_COMPILER_START);
-	wxFileName fn = m_currentEd->GetFileName();
-	c1.SetFile(fn);
-	m_outputPanel->ProcessEvent(c1);
-
-	CompilerEvent c2(chEVT_COMPILER_PROBLEM);
-	bool isRemote = m_currentEd->LastSavedRemotely();
-	int line = 52;
-	wxString message = "Your compilation screwed up somehow";
-	wxString gccout = "Insert gobbledygook from GCC here";
-	c2.SetFile(fn);
-	c2.SetRemoteFile(isRemote);
-	c2.SetInt(line);
-	c2.SetMessage(message);
-	c2.SetGCCOutput(gccout);
-	m_outputPanel->ProcessEvent(c2);
-
-	CompilerEvent c3(chEVT_COMPILER_END);
-	fn.SetExt("out");
-	c3.SetFile(fn);
-	c3.SetResult(CR_OK);
-	m_outputPanel->ProcessEvent(c3);
-
-	CompilerEvent c4(chEVT_COMPILER_END);
-	c4.SetFile(fn);
-	c4.SetResult(CR_ERROR);
-	m_outputPanel->ProcessEvent(c4);
-
-	
-
-	CompilerEvent c5(chEVT_COMPILER_PROBLEM);
-	c5.SetFile(fn);
-	c5.SetRemoteFile(isRemote);
-	c5.SetInt(line);
-	c5.SetMessage(message);
-	c5.SetGCCOutput(gccout);
-	m_outputPanel->ProcessEvent(c5);
-
-	CompilerEvent c6(chEVT_COMPILER_START);
-	c6.SetFile(fn);
-	m_outputPanel->ProcessEvent(c6);
-
-	CompilerEvent c7(chEVT_COMPILER_END);
-	c7.SetFile(fn);
-	c7.SetResult(CR_TERMINATED);
-	m_outputPanel->ProcessEvent(c7);
-
-
-	
-
-
-	//TextManager tm = m_terminal->GetTM();
-	//tm.PrintToBitmap();
-	/*
-	wxString homepath = m_network->GetHomeDirPath();
-	wxString filename = "~/java/numeric/GCD.java";
-	filename.Replace("~", homepath);
-	wxFileName newpath(filename);
-	newpath.MakeRelativeTo("/some/other/directory/entirely", wxPATH_UNIX);
-	wxLogDebug("Home: %s, relative path: %s", homepath.c_str(), newpath.GetFullPath(wxPATH_UNIX).c_str());
-*/
-
-
-	/*
-	if(!m_bProjectOpen)
-	{
-		return;
-	}
-
-	for(size_t i = 0; i < m_currentProjectInfo->headerFiles.Count(); i++)
-	{
-		wxLogDebug("Header %d: %s", i, m_currentProjectInfo->headerFiles[i].c_str());
-	}
-
-	for(size_t i = 0; i < m_currentProjectInfo->sourceFiles.Count(); i++)
-	{
-		wxLogDebug("Source %d: %s", i, m_currentProjectInfo->sourceFiles[i].c_str());
-	}
-
-	for(size_t i = 0; i < m_currentProjectInfo->libraryFiles.Count(); i++)
-	{
-		wxLogDebug("Library %d: %s", i, m_currentProjectInfo->libraryFiles[i].c_str());
-	}	
-	*/
-	
-	/*
-	wxArrayString choices;
-	choices.Add("Remote");
-	choices.Add("Local");
-	wxString choice = wxGetSingleChoice("Test message", "Test caption",choices);
-	wxLogDebug("choice = \"%s\"", choice);
-	*/
-
-	
-	
-
-	
-
-
-	/*
-	wxString fileContents;
-	fileContents = "[Test1]\nitem1=blah\nitem2=blah2\nitem3=blah3";
-	wxMemoryInputStream projectFileStream(fileContents, fileContents.Len());
-
-	//wxFileConfig config(projectFileStream);
-	wxFileConfig config("ChameleonTest", wxEmptyString, "c:\\temp\\ChameleonTest.cpj");
-	config.Write("Test1/testing", "atest");
-	config.Write("Test2/another", "test");
-
-	config.Flush();
-	*/
-
-	/*
-	wxMemoryOutputStream outputStream;
-
-	config.FlushToStream(outputStream);
-
-	wxString resultContents;
-	size_t streamsize = outputStream.GetSize();
-	char* bufptr = resultContents.GetWriteBuf(streamsize);
-	outputStream.CopyTo(bufptr,streamsize);
-	resultContents.UngetWriteBuf();
-	*/
-
-	int q = 42;
-
-	/*
-	wxString fingerprint = "blah blah 1024 37:d3:00:80:6d:69:8d:ff:cd:81:20:a2:8a:93:39:ba blah blah";
-	wxRegEx reFingerprint = "[[:digit:]]+[[:blank:]]+([[:xdigit:]]{2}:)+[[:xdigit:]]{2}";
-
-	if(reFingerprint.IsValid())
-	{
-		if(reFingerprint.Matches(fingerprint))
-		{
-			wxString match = reFingerprint.GetMatch(fingerprint);
-			wxLogDebug("Matched: \"%s\"", match);
-		}
-		else
-		{
-			wxLogDebug("Failed match");
-		}
-	}
-	else
-	{
-		wxLogDebug("Invalid regex");
-	}
-	*/
-	
-
-
 }
 
-/*
-// zap the program frame
-void ChameleonWindow::OnCloseWindow(wxCloseEvent& event)
-{
-	this->Destroy();
-}
-*/
 
 // not currently used.  may come into play later regarding terminal resizing
 void ChameleonWindow::CheckSize()
@@ -1566,6 +1570,14 @@ void ChameleonWindow::CheckSize()
 
 // wxWindows calls this repeatedly during empty processing time.  This updates
 // the status of the save button/menu item, as well as the * on the active tab if modified
+//////////////////////////////////////////////////////////////////////////////
+///  private OnUpdateSaveUI
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonWindow::OnUpdateSaveUI()//wxUpdateUIEvent &event)
 {
 	bool enable = m_currentEd->Modified();
@@ -1599,6 +1611,18 @@ void ChameleonWindow::OnUpdateSaveUI()//wxUpdateUIEvent &event)
 	GetMenuBar()->FindItem(ID_SAVE)->Enable(enable);
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private SaveFile
+///  <TODO: insert text here>
+///
+///  @param  saveas         bool            <TODO: insert text here>
+///  @param  askLocalRemote bool            <TODO: insert text here>
+///  @param  filterType     FileFilterType  <TODO: insert text here>
+///
+///  @return bool           <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 bool ChameleonWindow::SaveFile(bool saveas, bool askLocalRemote, FileFilterType filterType)
 {
 	wxString filename;
@@ -1820,6 +1844,16 @@ bool ChameleonWindow::SaveFile(bool saveas, bool askLocalRemote, FileFilterType 
 	return true;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private ConstructFilterString
+///  <TODO: insert text here>
+///
+///  @param  filterType FileFilterType  <TODO: insert text here>
+///
+///  @return wxString   <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 wxString ChameleonWindow::ConstructFilterString(FileFilterType filterType)
 {
 	wxString filterString;
@@ -1859,6 +1893,17 @@ void ChameleonWindow::ResizeSplitter()
 
 // I've got severable integer variables I need to access at various points,
 // so rather than doing a separate Get/Set for each of them, I did this
+//////////////////////////////////////////////////////////////////////////////
+///  public SetIntVar
+///  <TODO: insert text here>
+///
+///  @param  variableName int  <TODO: insert text here>
+///  @param  value        int  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonWindow::SetIntVar(int variableName, int value)
 {
 	// figure out which integer I'm setting
@@ -1873,6 +1918,16 @@ void ChameleonWindow::SetIntVar(int variableName, int value)
 }
 
 // same as SetIntVar, only getting
+//////////////////////////////////////////////////////////////////////////////
+///  public GetIntVar
+///  <TODO: insert text here>
+///
+///  @param  variableName int  <TODO: insert text here>
+///
+///  @return int          <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 int ChameleonWindow::GetIntVar(int variableName)
 {
 	int* target = SelectIntVar(variableName);
@@ -1888,6 +1943,16 @@ int ChameleonWindow::GetIntVar(int variableName)
 }
 
 // figure out which integer value I'm wanting to Get/Set
+//////////////////////////////////////////////////////////////////////////////
+///  private SelectIntVar
+///  <TODO: insert text here>
+///
+///  @param  variableName int  <TODO: insert text here>
+///
+///  @return int *        <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 int* ChameleonWindow::SelectIntVar(int variableName)
 {
 	switch(variableName)
@@ -1907,17 +1972,42 @@ int* ChameleonWindow::SelectIntVar(int variableName)
 	}
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public IsEnabled
+///  <TODO: insert text here>
+///
+///  @param  permission int  <TODO: insert text here>
+///
+///  @return bool       <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 bool ChameleonWindow::IsEnabled(int permission)
 {
-
 	return m_options->GetPerms()->isEnabled(permission);
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public InRemoteMode
+///  <TODO: insert text here>
+///
+///  @return bool <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 bool ChameleonWindow::InRemoteMode()
 {
 	return m_remoteMode;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private UpdateMenuBar
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonWindow::UpdateMenuBar()
 {
 	wxMenuBar* menuBar = GetMenuBar();
@@ -2036,6 +2126,14 @@ void ChameleonWindow::UpdateMenuBar()
 	menuBar->Append(helpMenu, "&Help");
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private UpdateToolbar
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonWindow::UpdateToolbar()
 {
 	Permission* perms = m_options->GetPerms();
@@ -2190,7 +2288,7 @@ void ChameleonWindow::UpdateToolbar()
 ///  @return void
 ///
 ///  @author Mark Erikson @date 03-29-2004
-//////// comment generated by Comment Maker from www.FeinSoftware.com /////////
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonWindow::EvaluateOptions()
 {
 	// update permissions settings from the options dialog
@@ -2246,6 +2344,14 @@ void ChameleonWindow::EvaluateOptions()
 }
 
 // called after every major network operation
+//////////////////////////////////////////////////////////////////////////////
+///  public CheckNetworkStatus
+///  <TODO: insert text here>
+///
+///  @return NetworkCallResult <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 NetworkCallResult ChameleonWindow::CheckNetworkStatus()
 {
 	NetworkStatus result = m_network->GetStatus();
@@ -2254,7 +2360,7 @@ NetworkCallResult ChameleonWindow::CheckNetworkStatus()
 	{
 		case NET_UNKNOWN_HOST:
 		{			
-			wxString hostname = m_optionsDialog->GetServerAddress();
+			wxString hostname = m_options->GetHostname();
 			wxString fingerprint = m_network->GetStatusDetails();
 
 			wxString message = "The SSH fingerprint for the server " + hostname + " was not recognized.";
@@ -2334,11 +2440,31 @@ NetworkCallResult ChameleonWindow::CheckNetworkStatus()
 	}
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private OnSplitterDoubleClick
+///  <TODO: insert text here>
+///
+///  @param  event wxSplitterEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonWindow::OnSplitterDoubleClick(wxSplitterEvent &event)
 {
 	event.Veto();
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private OnSize
+///  <TODO: insert text here>
+///
+///  @param  event wxSizeEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonWindow::OnSize(wxSizeEvent &event)
 {
 	event.Skip();	
@@ -2358,6 +2484,16 @@ void ChameleonWindow::PassImageList(wxImageList* imagelist)
 	m_projectTree->AssignImageList(imagelist);
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private OnTreeItemRightClick
+///  <TODO: insert text here>
+///
+///  @param  event wxTreeEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonWindow::OnTreeItemRightClick(wxTreeEvent& event)
 {
 	//if(!m_bProjectOpen)
@@ -2456,7 +2592,17 @@ void ChameleonWindow::OnTreeItemRightClick(wxTreeEvent& event)
 	m_projectTree->PopupMenu(&popupMenu, p);
 }
 
-//void ChameleonWindow::OnOpenProjectFile(wxCommandEvent &event)
+
+//////////////////////////////////////////////////////////////////////////////
+///  private OpenProjectFile
+///  <TODO: insert text here>
+///
+///  @param  isRemote bool  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonWindow::OpenProjectFile(bool isRemote)
 {	
 	m_remoteMode = isRemote;
@@ -2531,7 +2677,16 @@ void ChameleonWindow::OpenProjectFile(bool isRemote)
 
 // TODO Expand this to be two functions: a default version used with the
 //		tree and an overload that can be used with a project menu
-//void ChameleonWindow::OnAddFileToProject(wxCommandEvent &event)
+//////////////////////////////////////////////////////////////////////////////
+///  private AddFileToProject
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @remarks <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonWindow::AddFileToProject()
 {
 	//wxLogDebug("event id: %d", event.GetId());
@@ -2586,6 +2741,16 @@ void ChameleonWindow::AddFileToProject()
 	SaveProjectFile();
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private OnTreeItemActivated
+///  <TODO: insert text here>
+///
+///  @param  event wxTreeEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonWindow::OnTreeItemActivated(wxTreeEvent &event)
 {
 	wxTreeItemId item = event.GetItem();
@@ -2620,6 +2785,16 @@ void ChameleonWindow::OnTreeItemActivated(wxTreeEvent &event)
 	m_book->Refresh();
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private CloseProjectFile
+///  <TODO: insert text here>
+///
+///  @param  canUserCancel bool  [=true] <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonWindow::CloseProjectFile(bool canUserCancel)
 {
 	if(!m_appClosing)
@@ -2676,6 +2851,14 @@ void ChameleonWindow::CloseProjectFile(bool canUserCancel)
 	//m_bProjectOpen = false;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private SaveProjectFile
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonWindow::SaveProjectFile()
 {
 	wxPathFormat currentPathFormat = (m_projMultiFiles->IsRemote() ? wxPATH_UNIX : wxPATH_DOS);
@@ -2760,7 +2943,7 @@ void ChameleonWindow::SaveProjectFile()
 ///  @return void
 ///
 ///  @author Mark Erikson @date 03-29-2004
-//////// comment generated by Comment Maker from www.FeinSoftware.com /////////
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonWindow::LoadFilesIntoProjectTree(wxString configPath,  FileFilterType fileType, wxTreeItemId treeid, 
 										   wxFileConfig& config, wxPathFormat currentPathFormat)
 {
@@ -2800,6 +2983,14 @@ void ChameleonWindow::LoadFilesIntoProjectTree(wxString configPath,  FileFilterT
 	m_projectTree->SortChildren(treeid);
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private Compile
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonWindow::Compile()
 {
 	bool doCompile = true;
@@ -2836,6 +3027,14 @@ void ChameleonWindow::Compile()
 	}
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private RemoveFileFromProject
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonWindow::RemoveFileFromProject()
 {
 	FileNameTreeData* treeData = static_cast<FileNameTreeData*> (m_projectTree->GetItemData(m_clickedTreeItem));
@@ -2861,6 +3060,14 @@ void ChameleonWindow::RemoveFileFromProject()
 }
 
 
+//////////////////////////////////////////////////////////////////////////////
+///  private CloseAllFiles
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonWindow::CloseAllFiles()
 {
 	int cnt = m_book->GetPageCount();
@@ -2872,6 +3079,14 @@ void ChameleonWindow::CloseAllFiles()
 	PageHasChanged();
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private UpdateTerminalNotebook
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonWindow::UpdateTerminalNotebook()
 {
 	Permission* perms = m_options->GetPerms();
@@ -2972,6 +3187,16 @@ void ChameleonWindow::UpdateTerminalNotebook()
 
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private OnDebugEvent
+///  <TODO: insert text here>
+///
+///  @param  event wxDebugEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonWindow::OnDebugEvent(wxDebugEvent &event)
 {
 	int eventID = event.GetId();
@@ -3058,6 +3283,14 @@ void ChameleonWindow::OnDebugEvent(wxDebugEvent &event)
 	}
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private OnUpdateDebugUI
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonWindow::OnUpdateDebugUI()//wxUpdateUIEvent &event)
 {
 	bool isDebugging = m_debugger->isDebugging();
@@ -3096,6 +3329,14 @@ void ChameleonWindow::OnUpdateDebugUI()//wxUpdateUIEvent &event)
 	}
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private OnUpdateConnectionUI
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonWindow::OnUpdateConnectionUI()//wxUpdateUIEvent &event)
 {
 	bool termConnected = m_terminal->IsConnected();
@@ -3111,6 +3352,14 @@ void ChameleonWindow::OnUpdateConnectionUI()//wxUpdateUIEvent &event)
 	toolsMenu->Enable(ID_DISCONNECT, termConnected);	
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private OnUpdateCompileUI
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonWindow::OnUpdateCompileUI()//wxUpdateUIEvent &event)
 {
 	ProjectInfo* edProj = m_currentEd->GetProject();
@@ -3133,13 +3382,24 @@ void ChameleonWindow::OnUpdateCompileUI()//wxUpdateUIEvent &event)
 		compileButton->SetNormalBitmap(bmBuild);
 		compileButton->SetLabel("Compile");
 	}
+	//tb->Realize();
 
 	// Should the button be Enabled:
 	bool enableButton = currProjIsCompiling || canCompile;
 	tb->EnableTool(ID_COMPILE, enableButton);
 }
 
-void ChameleonWindow::OnStatusTimer(wxTimerEvent &WXUNUSED(event)) 
+//////////////////////////////////////////////////////////////////////////////
+///  private OnStatusTimer
+///  <TODO: insert text here>
+///
+///  @param  event wxTimerEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
+void ChameleonWindow::OnStatusTimer(wxTimerEvent &WXUNUSED(event))
 {
 	if (m_updateTimer)
 	{
@@ -3153,6 +3413,16 @@ void ChameleonWindow::OnStatusTimer(wxTimerEvent &WXUNUSED(event))
 	}
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private OnIdle
+///  <TODO: insert text here>
+///
+///  @param  event wxIdleEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonWindow::OnIdle(wxIdleEvent &event)
 {
 	if (m_updateTimer && !m_updateTimer->IsRunning ()) 
@@ -3164,6 +3434,14 @@ void ChameleonWindow::OnIdle(wxIdleEvent &event)
 	
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private UpdateStatusBar
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonWindow::UpdateStatusBar()
 {
 	if(m_statusBar == NULL)
@@ -3241,7 +3519,7 @@ void ChameleonWindow::UpdateStatusBar()
 ///  @return void
 ///
 ///  @author www.FeinSoftware.com @date 03-29-2004
-//////// comment generated by Comment Maker from www.FeinSoftware.com /////////
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonWindow::FocusOnLine(wxString filename, int linenumber, bool showMarker, wxString linecontents /* = wxEmptyString */)
 {
 	wxFileName fn(filename);
@@ -3288,6 +3566,14 @@ bool ChameleonWindow::IsDebuggerPaused()
 	return m_debugger->isPaused();
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private OnUpdatePrintPreviewUI
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonWindow::OnUpdatePrintPreviewUI ()//wxUpdateUIEvent &event) 
 {
 	//event.Enable ((m_book->GetPageCount() > 1) ||
@@ -3298,6 +3584,14 @@ void ChameleonWindow::OnUpdatePrintPreviewUI ()//wxUpdateUIEvent &event)
 	GetMenuBar()->FindItem(ID_PRINT_PREVIEW)->Enable(enable);
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private DeterminePrintSize
+///  <TODO: insert text here>
+///
+///  @return wxRect <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 wxRect ChameleonWindow::DeterminePrintSize () 
 {
 	wxSize scr = wxGetDisplaySize();
@@ -3312,6 +3606,16 @@ wxRect ChameleonWindow::DeterminePrintSize ()
 	return rect;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private OnFindEvent
+///  <TODO: insert text here>
+///
+///  @param  event wxFindDialogEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonWindow::OnFindEvent(wxFindDialogEvent& event)
 {
 	wxEventType type = event.GetEventType();
@@ -3382,6 +3686,19 @@ void ChameleonWindow::OnFindEvent(wxFindDialogEvent& event)
 	
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private FindString
+///  <TODO: insert text here>
+///
+///  @param  findString const wxString & <TODO: insert text here>
+///  @param  start_pos  int              [=-1] <TODO: insert text here>
+///  @param  flags      int              [=-1] <TODO: insert text here>
+///  @param  highlight  bool             [=1] <TODO: insert text here>
+///
+///  @return int        <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 int ChameleonWindow::FindString(const wxString &findString, int start_pos, int flags, bool highlight)
 {
 	if (findString.IsEmpty())
@@ -3430,6 +3747,18 @@ int ChameleonWindow::FindString(const wxString &findString, int start_pos, int f
 	return pos;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private ReplaceAllStrings
+///  <TODO: insert text here>
+///
+///  @param  findString    const wxString & <TODO: insert text here>
+///  @param  replaceString const wxString & <TODO: insert text here>
+///  @param  flags         int              [=-1] <TODO: insert text here>
+///
+///  @return int           <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 int ChameleonWindow::ReplaceAllStrings(const wxString &findString, const wxString &replaceString, int flags)
 {    
 	int count = 0;

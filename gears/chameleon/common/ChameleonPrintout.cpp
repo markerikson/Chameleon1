@@ -15,6 +15,17 @@ extern wxPrintData *g_printData;
 extern wxPageSetupData *g_pageSetupData;
 
 
+//////////////////////////////////////////////////////////////////////////////
+///  public constructor ChameleonPrintout
+///  <TODO: insert text here>
+///
+///  @param  edit  ChameleonEditor * <TODO: insert text here>
+///  @param  title wxChar *          [=""] <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 ChameleonPrintout::ChameleonPrintout (ChameleonEditor *edit, wxChar *title)
 : wxPrintout(title) {
 	m_edit = edit;
@@ -22,6 +33,16 @@ ChameleonPrintout::ChameleonPrintout (ChameleonEditor *edit, wxChar *title)
 
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public OnPrintPage
+///  <TODO: insert text here>
+///
+///  @param  page int  <TODO: insert text here>
+///
+///  @return bool <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 bool ChameleonPrintout::OnPrintPage (int page) {
 
 	wxDC *dc = GetDC();
@@ -30,6 +51,8 @@ bool ChameleonPrintout::OnPrintPage (int page) {
 	// scale DC
 	PrintScaling (dc);
 
+	// TODO Need to figure out how to preview the appropriate page...
+	// right now it just does from the start
 	// print page
 	if (page == 1) m_printed = 0;
 	m_printed = m_edit->FormatRange (1, m_printed, m_edit->GetLength(),
@@ -38,6 +61,17 @@ bool ChameleonPrintout::OnPrintPage (int page) {
 	return true;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public OnBeginDocument
+///  <TODO: insert text here>
+///
+///  @param  startPage int  <TODO: insert text here>
+///  @param  endPage   int  <TODO: insert text here>
+///
+///  @return bool      <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 bool ChameleonPrintout::OnBeginDocument (int startPage, int endPage) {
 
 	m_printed = 0;
@@ -48,6 +82,19 @@ bool ChameleonPrintout::OnBeginDocument (int startPage, int endPage) {
 	return true;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public GetPageInfo
+///  <TODO: insert text here>
+///
+///  @param  minPage     int * <TODO: insert text here>
+///  @param  maxPage     int * <TODO: insert text here>
+///  @param  selPageFrom int * <TODO: insert text here>
+///  @param  selPageTo   int * <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 void ChameleonPrintout::GetPageInfo (int *minPage, int *maxPage, int *selPageFrom, int *selPageTo) {
 
 	// initialize values
@@ -99,11 +146,31 @@ void ChameleonPrintout::GetPageInfo (int *minPage, int *maxPage, int *selPageFro
 	*selPageTo = *maxPage;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public HasPage
+///  <TODO: insert text here>
+///
+///  @param  page int  <TODO: insert text here>
+///
+///  @return bool <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 bool ChameleonPrintout::HasPage (int WXUNUSED(page)) {
 
 	return (m_printed < m_edit->GetLength());
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  private PrintScaling
+///  <TODO: insert text here>
+///
+///  @param  dc   wxDC * <TODO: insert text here>
+///
+///  @return bool <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 bool ChameleonPrintout::PrintScaling (wxDC *dc){
 
 	// check for dc, return if none

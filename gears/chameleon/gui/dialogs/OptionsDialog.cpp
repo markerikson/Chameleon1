@@ -265,6 +265,7 @@ bool OptionsDialog::ShowToolTips()
   return TRUE;
 }
 
+/*
 wxCheckListBox* OptionsDialog::GetListBox()
 {
     return this->m_checkList;
@@ -309,7 +310,7 @@ void OptionsDialog::SetPassword2(wxString pwd)
 {
 	m_password2->SetValue(pwd);
 }
-
+*/
 
 /*!
  * wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_OK
@@ -335,6 +336,16 @@ void OptionsDialog::OnButtonCancelClick( wxCommandEvent& event )
 	m_optionsNotebook->SetSelection(0);
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public OnChar
+///  <TODO: insert text here>
+///
+///  @param  event wxKeyEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void OptionsDialog::OnChar(wxKeyEvent &event)
 {
 	if(event.GetKeyCode() == WXK_RETURN)
@@ -347,6 +358,16 @@ void OptionsDialog::OnChar(wxKeyEvent &event)
  * wxEVT_COMMAND_TEXT_ENTER event handler for ID_PROFCODE
  */
 
+//////////////////////////////////////////////////////////////////////////////
+///  public OnEnter
+///  <TODO: insert text here>
+///
+///  @param  event wxCommandEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void OptionsDialog::OnEnter( wxCommandEvent& event )
 {
     // Insert custom code here
@@ -356,6 +377,14 @@ void OptionsDialog::OnEnter( wxCommandEvent& event )
 }
 
 
+//////////////////////////////////////////////////////////////////////////////
+///  public ExitDialog
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void OptionsDialog::ExitDialog()
 {
 	m_txtProfCode->Clear();
@@ -381,10 +410,11 @@ void OptionsDialog::ExitDialog()
 	}
 }
 
+/*
 wxString OptionsDialog::GetAuthCode()
 {
 	return m_txtProfCode->GetValue();
-/*
+
 	if(authCodeString == wxEmptyString)
 	{
 		return -1;
@@ -396,13 +426,24 @@ wxString OptionsDialog::GetAuthCode()
 	
 
 	return authCodeLong;
-*/
+
 }
+*/
 
 /*!
  * wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON
  */
 
+//////////////////////////////////////////////////////////////////////////////
+///  public OnUpdateAuthCode
+///  <TODO: insert text here>
+///
+///  @param  event wxCommandEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void OptionsDialog::OnUpdateAuthCode( wxCommandEvent& event )
 {
     // Insert custom code here
@@ -432,6 +473,14 @@ void OptionsDialog::OnUpdateAuthCode( wxCommandEvent& event )
 }
 
 
+//////////////////////////////////////////////////////////////////////////////
+///  public EnableServerSettings
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void OptionsDialog::EnableServerSettings()
 {
 	wxColour white("white");
@@ -445,6 +494,14 @@ void OptionsDialog::EnableServerSettings()
 	m_password2->SetBackgroundColour(white);
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public DisableServerSettings
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void OptionsDialog::DisableServerSettings()
 {
 	wxColour grey("light grey");
@@ -458,11 +515,24 @@ void OptionsDialog::DisableServerSettings()
 	m_password2->SetBackgroundColour(grey);
 }
 
+/*
 void OptionsDialog::SetAuthCode(wxString authcode)
 {
 	m_authCodeLabel->SetLabel(authcode);
 }
+*/
 
+//////////////////////////////////////////////////////////////////////////////
+///  public BrowseForDir
+///  <TODO: insert text here>
+///
+///  @param  textbox wxTextCtrl * <TODO: insert text here>
+///  @param  name    wxString     <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void OptionsDialog::BrowseForDir(wxTextCtrl* textbox, wxString title)
 {
 	wxString currentDir = textbox->GetValue();
@@ -493,6 +563,16 @@ void OptionsDialog::BrowseForDir(wxTextCtrl* textbox, wxString title)
  * wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_MINGWBROWSE
  */
 
+//////////////////////////////////////////////////////////////////////////////
+///  public OnMinGWBrowseClick
+///  <TODO: insert text here>
+///
+///  @param  event wxCommandEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void OptionsDialog::OnMinGWBrowseClick( wxCommandEvent& event )
 {
     // Insert custom code here
@@ -502,6 +582,14 @@ void OptionsDialog::OnMinGWBrowseClick( wxCommandEvent& event )
 }
 
 
+//////////////////////////////////////////////////////////////////////////////
+///  public EvaluateOptions
+///  <TODO: insert text here>
+///
+///  @return bool <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 bool OptionsDialog::EvaluateOptions()
 {
 	bool validOptions = true;
@@ -561,6 +649,14 @@ bool OptionsDialog::EvaluateOptions()
 	return validOptions;	
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public InitializeDialog
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void OptionsDialog::InitializeDialog()
 {
 	Permission* perms = m_options->GetPerms();
@@ -593,6 +689,14 @@ void OptionsDialog::InitializeDialog()
 
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public UpdateChecklist
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void OptionsDialog::UpdateChecklist()
 {
 	Permission* perms = m_options->GetPerms();

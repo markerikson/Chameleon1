@@ -23,9 +23,6 @@
 #include "../../common/CommonHeaders.h"
 
 ////@begin includes
-#include "wx/wx.h"
-#include "wx/listctrl.h"
-#include "wx/statline.h"
 ////@end includes
 
 #include <wx/filename.h>
@@ -45,6 +42,7 @@
 #include <wx/arrimpl.cpp> // this is a magic incantation which must be done!
 WX_DEFINE_OBJARRAY(TwoDStringVector)
 WX_DEFINE_OBJARRAY(ThreeDStringVector)
+
 
 
 //#include "../../editor/editor.h"
@@ -87,7 +85,7 @@ BEGIN_EVENT_TABLE( RemoteFileDialog, wxDialog )
 
     EVT_BUTTON( ID_BUTTONOPEN, RemoteFileDialog::OnButtonOpenClick )
 
-    EVT_COMBOBOX( ID_COMBOBOX1, RemoteFileDialog::OnCombobox1Selected )
+    EVT_COMBOBOX( ID_COMBOBOX1, RemoteFileDialog::OnFileTypeSelected )
 
     EVT_BUTTON( ID_BUTTONCANCEL, RemoteFileDialog::OnButtonCancelClick )
 
@@ -118,19 +116,42 @@ RemoteFileDialog::RemoteFileDialog( wxWindow* parent, wxWindowID id, const wxStr
 
 	m_currentFilterIndex = 0;
 	// "All files (*.*) will always be the last item in the dropdown box
-	m_filterAllFilesIndex = m_comboFiletypes->GetCount() - 1;
+	//m_filterAllFilesIndex = m_comboFiletypes->GetCount() - 1;
 }
 
 /*!
  * RemoteFileDialog creator
  */
 
+//////////////////////////////////////////////////////////////////////////////
+///  public Create
+///  <TODO: insert text here>
+///
+///  @param  parent  wxWindow *       <TODO: insert text here>
+///  @param  id      wxWindowID       [=-1] <TODO: insert text here>
+///  @param  caption const wxString & [=_("Open/Save")] <TODO: insert text here>
+///  @param  pos     const wxPoint &  [=wxDefaultPosition] <TODO: insert text here>
+///  @param  size    const wxSize &   [=wxDefaultSize] <TODO: insert text here>
+///  @param  style   long             [=wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU] <TODO: insert text here>
+///
+///  @return bool    <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 bool RemoteFileDialog::Create( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
 {
 ////@begin RemoteFileDialog member initialisation
+    m_sizToolbar = NULL;
+    m_pathBox = NULL;
+    m_list = NULL;
+    m_txtFilename = NULL;
+    m_buttonOpen = NULL;
+    m_comboFiletypes = NULL;
+    m_buttonCancel = NULL;
 ////@end RemoteFileDialog member initialisation
 
 ////@begin RemoteFileDialog creation
+    SetExtraStyle(wxWS_EX_BLOCK_EVENTS);
     wxDialog::Create( parent, id, caption, pos, size, style );
 
     CreateControls();
@@ -273,7 +294,7 @@ void RemoteFileDialog::CreateControls()
     wxStaticText* item4 = new wxStaticText( item1, wxID_STATIC, _("Current path:"), wxDefaultPosition, wxDefaultSize, 0 );
     item3->Add(item4, 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
 
-    wxTextCtrl* item5 = new wxTextCtrl( item1, ID_PATHBOX, _(""), wxDefaultPosition, wxSize(300, -1), wxTE_READONLY );
+    wxTextCtrl* item5 = new wxTextCtrl( item1, ID_PATHBOX, _T(""), wxDefaultPosition, wxSize(300, -1), wxTE_READONLY );
     m_pathBox = item5;
     item3->Add(item5, 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT|wxTOP, 5);
 
@@ -290,7 +311,7 @@ void RemoteFileDialog::CreateControls()
     wxStaticText* item9 = new wxStaticText( item1, wxID_STATIC, _("File &name:"), wxDefaultPosition, wxSize(70, -1), 0 );
     item8->Add(item9, 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT, 5);
 
-    wxTextCtrl* item10 = new wxTextCtrl( item1, ID_TXTFILENAME, _(""), wxDefaultPosition, wxSize(246, -1), wxTE_PROCESS_ENTER );
+    wxTextCtrl* item10 = new wxTextCtrl( item1, ID_TXTFILENAME, _T(""), wxDefaultPosition, wxSize(246, -1), wxTE_PROCESS_ENTER );
     m_txtFilename = item10;
     item8->Add(item10, 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT, 5);
 
@@ -360,11 +381,21 @@ bool RemoteFileDialog::ShowToolTips()
  * wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON2
  */
 
+//////////////////////////////////////////////////////////////////////////////
+///  public OnButtonUpFolder
+///  <TODO: insert text here>
+///
+///  @param  event wxCommandEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void RemoteFileDialog::OnButtonUpFolder( wxCommandEvent& event )
 {
     event.Skip();
 
-	wxPathFormat pathFormat = GetCurrentPathFormat();
+	//wxPathFormat pathFormat = GetCurrentPathFormat();
 
 	int numDirs = m_currentPath.GetDirCount();
 
@@ -383,15 +414,25 @@ void RemoteFileDialog::OnButtonUpFolder( wxCommandEvent& event )
 	ShowDirectory(m_currentPath.GetPath(false, wxPATH_UNIX));
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public GetRemoteFileNameAndPath
+///  <TODO: insert text here>
+///
+///  @return wxString <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 wxString RemoteFileDialog::GetRemoteFileNameAndPath()
 {
 	return m_remoteFileNamePath.GetFullPath(wxPATH_UNIX);
 }
 
+/*
 wxString RemoteFileDialog::GetLocalFileNameAndPath()
 {
 	return m_localFileNamePath.GetFullPath();
 }
+*/
 
 
 void RemoteFileDialog::SetNetworking(Networking* network)
@@ -400,6 +441,18 @@ void RemoteFileDialog::SetNetworking(Networking* network)
 	m_currentPath.AssignDir("~");
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public ShowDirectory
+///  <TODO: insert text here>
+///
+///  @param  dirname    wxString  <TODO: insert text here>
+///  @param  refresh    bool      [=false] <TODO: insert text here>
+///  @param  showHidden bool      [=false] <TODO: insert text here>
+///
+///  @return bool       <TODO: insert text here>
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 bool RemoteFileDialog::ShowDirectory(wxString dirname, bool refresh, bool showHidden)
 {
 
@@ -439,6 +492,14 @@ bool RemoteFileDialog::ShowDirectory(wxString dirname, bool refresh, bool showHi
 	return true;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public FillListView
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void RemoteFileDialog::FillListView()
 {
 	// disables VS's 4018 warning: "signed/unsigned mismatch" relating to the GetCount() comparison
@@ -510,12 +571,13 @@ void RemoteFileDialog::FillListView()
 #pragma warning( default : 4018 )
 }
 
+/*
 void RemoteFileDialog::LoadTestData()
 {
 	ShowDirectory("C:\\Projects\\cs4810\\gears\\chameleon\\gui\\");
 }
 
-/*
+
 // save the information for opening a file
 void RemoteFileDialog::OpenRemoteFile()
 {
@@ -536,10 +598,21 @@ void RemoteFileDialog::StoreFileName(wxString filename)
 }
 
 
+
 /*!
  * wxEVT_COMMAND_LIST_ITEM_SELECTED event handler for ID_LISTCTRL
  */
 
+//////////////////////////////////////////////////////////////////////////////
+///  public OnItemSelected
+///  <TODO: insert text here>
+///
+///  @param  event wxListEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void RemoteFileDialog::OnItemSelected( wxListEvent& event )
 {
     // Insert custom code here
@@ -553,6 +626,16 @@ void RemoteFileDialog::OnItemSelected( wxListEvent& event )
  * wxEVT_COMMAND_LIST_ITEM_ACTIVATED event handler for ID_LISTCTRL
  */
 
+//////////////////////////////////////////////////////////////////////////////
+///  public OnItemActivated
+///  <TODO: insert text here>
+///
+///  @param  event wxListEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void RemoteFileDialog::OnItemActivated( wxListEvent& event )
 {
     // Insert custom code here
@@ -565,11 +648,13 @@ void RemoteFileDialog::OnItemActivated( wxListEvent& event )
 	ItemActivated();	
 }
 
+/*
 wxPathFormat RemoteFileDialog::GetCurrentPathFormat()
 {
 	wxPathFormat pathFormat = wxPATH_UNIX;
 	return pathFormat;
 }
+*/
 
 // Sets up the dialog for use as either an open or a save dialog
 bool RemoteFileDialog::Prepare(bool open, wxString filterString)//FileDisplayType displayType)
@@ -645,7 +730,7 @@ bool RemoteFileDialog::Prepare(bool open, wxString filterString)//FileDisplayTyp
 	m_filterAllFilesIndex = m_comboFiletypes->FindString("All files (*.*)");
 
 
-	wxPathFormat format = GetCurrentPathFormat();
+	//wxPathFormat format = GetCurrentPathFormat();
 
 	wxString path = m_currentPath.GetPath(false, wxPATH_UNIX);
 	m_txtFilename->SetValue(wxEmptyString);
@@ -656,6 +741,14 @@ bool RemoteFileDialog::Prepare(bool open, wxString filterString)//FileDisplayTyp
  */
 
 // user double-clicked a list item OR hit the open button
+//////////////////////////////////////////////////////////////////////////////
+///  private ItemActivated
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void RemoteFileDialog::ItemActivated()
 {
 	wxString userFileName = m_txtFilename->GetValue();
@@ -740,7 +833,17 @@ void RemoteFileDialog::ItemActivated()
  * wxEVT_COMMAND_COMBOBOX_SELECTED event handler for ID_COMBOBOX1
  */
 
-void RemoteFileDialog::OnCombobox1Selected( wxCommandEvent& event )
+//////////////////////////////////////////////////////////////////////////////
+///  public OnFileTypeSelected
+///  <TODO: insert text here>
+///
+///  @param  event wxCommandEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
+void RemoteFileDialog::OnFileTypeSelected( wxCommandEvent& event )
 {
     // Insert custom code here
     event.Skip();
@@ -754,20 +857,33 @@ void RemoteFileDialog::OnCombobox1Selected( wxCommandEvent& event )
 	}
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public OnButtonRefresh
+///  <TODO: insert text here>
+///
+///  @param  event wxCommandEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void RemoteFileDialog::OnButtonRefresh(wxCommandEvent &event)
 {
 	wxString path = m_currentPath.GetPath(false, wxPATH_UNIX);
 	ShowDirectory(path, true);
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public OnEnter
+///  <TODO: insert text here>
+///
+///  @param  event wxCommandEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void RemoteFileDialog::OnEnter(wxCommandEvent &event)
 {
 	ItemActivated();
 }
-
-/*
-int RemoteFileDialog::GetIconIndex(wxString extension)
-{
-	return m_iconExtensionMapping[extension];
-}
-*/

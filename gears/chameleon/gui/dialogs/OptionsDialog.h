@@ -119,7 +119,7 @@ public:
 
 ////@end OptionsDialog member function declarations
 
-    
+    /*
     wxCheckListBox* GetListBox();
     wxString GetServerAddress();
     wxString GetUsername();
@@ -127,6 +127,7 @@ public:
     wxString GetPassword2();
 	wxString GetAuthCode();
 	wxString GetMingwPath(){ return m_txtMingwPath->GetValue(); }
+	*/
 
 	void BrowseForDir(wxTextCtrl* textbox, wxString name);
 	bool EvaluateOptions();
@@ -136,12 +137,13 @@ public:
 	void ExitDialog();
 	void OnEnter(wxCommandEvent &event);
 
-
+/*
     void SetServerAddress(wxString address);
     void SetUsername(wxString username);
     void SetPassword1(wxString pwd);
     void SetPassword2(wxString pwd);
 	void SetAuthCode(wxString authcode);
+*/
 
 	void EnableServerSettings();
 	void DisableServerSettings();

@@ -58,10 +58,19 @@ END_EVENT_TABLE()
  * CompilerOutputPanel constructors
  */
 
+
 CompilerOutputPanel::CompilerOutputPanel( )
 {
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public constructor CompilerOutputPanel
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 CompilerOutputPanel::CompilerOutputPanel( wxWindow* parent, ChameleonWindow* mainFrame, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
 {
     Create(parent, id, caption, pos, size, style);
@@ -152,6 +161,14 @@ bool CompilerOutputPanel::ShowToolTips()
     return TRUE;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public ClearOutput
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void CompilerOutputPanel::ClearOutput()
 {
 	int numGridRows = m_grid->GetNumberRows();
@@ -164,6 +181,16 @@ void CompilerOutputPanel::ClearOutput()
 	m_numErrors = 0;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public SetAdvanced
+///  <TODO: insert text here>
+///
+///  @param  advanced bool  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void CompilerOutputPanel::SetAdvanced(bool advanced)
 {
 	m_isAdvanced = advanced;
@@ -186,6 +213,16 @@ void CompilerOutputPanel::SetAdvanced(bool advanced)
 	m_sizer->Layout();
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public OnCompilerStart
+///  <TODO: insert text here>
+///
+///  @param  event CompilerEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void CompilerOutputPanel::OnCompilerStart(CompilerEvent& event)
 {
 	//ClearOutput();
@@ -216,6 +253,16 @@ void CompilerOutputPanel::OnCompilerStart(CompilerEvent& event)
     
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public OnCompilerProblem
+///  <TODO: insert text here>
+///
+///  @param  event CompilerEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void CompilerOutputPanel::OnCompilerProblem(CompilerEvent &event)
 {
 	wxFileName fn = event.GetFile();
@@ -266,6 +313,16 @@ void CompilerOutputPanel::OnCompilerProblem(CompilerEvent &event)
 	*m_textbox << output;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public OnCompilerEnd
+///  <TODO: insert text here>
+///
+///  @param  event CompilerEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void CompilerOutputPanel::OnCompilerEnd(CompilerEvent &event)
 {
 	wxFileName fn = event.GetFile();
@@ -306,6 +363,16 @@ void CompilerOutputPanel::OnCompilerEnd(CompilerEvent &event)
 	//}
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public OnGridDoubleClick
+///  <TODO: insert text here>
+///
+///  @param  event wxGridEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void CompilerOutputPanel::OnGridDoubleClick(wxGridEvent &event)
 {
 	int rownum = event.GetRow();
@@ -326,6 +393,15 @@ void CompilerOutputPanel::OnGridDoubleClick(wxGridEvent &event)
 	
 }
 
+
+//////////////////////////////////////////////////////////////////////////////
+///  public virtual SetFocus
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void CompilerOutputPanel::SetFocus()
 {
 	if(m_isAdvanced)

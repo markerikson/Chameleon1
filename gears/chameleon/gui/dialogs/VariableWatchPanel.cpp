@@ -61,6 +61,7 @@ END_EVENT_TABLE()
  * VariableWatchPanel constructors
  */
 
+
 VariableWatchPanel::VariableWatchPanel( )
 {
 }
@@ -71,23 +72,6 @@ VariableWatchPanel::VariableWatchPanel( wxWindow* parent, ChameleonWindow* mainf
 
 	m_mainFrame = mainframe;
 
-/*
-	m_grid->SetRowLabelSize(40);
-	m_grid->SetColumnWidth(0, 160);
-	wxSize s = parent->GetClientSize();
-	int totalwidth = s.GetWidth();
-	m_grid->SetColumnWidth(1, 400);
-
-	m_grid->SetColLabelValue(0, "Name");
-	m_grid->SetColLabelValue(1, "Value");
-
-	int numRows = m_grid->GetRows();
-
-	if(numRows >0)
-	{
-		m_grid->DeleteRows(0, numRows);
-	}
-*/
 	wxListItem itemCol;
 	itemCol.m_mask = wxLIST_MASK_TEXT | wxLIST_MASK_WIDTH;
 	itemCol.m_text = _T("Name");
@@ -99,21 +83,6 @@ VariableWatchPanel::VariableWatchPanel( wxWindow* parent, ChameleonWindow* mainf
 	itemCol.m_text = _T("Value");
 	itemCol.m_width = 400;
 	m_list->InsertColumn(2, itemCol);
-
-	/*
-	wxListItem testitem;
-	testitem.m_mask = wxLIST_MASK_TEXT;
-	testitem.m_itemId = 0;
-	testitem.m_text = "var1";
-	testitem.m_col = 0;
-	m_list->InsertItem(testitem);
-	testitem.m_text = "string blah blah blah blahdy blah blah blah blah blahdy blah blah blah blahdy blah and wow this is really long";
-	testitem.m_col = 1;
-	m_list->SetItem(testitem);
-	testitem.m_text = "blah blah blah blahdy blah";
-	testitem.m_col = 2;
-	m_list->SetItem(testitem);
-	*/
 }
 
 /*!
@@ -204,6 +173,14 @@ bool VariableWatchPanel::ShowToolTips()
     return TRUE;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public AddWatch
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void VariableWatchPanel::AddWatch()
 {
 	wxString varName = wxGetTextFromUser("Variable name to watch:", "Add Variable Watch");
@@ -243,6 +220,14 @@ void VariableWatchPanel::AddWatch()
 	}
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public RemoveWatch
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void VariableWatchPanel::RemoveWatch()
 {
 	if(m_list->GetSelectedItemCount() > 0)
@@ -270,6 +255,16 @@ void VariableWatchPanel::RemoveWatch()
 	}
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public UpdateVariableInfo
+///  <TODO: insert text here>
+///
+///  @param  event wxDebugEvent  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void VariableWatchPanel::UpdateVariableInfo(wxDebugEvent event)
 {
 	wxArrayString names = event.GetVariableNames();
@@ -330,6 +325,14 @@ void VariableWatchPanel::UpdateVariableInfo(wxDebugEvent event)
 	}
 }
 
+//////////////////////////////////////////////////////////////////////////////
+///  public ClearVariableValues
+///  <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void VariableWatchPanel::ClearVariableValues()
 {
 	for(int i = 0; i < m_list->GetItemCount(); i++)
@@ -342,6 +345,16 @@ void VariableWatchPanel::ClearVariableValues()
  * wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_CLEARALLWATCHES
  */
 
+//////////////////////////////////////////////////////////////////////////////
+///  public OnClearallwatchesClick
+///  <TODO: insert text here>
+///
+///  @param  event wxCommandEvent & <TODO: insert text here>
+///
+///  @return void
+///
+///  @author Mark Erikson @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 void VariableWatchPanel::OnClearallwatchesClick( wxCommandEvent& event )
 {
     // Insert custom code here

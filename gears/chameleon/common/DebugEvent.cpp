@@ -1,12 +1,3 @@
-//////////////////////////////////////////////////////////////////////
-//
-// wxProcess2Events: wxProcess2EndedEvent, wxProcess2StdOutEvent, &
-//                           wxProcess2StdErrEvent
-//
-// Notes:
-//
-//////////////////////////////////////////////////////////////////////
-
 #include "DebugEvent.h"
 
 #include "debug.h"
@@ -15,9 +6,6 @@
 #define new DEBUG_NEW
 #endif
 
-//-------------------------------------------------------------------
-// wxProcess2EndedEvent
-//-------------------------------------------------------------------
 DEFINE_EVENT_TYPE(wxEVT_DEBUG)
 wxDebugEvent::wxDebugEvent()
 {
