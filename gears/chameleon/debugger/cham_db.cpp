@@ -96,7 +96,7 @@ Debugger::Debugger(wxTextCtrl* outBox, Networking* networking, wxEvtHandler* poi
 	varRegExes["char"] = "[[:digit:]]+ '(.*+)'";
 	
 	// char - "$n = "text""
-	varRegExes["char[]"] = "\"(.*)\"\\r";//"[[:digit:]]+ '([[:alnum:]]+)'";
+	varRegExes["char[]"] = "\"(.*)\"";//"[[:digit:]]+ '([[:alnum:]]+)'";
 	
 	// array- "$n = {val, val...}"
 	varRegExes["array"] = "{(.*)}";
@@ -544,7 +544,7 @@ void Debugger::startProcess(bool fullRestart, bool mode, wxString fName, wxStrin
 	classStatus = NEW_PROC;
 	
 
-	streamOut = myConnection->StartCommand(isRemote, execThis+returnChar, this);
+	streamOut = myConnection->StartCommand(isRemote, execThis, this);
 
 	//begin funky process stuff
 /*	if(isRemote)
@@ -593,7 +593,8 @@ void Debugger::startProcess(bool fullRestart, bool mode, wxString fName, wxStrin
 	//initialize GDB
 	tmp.Printf("set prompt %s%s", PROMPT_CHAR.c_str(), returnChar.c_str());
 	initString.Add(tmp);
-	//initString.Add("set print pretty on" + returnChar);
+	initString.Add("set print array off" + returnChar);
+	initString.Add("set print pretty off" + returnChar);
 	initString.Add("set print address off" + returnChar);
 	initString.Add("set confirm off" + returnChar);
 	initString.Add("set print repeats 10000" + returnChar);
@@ -1326,6 +1327,7 @@ void Debugger::removeVar(wxString varName, wxString funcName, wxString className
 		if(found)
 		{
 			m_varInfo.RemoveAt(i - 1);
+			varCount--;
 		}
 	}//end varCount if
 }
@@ -1370,6 +1372,7 @@ bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 
 			if(!singleLine.IsEmpty())
 			{
+				wxString regexString;
 				if(singleLine.Mid(0,9) == "No symbol")
 				{
 					varValue.Add(singleLine);
@@ -1381,15 +1384,15 @@ bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 					{
 						VariableInfo varInfo = m_varInfo[i];
 						wxString type = varInfo.type;
-						wxString regex;
 						if(varRegExes.find(type) != varRegExes.end())
 						{
-							regex = varRegExes[type];
+							regexString = varRegExes[type];
 						}
 						else
 						{
-							regex = varRegExes["class"];
+							regexString = varRegExes["class"];
 						}
+						/*
 						wxRegEx global = regex;
 						if(global.Matches(singleLine))
 						{
@@ -1402,6 +1405,7 @@ bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 							m_varInfo[i].type = "Unknown";
 							varValue.Add(singleLine);
 						}
+						*/
 					}
 					else
 					{
@@ -1409,8 +1413,8 @@ bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 						if(m_varInfo[i].type.Find("&") > 0)
 						{
 							wxString tmp = m_varInfo[i].type.BeforeLast('&');
-							wxString regex = varRegExes[tmp];
-							wxRegEx global = regex;
+							regexString = varRegExes[tmp];
+							/*
 							if(global.Matches(singleLine))
 							{
 								match = global.GetMatch(singleLine, 1);
@@ -1420,13 +1424,14 @@ bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 							{
 								varValue.Add("Error Parsing Value ["+singleLine+"]: RegEx miss-match for "+tmp);
 							}
+							*/
 						}
 						else
 						{
 							//we're assuming it's a dereferenced pointer
 							wxString tmp = m_varInfo[i].type.BeforeLast('*');
-							wxString regex = varRegExes[tmp];
-							wxRegEx global = regex;
+							regexString = varRegExes[tmp];
+							/*
 							if(global.Matches(singleLine))
 							{
 								match = global.GetMatch(singleLine, 1);
@@ -1436,6 +1441,7 @@ bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 							{
 								varValue.Add("Error Parsing Value ["+singleLine+"]: RegEx miss-match for "+tmp);
 							}
+							*/
 
 						}
 					}//end referenced variable test
@@ -1445,8 +1451,9 @@ bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 					//we have an array of some type...
 					if(m_varInfo[i].type.Find("char") != -1)
 					{
-						wxRegEx global = varRegExes["char[]"];
+						regexString = varRegExes["char[]"];
 						//it's a char string.  Parse as regular string
+						/*
 						if(global.Matches(singleLine))
 						{
 							match = global.GetMatch(singleLine, 1);
@@ -1456,10 +1463,12 @@ bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 						{
 							varValue.Add("Error Parsing Value ["+singleLine+"]: RegEx miss-match for "+m_varInfo[i].type);
 						}
+						*/
 					}
 					else
 					{
-						wxRegEx global = varRegExes["array"];
+						regexString = varRegExes["array"];
+						/*
 						//it's a regular array.
 						if(global.Matches(singleLine))
 						{
@@ -1470,10 +1479,51 @@ bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 						{
 							varValue.Add("Error Parsing Value ["+singleLine+"]: RegEx miss-match for "+m_varInfo[i].type);
 						}
+						*/
 					}
 				}//end array-test
-			}
-		}
+				if(regexString == wxEmptyString)
+				{
+					//wxLogDebug("Type parsing failed - could not locate an appropriate regex");
+					//wxLogDebug("m_varInfo[%d].type = %s, singleline = %s, fromGDB = %s", m_varInfo[i].type,
+					//			singleLine, fromGDB);
+					//continue;
+					m_varInfo[i].type = "Unknown";
+					varValue.Add(singleLine);
+				}
+				else
+				{
+					wxRegEx varParser = regexString;
+					bool keepMatching = true;
+
+					while(keepMatching && !parseError)
+					{
+						if(varParser.Matches(singleLine))
+						{
+							match = varParser.GetMatch(singleLine, 1);
+							varValue.Add(match);
+							keepMatching = false;
+						}
+						else
+						{
+							if(fromGDB != wxEmptyString)
+							{
+								lineBreak = fromGDB.Find("\n");
+
+								// Grab the next logical line and append it
+								singleLine += fromGDB.Mid(0, lineBreak);
+								singleLine = singleLine.BeforeLast('\r');
+								fromGDB = fromGDB.AfterFirst('\n');
+							}
+							else
+							{
+								parseError = true;
+							}						
+						} // end else
+					} // end while
+				} // end else regex == wxemptystring				
+			} // end if !singleline.empty
+		} // end else (linebreak)
 	}//end for-loop
 
 	if(parseError)
@@ -1546,7 +1596,7 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 		 keepParsing = false;
 
 	//step parsing RegEx
-	wxRegEx reCase1 = " at (([[:alnum:]]|[[:blank:]]|\\.)+):([[:digit:]]+)";
+	wxRegEx reCase1 = " at (([[:alnum:]]|[[:blank:]]|\\.|/)+):([[:digit:]]+)";
 	// needs the wxRE_ADVANCED in order to work properly, so can't just
 	// assign this one as if it were a string
 	wxRegEx reCase2("(\\n|^)(\\d+)[ \\t]+", wxRE_ADVANCED);
