@@ -3,6 +3,9 @@
 
 //=================================================================
 // PlinkConnect
+//
+// ToDo: I could probably do away with proc
+//
 //=================================================================
 #include <wx/process.h>
 #include <wx/event.h>
@@ -16,7 +19,8 @@ class PlinkConnect {
 					wxString username, wxString passphrase);
 		~PlinkConnect();
 		// Methods:
-		void sendCommand(wxString command, bool isBatch = true); // use Batch!!!
+		void sendCommand(wxString command);
+		void acceptCacheFingerprint();
 
 		// gets/sets
 		wxString getOutput();
@@ -29,12 +33,12 @@ class PlinkConnect {
 
 	private:
 		// Methods:
+		void sendCommand(wxString command, bool isBatch);
 		void sendToStream(wxString strng);
 		void scrubLogs();
 		// Data:
 		wxString plinkApp, host, user, pass;
-		wxProcess* proc;
-		bool isConnected;
+		wxProcess* proc; // I don't really need this
 		long pid;
 		wxString output;
 		wxString errlog;

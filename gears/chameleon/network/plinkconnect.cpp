@@ -38,54 +38,54 @@ PlinkConnect::~PlinkConnect() {
 	//proc is almost always NULL
 }
 
-// Public:
+//Public:
 wxString PlinkConnect::getOutput() {
-	// Output will not be complete until isConnected == false
-	//output.Remove(output.Len());
+	// Output 'log' is cleared before each sendCommand()
 	return output;
 }
 
-// Public:
+//Public:
 wxString PlinkConnect::getErrors() {
-	// The error log will not be complete until isConnected == false
+	// Error Log is cleared before each sendCommand()
 	return errlog;
 }
 
-// Public:
+//Public:
 wxString PlinkConnect::getMessage() {
 	return message;
 }
 
-// Public:
+//Public:
 void PlinkConnect::setPlinkApp(wxString path_name) {
 	plinkApp = path_name;
 }
 
-// Public:
+//Public:
 void PlinkConnect::setHostname(wxString hostname) {
 	host = hostname;
 }
 
-// Public:
+//Public:
 void PlinkConnect::setUsername(wxString username) {
 	user = username;
 }
 
-// Public:
+//Public:
 void PlinkConnect::setPassphrase(wxString passphrase) {
 	pass = passphrase;
 }
 
 
-// Public:
-//void PlinkConnect::sendCommand(wxString command) {
-//	// the choice to run in non-batch mode is not for the weak of heart
-//	//   it can easily cause the process to never terminate
-//	sendCommand(command, true);
-//}
+//Public:
+void PlinkConnect::sendCommand(wxString command) {
+	// the choice to run in non-batch mode is not for the weak of heart
+	//   it can easily cause the process to never terminate
+	sendCommand(command, true);
+}
 
 // This function starts a wxProcess to asynchornously execute the command.
 // A connection is made, the command is run, then the connection is ended.
+//Private:
 void PlinkConnect::sendCommand(wxString command, bool isBatch) {
 	output = ""; // clear the ouput log
 	errlog = ""; // clear the error log
@@ -141,7 +141,7 @@ void PlinkConnect::sendCommand(wxString command, bool isBatch) {
 
 
 
-// Private:
+//Private:
 void PlinkConnect::scrubLogs() {
 	// Clean the output and determine the success of the command:
 
@@ -165,16 +165,30 @@ void PlinkConnect::scrubLogs() {
 }
 
 
-// Private
+//Public:
+void PlinkConnect::acceptCacheFingerprint() {
+	//start the program asynchonously
+	wxString cmd = plinkApp + " " + host;
+	proc = new wxProcess(NULL);
+	proc->Redirect();
+	wxExecute(cmd, wxEXEC_ASYNC, proc);
+
+	sendToStream("y\n");
+	sendToStream("^C");
+
+	delete proc;
+}
+
+//Private:
 void PlinkConnect::sendToStream(wxString strng) {
-	if(isConnected) {
-		//open
-		wxTextOutputStream os(* (proc->GetOutputStream()) );
-		//send
-		os.WriteString(strng);
-		//close
-		proc->CloseOutput();
-	}
+	// Probably should check for a connection first
+
+	//open
+	wxTextOutputStream os(* (proc->GetOutputStream()) );
+	//send
+	os.WriteString(strng);
+	//close
+	proc->CloseOutput();
 }
 
 
