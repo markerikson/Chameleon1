@@ -1,0 +1,4 @@
+set prompt %
+set print address off
+set confirm off
+file a.exe
