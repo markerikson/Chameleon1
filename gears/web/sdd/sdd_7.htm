@@ -1,84 +1,156 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<meta name="Template_Author" content="John Cox">
-<title>SDD: 7.0 Packaging</title>
-</head>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head>
+
+<meta content="text/html; charset=ISO-8859-1" http-equiv="Content-Type">
+
+<meta content="John Cox" name="Template_Author"><title>SDD: 7.0 Packaging</title></head>
+
+
+
 <body>
+
 <h1>7.0 Packaging</h1>
+
+
 
 <h2><a name="doc">7.1 Documentation</a></h2>
 
-<em>Describe what design documentation will be provided in the
+
+
+<p>Describe what design documentation will be provided in the
+
 final product of this application. For example, will this
+
 document be included on the application's distribution media?<br>
- --JC.</em> 
+
+ --JC.<br>
+The final package include a user's manual for Chameleon, a tutorial on
+its usage, a tutorial and introduction to the Linux environment, and
+possibly an introductory reference to the C++ language.<br>
+</p> 
 
 <h2><a name="src">7.2 Source Code</a></h2>
 
-<em>Describe what source code (if any) will be provided in the
+
+
+<p>Describe what source code (if any) will be provided in the
+
 final package. This helps developers know which source code will
+
 be delivered and which wont. For example, if the rapid prototype
+
 will not be included, then so state. However, if the
+
 application's actual C/C++ source code will be delivered, then so
+
 state. If the source code for the module tests will not be
+
 included, then so state.<br>
- --JC.</em> 
+
+ --JC.<br>
+The complete source code for Chameleon will be included with the final product.<br>
+</p> 
 
 <h2><a name="exe">7.3 Executables</a></h2>
 
-<em>Describe all the exectuable files (listed by name) that will
+
+
+<p>Describe all the exectuable files (listed by name) that will
+
 be included in the final package. Presumably, the application
+
 will be an EXE file and will be included. Will there be any other
+
 EXE files?<br>
- --JC.</em> 
+
+ --JC.<br>
+The final product will include the main Chameleon executable, along with programs that we use such as <span style="font-style: italic;">plink</span> and <span style="font-style: italic;">putty</span>.&nbsp; <br>
+</p> 
 
 <h2><a name="data">7.4 Data Files</a></h2>
 
-<em>If your application relies on certain data files that must be
+
+
+<p>If your application relies on certain data files that must be
+
 delivered in the final product, then list those files here. For
+
 example, if part of the application needs a database of words,
+
 then explain that this words database will be included.<br>
- --JC.</em> 
+
+ --JC.<br>
+Chameleon's options will be stored in an INI file located in the same
+directory as the main program executable.&nbsp; An INI file will be
+included with the final product.<br>
+</p> 
 
 <h2><a name="install">7.5 Installation</a></h2>
 
-<em>Discuss the design associated with the installation of the
+
+
+<p>Discuss the design associated with the installation of the
+
 product. Identify the name of the installation packaging tool.
+
 Discuss how each of the requirements allocated to installation
+
 issues will be implemented in the installation package. For any
+
 requirements listed in the traceability matrix (section 9 of the
+
 SDD), link back to this section of the SDD to identify the
+
 associated design.<br>
- --JC.</em> 
+
+ --JC.<br>
+The installer for Chameleon has not been worked on yet.&nbsp;
+Possibilities for creating an installer include Inno Setup, the
+Nullsoft Scriptable Installation System, and the Ghost Installer Free
+Edition.<br>
+</p> 
 
 <hr>
+
 <center>
+
 <table summary="navigation">
-<tr>
-<td height="100" width="60"><a href="../index.html"><img src=
-"../images/home.gif" align="BOTTOM" alt="Home" border="0">
+
+<tbody><tr>
+
+<td width="60" height="100"><a href="../index.html"><img border="0" alt="Home" align="bottom" src="../images/home.gif">
+
 </a></td>
-<td height="100" width="60"><a href="sdd.htm"><img src=
-"../images/toc.gif" align="BOTTOM" alt="TOC" border="0"></a></td>
-<td height="100" width="60"><a href="sdd_6.htm"><img src=
-"../images/prev.gif" align="BOTTOM" alt="Prev" border="0">
+
+<td width="60" height="100"><a href="sdd.htm"><img border="0" alt="TOC" align="bottom" src="../images/toc.gif"></a></td>
+
+<td width="60" height="100"><a href="sdd_6.htm"><img border="0" alt="Prev" align="bottom" src="../images/prev.gif">
+
 </a></td>
-<td height="100" width="60"><a href="sdd_8.htm"><img src=
-"../images/next.gif" align="BOTTOM" alt="Next" border="0">
+
+<td width="60" height="100"><a href="sdd_8.htm"><img border="0" alt="Next" align="bottom" src="../images/next.gif">
+
 </a></td>
+
 </tr>
-</table>
+
+</tbody></table>
+
 </center>
+
+
 
 Document modified on 
 
-<script type="text/javascript" language="JavaScript">
-<!--
-        document.write(document.lastModified + " GMT")
-// -->
-</script>
-</body>
-</html>
 
+
+<script language="JavaScript" type="text/javascript">
+
+<!--
+
+        document.write(document.lastModified + " GMT")
+
+// -->
+
+</script>
+
+</body></html>

@@ -1,157 +1,206 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head>
+
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<meta name="Template_Author" content="John Cox">
-<title>SDD: 5.0 Software Design</title>
-</head>
-<body>
+
+<meta name="Template_Author" content="John Cox"><title>SDD: 5.0 Software Design</title></head><body>
+
 <h1>5.0 Software Design</h1>
+
+
 
 <h2><a name="overview">5.1 Overview</a></h2>
 
-<em>Provide a couple sentences or paragraphs describing the
+
+
+<p>Provide a couple sentences or paragraphs describing the
+
 overview of the software design.<br>
- --JC.</em> 
 
-<h2><a name="architecture">5.2 Architecture</a></h2>
+ --JC.<br>
+<br>
+</p> 
 
-<h3>5.2.1 System Architectural Components</h3>
+<h2><a name="architecture">5.2 Architecture</a><a name="architecture"></a><br>
+</h2>
+<h2>
 
-<em>I'm looking for an architectural diagram that shows the major
-top-level components for the project. Typically, there might be
-about 5 +/- 2 shown here, but not more than 10. Be sure to keep
-the diagram simple, minimizing connection lines drawn between the
-components (typically those connection lines indicate
-communication coupling). Quite often the most common top-level
-architectural components designed by students are (1) the
-graphical user interface, (2) some kind of a computation engine,
-(3) maybe another computation engine, and sometimes (4) some kind
-of HTML output report generator.<br>
- --JC.</em> 
 
-<h3>5.2.2 Modules in Components</h3>
 
-<em>I'm looking for a list of all the modules (or classes) that
-comprise each high-level architectural component. Please note
-that there may be anywhere from one to many modules that comprise
-one of the high-level architectural components. Be sure that all
-of the modules are listed here (number each one), categorizing
-them according to the components that they make up. Each one of
-these modules will be listed and described in great detail later
-in section 5.9. Here's a little example, based on the "SumDiv"
-sample project I have available that demonstrates how to build a
-project using VB and C++:<br>
- --JC.</em> 
+</h2>
+<h3>5.2.1 GUI <br>
+</h3>
 
-<p>Architectural Component #1:<br>
-<b>SumDiv Calculator Engine (C-based DLL)</b></p>
 
-<ol>
-<li>Initialization module (e.g. DLL main)</li>
 
-<li>Addition module</li>
+<p>The GUI module handles the majority of the interactions with the
+user.&nbsp; It is, in a sense, the "master module" from which the
+others are invoked.&nbsp; It includes the main program window and its
+appearance, such as toolbars and window layout.&nbsp; It also includes
+the display portion of the interactive remote terminal.<br>
+</p>
+ 
 
-<li>Division module</li>
-</ol>
+<h3>5.2.2 Editor<br>
+</h3>
 
-<p>Architectural Component #2:<br>
-<b>SumDiv Graphical User Interface (VB-based EXE)</b></p>
 
-<ol>
-<li>Initialization class (e.g. form load, etc.)</li>
 
-<li>LHS Value (text box class)</li>
-
-<li>RHS Value (text box class)</li>
-
-<li>Addition Command (command button class)</li>
-
-<li>Division Command (command button class)</li>
-
-<li>Results Value (text box class)</li>
-</ol>
-
+<p>The editor module handles the rest of the user interaction,
+specifically that having to do with text entry and manipulation.&nbsp; <br>
+</p>
+<h3>5.2.3 Networking<br>
+</h3>
+The networking module includes the remote access portion of the
+interactive terminal (ie, conveying the input to the server and
+returning the output), as well as the file handling details.<br>
+<h3>5.2.4 Compiler<br>
+</h3>
+The compiler module deals with all the relevant settings for the
+compiler, including linking options, directories, and input files.<br>
+<h3>5.2.5 Debugger<br>
+</h3>
+The debugger module consists of two sections: the abstraction layer and
+the actual debugger.&nbsp; Since Chameleon is supposed to use both the
+built-in debugger and the Debugginator being developed by the Wizards
+of Zot, the abstraction layer handles the differences between the two
+and provides a single programming interface for the GUI to hook in
+to.&nbsp; The debugger itself is a wrapper around the open-source GDB
+debugger.<br>
+<h3>5.2.6 Permissions<br>
+</h3>
+The permissions manager is a fairly small module, but is vital to the
+rest of the program.&nbsp; Each of the other modules, particularly the
+GUI module, query it to see what features are currently enabled.&nbsp;
+This is done during startup, and may be done when program options are
+changed as well.<br>
 <h2><a name="constraints">5.3 Design Constraints</a></h2>
 
-<em>List any design constraints or assumptions that your design
+
+
+<p>List any design constraints or assumptions that your design
+
 will be based on.<br>
- --JC.</em> 
 
-<h2><a name="global">5.4 Global Data Objects</a></h2>
+ --JC.</p> 
 
-<em>List any global variables that will be designed into your
-system (hopefully there wont be any). Be sure to explain why
-these global data objects are designed to be global. A common
-(but poor) example of this is project that has hard-coded output
-file names that the user cannot dictate at run-time. Somewhere
-within the project is a global variable or constant that
-specifies this file name.<br>
- --JC.</em> 
+<h2><a name="global">5.4 Global Data Objects</a><br>
+</h2>
+
+
+
+<p>We plan to have no particular global objects other than those
+provide by the wxWindows toolkit by default (such as an Application
+object).&nbsp; <br>
+</p> 
 
 <h2><a name="errors">5.5 Error Handling</a></h2>
 
-<em>Explain how you plan to handle internal, user, and system
+
+
+<p>Explain how you plan to handle internal, user, and system
+
 errors. For example, if you have internal errors, will the assert
+
 macro be used liberally throughout your source code to detect
+
 such an item? Or if the user enters invalid data, do you have a
+
 consistent and user-friendly way to handle this for all cases? If
+
 your application is running and some part of the system goes down
+
 (e.g. the user pressed Ctl-Alt-Del), do you have a way to recover
+
 the work-in-progress file(s) from such an abrupt abort? Discuss
+
 these and any other related items in this section.<br>
- --JC.</em> 
+
+ --JC.<br>
+Because of the level of user we are planning for, we plan to handle as
+many errors internally as possible and only alert the user if
+absolutely necessary.&nbsp; Error handling details have not been
+completely determined yet, but may include both wxWindows assert macros
+and standard C++ exceptions.&nbsp; Because of the nature of the
+program, user
+input errors are not nearly as big an issue as they might be with other
+types of applications.&nbsp; With that said, the user is responsible
+for making sure his data is saved on a frequent basis.&nbsp;&nbsp; We
+currently have no plans to aid in recovering a lost in-progress file.<br>
+</p> 
 
 <h2><a name="language">5.6 Development Language</a></h2>
 
-<em>Describe the language that will be used for development of
-the software. For example, is it ANSI C, or K&amp;R C, etc. What
-brands and versions of compilers and linkers will be used to
-ensure consistency?<br>
- --JC.</em> 
+
+
+<p>We are using standard C++, with macros and data structures from the
+wxWindows toolkit.&nbsp; We plan to compile Chameleon using several
+different compilers, including Microsoft's C++ compiler versions 6 and
+7, and the GNU MinGW compiler. &nbsp;</p> 
 
 <h2><a name="precond">5.7 Preconditions and
+
 Postconditions</a></h2>
 
-<em>List any and all preconditions that must be met prior to
-starting your application. For exmaple, if your program relies on
-specific databases for initialization, then so state. Does your
-application rely on any system DLLs for execution?<br>
- --JC.</em> 
 
-<p><em>Describe any and all postconditions that shall be
-guaranteed by the system. For example, if one of your modules
-opens a data file for writing, will that same module be
-responsible for closing the data file, too? When will such a data
-file be closed?<br>
- --JC.</em></p>
+
+<p>Chameleon will be statically linked with the wxWindows libraries,
+eliminating the need for the wxWindows DLL to be distributed.&nbsp; It
+may, however, require a C++ runtime DLL.<br>
+</p> 
+
+<p></p>
+<p>Currently, the only data files that Chameleon will be dealing with
+will be C++ code files that are opened by the user.&nbsp; Upon a "Exit
+Program" event, the user will be notified if his current file has been
+modified since its last save and given an opportunity to save before
+exiting.<br>
+</p>
+<p></p>
+
+
 
 <hr>
+
 <center>
+
 <table summary="navigation">
-<tr>
-<td height="100" width="60"><a href="../index.html"><img src=
-"../images/home.gif" align="bottom" alt="Home" border="0">
+
+<tbody><tr>
+
+<td height="100" width="60"><a href="../index.html"><img src="../images/home.gif" align="bottom" alt="Home" border="0">
+
 </a></td>
-<td height="100" width="60"><a href="sdd.htm"><img src=
-"../images/toc.gif" align="bottom" alt="TOC" border="0"></a></td>
-<td height="100" width="60"><a href="sdd_4.htm"><img src=
-"../images/prev.gif" align="bottom" alt="Prev" border="0">
+
+<td height="100" width="60"><a href="sdd.htm"><img src="../images/toc.gif" align="bottom" alt="TOC" border="0"></a></td>
+
+<td height="100" width="60"><a href="sdd_4.htm"><img src="../images/prev.gif" align="bottom" alt="Prev" border="0">
+
 </a></td>
-<td height="100" width="60"><a href="sdd_58.htm"><img src=
-"../images/next.gif" align="bottom" alt="Next" border="0">
+
+<td height="100" width="60"><a href="sdd_58.htm"><img src="../images/next.gif" align="bottom" alt="Next" border="0">
+
 </a></td>
+
 </tr>
-</table>
+
+</tbody></table>
+
 </center>
+
+
 
 Document modified on 
 
-<script type="text/javascript" language="JavaScript">
-<!--
-        document.write(document.lastModified + " GMT")
-// -->
-</script>
-</body>
-</html>
 
+
+<script type="text/javascript" language="JavaScript">
+
+<!--
+
+        document.write(document.lastModified + " GMT")
+
+// -->
+
+</script>
+
+</body></html>
