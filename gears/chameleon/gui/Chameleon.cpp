@@ -152,7 +152,7 @@ bool MyApp::OnInit()
 {
 	//OnlyInstallUnhandeldExceptionFilter()
 #ifdef DEBUG_TRACE_MEMORY_LEAKS
-	InitAllocCheck(ACOutput_XML);
+	//InitAllocCheck(ACOutput_XML);
 #endif
     ChameleonWindow *frame = new ChameleonWindow("Chameleon",
                                  wxPoint(5, 5), wxSize(400, 300));
@@ -177,7 +177,7 @@ int MyApp::OnRun()
 MyApp::~MyApp()
 {
 #ifdef DEBUG_TRACE_MEMORY_LEAKS
-	DeInitAllocCheck();
+	//DeInitAllocCheck();
 #endif
 }
 
@@ -235,6 +235,13 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 		m_options->SetHostname(m_config->Read("Network/hostname"));
 		m_options->SetUsername(m_config->Read("Network/username"));
 		m_options->SetMingwPath(m_config->Read("Compiler/mingwpath"));
+
+		bool printInColor = (m_config->Read("Miscellaneous/PrintInColor", "true") == "true");
+		int printStyle = printInColor ? wxSTC_PRINT_COLOURONWHITE : wxSTC_PRINT_BLACKONWHITE;
+		m_options->SetPrintStyle(printStyle);
+
+		bool showToolbarText = (m_config->Read("Interface/ShowToolbarText", "true") == "true");
+		m_options->SetShowToolbarText(showToolbarText);
 		
 		authorizedCode = m_config->Read("Permissions/authorized", defaultAuthorizedCode);
 		enabledCode = m_config->Read("Permissions/enabled", defaultEnableCode);
@@ -323,9 +330,9 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	m_appClosing = false;
 	m_setSelection = false;
 
-	wxToolBar* toolBar = CreateToolBar(wxTB_FLAT | wxTB_TEXT);
+	//wxToolBar* toolBar = CreateToolBar(wxTB_FLAT | wxTB_TEXT);
 
-	SetToolBar(toolBar);
+	//SetToolBar(toolBar);
 
 	int charWidth = GetCharWidth();
 
@@ -412,6 +419,15 @@ ChameleonWindow::~ChameleonWindow()
 	{
 		delete m_updateTimer;
 		m_updateTimer = NULL;
+	}
+
+	if(m_noteTerm->DestroyChildren())
+	{
+		wxLogDebug("Successfully destroyed notebook children");
+	}
+	else
+	{
+		wxLogDebug("Notebook children destroy failed");
 	}
 }
 
@@ -1893,7 +1909,18 @@ void ChameleonWindow::UpdateToolbar()
 	Permission* perms = m_options->GetPerms();
 
 	wxToolBar* t = GetToolBar();
-	t->ClearTools();
+	//t->ClearTools();
+	delete t;
+	int style = wxTB_FLAT | wxTB_HORIZONTAL;
+
+	bool showText = m_options->GetShowToolbarText();
+	if(showText)
+	{
+		style |= wxTB_TEXT;
+	}
+	m_config->Write("Interface/ShowToolbarText", showText ? "true" : "false");
+	t = new wxToolBar(this, -1, wxDefaultPosition, wxDefaultSize, style);
+	SetToolBar(t);
 
 	/* Since wxWindows 2.4.2 doesn't let us find tools by ID, the
 	 * only way to handle this is to delete the tools to make
@@ -1988,7 +2015,34 @@ void ChameleonWindow::UpdateToolbar()
 		}
 	}
 
+	//int toolbarStyle = t->GetWindowStyle();
+/*
+	long style = t->GetWindowStyle();
+	//style &= ~(wxTB_NOICONS | wxTB_TEXT);
+
+	bool showText = m_options->GetShowToolbarText();
+	if(showText)
+	{
+		if(!(style & wxTB_TEXT))
+		{
+			style |= wxTB_TEXT;
+		}
+		
+	}	
+	else
+	{
+		if(style & wxTB_TEXT)
+		{
+			style &= ~wxTB_TEXT;
+		}
+	}
+
+	t->SetWindowStyle(style);
+	*/
 	t->Realize();
+	
+
+	m_config->Write("Interface/ShowToolbarText", showText ? "true" : "false");
 
 	
 
@@ -2046,6 +2100,10 @@ void ChameleonWindow::EvaluateOptions()
 	m_config->Write("Network/hostname", m_options->GetHostname());
 	m_config->Write("Network/username", m_options->GetUsername());
 	m_config->Write("Compiler/mingwpath", m_options->GetMingwPath());
+
+	bool printInColor = (m_options->GetPrintStyle() == wxSTC_PRINT_COLOURONWHITE);
+
+	m_config->Write("Miscellaneous/PrintInColor", printInColor ? "true" : "false");
 
 	m_config->Flush();
 }
@@ -2703,7 +2761,7 @@ void ChameleonWindow::UpdateTerminalNotebook()
 		}
 		else
 		{
-			//m_compilerTextbox->Hide();
+			m_compilerTextbox->Hide();
 			//m_compilerList->Hide();
 		}
 	}

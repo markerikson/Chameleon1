@@ -114,6 +114,7 @@ bool OptionsDialog::Create( wxWindow* parent, wxWindowID id, const wxString& cap
     m_txtMingwPath = NULL;
     m_butBrowseMingw = NULL;
     m_printStyle = NULL;
+    m_showToolbarText = NULL;
 ////@end OptionsDialog member initialisation
 
 ////@begin OptionsDialog creation
@@ -225,7 +226,7 @@ void OptionsDialog::CreateControls()
     item35->SetSizer(item36);
     item35->SetAutoLayout(TRUE);
     wxBoxSizer* item37 = new wxBoxSizer(wxVERTICAL);
-    item36->Add(item37, 0, wxALIGN_TOP, 5);
+    item36->Add(item37, 1, wxALIGN_TOP, 5);
     wxStaticText* item38 = new wxStaticText( item35, wxID_STATIC, _("Print text in:"), wxDefaultPosition, wxDefaultSize, 0 );
     item37->Add(item38, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
     wxString item39Strings[] = {
@@ -235,18 +236,22 @@ void OptionsDialog::CreateControls()
     wxComboBox* item39 = new wxComboBox( item35, ID_PRINTSTYLE, _("Black and white"), wxDefaultPosition, wxDefaultSize, 2, item39Strings, wxCB_READONLY );
     m_printStyle = item39;
     item39->SetStringSelection(_("Black and white"));
-    item37->Add(item39, 0, wxALIGN_CENTER_HORIZONTAL|wxLEFT|wxRIGHT|wxBOTTOM, 5);
+    item37->Add(item39, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxBOTTOM, 5);
+    wxCheckBox* item40 = new wxCheckBox( item35, ID_CHECKBOX, _("Show text on toolbar buttons"), wxDefaultPosition, wxDefaultSize, 0 );
+    m_showToolbarText = item40;
+    item40->SetValue(FALSE);
+    item37->Add(item40, 1, wxGROW|wxALL, 5);
     item3->AddPage(item35, _("Miscellaneous"));
     item2->Add(item3, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
-    wxBoxSizer* item40 = new wxBoxSizer(wxHORIZONTAL);
-    item2->Add(item40, 0, wxALIGN_RIGHT|wxALL, 0);
+    wxBoxSizer* item41 = new wxBoxSizer(wxHORIZONTAL);
+    item2->Add(item41, 0, wxALIGN_RIGHT|wxALL, 0);
 
-    wxButton* item41 = new wxButton( item1, ID_BUTTON_OK, _("OK"), wxDefaultPosition, wxDefaultSize, 0 );
-    item40->Add(item41, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxButton* item42 = new wxButton( item1, ID_BUTTON_OK, _("OK"), wxDefaultPosition, wxDefaultSize, 0 );
+    item41->Add(item42, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxButton* item42 = new wxButton( item1, ID_BUTTON_CANCEL, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
-    item40->Add(item42, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxButton* item43 = new wxButton( item1, ID_BUTTON_CANCEL, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
+    item41->Add(item43, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
 ////@end OptionsDialog content construction
 }
@@ -545,6 +550,8 @@ bool OptionsDialog::EvaluateOptions()
 		{
 			m_options->SetPrintStyle(wxSTC_PRINT_BLACKONWHITE);
 		}
+
+		m_options->SetShowToolbarText(m_showToolbarText->IsChecked());
 	}
 	else
 	{
@@ -581,6 +588,8 @@ void OptionsDialog::InitializeDialog()
 	}
 
 	m_printStyle->SetValue(printStyleString);
+
+	m_showToolbarText->SetValue(m_options->GetShowToolbarText());
 
 }
 
