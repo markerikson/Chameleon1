@@ -107,8 +107,6 @@ enum modules
 
 
 #ifdef PERM___H
-#ifndef GLOBALSTRINGTABLES
-#define GLOBALSTRINGTABLES
 wxString GlobalPermStrings[] = {"Syntax highlighting", 
 								"Name completion",
 								"Auto-indentation",
