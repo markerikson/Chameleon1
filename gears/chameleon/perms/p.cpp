@@ -131,16 +131,16 @@ bool Permission::setGlobalAuthorized(wxString newAuthCode)
 	crcPrefix = newAuthCode.Left(4);
 
 	numberString = newAuthCode.Mid(4);
-	wxLogDebug("newAuthCode: %s", newAuthCode);
-	wxLogDebug("numberString: %s", numberString);
-	wxLogDebug("crcPrefix: %s", crcPrefix);
+	//wxLogDebug("newAuthCode: %s", newAuthCode);
+	//wxLogDebug("numberString: %s", numberString);
+	//wxLogDebug("crcPrefix: %s", crcPrefix);
 
 	ClsCrc16 crc;
 	crc.CrcInitialize();
 	crc.CrcAdd((unsigned char *)numberString.GetData(), numberString.Len());
 	
 	crcGenerated.Printf("%X", crc.CrcGet());
-	wxLogDebug("crcGenerated: %s", crcGenerated);
+	//wxLogDebug("crcGenerated: %s", crcGenerated);
 
 	bool validAuthCode = (crcGenerated == crcPrefix);
 
