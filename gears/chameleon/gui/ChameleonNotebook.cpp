@@ -25,21 +25,6 @@ BEGIN_EVENT_TABLE(ChameleonNotebook, wxNotebook)
 
 END_EVENT_TABLE()
 
-//////////////////////////////////////////////////////////////////////////////
-///  public constructor ChameleonNotebook
-///  <TODO: insert text here>
-///
-///  @param  parent wxWindow *       <TODO: insert text here>
-///  @param  id     wxWindowID       <TODO: insert text here>
-///  @param  pos    const wxPoint &  [=wxDefaultPosition] <TODO: insert text here>
-///  @param  size   const wxSize &   [=wxDefaultSize] <TODO: insert text here>
-///  @param  style  long             [=0] <TODO: insert text here>
-///  @param  name   const wxString & [="notebook"] <TODO: insert text here>
-///
-///  @return void
-///
-///  @author Mark Erikson @date 04-22-2004
-//////////////////////////////////////////////////////////////////////////////
 ChameleonNotebook::ChameleonNotebook(wxWindow* parent, wxWindowID id, 
 									 const wxPoint& pos /* = wxDefaultPosition */, 
 									 const wxSize& size /* = wxDefaultSize */, 
@@ -48,19 +33,8 @@ ChameleonNotebook::ChameleonNotebook(wxWindow* parent, wxWindowID id,
 :wxNotebook(parent, id, pos, size, style, name)
 {
 	m_parent = (ChameleonWindow*)wxTheApp->GetTopWindow();
-
-	//CreateBookMenus();
-
 }
 
-//////////////////////////////////////////////////////////////////////////////
-///  public destructor ~ChameleonNotebook
-///  <TODO: insert text here>
-///
-///  @return void
-///
-///  @author Mark Erikson @date 04-22-2004
-//////////////////////////////////////////////////////////////////////////////
 ChameleonNotebook::~ChameleonNotebook () 
 {
 }
@@ -87,9 +61,9 @@ int ChameleonNotebook::HitTest(const wxPoint& pt, long& flags)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public OnTabActivate
-///  <TODO: insert text here>
+///  Pops up a menu when the user right-clicks a tab
 ///
-///  @param  event wxMouseEvent & <TODO: insert text here>
+///  @param  event wxMouseEvent & The generated menu event
 ///
 ///  @return void
 ///
@@ -161,14 +135,13 @@ void ChameleonNotebook::OnSize(wxSizeEvent &event)
 	event.Skip();
 }
 
-// Find the position of the wxNotebookPage, -1 if not found.
 //////////////////////////////////////////////////////////////////////////////
 ///  public FindPagePosition
-///  <TODO: insert text here>
+///  Finds the index of a given notebook page
 ///
-///  @param  page wxNotebookPage * <TODO: insert text here>
+///  @param  page wxNotebookPage * The generated notebook event
 ///
-///  @return int  <TODO: insert text here>
+///  @return int  The index of the requested page (-1 if not found)
 ///
 ///  @author Mark Erikson @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////

@@ -138,9 +138,9 @@ void wxTermContainer::CreateControls()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public OnScrollbarScrollLineUp
-///  <TODO: insert text here>
+///  Scrolls the terminal up a single line when the user clicks the up button
 ///
-///  @param  event wxScrollEvent & <TODO: insert text here>
+///  @param  event wxScrollEvent & The generated scroll event
 ///
 ///  @return void
 ///
@@ -161,9 +161,9 @@ void wxTermContainer::OnScrollbarScrollLineUp( wxScrollEvent& event )
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public OnScrollbarScrollLineDown
-///  <TODO: insert text here>
+///  Scrolls the terminal down a single line when the user clicks the down button
 ///
-///  @param  event wxScrollEvent & <TODO: insert text here>
+///  @param  event wxScrollEvent & The generated scroll event
 ///
 ///  @return void
 ///
@@ -183,9 +183,9 @@ void wxTermContainer::OnScrollbarScrollLineDown( wxScrollEvent& event )
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public OnScrollbarScrollPageUp
-///  <TODO: insert text here>
+///  Scrolls the terminal up a "page" when the user clicks in the scrollbar
 ///
-///  @param  event wxScrollEvent & <TODO: insert text here>
+///  @param  event wxScrollEvent & The generated scroll event
 ///
 ///  @return void
 ///
@@ -205,9 +205,9 @@ void wxTermContainer::OnScrollbarScrollPageUp( wxScrollEvent& event )
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public OnScrollbarScrollPageDown
-///  <TODO: insert text here>
+///  Scrolls the terminal down a "page" when the user clicks in the scrollbar
 ///
-///  @param  event wxScrollEvent & <TODO: insert text here>
+///  @param  event wxScrollEvent & The generated scroll event
 ///
 ///  @return void
 ///
@@ -226,9 +226,9 @@ void wxTermContainer::OnScrollbarScrollPageDown( wxScrollEvent& event )
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public OnScrollbarScrollThumbtrack
-///  <TODO: insert text here>
+///  Scrolls the terminal as the user drags the scroll thumb
 ///
-///  @param  event wxScrollEvent & <TODO: insert text here>
+///  @param  event wxScrollEvent & The generated scroll event
 ///
 ///  @return void
 ///
@@ -270,9 +270,9 @@ bool wxTermContainer::ShowToolTips()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public SetTerminal
-///  <TODO: insert text here>
+///  Assigns a terminal widget to this container
 ///
-///  @param  terminal wxTerm * <TODO: insert text here>
+///  @param  terminal wxTerm * The terminal to use
 ///
 ///  @return void
 ///
@@ -318,9 +318,9 @@ void wxTermContainer::OnSize(wxSizeEvent &event)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public OnUpdateUI
-///  <TODO: insert text here>
+///  Updates the scrollbar position, based on the amount of text received by the terminal
 ///
-///  @param  event wxUpdateUIEvent & <TODO: insert text here>
+///  @param  event wxUpdateUIEvent & The generated UI event
 ///
 ///  @return void
 ///

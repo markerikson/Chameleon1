@@ -71,7 +71,7 @@ private:
 	void OnRemoveBreakpoint(wxCommandEvent &event);
 	void OnClearBreakpoints(wxCommandEvent &event);
 	void OnRunToCursor(wxCommandEvent &event);
-	void OnCompilerEnded(CompilerEvent &event);
+	//void OnCompilerEnded(CompilerEvent &event);
 
 	void CreateBreakpointEvent(int linenumber, bool addBreakpoint);
 	

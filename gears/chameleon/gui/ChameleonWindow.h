@@ -167,56 +167,78 @@ private:
 
 	int* SelectIntVar(int variableName);
 
-	// debug log window
+	/*! Displays the output from wxLogDebug calls */
 	wxLogWindow* logWindow;
 
 	// main widgets
+	/*! Main editor notebook */
 	ChameleonNotebook* m_book;
+	/*! Notebook for the terminal and debug-related widgets */
 	ChameleonNotebook*  m_noteTerm;
+	/*! Pointer to the currently active editor */
 	ChameleonEditor* m_currentEd;
+	/*! Displays the files in the current project */
 	wxTreeCtrl* m_projectTree;
+	/*! The status bar */
 	wxStatusBar* m_statusBar;
-	wxPanel* panelEd;
+	//wxPanel* panelEd;
+	/*! Holds the editor/project group and the output notebook */
 	wxSplitterWindow*  m_splitEditorOutput;
+	/*! Holds the project tree and the editor notebook */
 	wxSplitterWindow* m_splitProjectEditor;
-	//wxTextCtrl* m_compilerTextbox;
-	//wxListCtrl* m_compilerList;
+	/*! Displays the output from the compiler */
 	CompilerOutputPanel* m_outputPanel;
+	/*! The main terminal widget container*/
 	wxTermContainer* m_termContainer;
+	/*! The debug I/O widget container*/
 	wxTermContainer* m_debugTermContainer;
+	/*! Displays watched variables */
 	VariableWatchPanel* m_watchPanel;
+	/*! The actual terminal widget */
 	wxSSH* m_terminal;
+	/*! The actual debug I/O widget */
 	wxSSH* m_debugTerminal;
-	//wxFrame* m_
 
 	// dialogs
 	OptionsDialog*  m_optionsDialog;
 	RemoteFileDialog* m_remoteFileDialog;
 	wxFindReplaceDialog *m_findReplace;
 
+	/* Responsible for writing the Chameleon settings to the INI file */
 	wxFileConfig* m_config;
-	wxImageList* m_tempImageList;
+
+	//wxImageList* m_tempImageList;
+	/*! Used to initiate UI updates */
 	wxTimer* m_updateTimer;
 
-	IntIntHashmap m_permNumMap;
+	//IntIntHashmap m_permNumMap;
+	/*! Maps a file extension to the image list index for that extension's icon */
 	StringIntHashmap m_extensionMappings;
-	WindowPointerArray m_infoTabTracker;
+	//WindowPointerArray m_infoTabTracker;
 
+	/*! Used to hold data for the find/replace dialogs */
 	wxFindReplaceData m_findData;
 
+	/*! The IDs for the file type folders in the project tree */
 	wxTreeItemId m_projectFileFolders[3];
+	/*! The last clicked item in the project tree */
 	wxTreeItemId m_clickedTreeItem;
+	/*! The file type that corresponds to the last clicked project folder */
 	FileFilterType m_projectSelectedFolderType;
 
 	Networking* m_network;
 	Compiler* m_compiler;
 	Options* m_options;
+	/*! The currently open multi-file project */
 	ProjectInfo* m_projMultiFiles;
 	Debugger* m_debugger;
 
 	int m_numPages;
+	/*! Tracks the active editor tab */
 	int m_currentPage;
+	/*! Tracks the number of new files created - used to identify <untitled> files */
 	int m_fileNum;
+	/*! The last clicked tab in the editor notebook */
 	int m_clickedTabNum;
 	int m_splitterPos;
 

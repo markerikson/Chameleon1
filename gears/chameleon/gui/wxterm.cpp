@@ -396,21 +396,6 @@ BEGIN_EVENT_TABLE(wxTerm, wxWindow)
   EVT_KILL_FOCUS				(wxTerm::OnLoseFocus)
 END_EVENT_TABLE()
 
-//////////////////////////////////////////////////////////////////////////////
-///  public constructor wxTerm
-///  <TODO: insert text here>
-///
-///  @param  parent wxWindow *       <TODO: insert text here>
-///  @param  id     wxWindowID       <TODO: insert text here>
-///  @param  pos    const wxPoint &  [=wxDefaultPosition] <TODO: insert text here>
-///  @param  width  int              [=80] <TODO: insert text here>
-///  @param  height int              [=24] <TODO: insert text here>
-///  @param  name   const wxString & [="wxTerm"] <TODO: insert text here>
-///
-///  @return void
-///
-///  @author Derry Bryson @date 04-22-2004
-//////////////////////////////////////////////////////////////////////////////
 wxTerm::wxTerm(wxWindow* parent, wxWindowID id,
                const wxPoint& pos,
                int width, int height,
@@ -498,14 +483,6 @@ wxTerm::wxTerm(wxWindow* parent, wxWindowID id,
   UpdateSize();
 }
 
-//////////////////////////////////////////////////////////////////////////////
-///  public virtual destructor ~wxTerm
-///  <TODO: insert text here>
-///
-///  @return void
-///
-///  @author Derry Bryson @date 04-22-2004
-//////////////////////////////////////////////////////////////////////////////
 wxTerm::~wxTerm()
 {
   if(m_bitmap)
@@ -517,9 +494,9 @@ wxTerm::~wxTerm()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public SetBoldStyle
-///  <TODO: insert text here>
+///  Sets the bold style for the terminal
 ///
-///  @param  boldStyle wxTerm::BOLDSTYLE & <TODO: insert text here>
+///  @param  boldStyle wxTerm::BOLDSTYLE & The style to be used
 ///
 ///  @return void
 ///
@@ -542,11 +519,11 @@ wxTerm::SetBoldStyle(wxTerm::BOLDSTYLE boldStyle)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public SetFont
-///  <TODO: insert text here>
+///  Sets the font for the terminal
 ///
-///  @param  font const wxFont & <TODO: insert text here>
+///  @param  font const wxFont & The font to be used
 ///
-///  @return bool <TODO: insert text here>
+///  @return bool Unused (returns true)
 ///
 ///  @author Derry Bryson @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -573,10 +550,10 @@ wxTerm::SetFont(const wxFont& font)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public GetDfVTColors
-///  <TODO: insert text here>
+///  Gets the colors for a VT100 terminal
 ///
-///  @param  colors wxColour [] <TODO: insert text here>
-///  @param  boldStyle wxTerm::BOLDSTYLE <TODO: insert text here>
+///  @param  colors wxColour [] The colors that need to be assigned to
+///  @param  boldStyle wxTerm::BOLDSTYLE The bold style used in the terminal
 ///
 ///  @return void
 ///
@@ -642,9 +619,9 @@ wxTerm::GetDefVTColors(wxColour colors[16], wxTerm::BOLDSTYLE boldStyle)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public GetVTColors
-///  <TODO: insert text here>
+///  Retrieves a copy of the VT100 colors
 ///
-///  @param  colors wxColour [] <TODO: insert text here>
+///  @param  colors wxColour [] An array to be filled with the VT100 colors
 ///
 ///  @return void
 ///
@@ -662,9 +639,9 @@ wxTerm::GetVTColors(wxColour colors[16])
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public SetVTColors
-///  <TODO: insert text here>
+///  Sets the VT100 colors
 ///
-///  @param  colors wxColour [] <TODO: insert text here>
+///  @param  colors wxColour [] The new colors to be used
 ///
 ///  @return void
 ///
@@ -692,9 +669,9 @@ wxTerm::SetVTColors(wxColour colors[16])
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public GetDefPCColors
-///  <TODO: insert text here>
+///  Gets the default PC colors
 ///
-///  @param  colors wxColour [] <TODO: insert text here>
+///  @param  colors wxColour [] Filled with the colors to be used
 ///
 ///  @return void
 ///
@@ -759,9 +736,9 @@ wxTerm::GetDefPCColors(wxColour colors[16])
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public GetPCColors
-///  <TODO: insert text here>
+///  Retrieves the PC colors
 ///
-///  @param  colors wxColour [] <TODO: insert text here>
+///  @param  colors wxColour [] Filled with the PC colors
 ///
 ///  @return void
 ///
@@ -779,9 +756,9 @@ wxTerm::GetPCColors(wxColour colors[16])
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public SetPCColors
-///  <TODO: insert text here>
+///  Sets the PC colors
 ///
-///  @param  colors wxColour [] <TODO: insert text here>
+///  @param  colors wxColour [] The new colors to be used
 ///
 ///  @return void
 ///
@@ -809,9 +786,9 @@ wxTerm::SetPCColors(wxColour colors[16])
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public SetCursorBlinkRate
-///  <TODO: insert text here>
+///  Sets how often the cursor blinks
 ///
-///  @param  rate int  <TODO: insert text here>
+///  @param  rate int  How many milliseconds between blinks
 ///
 ///  @return void
 ///
@@ -837,9 +814,9 @@ wxTerm::SetCursorBlinkRate(int rate)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  private OnChar
-///  <TODO: insert text here>
+///  Handles user keyboard input and begins processing the server's response
 ///
-///  @param  event wxKeyEvent & <TODO: insert text here>
+///  @param  event wxKeyEvent & The generated key event
 ///
 ///  @return void
 ///
@@ -852,6 +829,8 @@ wxTerm::OnChar(wxKeyEvent& event)
     event.Skip();
   else
   {
+	  // if the user is scrolled up and they typed something, scroll
+	  // all the way to the bottom
 	  if(GTerm::IsScrolledUp())
 	  {
 		  GTerm::Scroll(MAXHEIGHT, false);
@@ -941,9 +920,9 @@ wxTerm::OnChar(wxKeyEvent& event)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  private OnKeyDown
-///  <TODO: insert text here>
+///  Appears to be unused
 ///
-///  @param  event wxKeyEvent & <TODO: insert text here>
+///  @param  event wxKeyEvent & The generated key event
 ///
 ///  @return void
 ///
@@ -966,9 +945,9 @@ wxTerm::OnKeyDown(wxKeyEvent& event)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  private OnPaint
-///  <TODO: insert text here>
+///  Redraws the terminal widget
 ///
-///  @param  event wxPaintEvent & <TODO: insert text here>
+///  @param  event wxPaintEvent & The generated paint event
 ///
 ///  @return void
 ///
@@ -987,9 +966,9 @@ wxTerm::OnPaint(wxPaintEvent& WXUNUSED(event))
 
 //////////////////////////////////////////////////////////////////////////////
 ///  private OnLeftDown
-///  <TODO: insert text here>
+///  Begins selection of terminal text
 ///
-///  @param  event wxMouseEvent & <TODO: insert text here>
+///  @param  event wxMouseEvent & The generated mouse event
 ///
 ///  @return void
 ///
@@ -1009,9 +988,9 @@ wxTerm::OnLeftDown(wxMouseEvent& event)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  private OnLeftUp
-///  <TODO: insert text here>
+///  Ends text selection
 ///
-///  @param  event wxMouseEvent & <TODO: insert text here>
+///  @param  event wxMouseEvent & The generated mouse event
 ///
 ///  @return void
 ///
@@ -1032,9 +1011,9 @@ wxTerm::OnLeftUp(wxMouseEvent& event)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  private OnMouseMove
-///  <TODO: insert text here>
+///  Changes the selection if the mouse button is down
 ///
-///  @param  event wxMouseEvent & <TODO: insert text here>
+///  @param  event wxMouseEvent & The generated mouse event
 ///
 ///  @return void
 ///
@@ -1058,7 +1037,7 @@ wxTerm::OnMouseMove(wxMouseEvent& event)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public ClearSelection
-///  <TODO: insert text here>
+///  De-selects all selected text
 ///
 ///  @return void
 ///
@@ -1097,7 +1076,7 @@ wxTerm::ClearSelection()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  private MarkSelection
-///  <TODO: insert text here>
+///  Does _something_ as far as selecting text, but not really sure... used for SelectAll, I think
 ///
 ///  @return void
 ///
@@ -1172,9 +1151,9 @@ wxTerm::MarkSelection()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public HasSelection
-///  <TODO: insert text here>
+///  Checks if any text is selected
 ///
-///  @return bool <TODO: insert text here>
+///  @return bool Whether or not there's any text selected
 ///
 ///  @author Derry Bryson @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -1187,9 +1166,9 @@ wxTerm::HasSelection()
 wxString
 //////////////////////////////////////////////////////////////////////////////
 ///  public GetSelection
-///  <TODO: insert text here>
+///  Returns the selected text
 ///
-///  @return wxString <TODO: insert text here>
+///  @return wxString The selected text
 ///
 ///  @author Derry Bryson @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -1240,7 +1219,7 @@ wxTerm::GetSelection()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public SelectAll
-///  <TODO: insert text here>
+///  Selects the whole terminal
 ///
 ///  @return void
 ///
@@ -1261,15 +1240,16 @@ wxTerm::SelectAll()
 */
 //////////////////////////////////////////////////////////////////////////////
 ///  public virtual DrawText
-///  <TODO: insert text here>
+///  Responsible for actually drawing the terminal text on the widget.  This virtual
+///  function is called from GTerm::update_changes.  
 ///
-///  @param  fg_color int             <TODO: insert text here>
-///  @param  bg_color int             <TODO: insert text here>
-///  @param  flags    int             <TODO: insert text here>
-///  @param  x        int             <TODO: insert text here>
-///  @param  y        int             <TODO: insert text here>
-///  @param  len      int             <TODO: insert text here>
-///  @param  string   unsigned char * <TODO: insert text here>
+///  @param  fg_color int             The index of the foreground color
+///  @param  bg_color int             The index of the background color
+///  @param  flags    int             Modifiers for drawing the text
+///  @param  x        int             The x position in character cells
+///  @param  y        int             The y position in character cells
+///  @param  len      int             The number of characters to draw
+///  @param  string   unsigned char * The characters to draw
 ///
 ///  @return void
 ///
@@ -1349,7 +1329,7 @@ wxTerm::DrawText(int fg_color, int bg_color, int flags,
 
 //////////////////////////////////////////////////////////////////////////////
 ///  private DoDrawCursor
-///  <TODO: insert text here>
+///  Does the actual work of drawing the cursor
 ///
 ///  @param  fg_color int            <TODO: insert text here>
 ///  @param  bg_color int            <TODO: insert text here>
@@ -1430,14 +1410,15 @@ wxTerm::DoDrawCursor(int fg_color, int bg_color, int flags,
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public virtual DrawCursor
-///  <TODO: insert text here>
+///  Draws the cursor on the terminal widget.  This virtual function is called
+///  from GTerm::update_changes.
 ///
-///  @param  fg_color int            <TODO: insert text here>
-///  @param  bg_color int            <TODO: insert text here>
-///  @param  flags    int            <TODO: insert text here>
-///  @param  x        int            <TODO: insert text here>
-///  @param  y        int            <TODO: insert text here>
-///  @param  c        unsigned char  <TODO: insert text here>
+///  @param  fg_color int            The index of the foreground color
+///  @param  bg_color int            The index of the background color
+///  @param  flags    int            Modifiers for drawing the cursor
+///  @param  x        int            The x position in character cells
+///  @param  y        int            The y position in character cells
+///  @param  c        unsigned char  The character that underlies the cursor
 ///
 ///  @return void
 ///
@@ -1468,9 +1449,9 @@ wxTerm::DrawCursor(int fg_color, int bg_color, int flags,
 
 //////////////////////////////////////////////////////////////////////////////
 ///  private OnTimer
-///  <TODO: insert text here>
+///  Blinks the cursor each time it goes off
 ///
-///  @param  event wxTimerEvent & <TODO: insert text here>
+///  @param  event wxTimerEvent & The generated timer event
 ///
 ///  @return void
 ///
@@ -1518,14 +1499,15 @@ wxTerm::OnTimer(wxTimerEvent& WXUNUSED(event))
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public virtual MoveChars
-///  <TODO: insert text here>
+///  Moves characters on the screen.  This virtual function is called from
+///  GTerm::update_changes.
 ///
-///  @param  sx   int  <TODO: insert text here>
-///  @param  sy   int  <TODO: insert text here>
-///  @param  dx   int  <TODO: insert text here>
-///  @param  dy   int  <TODO: insert text here>
-///  @param  w    int  <TODO: insert text here>
-///  @param  h    int  <TODO: insert text here>
+///  @param  sx   int  The starting x position, in character cells
+///  @param  sy   int  The starting y position, in character cells
+///  @param  dx   int  The number of character cells to shift in the x direction
+///  @param  dy   int  The number of character cells to shift in the y direction
+///  @param  w    int  The width in characters of the area to be moved
+///  @param  h    int  The height in characters of the area to be moved
 ///
 ///  @return void
 ///
@@ -1550,13 +1532,14 @@ wxTerm::MoveChars(int sx, int sy, int dx, int dy, int w, int h)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public virtual ClearChars
-///  <TODO: insert text here>
+///  Clears a section of characters from the screen.  This virtual function
+///  is called from GTerm::update_changes.
 ///
-///  @param  bg_color int  <TODO: insert text here>
-///  @param  x        int  <TODO: insert text here>
-///  @param  y        int  <TODO: insert text here>
-///  @param  w        int  <TODO: insert text here>
-///  @param  h        int  <TODO: insert text here>
+///  @param  bg_color int  The background color to replace the characters with
+///  @param  x        int  The starting x position, in characters
+///  @param  y        int  The starting y position, in characters
+///  @param  w        int  The width of the area to be cleared, in characters
+///  @param  h        int  The height of the area to be cleared, in characters
 ///
 ///  @return void
 ///
@@ -1592,9 +1575,9 @@ wxTerm::ClearChars(int bg_color, int x, int y, int w, int h)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public virtual ModeChange
-///  <TODO: insert text here>
+///  Changes the drawing mode between VT100 and PC
 ///
-///  @param  state int  <TODO: insert text here>
+///  @param  state int  The new state
 ///
 ///  @return void
 ///
@@ -1620,7 +1603,7 @@ wxTerm::ModeChange(int state)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public virtual Bell
-///  <TODO: insert text here>
+///  Rings the system bell
 ///
 ///  @return void
 ///
@@ -1638,7 +1621,7 @@ wxTerm::Bell()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public UpdateSize
-///  <TODO: insert text here>
+///  Updates the terminal's size in characters after it has been resized on the screen.
 ///
 ///  @return void
 ///
@@ -1646,6 +1629,7 @@ wxTerm::Bell()
 //////////////////////////////////////////////////////////////////////////////
 void wxTerm::UpdateSize()
 {
+	// prevent any nasty recursion
 	if(m_inUpdateSize)
 	{		
 		return;
@@ -1679,6 +1663,7 @@ void wxTerm::UpdateSize()
 		{
 			m_charsInLine = numCharsInLine;
 			m_linesDisplayed = numLinesShown;
+			// tell the GTerm core to resize itself
 			ResizeTerminal(numCharsInLine, numLinesShown);	
 		}
 
@@ -1699,10 +1684,10 @@ void wxTerm::UpdateSize()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public virtual ResizeTerminal
-///  <TODO: insert text here>
+///  <Resizes the terminal to a given number of characters high and wide
 ///
-///  @param  w    int  <TODO: insert text here>
-///  @param  h    int  <TODO: insert text here>
+///  @param  w    int  The new number of characters wide
+///  @param  h    int  The new number of characters high
 ///
 ///  @return void
 ///
@@ -1754,7 +1739,7 @@ wxTerm::ResizeTerminal(int width, int height)
   /*
   **  Set terminal size
   */
-  GTerm/*lnet*/::ResizeTerminal(width, height);
+  GTerm::ResizeTerminal(width, height);
   m_width = width;
   m_height = height;
 
@@ -1771,10 +1756,10 @@ wxTerm::ResizeTerminal(int width, int height)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public virtual RequestSizeChange
-///  <TODO: insert text here>
+///  A virtual function, used by GTerm to update the size
 ///
-///  @param  w    int  <TODO: insert text here>
-///  @param  h    int  <TODO: insert text here>
+///  @param  w    int  The new width in characters
+///  @param  h    int  The new height in characters
 ///
 ///  @return void
 ///
@@ -1788,10 +1773,10 @@ wxTerm::RequestSizeChange(int w, int h)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public virtual ProcessInput
-///  <TODO: insert text here>
+///  Processes text received from the server
 ///
-///  @param  len  int             <TODO: insert text here>
-///  @param  data unsigned char * <TODO: insert text here>
+///  @param  len  int             The number of characters received
+///  @param  data unsigned char * The received text
 ///
 ///  @return void
 ///
@@ -1805,17 +1790,17 @@ wxTerm::ProcessInput(int len, unsigned char *data)
 
   ClearSelection();
   m_curDC = &dc;
-  GTerm/*lnet*/::ProcessInput(len, data);
+  GTerm::ProcessInput(len, data);
   m_curDC = 0;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 ///  private MapKeyCode
-///  <TODO: insert text here>
+///  Does some sort of character lookup
 ///
-///  @param  keyCode int  <TODO: insert text here>
+///  @param  keyCode int  The keycode to check
 ///
-///  @return int     <TODO: insert text here>
+///  @return int     The returned keycode
 ///
 ///  @author Derry Bryson @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -1833,9 +1818,9 @@ wxTerm::MapKeyCode(int keyCode)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public virtual SelectPrinter
-///  <TODO: insert text here>
+///  Not really sure... certainly not used in anything Chameleon needs
 ///
-///  @param  PrinterName char * <TODO: insert text here>
+///  @param  PrinterName char * The text of the printer name
 ///
 ///  @return void
 ///
@@ -1873,10 +1858,10 @@ wxTerm::SelectPrinter(char *PrinterName)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public virtual PrintChars
-///  <TODO: insert text here>
+///  Prints stuff (to a file?), apparently
 ///
-///  @param  len  int             <TODO: insert text here>
-///  @param  data unsigned char * <TODO: insert text here>
+///  @param  len  int             The number of characters
+///  @param  data unsigned char * The text
 ///
 ///  @return void
 ///
@@ -1923,9 +1908,9 @@ wxTerm::PrintChars(int len, unsigned char *data)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  private OnActivate
-///  <TODO: insert text here>
+///  Sets the terminal's active state - determines whether or not to draw the cursor
 ///
-///  @param  event wxActivateEvent & <TODO: insert text here>
+///  @param  event wxActivateEvent & The generated activate event
 ///
 ///  @return void
 ///
@@ -1938,9 +1923,9 @@ void wxTerm::OnActivate(wxActivateEvent &event)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  private OnGainFocus
-///  <TODO: insert text here>
+///  Enables the cursor
 ///
-///  @param  event wxFocusEvent & <TODO: insert text here>
+///  @param  event wxFocusEvent & The generated focuse event
 ///
 ///  @return void
 ///
@@ -1955,9 +1940,9 @@ void wxTerm::OnGainFocus(wxFocusEvent &event)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  private OnLoseFocus
-///  <TODO: insert text here>
+///  Disables the cursor
 ///
-///  @param  event wxFocusEvent & <TODO: insert text here>
+///  @param  event wxFocusEvent & The generated focus event
 ///
 ///  @return void
 ///
@@ -1972,10 +1957,10 @@ void wxTerm::OnLoseFocus(wxFocusEvent &event)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public ScrollTerminal
-///  <TODO: insert text here>
+///  Scrolls the terminal text
 ///
-///  @param  numLines int   <TODO: insert text here>
-///  @param  scrollUp bool  [=true] <TODO: insert text here>
+///  @param  numLines int   The number of lines to scroll
+///  @param  scrollUp bool  [=true] True to scroll up, false to scroll down
 ///
 ///  @return void
 ///
@@ -1990,9 +1975,9 @@ void wxTerm::ScrollTerminal(int numLines, bool scrollUp /* = true */)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  private OnSize
-///  <TODO: insert text here>
+///  Lets the terminal resize the text whenever the window is resized
 ///
-///  @param  event wxSizeEvent & <TODO: insert text here>
+///  @param  event wxSizeEvent & The generated size event
 ///
 ///  @return void
 ///

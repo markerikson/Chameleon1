@@ -8,6 +8,7 @@
 
 #include "stc.h"
 #include "editor.h"
+#include "../perms/p.h"
 #include "../gui/ChameleonWindow.h"
 #include "../gui/ChameleonNotebook.h"
 #include "../common/datastructures.h"
@@ -29,7 +30,7 @@ BEGIN_EVENT_TABLE(ChameleonEditor, wxStyledTextCtrl)
 	EVT_MENU			(ID_DEBUG_ADD_BREAKPOINT, ChameleonEditor::OnAddBreakpoint)
 	EVT_MENU			(ID_DEBUG_REMOVE_BREAKPOINT, ChameleonEditor::OnRemoveBreakpoint)
 	EVT_MENU			(ID_DEBUG_CLEAR_ALL_BREAKPOINTS, ChameleonEditor::OnClearBreakpoints)
-	EVT_COMPILER_END	(ChameleonEditor::OnCompilerEnded)
+	//EVT_COMPILER_END	(ChameleonEditor::OnCompilerEnded)
 	EVT_MENU			(ID_DEBUG_RUNTOCURSOR, ChameleonEditor::OnRunToCursor)
 END_EVENT_TABLE()
 
@@ -45,15 +46,10 @@ int CompareInts(int n1, int n2)
 ///  public constructor ChameleonEditor
 ///  <TODO: insert text here>
 ///
-///  @param  mframe  ChameleonWindow * <TODO: insert text here>
-///  @param  options Options *         <TODO: insert text here>
-///  @param  project ProjectInfo *     <TODO: insert text here>
-///  @param  parent  wxWindow *        <TODO: insert text here>
-///  @param  id      wxWindowID        <TODO: insert text here>
-///  @param  pos     const wxPoint &   [=wxDefaultPosition] <TODO: insert text here>
-///  @param  size    const wxSize &    [=wxDefaultSize] <TODO: insert text here>
-///  @param  style   long              [=0] <TODO: insert text here>
-///  @param  name    const wxString &  [=wxSTCNameStr] <TODO: insert text here>
+///  @param  mframe  ChameleonWindow * A pointer to the main application frame
+///  @param  options Options *         A pointer to the main Options object
+///  @param  project ProjectInfo *     A pointer to this editor's project
+///  @param  parent  wxWindow *        The editor's parent window
 ///
 ///  @return void
 ///
@@ -181,7 +177,7 @@ ChameleonEditor::ChameleonEditor( ChameleonWindow *mframe,
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public destructor ~ChameleonEditor
-///  <TODO: insert text here>
+///  Handles the pseudo-reference counting for the editor's project
 ///
 ///  @return void
 ///
@@ -203,9 +199,9 @@ ChameleonEditor::~ChameleonEditor()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public SaveFileLocal
-///  <TODO: insert text here>
+///  Saves the editor's contents with the current filename
 ///
-///  @return bool <TODO: insert text here>
+///  @return bool Whether or not the save succeeded
 ///
 ///  @author Mark Erikson @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -216,11 +212,11 @@ bool ChameleonEditor::SaveFileLocal()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public SaveFile
-///  <TODO: insert text here>
+///  Saves the editor's contents with the given filename
 ///
-///  @param  filename const wxString & <TODO: insert text here>
+///  @param  filename const wxString & The filename to save to
 ///
-///  @return bool     <TODO: insert text here>
+///  @return bool     Whether or not the save succeeded
 ///
 ///  @author Mark Erikson @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -260,11 +256,13 @@ bool ChameleonEditor::SaveFile( const wxString & filename )
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public LoadFileText
-///  <TODO: insert text here>
+///  Loads a file from the given string
 ///
-///  @param  fileContents wxString  <TODO: insert text here>
+///  @param  fileContents wxString  The text of the file
 ///
-///  @return bool         <TODO: insert text here>
+///  @return bool         Whether or not the load succeeded
+///
+///  @remarks  This isn't actually used right now... probably ought to be cleaned up
 ///
 ///  @author Mark Erikson @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -337,9 +335,9 @@ bool ChameleonEditor::LoadFileText(wxString fileContents)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public Modified
-///  <TODO: insert text here>
+///  Checks whether or not the editor has been modified
 ///
-///  @return bool <TODO: insert text here>
+///  @return bool Whether or not the editor has been modified
 ///
 ///  @author Mark Erikson @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -356,12 +354,11 @@ bool ChameleonEditor::Modified ()
     return isModified; 
 }
 
-// called every time a character is entered.  currently not actually doing much.
 //////////////////////////////////////////////////////////////////////////////
 ///  public OnChar
-///  <TODO: insert text here>
+///  Handles auto-indentation and such whenever the user enters a character
 ///
-///  @param  event wxStyledTextEvent & <TODO: insert text here>
+///  @param  event wxStyledTextEvent & The generated event
 ///
 ///  @return void
 ///
@@ -410,7 +407,7 @@ void ChameleonEditor::OnChar( wxStyledTextEvent &event )
 
 	//if (((eolMode == CRLF || eolMode == LF) && chr == '\n')
 	//	|| (eolMode == CR && chr == '\r'))
-	if(chr == '\n' && m_mainFrame->IsEnabled(PERM_AUTOINDENT))
+	if(chr == '\n' && m_options->GetPerms()->isEnabled(PERM_AUTOINDENT))
 	{
 		int previousLineInd = 0;
 
@@ -440,9 +437,9 @@ void ChameleonEditor::OnChar( wxStyledTextEvent &event )
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public HasBeenSaved
-///  <TODO: insert text here>
+///  Checks if the editor has been saved
 ///
-///  @return bool <TODO: insert text here>
+///  @return bool Whether or not the editor has been saved
 ///
 ///  @author Mark Erikson @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -466,15 +463,18 @@ void ChameleonEditor::SetLocalFileNameAndPath(wxString path, wxString name)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public UpdateSyntaxHighlighting
-///  <TODO: insert text here>
+///  Sets up the editor's syntax highlighting
 ///
 ///  @return void
+///
+///  @remarks Currently only called on creation.  If syntax highlighting customization was
+///  @remarks allowed, this is where the user's choices would be used
 ///
 ///  @author Mark Erikson @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
 void ChameleonEditor::UpdateSyntaxHighlighting()
 {
-	if( m_mainFrame->IsEnabled(PERM_SYNTAXHIGHLIGHT) )
+	if( m_options->GetPerms()->isEnabled(PERM_SYNTAXHIGHLIGHT) )
 	{
 		this->SetLexer(wxSTC_LEX_CPP);
 
@@ -496,13 +496,12 @@ void ChameleonEditor::UpdateSyntaxHighlighting()
 	}
 }
 
-//void ChameleonEditor::SetFileNameAndPath(wxString path, wxString name, bool fileIsRemote)
 //////////////////////////////////////////////////////////////////////////////
 ///  public SetFilename
-///  <TODO: insert text here>
+///  Sets the filename for the editor
 ///
-///  @param  filename     wxFileName  <TODO: insert text here>
-///  @param  fileIsRemote bool        <TODO: insert text here>
+///  @param  filename     wxFileName  The filename for this editor
+///  @param  fileIsRemote bool        Whether this file is remote or local
 ///
 ///  @return void
 ///
@@ -549,6 +548,8 @@ void ChameleonEditor::SetFilename(wxFileName filename, bool fileIsRemote)
 			}
 			m_project->AddFileToProject(newFileName, newFilterType);
 		}		
+
+		m_project->SetRemote(fileIsRemote);
 	}	
 
 	m_fileNameAndPath = filename;
@@ -556,9 +557,9 @@ void ChameleonEditor::SetFilename(wxFileName filename, bool fileIsRemote)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public GetFileNameAndPath
-///  <TODO: insert text here>
+///  Gets the full pathname of this file as a string
 ///
-///  @return wxString <TODO: insert text here>
+///  @return wxString The full pathname of this file
 ///
 ///  @author Mark Erikson @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -570,9 +571,9 @@ wxString ChameleonEditor::GetFileNameAndPath()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public GetFilenameString
-///  <TODO: insert text here>
+///  Gets the name of this file with no path
 ///
-///  @return wxString <TODO: insert text here>
+///  @return wxString The name of this file
 ///
 ///  @author Mark Erikson @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -583,9 +584,9 @@ wxString ChameleonEditor::GetFilenameString()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public GetFileName
-///  <TODO: insert text here>
+///  Gets the wxFileName for this file
 ///
-///  @return wxFileName <TODO: insert text here>
+///  @return wxFileName The editor's filename
 ///
 ///  @author Mark Erikson @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -595,9 +596,9 @@ wxFileName ChameleonEditor::GetFileName() {
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public GetFilePath
-///  <TODO: insert text here>
+///  Gets the path for this file
 ///
-///  @return wxString <TODO: insert text here>
+///  @return wxString The path for this file
 ///
 ///  @author Mark Erikson @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -608,7 +609,7 @@ wxString ChameleonEditor::GetFilePath()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public ResetEditor
-///  <TODO: insert text here>
+///  Clears out the editor's contents and resets it completely
 ///
 ///  @return void
 ///
@@ -639,9 +640,9 @@ void ChameleonEditor::ResetEditor()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public OnRightClick
-///  <TODO: insert text here>
+///  Handles a right-click in the editor
 ///
-///  @param  event wxMouseEvent & <TODO: insert text here>
+///  @param  event wxMouseEvent & The generated mouse event
 ///
 ///  @return void
 ///
@@ -682,9 +683,9 @@ void ChameleonEditor::OnRightClick(wxMouseEvent &event)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  private OnEditorModified
-///  <TODO: insert text here>
+///  Updates the editor's project when the editor is modified
 ///
-///  @param  event wxStyledTextEvent & <TODO: insert text here>
+///  @param  event wxStyledTextEvent & The generated editor event
 ///
 ///  @return void
 ///
@@ -697,9 +698,9 @@ void ChameleonEditor::OnEditorModified(wxStyledTextEvent &event)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  private OnAddBreakpoint
-///  <TODO: insert text here>
+///  Adds a breakpoint to this file
 ///
-///  @param  event wxCommandEvent & <TODO: insert text here>
+///  @param  event wxCommandEvent & The generated menu event
 ///
 ///  @return void
 ///
@@ -718,11 +719,15 @@ void ChameleonEditor::OnAddBreakpoint(wxCommandEvent &event)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  private OnRemoveBreakpoint
-///  <TODO: insert text here>
+///  Removes a breakpoint from this file
 ///
-///  @param  event wxCommandEvent & <TODO: insert text here>
+///  @param  event wxCommandEvent & The generated menu event
 ///
 ///  @return void
+///
+///  @remarks This doesn't clean out the marker handle that STC gives us, 
+///  @remarks since there's no way to check what marker handles are on a given line.
+///  @remarks Orphaned marker handles are cleaned up in GetBreakpoints.
 ///
 ///  @author Mark Erikson @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -739,9 +744,9 @@ void ChameleonEditor::OnRemoveBreakpoint(wxCommandEvent &event)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  private OnClearBreakpoints
-///  <TODO: insert text here>
+///  Clears all breakpoints from this file
 ///
-///  @param  event wxCommandEvent & <TODO: insert text here>
+///  @param  event wxCommandEvent & The generated menu event
 ///
 ///  @return void
 ///
@@ -764,9 +769,9 @@ void ChameleonEditor::OnClearBreakpoints(wxCommandEvent &event)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public GetBreakpoints
-///  <TODO: insert text here>
+///  Gets a list of all breakpoint line numbers.  Also clears out any invalid (removed) breakpoint IDs.
 ///
-///  @return wxArrayInt <TODO: insert text here>
+///  @return wxArrayInt The line numbers for all the breakpoints in this file
 ///
 ///  @author Mark Erikson @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -803,9 +808,9 @@ wxArrayInt ChameleonEditor::GetBreakpoints()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public HasBeenCompiled
-///  <TODO: insert text here>
+///  Returns the compiled status for this editor's project
 ///
-///  @return bool <TODO: insert text here>
+///  @return bool Whether or not the editor's project has been compiled
 ///
 ///  @author Mark Erikson @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -816,7 +821,7 @@ bool ChameleonEditor::HasBeenCompiled()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public SetCompiled
-///  <TODO: insert text here>
+///  Set this editor's project's compiled status
 ///
 ///  @return void
 ///
@@ -827,6 +832,7 @@ void ChameleonEditor::SetCompiled()
 	m_project->SetCompiled(true);
 }
 
+/*
 //////////////////////////////////////////////////////////////////////////////
 ///  private OnCompilerEnded
 ///  <TODO: insert text here>
@@ -844,13 +850,14 @@ void ChameleonEditor::OnCompilerEnded(CompilerEvent &event)
 		m_executableFilename = event.GetFile();
 	}
 }
+*/
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public FocusOnLine
-///  <TODO: insert text here>
+///  Moves the cursor to the given line number, optionally showing a highlight marker
 ///
-///  @param  linenumber int   <TODO: insert text here>
-///  @param  showMarker bool  [=true] <TODO: insert text here>
+///  @param  linenumber int   The line to go to
+///  @param  showMarker bool  [=true] Whether or not to mark the line
 ///
 ///  @return void
 ///
@@ -867,10 +874,10 @@ void ChameleonEditor::FocusOnLine(int linenumber, bool showMarker)
 }
 //////////////////////////////////////////////////////////////////////////////
 ///  private CreateBreakpointEvent
-///  <TODO: insert text here>
+///  Sets up a debug event when a breakpoint is added or deleted
 ///
-///  @param  linenumber    int   <TODO: insert text here>
-///  @param  addBreakpoint bool  <TODO: insert text here>
+///  @param  linenumber    int   The line number of the toggled breakpoint
+///  @param  addBreakpoint bool  Whether the breakpoint is being added or deleted
 ///
 ///  @return void
 ///
@@ -895,9 +902,9 @@ void ChameleonEditor::CreateBreakpointEvent(int linenumber, bool addBreakpoint)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public SetProject
-///  <TODO: insert text here>
+///  Sets the project for this editor
 ///
-///  @param  project ProjectInfo * <TODO: insert text here>
+///  @param  project ProjectInfo * The new project
 ///
 ///  @return void
 ///
@@ -910,11 +917,11 @@ void ChameleonEditor::SetProject(ProjectInfo* project)
 		delete m_project;
 	}
 
-	// TODO I've got some not-quite-formed thoughts that I need to set the project's exec name here...
 	m_project = project;
 	m_project->AddEditor(this);
 }
 
+/*
 //////////////////////////////////////////////////////////////////////////////
 ///  public SetExecutableFilename
 ///  <TODO: insert text here>
@@ -929,17 +936,13 @@ void ChameleonEditor::SetExecutableFilename(wxFileName filename)
 {
 	m_project->SetExecutableName(filename);
 }
-
-FileFilterType ChameleonEditor::GetFileType()
-{
-	return FILE_ALLSOURCETYPES;
-}
+*/
 
 //////////////////////////////////////////////////////////////////////////////
 ///  private OnRunToCursor
-///  <TODO: insert text here>
+///  Creates a "one-shot" breakpoint and tells the debugger to run to that line
 ///
-///  @param  event wxCommandEvent & <TODO: insert text here>
+///  @param  event wxCommandEvent & The generated menu event
 ///
 ///  @return void
 ///

@@ -93,6 +93,8 @@ public:
 
 	bool IsAdvanced() { return m_isAdvanced; }
 
+	void Stuff(wxWindow* parent, ChameleonWindow* mainFrame, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style );
+
 	void ClearOutput();
 	void SetAdvanced(bool advanced);
 

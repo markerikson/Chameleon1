@@ -10,16 +10,6 @@
 #define new DEBUG_NEW
 #endif
 
-//////////////////////////////////////////////////////////////////////////////
-///  public constructor ProjectInfo
-///  <TODO: insert text here>
-///
-///  @param  singleFile bool  [=1] <TODO: insert text here>
-///
-///  @return void
-///
-///  @author Mark Erikson @date 04-23-2004
-//////////////////////////////////////////////////////////////////////////////
 ProjectInfo::ProjectInfo(bool singleFile /* = true */)
 {
 	m_isSingleFile = singleFile;
@@ -48,11 +38,11 @@ ProjectInfo::ProjectInfo(bool singleFile /* = true */)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public FileExistsInProject
-///  <TODO: insert text here>
+///  Checks if a filename is currently in the project
 ///
-///  @param  filename wxString  <TODO: insert text here>
+///  @param  filename wxString  The filename to look for
 ///
-///  @return bool     <TODO: insert text here>
+///  @return bool     Whether or not the file is in the project
 ///
 ///  @author Mark Erikson @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -78,11 +68,11 @@ bool ProjectInfo::FileExistsInProject(wxString filename)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  private SelectStringArray
-///  <TODO: insert text here>
+///  An internal utility function which returns a pointer to a designated wxArrayString
 ///
-///  @param  filterType      FileFilterType  <TODO: insert text here>
+///  @param  filterType      FileFilterType  Denotes which wxArrayString to return
 ///
-///  @return wxArrayString * <TODO: insert text here>
+///  @return wxArrayString * The pointer to the selected wxArrayString
 ///
 ///  @author Mark Erikson @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -104,11 +94,11 @@ wxArrayString* ProjectInfo::SelectStringArray(FileFilterType filterType)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  private SelectBoolArray
-///  <TODO: insert text here>
+///  An internal utility function which returns a pointer to the designated BoolArray
 ///
-///  @param  filterType  FileFilterType  <TODO: insert text here>
+///  @param  filterType  FileFilterType  Denotes which BoolArray to return
 ///
-///  @return BoolArray * <TODO: insert text here>
+///  @return BoolArray * A pointer to the selected BoolArray
 ///
 ///  @author Mark Erikson @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -129,10 +119,10 @@ BoolArray* ProjectInfo::SelectBoolArray(FileFilterType filterType)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public AddFileToProject
-///  <TODO: insert text here>
+///  Adds a filename to the project
 ///
-///  @param  filename wxString        <TODO: insert text here>
-///  @param  fileType FileFilterType  <TODO: insert text here>
+///  @param  filename wxString        The name of the file to add
+///  @param  fileType FileFilterType  The type of the file to add
 ///
 ///  @return void
 ///
@@ -160,10 +150,10 @@ void ProjectInfo::AddFileToProject(wxString filename, FileFilterType filterType)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public RemoveFileFromProject
-///  <TODO: insert text here>
+///  Removes a file from the project
 ///
-///  @param  filename wxString        <TODO: insert text here>
-///  @param  fileType FileFilterType  <TODO: insert text here>
+///  @param  filename wxString        The name of the file to remove
+///  @param  fileType FileFilterType  The type of the file to remove
 ///
 ///  @return void
 ///
@@ -182,12 +172,12 @@ void ProjectInfo::RemoveFileFromProject(wxString filename, FileFilterType filter
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public FileIncludedInBuild
-///  <TODO: insert text here>
+///  Checks whether or not a given file is to be included when compiling
 ///
-///  @param  filename   wxString        <TODO: insert text here>
-///  @param  filterType FileFilterType  <TODO: insert text here>
+///  @param  filename   wxString        The name of the file to check
+///  @param  filterType FileFilterType  The type of the file to check
 ///
-///  @return bool       <TODO: insert text here>
+///  @return bool      Whether or not the file should be included
 ///
 ///  @author Mark Erikson @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -202,11 +192,11 @@ bool ProjectInfo::FileIncludedInBuild(wxString filename, FileFilterType filterTy
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public SetFileBuildInclusion
-///  <TODO: insert text here>
+///  Sets whether or not a given file should be included in compiling
 ///
-///  @param  filename   wxString        <TODO: insert text here>
-///  @param  filterType FileFilterType  <TODO: insert text here>
-///  @param  enable     bool            <TODO: insert text here>
+///  @param  filename   wxString        The name of the file to set
+///  @param  filterType FileFilterType  The type of the file to set
+///  @param  enable     bool            Whether or not the file should be included
 ///
 ///  @return void
 ///
@@ -223,9 +213,9 @@ void ProjectInfo::SetFileBuildInclusion(wxString filename, FileFilterType filter
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public GetSourcesToBuild
-///  <TODO: insert text here>
+///  Returns all files that are not excluded from the build
 ///
-///  @return wxArrayString <TODO: insert text here>
+///  @return wxArrayString The list of files to be compiled
 ///
 ///  @author Mark Erikson @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -247,9 +237,9 @@ wxArrayString ProjectInfo::GetSourcesToBuild()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public AddEditor
-///  <TODO: insert text here>
+///  Adds an editor to the list of open editors for this project
 ///
-///  @param  edit ChameleonEditor * <TODO: insert text here>
+///  @param  edit ChameleonEditor * An editor that contains a file from this project
 ///
 ///  @return void
 ///
@@ -262,9 +252,9 @@ void ProjectInfo::AddEditor(ChameleonEditor* edit)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public RemoveEditor
-///  <TODO: insert text here>
+///  Removes an editor from the list of open editors for this project
 ///
-///  @param  edit ChameleonEditor * <TODO: insert text here>
+///  @param  edit ChameleonEditor * An editor that contained a file from this project
 ///
 ///  @return void
 ///
@@ -277,9 +267,9 @@ void ProjectInfo::RemoveEditor(ChameleonEditor* edit)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  private MakeReadOnly
-///  <TODO: insert text here>
+///  Sets the read-only status of all editors from this project
 ///
-///  @param  makeReadOnly bool  <TODO: insert text here>
+///  @param  makeReadOnly bool  The new read-only status for this project's editors
 ///
 ///  @return void
 ///
@@ -297,9 +287,9 @@ void ProjectInfo::MakeReadOnly(bool makeReadOnly)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public SetBeingCompiled
-///  <TODO: insert text here>
+///  Sets the compiling status for this project
 ///
-///  @param  compiling bool  <TODO: insert text here>
+///  @param  compiling bool  Whether or not this project is being compiled
 ///
 ///  @return void
 ///

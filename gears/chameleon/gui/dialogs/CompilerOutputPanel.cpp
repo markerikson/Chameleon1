@@ -63,14 +63,6 @@ CompilerOutputPanel::CompilerOutputPanel( )
 {
 }
 
-//////////////////////////////////////////////////////////////////////////////
-///  public constructor CompilerOutputPanel
-///  <TODO: insert text here>
-///
-///  @return void
-///
-///  @author Mark Erikson @date 04-22-2004
-//////////////////////////////////////////////////////////////////////////////
 CompilerOutputPanel::CompilerOutputPanel( wxWindow* parent, ChameleonWindow* mainFrame, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
 {
     Create(parent, id, caption, pos, size, style);
@@ -82,7 +74,6 @@ CompilerOutputPanel::CompilerOutputPanel( wxWindow* parent, ChameleonWindow* mai
 	m_textbox->SetFont(monospacedFont);
 	m_grid->SetDefaultCellFont(monospacedFont);
 	m_grid->SetEditable(false);	
-	//m_grid->EnableGridLines(false);
 	m_grid->SetGridLineColour(wxColour("black"));
 	m_grid->SetColumnWidth(0, 200);
 	m_grid->SetColumnWidth(1, 60);
@@ -90,6 +81,7 @@ CompilerOutputPanel::CompilerOutputPanel( wxWindow* parent, ChameleonWindow* mai
 	m_grid->SetColLabelValue(0, "Filename");
 	m_grid->SetColLabelValue(1, "Line");
 	m_grid->SetColLabelValue(2, "Message");
+	// turn off the grid selection cursor
 	m_grid->SetCellHighlightPenWidth(0);
 
 	m_mainFrame = mainFrame;
@@ -183,9 +175,9 @@ void CompilerOutputPanel::ClearOutput()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public SetAdvanced
-///  <TODO: insert text here>
+///  Enables/disables the textbox and grid as appropriate
 ///
-///  @param  advanced bool  <TODO: insert text here>
+///  @param  advanced bool  Whether to display advanced or simple output
 ///
 ///  @return void
 ///
@@ -215,9 +207,9 @@ void CompilerOutputPanel::SetAdvanced(bool advanced)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public OnCompilerStart
-///  <TODO: insert text here>
+///  Displays output from a "compile started" event
 ///
-///  @param  event CompilerEvent & <TODO: insert text here>
+///  @param  event CompilerEvent & The generated compiler event
 ///
 ///  @return void
 ///
@@ -255,9 +247,9 @@ void CompilerOutputPanel::OnCompilerStart(CompilerEvent& event)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public OnCompilerProblem
-///  <TODO: insert text here>
+///  Displays output from a compiler warning/error event
 ///
-///  @param  event CompilerEvent & <TODO: insert text here>
+///  @param  event CompilerEvent & The generated compiler event
 ///
 ///  @return void
 ///
@@ -315,9 +307,9 @@ void CompilerOutputPanel::OnCompilerProblem(CompilerEvent &event)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public OnCompilerEnd
-///  <TODO: insert text here>
+///  Displays output from a "compile ended" event
 ///
-///  @param  event CompilerEvent & <TODO: insert text here>
+///  @param  event CompilerEvent & The generated compiler event
 ///
 ///  @return void
 ///
@@ -365,9 +357,9 @@ void CompilerOutputPanel::OnCompilerEnd(CompilerEvent &event)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public OnGridDoubleClick
-///  <TODO: insert text here>
+///  Tells the main window to focus on the appropriate line when an item in the grid is double-clicked
 ///
-///  @param  event wxGridEvent & <TODO: insert text here>
+///  @param  event wxGridEvent & The generated grid event
 ///
 ///  @return void
 ///
@@ -396,7 +388,7 @@ void CompilerOutputPanel::OnGridDoubleClick(wxGridEvent &event)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public virtual SetFocus
-///  <TODO: insert text here>
+///  Ensures that the right widget is focused
 ///
 ///  @return void
 ///

@@ -175,7 +175,7 @@ bool VariableWatchPanel::ShowToolTips()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public AddWatch
-///  <TODO: insert text here>
+///  Adds a variable watch to the debugger
 ///
 ///  @return void
 ///
@@ -222,7 +222,7 @@ void VariableWatchPanel::AddWatch()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public RemoveWatch
-///  <TODO: insert text here>
+///  Removes a variable watch from the debugger
 ///
 ///  @return void
 ///
@@ -257,9 +257,9 @@ void VariableWatchPanel::RemoveWatch()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public UpdateVariableInfo
-///  <TODO: insert text here>
+///  Updates the displayed values of the variables being watched
 ///
-///  @param  event wxDebugEvent  <TODO: insert text here>
+///  @param  event wxDebugEvent  The event containing the variable info
 ///
 ///  @return void
 ///
@@ -327,7 +327,7 @@ void VariableWatchPanel::UpdateVariableInfo(wxDebugEvent event)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public ClearVariableValues
-///  <TODO: insert text here>
+///  Gives all displayed variables an empty value
 ///
 ///  @return void
 ///
@@ -347,9 +347,9 @@ void VariableWatchPanel::ClearVariableValues()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public OnClearallwatchesClick
-///  <TODO: insert text here>
+///  Removes all variables being watched
 ///
-///  @param  event wxCommandEvent & <TODO: insert text here>
+///  @param  event wxCommandEvent & The generated button event
 ///
 ///  @return void
 ///

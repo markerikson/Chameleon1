@@ -125,16 +125,7 @@ RemoteFileDialog::RemoteFileDialog( wxWindow* parent, wxWindowID id, const wxStr
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public Create
-///  <TODO: insert text here>
-///
-///  @param  parent  wxWindow *       <TODO: insert text here>
-///  @param  id      wxWindowID       [=-1] <TODO: insert text here>
-///  @param  caption const wxString & [=_("Open/Save")] <TODO: insert text here>
-///  @param  pos     const wxPoint &  [=wxDefaultPosition] <TODO: insert text here>
-///  @param  size    const wxSize &   [=wxDefaultSize] <TODO: insert text here>
-///  @param  style   long             [=wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU] <TODO: insert text here>
-///
-///  @return bool    <TODO: insert text here>
+///  Does the usual window creation, but also creates the image list used by the dialog and the main project tree.
 ///
 ///  @author Mark Erikson @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -383,9 +374,9 @@ bool RemoteFileDialog::ShowToolTips()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public OnButtonUpFolder
-///  <TODO: insert text here>
+///  Displays the appropriate directory when the user clicks the "Up folder" button
 ///
-///  @param  event wxCommandEvent & <TODO: insert text here>
+///  @param  event wxCommandEvent & The generated menu event
 ///
 ///  @return void
 ///
@@ -416,9 +407,9 @@ void RemoteFileDialog::OnButtonUpFolder( wxCommandEvent& event )
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public GetRemoteFileNameAndPath
-///  <TODO: insert text here>
+///  Gets the selected filename and path
 ///
-///  @return wxString <TODO: insert text here>
+///  @return wxString The selected filename and path
 ///
 ///  @author Mark Erikson @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -443,13 +434,13 @@ void RemoteFileDialog::SetNetworking(Networking* network)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public ShowDirectory
-///  <TODO: insert text here>
+///  Displays the contents of a given directory
 ///
-///  @param  dirname    wxString  <TODO: insert text here>
-///  @param  refresh    bool      [=false] <TODO: insert text here>
-///  @param  showHidden bool      [=false] <TODO: insert text here>
+///  @param  dirname    wxString  The directory to display
+///  @param  refresh    bool      [=false] Whether or not to force a refresh (in case caching is on)
+///  @param  showHidden bool      [=false] Whether or not to show hidden files
 ///
-///  @return bool       <TODO: insert text here>
+///  @return bool       Whether or not the call succeeded
 ///
 ///  @author Mark Erikson @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -464,7 +455,7 @@ bool RemoteFileDialog::ShowDirectory(wxString dirname, bool refresh, bool showHi
 	DirListing dl;	
 	//wxBeginBusyCursor();
 	//dl= m_network->GetDirListing(dirname, refresh, showHidden);
-	if(!m_network->GetDirListing(dirname, dl))
+	if(!m_network->GetDirListing(dirname, dl, refresh, showHidden))
 	{
 		// TODO error stuff here
 		return false;
@@ -494,7 +485,7 @@ bool RemoteFileDialog::ShowDirectory(wxString dirname, bool refresh, bool showHi
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public FillListView
-///  <TODO: insert text here>
+///  Inserts file items into the main listview
 ///
 ///  @return void
 ///
@@ -605,9 +596,9 @@ void RemoteFileDialog::StoreFileName(wxString filename)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public OnItemSelected
-///  <TODO: insert text here>
+///  Sets the filename field with the selected item's name
 ///
-///  @param  event wxListEvent & <TODO: insert text here>
+///  @param  event wxListEvent & The generated listcontrol event
 ///
 ///  @return void
 ///
@@ -628,9 +619,9 @@ void RemoteFileDialog::OnItemSelected( wxListEvent& event )
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public OnItemActivated
-///  <TODO: insert text here>
+///  Called whenever the user activates an item in the listview
 ///
-///  @param  event wxListEvent & <TODO: insert text here>
+///  @param  event wxListEvent & The generated listcontrol event
 ///
 ///  @return void
 ///
@@ -656,7 +647,17 @@ wxPathFormat RemoteFileDialog::GetCurrentPathFormat()
 }
 */
 
-// Sets up the dialog for use as either an open or a save dialog
+//////////////////////////////////////////////////////////////////////////////
+///  public Prepare
+///  Initializes the dialog before it's displayed
+///
+///  @param  open         bool      True if it's an Open dialog, false if it's a Save dialog
+///  @param  filterString wxString  The file filter string to use
+///
+///  @return bool         Whether or not the function succeeded
+///
+///  @author Mark Erikson @date 04-23-2004
+//////////////////////////////////////////////////////////////////////////////
 bool RemoteFileDialog::Prepare(bool open, wxString filterString)//FileDisplayType displayType)
 {
 	m_openMode = open;
@@ -740,10 +741,9 @@ bool RemoteFileDialog::Prepare(bool open, wxString filterString)//FileDisplayTyp
  * wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTONOPEN
  */
 
-// user double-clicked a list item OR hit the open button
 //////////////////////////////////////////////////////////////////////////////
 ///  private ItemActivated
-///  <TODO: insert text here>
+///  Handles showing directories and saving filenames when the user activates an item
 ///
 ///  @return void
 ///
@@ -835,9 +835,9 @@ void RemoteFileDialog::ItemActivated()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public OnFileTypeSelected
-///  <TODO: insert text here>
+///  Updates the listview contents when the user changes the selected file type
 ///
-///  @param  event wxCommandEvent & <TODO: insert text here>
+///  @param  event wxCommandEvent & The generated event
 ///
 ///  @return void
 ///
@@ -859,9 +859,9 @@ void RemoteFileDialog::OnFileTypeSelected( wxCommandEvent& event )
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public OnButtonRefresh
-///  <TODO: insert text here>
+///  Refreshes the listview's contents from the server
 ///
-///  @param  event wxCommandEvent & <TODO: insert text here>
+///  @param  event wxCommandEvent & The generated menu event
 ///
 ///  @return void
 ///
@@ -875,9 +875,9 @@ void RemoteFileDialog::OnButtonRefresh(wxCommandEvent &event)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public OnEnter
-///  <TODO: insert text here>
+///  Allows the user to close the dialog by pressing Enter
 ///
-///  @param  event wxCommandEvent & <TODO: insert text here>
+///  @param  event wxCommandEvent & The generated command event
 ///
 ///  @return void
 ///

@@ -360,9 +360,9 @@ void OptionsDialog::OnChar(wxKeyEvent &event)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public OnEnter
-///  <TODO: insert text here>
+///  Allows the user to press Enter to close the dialog
 ///
-///  @param  event wxCommandEvent & <TODO: insert text here>
+///  @param  event wxCommandEvent & The generated event
 ///
 ///  @return void
 ///
@@ -379,7 +379,7 @@ void OptionsDialog::OnEnter( wxCommandEvent& event )
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public ExitDialog
-///  <TODO: insert text here>
+///  Ensures that everything's correct before exiting the dialog
 ///
 ///  @return void
 ///
@@ -436,9 +436,9 @@ wxString OptionsDialog::GetAuthCode()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public OnUpdateAuthCode
-///  <TODO: insert text here>
+///  Checks the newly entered authorization code and updates the permissions manager
 ///
-///  @param  event wxCommandEvent & <TODO: insert text here>
+///  @param  event wxCommandEvent & The generated menu event
 ///
 ///  @return void
 ///
@@ -475,7 +475,7 @@ void OptionsDialog::OnUpdateAuthCode( wxCommandEvent& event )
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public EnableServerSettings
-///  <TODO: insert text here>
+///  Enables the network text fields
 ///
 ///  @return void
 ///
@@ -496,7 +496,7 @@ void OptionsDialog::EnableServerSettings()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public DisableServerSettings
-///  <TODO: insert text here>
+///  Disables the network text fields
 ///
 ///  @return void
 ///
@@ -524,10 +524,10 @@ void OptionsDialog::SetAuthCode(wxString authcode)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public BrowseForDir
-///  <TODO: insert text here>
+///  Lets the user browse for the MinGW directory
 ///
-///  @param  textbox wxTextCtrl * <TODO: insert text here>
-///  @param  name    wxString     <TODO: insert text here>
+///  @param  textbox wxTextCtrl * The textbox to fill
+///  @param  name    wxString     The title of the browse dialog
 ///
 ///  @return void
 ///
@@ -565,9 +565,9 @@ void OptionsDialog::BrowseForDir(wxTextCtrl* textbox, wxString title)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public OnMinGWBrowseClick
-///  <TODO: insert text here>
+///  Calls the BrowseForDir function
 ///
-///  @param  event wxCommandEvent & <TODO: insert text here>
+///  @param  event wxCommandEvent & The generated menu event
 ///
 ///  @return void
 ///
@@ -584,9 +584,9 @@ void OptionsDialog::OnMinGWBrowseClick( wxCommandEvent& event )
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public EvaluateOptions
-///  <TODO: insert text here>
+///  Validates the options items before exiting the dialog
 ///
-///  @return bool <TODO: insert text here>
+///  @return bool Whether or not the options are valid
 ///
 ///  @author Mark Erikson @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -651,7 +651,7 @@ bool OptionsDialog::EvaluateOptions()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public InitializeDialog
-///  <TODO: insert text here>
+///  Sets up the dialog's contents before being displayed
 ///
 ///  @return void
 ///
@@ -691,7 +691,7 @@ void OptionsDialog::InitializeDialog()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public UpdateChecklist
-///  <TODO: insert text here>
+///  Updates the items in the permissions checklist, based on the current permissions
 ///
 ///  @return void
 ///
