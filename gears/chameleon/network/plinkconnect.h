@@ -36,7 +36,7 @@ class PlinkConnect : public wxEvtHandler {
 		void PollTick();
 
 		// Gets/Sets
-		void setLogin(wxString hostname, wxString username, wxString passphrase);
+		void setLogin(wxString host, wxString user, wxString pass);
 		bool getIsConnected();
 		bool getIsSettled();
 		wxString getMessage() { return m_message; }

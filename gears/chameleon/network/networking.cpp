@@ -1,12 +1,12 @@
-////////////////////////////////////////////////////
+// //////////////////////////////////////////////////
 //
+//   Notes:  All external methods call SSH___ methods after dealing with
+//               any caching or changes in host/user/pass.  It also deals
+//               with setting the statusDetails.
 //
-// ToDo: prevent anything external from being used if status == not good
-//       (if I use my own GetStatus(), it will make sure m_curr$ are always accurate)
-//       Move MaintainSettings into GetStatus.
+//   ToDo: pull process stuff out of here
 //
-//
-////////////////////////////////////////////////////
+// //////////////////////////////////////////////////
 #include <wx/regex.h> // for finding the host fingerprint
 #include <wx/file.h>
 #include <wx/process.h>
@@ -29,9 +29,8 @@ END_EVENT_TABLE()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public constructor Networking
-///  <TODO: insert text here>
 ///
-///  @param  options Options * <TODO: insert text here>
+///  @param  options Options * Needed for external pathes, and Host/User/Pass
 ///
 ///  @return void
 ///
@@ -53,7 +52,6 @@ Networking::Networking(Options* options)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public destructor ~Networking
-///  <TODO: insert text here>
 ///
 ///  @return void
 ///
@@ -67,11 +65,11 @@ Networking::~Networking()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public GetHomeDirPath
-///  <TODO: insert text here>
+///  Get the expansion of what the user's home directory is (~)
 ///
-///  @param  homeDir wxString & <TODO: insert text here>
+///  @param  homeDir wxString & return value
 ///
-///  @return bool    <TODO: insert text here>
+///  @return bool    Whether the call succeeded or not.
 ///
 ///  @author David Czechowski @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -102,36 +100,40 @@ bool Networking::GetHomeDirPath(wxString &path)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public GetFileContents
-///  <TODO: insert text here>
+///  Get the contents of a file from the server.
 ///
-///  @param  file     wxFileName  <TODO: insert text here>
-///  @param  contents wxString &  <TODO: insert text here>
+///  @param  file     wxFileName  What file to get.
+///  @param  contents wxString &  The return value.
 ///
-///  @return bool     <TODO: insert text here>
+///  @return bool     Whether the call succeeded or not.
 ///
 ///  @author David Czechowski @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
 bool Networking::GetFileContents(wxFileName file, wxString &contents)
 {
+	bool success = false;
+
 	if(GetStatus() == NET_GOOD) {
 		if( SSHGetFileContents(file.GetFullPath(wxPATH_UNIX), contents) ) {
 			m_statusDetails = "";
-			return true;
+			success = true;
 		}
 	}
-	//else
-		return false;
+
+	return success;
 }
 
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public SendFileContents
-///  <TODO: insert text here>
+///  Caution: this will overwrite without confirmation.
+///  This is accomplished through the use of pscp.  This deals with storing
+///     the contents out to a local temp file, then calling the PSCP-use method
 ///
-///  @param  strng wxString    <TODO: insert text here>
-///  @param  file  wxFileName  <TODO: insert text here>
+///  @param  strng wxString    The contents to send.
+///  @param  file  wxFileName  The file to which to send it.
 ///
-///  @return bool  <TODO: insert text here>
+///  @return bool  Whether the call succeeded or not.
 ///
 ///  @author David Czechowski @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -179,20 +181,25 @@ bool Networking::SendFileContents(wxString strng, wxFileName file)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public GetDirListing
-///  <TODO: insert text here>
+///  Will return the contents of the directory specified.
+///  Currently, no caching scheme is being used.  This is where it would go.
 ///
-///  @param  dirPath       wxString     <TODO: insert text here>
-///  @param  list          DirListing & <TODO: insert text here>
-///  @param  forceRefresh  bool         [=false] <TODO: insert text here>
-///  @param  includeHidden bool         [=false] <TODO: insert text here>
+///  @param  dirPath       wxString     The path of the remote directory.
+///  @param  list          DirListing & Return value.
+///  @param  forceRefresh  bool         [=false] Whether to force refresh of
+///                                                 any caching.
+///  @param  includeHidden bool         [=false] Whether to include hidden
+///                                                 files in the listing.
 ///
-///  @return bool          <TODO: insert text here>
+///  @return bool          Whether the call succeeded or not.
 ///
 ///  @author David Czechowski @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
 bool Networking::GetDirListing(wxString dirPath, DirListing &listing, bool forceRefresh,
 							   bool includeHidden)
 {
+	bool success = false;
+
 	if(GetStatus() == NET_GOOD) {
 		// internally manage dirListing caches to increase speed
 		//if(in cache) {
@@ -201,25 +208,26 @@ bool Networking::GetDirListing(wxString dirPath, DirListing &listing, bool force
 		//else
 		if( SSHGetDirListing(dirPath, listing, includeHidden) ) {
 			m_statusDetails = "";
-			return true;
+			success = true;
 		}
 	}
-	//else
-		return false;
+	
+	return success;
 }
 
 
-//Private:
 //////////////////////////////////////////////////////////////////////////////
 ///  private SSHGetHomeDirPath
-///  <TODO: insert text here>
+///  "cd ~" into the user's home directory, then, if the dir change work (&&),
+///      get the present working directory, "pwd".
 ///
-///  @param  homeDir wxString & <TODO: insert text here>
+///  @param  homeDir wxString & return value.
 ///
-///  @return bool    <TODO: insert text here>
+///  @return bool    Whether the call worked.
 ///
 ///  @author David Czechowski @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
+//Private:
 bool Networking::SSHGetHomeDirPath(wxString &path) {
 	wxString cmd = "cd ~ && pwd";
 	
@@ -238,18 +246,18 @@ bool Networking::SSHGetHomeDirPath(wxString &path) {
 }
 
 
-//Private:
 //////////////////////////////////////////////////////////////////////////////
 ///  private SSHGetFileContents
-///  <TODO: insert text here>
+///  Use "cat" to spit out the contents of the file on the shell.
 ///
-///  @param  file     wxString   <TODO: insert text here>
-///  @param  contents wxString & <TODO: insert text here>
+///  @param  file     wxString   What file to get.
+///  @param  contents wxString & return value
 ///
-///  @return bool     <TODO: insert text here>
+///  @return bool     Whether the call succeeded or not.
 ///
 ///  @author David Czechowski @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
+//Private:
 bool Networking::SSHGetFileContents(wxString file, wxString &contents)
 {
 	wxString cmd = "cat " + file;
@@ -273,19 +281,24 @@ bool Networking::SSHGetFileContents(wxString file, wxString &contents)
 }
 
 
-// Re-write this to use: "output = ExecuteLocalCommand(cmd);"
-//Private:
 //////////////////////////////////////////////////////////////////////////////
 ///  private SCPDoTransfer
-///  <TODO: insert text here>
+///  To simplify the transfer of files, I'm just using pscp to transfer the file
+///  It would be nice, for consistency and speed, if I could just pipe into a
+///     file.
+///  It might even behoove us to re-write this to use:
+///            "output = ExecuteLocalCommand(cmd);"
+///  This ONLY DOES local -> remote transfers.  For speed reasons (needing to
+///     authenticate everytime) this is not the optimal solution.
 ///
-///  @param  from_path_name wxString  <TODO: insert text here>
-///  @param  to_path_name   wxString  <TODO: insert text here>
+///  @param  from_path_name wxString  Local Path and Filename
+///  @param  to_path_name   wxString  Remote Path and Filename
 ///
-///  @return bool           <TODO: insert text here>
+///  @return bool           Whether the call succeeded or not.
 ///
 ///  @author David Czechowski @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
+//Private:
 bool Networking::SCPDoTransfer(wxString from_path_name, wxString to_path_name)
 {
 	// right now this only does local -> remote transfers
@@ -338,22 +351,24 @@ bool Networking::SCPDoTransfer(wxString from_path_name, wxString to_path_name)
 }
 
 
-// It would be nice to use: "ls --color=never -Q --format=vertical -1 -A", but I can't
-//    tell from this what is a dir, and what is a file.  I could later use that with "-l"
-//    and parse for the "d"
-//Private:
 //////////////////////////////////////////////////////////////////////////////
 ///  private SSHGetDirListing
-///  <TODO: insert text here>
+///  Get the listing of the directory specified by doing a "find" on the
+///     remote server, and parsing the output (via parsefindoutput).
+///  It would be nice to use only "ls" instead of "find".  But, instead of
+///      dealing with parsing(or regex'ing) an "ls -l" for what's a dir, and
+///      what isn't, I use "find".
+///  Try using "ls --color=never -Q --format=vertical -1 -A"
 ///
-///  @param  dirPath       wxString     <TODO: insert text here>
-///  @param  listing       DirListing & <TODO: insert text here>
-///  @param  includeHidden bool         [=false] <TODO: insert text here>
+///  @param  dirPath       wxString     What directory.
+///  @param  listing       DirListing & return value
+///  @param  includeHidden bool         [=false] Whether to include hidden files
 ///
-///  @return bool          <TODO: insert text here>
+///  @return bool          Whether the call succeeded or not.
 ///
 ///  @author David Czechowski @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
+//Private:
 bool Networking::SSHGetDirListing(wxString dirPath, DirListing &listing,
 									bool includeHidden)
 {
@@ -380,21 +395,23 @@ bool Networking::SSHGetDirListing(wxString dirPath, DirListing &listing,
 }
 
 
-// This parsing can easily be broken!  But, I am pretty confident
-//   in the integrity of the string I'm parsing, because I know
-//   what's coming in.
-// Private:
 //////////////////////////////////////////////////////////////////////////////
 ///  private ParseFindOutput
-///  <TODO: insert text here>
+///  This parsing can easily be broken!  But, I am pretty confident
+///    in the integrity of the string I'm parsing, because I know
+///    what's coming in.
+///  This does both files and directories because they are structured/listed
+///    the same.
 ///
-///  @param  strng         wxString  <TODO: insert text here>
-///  @param  includeHidden bool      <TODO: insert text here>
+///  @param  strng         wxString  The whole "find" output.
+///  @param  includeHidden bool      Whether to include hidden things (./.foo)
+///                                     in the dirlisting
 ///
-///  @return wxArrayString <TODO: insert text here>
+///  @return wxArrayString return value.
 ///
 ///  @author David Czechowski @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
+//Private:
 wxArrayString Networking::ParseFindOutput(wxString strng, bool includeHidden)
 {
 	wxArrayString r;
@@ -443,18 +460,19 @@ wxArrayString Networking::ParseFindOutput(wxString strng, bool includeHidden)
 }
 
 
-//Private:
 //////////////////////////////////////////////////////////////////////////////
 ///  private SSHExecSyncCommand
-///  <TODO: insert text here>
+///  Passes the command off to PlinkConnect after appending a boolean test to
+///     know if the command completely successfully.
 ///
-///  @param  command wxString   <TODO: insert text here>
-///  @param  output  wxString & <TODO: insert text here>
+///  @param  command wxString   command to execute
+///  @param  output  wxString & output from the command.
 ///
-///  @return bool    <TODO: insert text here>
+///  @return bool    Whether the call succeeded or not.
 ///
 ///  @author David Czechowski @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
+//Private:
 bool Networking::SSHExecSyncCommand(wxString command, wxString &output) {
 	command += " && echo Su_CC_ess-CMD";
 
@@ -470,9 +488,17 @@ bool Networking::SSHExecSyncCommand(wxString command, wxString &output) {
 }
 
 
-// Not meant to update my status -- just my settings (if necessary)
-// This returns true if any settings have changed.  I need to do this polling because
-//   Options is passive.
+//////////////////////////////////////////////////////////////////////////////
+///  private MaintainSettings
+///  Not meant to update my status -- just my settings (if necessary)
+///  This returns true if any settings have changed.  I need to do this
+///     polling because Options is passive (it doesn't tell me when it's
+///     changed).
+///
+///  @return bool Returns true if anything has changed in Options.
+///
+///  @author David Czechowski @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 //Private:
 bool Networking::MaintainSettings() {
 	wxString newH = m_options->GetHostname();
@@ -498,12 +524,17 @@ bool Networking::MaintainSettings() {
 }
 
 
-// I might recommend OptionsDialog call this after a change
 //////////////////////////////////////////////////////////////////////////////
 ///  public GetStatus
-///  <TODO: insert text here>
+///    NET_STARTING = NEVER used externally
+///    NET_GOOD = good to go!
+///    NET_UNKNOWN_HOST = host finger print not in cache
+///    NET_CONN_REFUSED = host wouldn't allow a connection
+///    NET_AUTH_FAILED = user+pass did not work on host
+///    NET_ERROR_MESSAGE = default/catch-all
+///  For more information, also check GetStatusDetails
 ///
-///  @return NetworkStatus <TODO: insert text here>
+///  @return NetworkStatus status
 ///
 ///  @author David Czechowski @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -555,9 +586,14 @@ NetworkStatus Networking::GetStatus()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public GetStatusDetails
-///  <TODO: insert text here>
+///    NET_STARTING = nothing
+///    NET_GOOD = nothing
+///    NET_UNKNOWN_HOST = host finger print
+///    NET_CONN_REFUSED = stderr message
+///    NET_AUTH_FAILED = stderr message
+///    NET_ERROR_MESSAGE = message
 ///
-///  @return wxString <TODO: insert text here>
+///  @return wxString details
 ///
 ///  @author David Czechowski @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -567,12 +603,13 @@ wxString Networking::GetStatusDetails()
 }
 
 
-// I am assuming!!! that the connection should work, and I'm just doing this to
-//  accept the cache.
-//Public:
 //////////////////////////////////////////////////////////////////////////////
 ///  public SSHCacheFingerprint
-///  <TODO: insert text here>
+///  Basically, this means that the PlinkConnect will not work until the
+///      fingerprint gets cached.  To do so, I run my own, send a "y" to accept
+///      the cache then immediately kill the process.
+///  I am assuming!!! that the connection should work, and I'm just doing this
+///     to accept the cache.
 ///
 ///  @return void
 ///
@@ -602,32 +639,23 @@ void Networking::SSHCacheFingerprint()
 }
 
 
-//Private:
-void Networking::onTerm(wxProcessEvent &e) {
-	//
-}
-
-
-//Private:
-void Networking::onTimerTick(wxTimerEvent &e) {
-	//
-}
-
-
-// This function can NOT be SYNCHRONOUS (especially not locking -- wxSafeYield)
 //////////////////////////////////////////////////////////////////////////////
 ///  public PingOptions
-///  <TODO: insert text here>
+///  This is a way that Options* can tell Networking it has changed.
+///  This will not (must not) go into any wait loops.
 ///
 ///  @return void
 ///
 ///  @author David Czechowski @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
 void Networking::PingOptions() {
+	// This function must NOT be SYNCHRONOUS
+	//  (especially not locking -- wxSafeYield)
+
 	// If nothing has changed, nothing will happen.
 	if( MaintainSettings() || m_status == NET_STARTING) {
-		// If settings have changed, the changes will be propagated to PlinkConnect, then
-		//     (asynchronously) PlinkConnect will spawn a connection (if possible)
+		// If settings have changed, the changes will be propagated to PlinkConnect,
+		//     then (asynchronously) PlinkConnect will spawn a connection (if possible)
 		if(m_plinks->getIsSettled()) {
 			// only do this if I know I will can an immediate response
 			GetStatus();
@@ -635,8 +663,15 @@ void Networking::PingOptions() {
 	}
 }
 
-/////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////
+
+
+
+//============================================================================
+//                        PROCESS MANAGEMENT stuff
+//============================================================================
+
+
+
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public StartCommand
@@ -650,7 +685,8 @@ void Networking::PingOptions() {
 ///
 ///  @author David Czechowski @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
-wxTextOutputStream* Networking::StartCommand(bool isRemote, wxString cmd, wxEvtHandler* owner)
+wxTextOutputStream* Networking::StartCommand(bool isRemote, wxString cmd,
+											 wxEvtHandler* owner)
 {
 	if(isRemote) {
 		return StartRemoteCommand(cmd, owner);
@@ -663,12 +699,12 @@ wxTextOutputStream* Networking::StartCommand(bool isRemote, wxString cmd, wxEvtH
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public StartRemoteCommand
-///  <TODO: insert text here>
+///  Passes this off to PlinkConnect. [see PlinkConnect::executeCommand()]
 ///
-///  @param  cmd                  wxString       <TODO: insert text here>
-///  @param  owner                wxEvtHandler * <TODO: insert text here>
+///  @param  cmd                  wxString       command
+///  @param  owner                wxEvtHandler * event receiver
 ///
-///  @return wxTextOutputStream * <TODO: insert text here>
+///  @return wxTextOutputStream * stdin
 ///
 ///  @author David Czechowski @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -696,13 +732,14 @@ wxTextOutputStream* Networking::StartLocalCommand(wxString cmd, wxEvtHandler* ow
 }
 
 
-// A very simple method
 //////////////////////////////////////////////////////////////////////////////
 ///  public ExecuteCommand
-///  <TODO: insert text here>
+///  This starts a command, and waits until it has come to completion.
+///  Extremely simple: if isRemote is true, it calls ExecuteRemoteCommand,
+///     otherwise, it calls ExecuteLocalCommand.
 ///
-///  @param  isRemote bool      <TODO: insert text here>
-///  @param  cmd      wxString  <TODO: insert text here>
+///  @param  isRemote bool      Whether this is to be executed remotely.
+///  @param  cmd      wxString  What command to execute.
 ///
 ///  @return wxString <TODO: insert text here>
 ///
@@ -721,7 +758,7 @@ wxString Networking::ExecuteCommand(bool isRemote, wxString cmd)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public ExecuteRemoteCommand
-///  <TODO: insert text here>
+///  This starts a command, and waits until it has come to completion.
 ///
 ///  @param  cmd      wxString  <TODO: insert text here>
 ///
@@ -766,7 +803,7 @@ wxString Networking::ExecuteLocalCommand(wxString cmd)
 //////////////////////////////////////////////////////////////////////////////
 void Networking::ForceKillProcess(wxTextOutputStream* w)
 {
-	//Walk m_lprocesses:
+	//Walk m_processes:
 	bool isLocal = false;
 	//for(ProcessInfoList::Node* node = m_processes.GetFirst(); node; node = node->GetNext() ) {
 	//	p = node->GetData();
@@ -785,5 +822,15 @@ void Networking::ForceKillProcess(wxTextOutputStream* w)
 }
 
 
+//Private:
+void Networking::onTerm(wxProcessEvent &e) {
+	//
+}
+
+
+//Private:
+void Networking::onTimerTick(wxTimerEvent &e) {
+	//
+}
 
 

@@ -17,6 +17,7 @@ BEGIN_EVENT_TABLE(wxSSH, wxTerm)
 	EVT_PROCESS_ENDED(wxSSH::OnPlinkTerm)
 END_EVENT_TABLE()
 
+
 //////////////////////////////////////////////////////////////////////////////
 ///  public constructor wxSSH
 ///  <TODO: insert text here>
@@ -44,9 +45,11 @@ wxSSH::wxSSH(wxWindow* parent, wxWindowID id, Networking* network, const wxPoint
 	m_startingDebugConnection = false;
 }
 
+
 //////////////////////////////////////////////////////////////////////////////
 ///  public virtual destructor ~wxSSH
-///  <TODO: insert text here>
+///  If still connected, does the equiv. of a disconnect() (geeh maybe it
+///    should just call that).
 ///
 ///  @return void
 ///
@@ -63,12 +66,15 @@ wxSSH::~wxSSH()
 	}
 }
 
+
 //////////////////////////////////////////////////////////////////////////////
 ///  public virtual SendBack
-///  <TODO: insert text here>
+///  Pass the data onto the plink-connection.  Nothing special needs doing.
+///    All screen output occurs when the characters comes back from the
+///    server.
 ///
-///  @param  len  int    <TODO: insert text here>
-///  @param  data char * <TODO: insert text here>
+///  @param  len  int    number of characters
+///  @param  data char * pointer to a character array
 ///
 ///  @return void
 ///
@@ -82,9 +88,11 @@ void wxSSH::SendBack(int len, char *data)
 	}
 }
 
+
 //////////////////////////////////////////////////////////////////////////////
 ///  public virtual Connect
-///  <TODO: insert text here>
+///  Take advantage of Networking's StartRemoteCommand.  I start the
+///     command 'bash' as the remote program to give us a shell.
 ///
 ///  @return void
 ///
@@ -114,9 +122,11 @@ void wxSSH::Connect()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public ConnectForDebug
-///  <TODO: insert text here>
+///  Similar to connect.  The command sent will put the shell into a sleep
+///    after requesting the 'who am i' data.  This will go into a wait loop
+///    until either the data comes back, or a fail token.
 ///
-///  @return wxString <TODO: insert text here>
+///  @return wxString Parsed 'who am i' data
 ///
 ///  @author David Czechowski @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -159,9 +169,9 @@ wxString wxSSH::ConnectForDebug()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public virtual Disconnect
-///  <TODO: insert text here>
+///  This will terminate the plink connection.
 ///
-///  @param  clearDisplay bool  [=true] <TODO: insert text here>
+///  @param  clearDisplay bool  [=true] whether to clear the window or not
 ///
 ///  @return void
 ///
@@ -190,27 +200,35 @@ void wxSSH::Disconnect(bool clearDisplay)
 }
 
 
+//////////////////////////////////////////////////////////////////////////////
+///  public bool IsConnected
+///  Is connected returns true when Networking is able to start remote commands
+///
+///  @return bool
+///
+///  @author David Czechowski @date 04-22-2004
+//////////////////////////////////////////////////////////////////////////////
 bool wxSSH::IsConnected(void)
 {
 	return m_connected;
 }
 
-// wxSSH should catch XTerm specific escape sequences (coming from the server)
-// The following sequences are useful in this respect:
-//    * ESC]0;stringBEL -- Set icon name and window title to string
-//    * ESC]1;stringBEL -- Set icon name to string
-//    * ESC]2;stringBEL -- Set window title to string
-//
-//(where ESC is the escape character (\027), and BEL is the bell character (\007).)
-//
-// Currently the plan is just to surpress them because they aren't relevant to Chameleon
-//wxSSH should override the input mechanism, and when any of the xterm escape sequences are issued it should eat them(into a buffer).  If a max STRING length is reached with out getting BEL the buffer can be 're-issued'.
-// **Note: if a vt52 printscreen is sent, the screen will be blank until MAX characters are sent
+
 //////////////////////////////////////////////////////////////////////////////
 ///  public OnPlinkOut
-///  <TODO: insert text here>
+///  wxSSH should catch XTerm specific escape sequences (coming from the server)
+///  The following sequences are useful in this respect:
+///     * ESC]0;stringBEL -- Set icon name and window title to string
+///     * ESC]1;stringBEL -- Set icon name to string
+///     * ESC]2;stringBEL -- Set window title to string
+///  (where ESC is escape character (char)27, and BEL is bell character char(7).)
 ///
-///  @param  event ChameleonProcessEvent & <TODO: insert text here>
+///  Currently I only catch the first one, and throw it to the bit-bucket.  This
+///     should probably be expanded to catch all 3.  Perhaps it should be
+///     integrated more: GTerm has a name variable (I think).
+///  I assume these sequences begin and end on the same line.
+///
+///  @param  event ChameleonProcessEvent & Output Event from Networking
 ///
 ///  @return void
 ///
@@ -244,11 +262,13 @@ void wxSSH::OnPlinkOut(ChameleonProcessEvent &e)
 	return;
 }
 
+
 //////////////////////////////////////////////////////////////////////////////
 ///  public OnPlinkErr
-///  <TODO: insert text here>
+///  Currently Networking won't send any StdErr output because it all comes in
+////   from stdout (stderr is piped to stdout).
 ///
-///  @param  event ChameleonProcessEvent & <TODO: insert text here>
+///  @param  event ChameleonProcessEvent & ErrEvent.
 ///
 ///  @return void
 ///
@@ -259,11 +279,15 @@ void wxSSH::OnPlinkErr(ChameleonProcessEvent &e)
 	wxLogDebug("Terminal-StdError: "+e.GetString());
 }
 
+
 //////////////////////////////////////////////////////////////////////////////
 ///  public OnPlinkTerm
-///  <TODO: insert text here>
+///  This would be a surprise.  If this happens something likely happened to
+///    the network connection, OR the user typed "exit".  Either way, I'm no
+///    longer connected.  An explicit call to Connect would be needed to
+///    start another shell again.
 ///
-///  @param  event ChameleonProcessEvent & <TODO: insert text here>
+///  @param  event ChameleonProcessEvent & chProcessTermEvent
 ///
 ///  @return void
 ///
