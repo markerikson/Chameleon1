@@ -2862,7 +2862,7 @@ void ChameleonWindow::UpdateTerminalNotebook()
 	{
 		m_noteTerm->AddPage(m_outputPanel, "Compiler output");
 		m_outputPanel->SetAdvanced(advCompileEnabled);
-		m_outputPanel->ClearOutput();
+		//m_outputPanel->ClearOutput();
 		m_outputPanel->Show();
 	}	
 	else

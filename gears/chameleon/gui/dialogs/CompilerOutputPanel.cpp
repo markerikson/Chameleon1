@@ -28,6 +28,7 @@
 #include "../../compiler/compilerevent.h"
 #include "../../common/datastructures.h"
 #include "../ChameleonWindow.h"
+#include <wx/regex.h>
 
 ////@begin XPM images
 ////@end XPM images
@@ -75,6 +76,7 @@ CompilerOutputPanel::CompilerOutputPanel( wxWindow* parent, ChameleonWindow* mai
 	m_grid->SetColLabelValue(0, "Filename");
 	m_grid->SetColLabelValue(1, "Line");
 	m_grid->SetColLabelValue(2, "Message");
+	m_grid->SetCellHighlightPenWidth(0);
 
 	m_mainFrame = mainFrame;
 }
@@ -190,8 +192,8 @@ void CompilerOutputPanel::OnCompilerStart(CompilerEvent& event)
 		compileOutput = "Linking:";
 	}
 
-	if(m_isAdvanced)
-	{
+	//if(m_isAdvanced)
+	//{
 		int newRowNum = m_grid->GetNumberRows();
 		m_grid->AppendRows(1);
 		
@@ -199,11 +201,11 @@ void CompilerOutputPanel::OnCompilerStart(CompilerEvent& event)
 		m_grid->SetCellSize(newRowNum, 0, 1, 3);
 
 		m_grid->SetCellValue(compileOutput, newRowNum, 0);
-	}
-	else
-	{
-		m_textbox->AppendText(compileOutput + "\r\n");
-	}
+	//}
+	//else
+	//{
+		*m_textbox << compileOutput << "\r\n";
+	//}
     
 }
 
@@ -217,24 +219,44 @@ void CompilerOutputPanel::OnCompilerProblem(CompilerEvent &event)
 	lineString << linenum;
 	wxString message = event.GetMessage();
 	wxString output = event.GetGCCOutput();	
+	wxString outputCopy = output;
 
-	if(m_isAdvanced)
+	wxRegEx reParseOutput("(?:(?:\\A|\\n)(.+?):(\\d+):(?:\\d+:)?(.+))", wxRE_ADVANCED);
+
+	while(outputCopy != wxEmptyString)
 	{
-		int newRowNum = m_grid->GetNumberRows();
-		m_grid->AppendRows(1);
+		wxString line = outputCopy.BeforeFirst('\r');
+		outputCopy = outputCopy.AfterFirst('\n');
 
-		m_grid->SetCellValue(filename, newRowNum, 0);
-		m_grid->SetCellValue(lineString, newRowNum, 1);
-		m_grid->SetCellValue(message, newRowNum, 2);
-		m_grid->SetCellRenderer(newRowNum , 2, new wxGridCellAutoWrapStringRenderer);
+		if(reParseOutput.Matches(line))
+		{
+			m_numErrors++;
+			size_t start = 0;
+			size_t length = 0;
+			int counter = 1;
+
+			wxString parsedFile = reParseOutput.GetMatch(line, 1);
+			wxString parsedLine = reParseOutput.GetMatch(line, 2);
+			wxString parsedMessage = reParseOutput.GetMatch(line, 3);
+
+			//if(m_isAdvanced)
+			//{
+				int newRowNum = m_grid->GetNumberRows();
+				m_grid->AppendRows(1);
+
+				m_grid->SetCellValue(parsedFile, newRowNum, 0);
+				m_grid->SetCellValue(parsedLine, newRowNum, 1);
+				m_grid->SetCellValue(parsedMessage, newRowNum, 2);
+				m_grid->SetCellRenderer(newRowNum , 2, new wxGridCellAutoWrapStringRenderer);
+			//}
+			//else
+			//{
+			//	*m_textbox << parsedFile << ":" << parsedLine << ":" << parsedMessage << "\r\n";
+			//}
+		}
 	}
-	else
-	{
-		*m_textbox << output << "\r\n";
-	}
 
-	m_numErrors++;
-
+	*m_textbox << output;
 }
 
 void CompilerOutputPanel::OnCompilerEnd(CompilerEvent &event)
@@ -243,27 +265,26 @@ void CompilerOutputPanel::OnCompilerEnd(CompilerEvent &event)
 	wxString filename = fn.GetFullPath(event.IsRemoteFile() ? wxPATH_UNIX : wxPATH_DOS);
 	CompileResult cr = event.GetResult();
 
-	wxString compileResult = filename + ": ";
+	wxString compileResult;
 	switch(cr)
 	{
 		case CR_OK:
-			compileResult += "compiled successfully.";
+			compileResult = filename + " compiled successfully.";
 			break;
 		case CR_ERROR:
 		{
-		
 			wxString errorResult;
-			errorResult.Printf("compilation failed. %d total errors / warnings.", m_numErrors);
-			compileResult += errorResult;
+			errorResult.Printf("Compilation failed. %d total errors / warnings.", m_numErrors);
+			compileResult = errorResult;
 			break;
 		}
 		case CR_TERMINATED:
-			compileResult += "compilation terminated by user.";
+			compileResult = "Compilation terminated by user.";
 			break;
 	}
 
-	if(m_isAdvanced)
-	{
+	//if(m_isAdvanced)
+	//{
 		int newRowNum = m_grid->GetNumberRows();
 		m_grid->AppendRows(1);
 
@@ -271,11 +292,11 @@ void CompilerOutputPanel::OnCompilerEnd(CompilerEvent &event)
 		m_grid->SetCellSize(newRowNum, 0, 1, 3);
 
 		m_grid->SetCellValue(compileResult, newRowNum, 0);
-	}
-	else
-	{
-		m_textbox->AppendText(compileResult + "\r\n");
-	}
+	//}
+	//else
+	//{
+		*m_textbox << "\r\n" << compileResult;
+	//}
 }
 
 void CompilerOutputPanel::OnGridDoubleClick(wxGridEvent &event)
