@@ -122,7 +122,8 @@ enum NetworkStatus
 	NET_AUTH_FAILED,   // user+pass did not work on host
 	NET_READ_ERROR,
 	NET_WRITE_ERROR,
-	NET_CACHED_FINGERPRINT,
+	NET_BAD_PLINK_PROG,
+	NET_BAD_PSCP_PROG,
 };
 
 enum NetworkCallResult
