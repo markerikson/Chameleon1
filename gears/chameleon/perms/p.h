@@ -37,6 +37,8 @@ class Permission
 		void enable(int id);		//module-specific enable
 		void disable(int id);		//module-specific disable
 
+		wxString GetAuthCode() {return(validAuthCode);}
+
 		bool setGlobalAuthorized(wxString newAuthCode);//set everything
 		void setGlobalEnabled(wxString newEnableCode);
 
@@ -52,6 +54,7 @@ class Permission
 		long permCode;				//int for holding permissions code #
 		long authCode;				//int for holding authorized code #
 		wxArrayString permNames;    //matches the enumerated perms with a name 
+		wxString validAuthCode;
 };
 
 #endif

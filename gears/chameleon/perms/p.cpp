@@ -190,6 +190,7 @@ bool Permission::setGlobalAuthorized(wxString newAuthCode)
 	{
 		numberString.ToLong(&authCode);
 		auth = bitset<NUM_MODULES>(authCode);
+		validAuthCode = newAuthCode;
 	}
 
 	return validAuthCode;
