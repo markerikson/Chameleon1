@@ -47,9 +47,7 @@
 #define ID_PROGPANEL 10006
 #define ID_TEAMPANEL 10002
 #define ID_CREDITSPANEL 10003
-#define ID_TEXTCTRL 10005
 #define ID_STATSPANEL 10004
-#define ID_TEXTCTRL1 10008
 #define ID_BUTTONOK 10007
 ////@end control identifiers
 
