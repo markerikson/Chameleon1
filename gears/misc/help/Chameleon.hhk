@@ -1,0 +1,64 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Anthemion HelpBlocks">
+<!-- Sitemap 1.0 -->
+</HEAD><BODY>
+<OBJECT type="text/site properties">
+    <param name="ImageType" value="Folder">
+</OBJECT>
+<UL>
+    <LI> <OBJECT TYPE="text/sitemap">
+             <PARAM NAME="Name" VALUE="Introduction">
+             <PARAM NAME="Local" VALUE="doc-0005.htm">
+         </OBJECT>
+    <LI> <OBJECT TYPE="text/sitemap">
+             <PARAM NAME="Name" VALUE="Tutorial">
+             <PARAM NAME="Local" VALUE="doc-0016.htm">
+         </OBJECT>
+    <LI> <OBJECT TYPE="text/sitemap">
+             <PARAM NAME="Name" VALUE="Chameleon Reference">
+             <PARAM NAME="Local" VALUE="doc-0017.htm">
+         </OBJECT>
+    <LI> <OBJECT TYPE="text/sitemap">
+             <PARAM NAME="Name" VALUE="User Interface">
+             <PARAM NAME="Local" VALUE="doc-0018.htm">
+         </OBJECT>
+    <LI> <OBJECT TYPE="text/sitemap">
+             <PARAM NAME="Name" VALUE="Main Window">
+             <PARAM NAME="Local" VALUE="doc-0009.htm">
+         </OBJECT>
+    <LI> <OBJECT TYPE="text/sitemap">
+             <PARAM NAME="Name" VALUE="Menus and Toolbar">
+             <PARAM NAME="Local" VALUE="doc-0008.htm">
+         </OBJECT>
+    <LI> <OBJECT TYPE="text/sitemap">
+             <PARAM NAME="Name" VALUE="Options">
+             <PARAM NAME="Local" VALUE="doc-0007.htm">
+         </OBJECT>
+    <LI> <OBJECT TYPE="text/sitemap">
+             <PARAM NAME="Name" VALUE="Network Connectivity">
+             <PARAM NAME="Local" VALUE="doc-0010.htm">
+         </OBJECT>
+    <LI> <OBJECT TYPE="text/sitemap">
+             <PARAM NAME="Name" VALUE="Editor">
+             <PARAM NAME="Local" VALUE="doc-0011.htm">
+         </OBJECT>
+    <LI> <OBJECT TYPE="text/sitemap">
+             <PARAM NAME="Name" VALUE="Project Management">
+             <PARAM NAME="Local" VALUE="doc-0012.htm">
+         </OBJECT>
+    <LI> <OBJECT TYPE="text/sitemap">
+             <PARAM NAME="Name" VALUE="Compiling">
+             <PARAM NAME="Local" VALUE="doc-0013.htm">
+         </OBJECT>
+    <LI> <OBJECT TYPE="text/sitemap">
+             <PARAM NAME="Name" VALUE="Debugger">
+             <PARAM NAME="Local" VALUE="doc-0014.htm">
+         </OBJECT>
+    <LI> <OBJECT TYPE="text/sitemap">
+             <PARAM NAME="Name" VALUE="Permissions">
+             <PARAM NAME="Local" VALUE="doc-0015.htm">
+         </OBJECT>
+</UL>
+</BODY></HTML>

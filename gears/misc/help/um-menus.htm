@@ -1,0 +1,199 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>Chameleon: Menus and Toolbar</title>
+	<style type="text/css">
+	dt { font-weight: bold; }
+	</style>
+  </head>
+<body>
+
+<h2>Menus and Toolbar</h2>
+<h3><a name="menus">Menus</a></h3>
+	<h4>File</h4>
+<IMG SRC="screen-menufile.png" BORDER="0">
+		<dl>
+			<dt>New File</dt>
+				<dd>Creates a new tab in the editor with a blank file.</dd>
+			<dt>Open File (Local)</dt>
+				<dd>Opens up a C++ source file for editing from the current computer.</dd>
+			<dt>Open File (Remote)</dt>
+				<dd>Opens up a C++ source file for editing from a remote server, using the settings specified in the Options dialog.</dd>
+			<dt>Close File</dt>
+				<dd>Closes the file in the active tab</dd>
+			<dt>Close All Files</dt>
+				<dd>Closes all open files</dd>
+			<dt>Save File</dt>
+				<dd>Saves the current active file.  If the file has not been saved yet, this brings up a dialog asking whether to save the file on the current computer or on a remote server, then brings up a save file dialog.  Otherwise, it simply saves the file.</dd>
+			<dt>Save File As (Local)</dt>
+				<dd>Brings up a save file dialog allowing the user to save the active file with a different name on the current computer.</dd>
+			<dt>Save File As (Remote)</dt>
+				<dd>Brings up a save file dialog allowing the user to save the active file with a different name on the remote server.</dd>
+			<dt>Print</dt>
+				<dd>Prints the current active file</dd>
+			<dt>Print Preview</dt>
+				<dd>Shows what the current active file will look like if it is printed</dd>
+			<dt>Print Setup</dt>
+				<dd>Lets the user change print-related settings such as margins and page size</dd>
+			<dt>Open Project File (Local)</dt>
+				<dd>Opens up a Chameleon project file off the current computer.</dd>
+			<dt>Open Project File (Remote)</dt>
+				<dd>Opens up a Chameleon project file off of a remote server, using the settings specified in the Options dialog.</dd>
+		</dl>
+
+	<h4>Edit</h4>
+<img src="screen-menuedit.png" border="0">
+		<dl>
+			<dt>Undo</dt>
+				<dd>Undoes the last action in the editor</dd>
+			<dt>Redo</dt>
+				<dd>Redoes the last undone action</dd>
+			<dt>Cut</dt>
+				<dd>Cuts out the highlighted text and places it on the Windows clipboard.</dd>
+			<dt>Copy</dt>
+				<dd>Copies the highlighted text and places it on the Windows clipboard.</dd>
+			<dt>Paste</dt>
+				<dd>Pastes the current contents of the Windows clipboard into the active editor file.</dd>
+			<dt>Find</dt>
+				<dd>Shows the Find dialog</dd>
+			<dt>Replace</dt>
+				<dd>Shows the Replace dialog</dd>
+		</dl>
+
+	<h3>Compile</h3>
+<img src="screen-menucompile.png" border="0">
+		<dl>
+			<dt>Compile</dt>
+				<dd>
+				Compiles the currently active file.  If this file is by itself (ie, not part of a project), it will be compiled by itself.  If the file is part of a project, then the whole project will be compiled.
+				</dd>
+		</dl>
+
+	<h4>Projects</h4>
+<img src="screen-menuprojects.png" border="0">
+		<dl>
+			<dt>Create New Project</dt>
+				<dd>
+				Creates a new project and asks the user where to save it
+				</dd>
+			<dt>Open Project File (Local)</dt>
+				<dd>
+				Opens a project from the current computer
+				</dd>
+			<dt>Open Project File (Remote)</dt>
+				<dd>
+				Opens a project from the remote server
+				</dd>
+			<dt>Close Project</dt>
+				<dd>Closes the current open project
+		</dl>
+
+
+	<h4>Tools</h4>
+<img src="screen-menutools.png" border="0">
+		<dl>
+			<dt>Options</dt>
+				<dd>
+				Open up the Chameleon Options dialog
+				</dd>
+			<dt>Connect to server</dt>
+				<dd>
+				Connect the terminal window to a remote server, using the settings specified in the Options dialog.
+				</dd>
+			<dt>Disconnect from server</dt>
+				<dd>
+				If the terminal is currently connected to a remote server, disconnect.
+				</dd>
+		</dl>
+
+	<h4>Help</h4>
+<img src="screen-menuhelp.png" border="0">
+		<dl>
+			<dt>Chameleon help contents</dt>
+				<dd>
+				Opens up the Chameleon help file
+				</dd>
+			<dt>About Chameleon</dt>
+				<dd>
+				Opens up the About Chameleon dialog
+				</dd>
+		</dl>
+
+
+<h3><a name="toolbar">Toolbar</a></h3>
+
+
+	<h4>File buttons</h4>
+<img src="screen-toolbar-file.png" border="0">
+		<dl>
+			<dt>New</dt>
+				<dd>
+				Same as File->New
+				</dd>
+			<dt>Open (L)</dt>
+				<dd>
+				Same as File->Open Source File (Local)
+				</dd>
+			<dt>Open (R)</dt>
+				<dd>
+				Same as File->Open Source File (Remote)
+				</dd>
+			<dt>Save</dt>
+				<dd>
+				Same as File->Save File
+				</dd>
+		</dl>
+
+	<h4>Terminal buttons</h4>
+<img src="screen-toolbar-terminal.png" border="0">
+		</dl>
+			<dt>Connect</dt>
+				<dd>
+				Same as Tools->Connect to server.
+				</dd>
+			<dt>Disconnect</dt>
+				<dd>
+				Same as Tools->Disconnect from server.
+				</dd>
+		</dl>
+
+
+	<h4>Compiler buttons</h4>
+<img src="screen-toolbar-compile.png" border="0">
+		<dl>
+			<dt>Compile</dt>
+				<dd>
+				Same as Compile->Compile
+				</dd>
+		</dl>
+
+	<h4>Debugger buttons</h4>
+<img src="screen-toolbar-debug.png" border="0">
+		<dl>
+			<dt>Run Program</dt>
+				<dd>
+				Begins running the current program in debug mode.  If the program has not been compiled yet, it will compile it automatically, then run it.
+				</dd>
+			<dt>Stop Program</dt>
+				<dd>
+				Stops the program that is currently running in debug mode.
+				</dd>
+			<dt>Step next</dt>
+				<dd>
+				Executes the next line of code if currently stopped at a breakpoint.  If the next line is a function call, it will step into the function and execute the first line of the function.
+				</dd>
+			<dt>Step over</dt>
+				<dd>
+				Executes the next line of code if currently stopped at a breakpoint.  If the next line is a function call, it will execute the function and stop at the next line of code in the current function.
+				</dd>
+			<dt>Step out</dt>
+				<dd>
+				Finishes executing the function the program is currently paused in, then stops at the first line of code after the current function.
+				</dd>
+		</dl>
+
+  
+</body>
+</html>
+
+  

@@ -1,0 +1,51 @@
+<html>
+<head>
+	<title>Chameleon: Debugger</title>
+	<style type="text/css">
+	<!--
+        .code
+	{
+		font-size:"10pt";
+		font-family:"Courier New";
+		margin-left: 35px;
+	}
+	-->
+	</style>
+</head>
+<body>
+<h2>Debugger</h2>
+    <h3 class=indent>Definition:</h3>
+    <p class=pindent>A <b>Debugger</b> is a software engineering tool that helps in locating and correcting programming errors (which are traditionally known as "bugs").  It accomplishes this by allowing the programmer to go through a program line-by-line and see the values of variables at any given time.</p>
+
+    <h3 class=indent>Purpose:</h3>
+    <p class=pindent>Every programmer makes mistakes, no matter how advanced they are.  Sometimes those mistakes are obvious and can be solved simply by looking at the code or by inserting some sort of a print statement.  As programs get more complicated, though, more powerful tools are needed.  The debugger enables you to stop a program, look at what's going on with a line, view variable values, and watch the flow of execution.  With advanced data structures such as <i>trees</i> and <i>hash tables</i> this tool is indispensible in finding little hidden logic errors with datastructure construction.</p>
+
+    <h3 class=indent>Example:</h3>
+    <p class=pindent>Suppose for now you want to code a simple "if-then" tree like this:</p>
+    <p class=code>if(a = b) {b = c *d;} else {...</p>
+    <p class=pindent>You hard code into your program the following lines:</p>
+    <p class=code>int a = 3, b = 6;</p>
+    <p class=pindent>You expect the code in your "else" statement to be executed, but it never is.  Now is a great time to use the debugger, particularly the <i>step</i> and <i>variable contents</i> functionality listed below.</p>
+
+    <h3 class=indent>Available Debugger Functions:</h3>
+ 
+    <ol class=lindent>
+	<li><B>Run</B>
+        <p class=lindent>Starts the program, which will then run until it encounters a breakpoint, exits normally, or crashes.</p></li>
+	<li><B>Step</B>
+        <p class=lindent>Executes a single line of code.  This is most useful when watching variables to see exactly WHERE and WHEN a variable changes in a way that you don't understand or want.  If the next line is a function call, this will step into the function.</p></li>
+	<li><B>Step Over</B>
+        <p class=lindent>Executes a single line of code.  When executed in a main body program, this is exactly identical to STEP, however, when the line of code involves a function call, the function is invoked and run, and the program then stops on the next line after the function call.  In other words, this function treats ALL lines of code as single-lines.</p></li>
+	<li><B>Step Out</B>
+        <p class=lindent>Executes all remaining code in a function.  When you've stepped into a function and know that it works correctly, rather than just keep clicking STEP till you're out, click this to have the debugger automatically finish the function for you and stop on the line after the function call.</p></li>
+	<li><B>Breakpoint</B>
+        <p class=lindent>Tells the debugger to stop running when it reaches that line of code.  Once the line is reached, program execution stops, and you can step from there.  This is good for complicated "if-then" structures or complex "while" loops, where you just want to check a status variable on each loop iteration.  See the <a href="um-editor.htd">Editor</a> page for more information on managing breakpoints</p></li>	
+	<li><B>Run to line</B>
+        <p class=lindent>Runs to a specific line, then stops.  It's basically a breakpoint that goes away when you reach it.</li>
+	<li><B>Variable Contents</B>        
+	<p class=lindent>Shows the value of whatever variables you'd like to see.  Probably one of the most important functions, this function lets you look at the data contained in your program.  When used in conjunction with all the rest, this will more than likely find your bug.</p></li>
+    </ol>
+
+
+</body>
+</html>

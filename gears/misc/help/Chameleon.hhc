@@ -1,0 +1,69 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="HelpBlocks">
+<!-- Sitemap 1.0 -->
+</HEAD><BODY>
+<UL>
+  <LI><OBJECT type="text/sitemap">
+      <param name="Name" value="Introduction">
+      <param name="Local" value="um-intro.htm">
+      </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+      <param name="Name" value="Tutorial">
+      <param name="Local" value="um-tut.htm">
+      </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+      <param name="Name" value="Chameleon Reference">
+      </OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap">
+        <param name="Name" value="User Interface">
+        </OBJECT>
+    <UL>
+      <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Main Window">
+          <param name="Local" value="um-mainwindow.htm">
+          </OBJECT>
+      <UL>
+        <LI><OBJECT type="text/sitemap">
+            <param name="Name" value="Menus and Toolbar">
+            <param name="Local" value="um-menus.htm">
+            </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+            <param name="Name" value="Editor">
+            <param name="Local" value="um-editor.htm">
+            </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+            <param name="Name" value="Project Management">
+            <param name="Local" value="um-projects.htm">
+            </OBJECT>
+      </UL>
+      <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Options">
+          <param name="Local" value="um-options.htm">
+          </OBJECT>
+    </UL>
+    <LI><OBJECT type="text/sitemap">
+        <param name="Name" value="Concepts">
+        </OBJECT>
+    <UL>
+      <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Network Connectivity">
+          <param name="Local" value="um-network.htm">
+          </OBJECT>
+      <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Compiling">
+          <param name="Local" value="um-compiling.htm">
+          </OBJECT>
+      <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Debugger">
+          <param name="Local" value="um-debugging.htm">
+          </OBJECT>
+      <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Permissions">
+          <param name="Local" value="um-permissions.htm">
+          </OBJECT>
+    </UL>
+  </UL>
+</UL>

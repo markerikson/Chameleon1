@@ -1,0 +1,14 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>Chameleon: User Interface</title>
+
+  </head>
+<body>
+<h2>Main Window</h2>
+<IMG SRC="screen-chameleon.png" BORDER="0">
+
+<p>The main window of Chameleon contains several major sections:  The <a href="um-menus.htd">Menus and Toolbar</a> at the top, The <a href="um-projects.htd">Project Management</a> tree in the upper left, the <a href="um-editor">Editor</a> in the upper right, and the tabbed window at the bottom contains the terminal, the compiler output panel, the variable watch panel, and the debugging input/output panel.
+
+</body>
+</html>

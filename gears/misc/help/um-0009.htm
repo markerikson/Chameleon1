@@ -1,0 +1,33 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>Chameleon: Network Connectivity</title>
+  </head>
+<body>
+
+<h1>Network Connectivity</h1>
+ <p>Chameleon provides you with a Network Transparent environment that allows for development and testing of code on the computer in front of you and or on a remote server with equal ease.</p>
+ <h3><a name="mode">Remote vs Local</a></h3>
+  <p>A remote file is a file that is stored on a remote server.  A local file is a file that is stored on the computer in front of you.</p>
+  <p>Most menu and toolbar actions are performed on the file currently being edited.  If the current visible file is a remote file, compilation, debugging, and execution will be run on the remote server.  Local compilation and debugging are currently not implemented.</p>
+
+ <h3><a name="connect">How to connect</a></h3>
+  <p>Opening or saving to remote files can be accomplished through the appropriate menu commands, after a correct username, hostname, and password have been entered in the options menu.</p>
+  <p>Opening local files can be accomplished whenever, as long as the Local Editing permission has been authorized</p>
+
+ <h3><a name="messages">Common Networking Error Messages</a></h3>
+	<dl>
+		<dt>"Unable to authenticate." or "Authentication Failed"</dt>
+			<dd>This means that the username and password that you used were not accepted on the server you tried connecting to.</dd>
+		<dt>"Permssion Denied."</dt>
+			<dd>You cannot save the file to the desired directory because it is write protected, or use filename you chose because there already exists a file with that name that you may not overwrite because of write protection.</dd>
+		<dt>"Read Denied"</dt>
+			<dd>You do not have permission to read the directory or file you are trying to access.</dd>
+		<dt>"Connection Refused"</dt>
+			<dd>The server you are trying to connect to did not allow you to connect.  Usually a result of the server not having an SSH service running.</dd>
+	</dl>
+
+  
+</body>
+</html>
+

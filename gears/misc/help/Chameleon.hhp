@@ -1,0 +1,34 @@
+[OPTIONS]
+Compatibility=1.1
+Full-text search=Yes
+Contents file=Chameleon.hhc
+Compiled file=Chameleon.chm
+Default Window=Help
+Default topic=um-intro.htm
+Index file=Chameleon.hhk
+Title=Chameleon
+
+[WINDOWS]
+Help=,"Chameleon.hhc","Chameleon.hhk","um-intro.htm",,,,,,0x2420,,0x380e,,,,,0,,,
+
+[FILES]
+um-intro.htm
+um-tut.htm
+um-ref.htm
+um-ui.htm
+um-mainwindow.htm
+um-menus.htm
+um-editor.htm
+um-projects.htm
+um-options.htm
+um-concepts.htm
+um-network.htm
+um-compiling.htm
+um-debugging.htm
+um-permissions.htm
+
+[ALIAS]
+#include "Chameleon_alias.h"
+
+[MAP]
+#include "Chameleon_ids.h"
