@@ -134,6 +134,7 @@ private:
 	void Test(wxCommandEvent& event);
 	//void SaveFileAs(wxCommandEvent& event);
 	void OnUpdateSave(wxUpdateUIEvent &event);
+	void OnUpdateDebug(wxUpdateUIEvent &event);
 	void OnUndo(wxCommandEvent &event);
 	void OnRedo(wxCommandEvent &event);
 	void OnCloseWindow(wxCloseEvent& event);
@@ -263,7 +264,7 @@ private:
 
 	//ChameleonEditor* m_edit;
 
-	wxArrayString m_projectFiles;
+	wxArrayString m_compilationSources;
 
 	wxString m_filterCPPFiles;
 	wxString m_filterHeaderFiles;

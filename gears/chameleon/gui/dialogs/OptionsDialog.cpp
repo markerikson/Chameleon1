@@ -484,6 +484,20 @@ bool OptionsDialog::EvaluateOptions()
 	}
 
 
+	Permission* perms = m_options->GetPerms();
+	for(int i = 0; i < m_checkList->GetCount(); i++)
+	{
+		int mappedPerm = m_permMappings[i];
+
+		if(m_checkList->IsChecked(i))
+		{
+			perms->enable(mappedPerm);
+		}
+		else
+		{
+			perms->disable(mappedPerm);
+		}
+	}
 
 	m_options->SetHostname(m_hostname->GetValue());
 	m_options->SetUsername(m_username->GetValue());

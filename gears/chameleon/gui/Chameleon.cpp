@@ -89,6 +89,12 @@ BEGIN_EVENT_TABLE(ChameleonWindow, wxFrame)
 	EVT_MENU						(ID_OPEN_PROJECT_REMOTE, ChameleonWindow::OnOpenProjectFile)
 	EVT_MENU						(ID_CLOSE_PROJECT, ChameleonWindow::CloseProjectFile)
 	EVT_MENU						(ID_PROJECT_REMOVEFILE, ChameleonWindow::OnRemoveFileFromProject)
+	EVT_MENU						(ID_DEBUG_START, ChameleonWindow::OnDebugCommand)
+	EVT_MENU						(ID_DEBUG_STOP, ChameleonWindow::OnDebugCommand)
+	EVT_MENU						(ID_DEBUG_STEPNEXT, ChameleonWindow::OnDebugCommand)
+	EVT_MENU						(ID_DEBUG_STEPOVER, ChameleonWindow::OnDebugCommand)
+	EVT_MENU						(ID_DEBUG_STEPOUT, ChameleonWindow::OnDebugCommand)
+	EVT_UPDATE_UI_RANGE				(ID_DEBUG_IDS_FIRST, ID_DEBUG_IDS_LAST - 1, ChameleonWindow::OnUpdateDebug)
 
 	
 END_EVENT_TABLE()
@@ -156,6 +162,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	{
 		m_options->SetHostname(m_config->Read("Network/hostname"));
 		m_options->SetUsername(m_config->Read("Network/username"));
+		m_options->SetMingwPath(m_config->Read("Compiler/mingwpath"));
 		
 		authorizedCode = m_config->Read("Permissions/authorized", defaultAuthorizedCode);
 		enabledCode = m_config->Read("Permissions/enabled", defaultEnableCode);
@@ -192,7 +199,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 	m_network = new Networking(m_options);
 	m_compiler = new Compiler(m_options, m_network);
-	m_debugger = new Debugger(NULL);
+	m_debugger = new Debugger(NULL, this);
 
 	m_optionsDialog = new OptionsDialog(this, m_options, ID_OPTIONSDIALOG, "Options");
 	//UpdatePermsList();
@@ -311,7 +318,7 @@ void ChameleonWindow::OnFileNew (wxCommandEvent &WXUNUSED(event))
 	wxString locationPrefix = "(?) ";
 
 	wxString noname = locationPrefix + "<untitled> " + wxString::Format ("%d", m_fileNum);
-	ChameleonEditor* edit = new ChameleonEditor (this, m_book, -1);
+	ChameleonEditor* edit = new ChameleonEditor (this, m_options, m_book, -1);
 	m_currentEd = edit;
 	m_currentPage = m_book->GetPageCount();
 	m_book->AddPage (edit, noname, true);
@@ -716,7 +723,7 @@ void ChameleonWindow::OpenSourceFile (wxArrayString fnames)
 		// need to create a new buffer for the file
 		else
 		{
-			ChameleonEditor *edit = new ChameleonEditor (this, m_book, -1);
+			ChameleonEditor *edit = new ChameleonEditor (this, m_options, m_book, -1);
 
 			edit->LoadFileText(fileContents);
 			edit->SetFilename(newFileName, m_remoteMode);
@@ -871,6 +878,7 @@ void ChameleonWindow::OnDebugCommand(wxCommandEvent &event)
 	switch(eventID)
 	{
 		case ID_DEBUG_START:
+		{
 			// TODO Make all open files for the current executable read-only
 			//      Need to also check when opening a source file.
 			if(m_bProjectOpen)
@@ -883,6 +891,7 @@ void ChameleonWindow::OnDebugCommand(wxCommandEvent &event)
 					filepath.MakeAbsolute(basepath);
 
 					wxString filename = filepath.GetFullPath(wxPATH_UNIX);
+					wxLogDebug("Filename %d: %s", i + 1, filename);
 
 					sourcefiles.Add(filename);
 				}
@@ -901,11 +910,29 @@ void ChameleonWindow::OnDebugCommand(wxCommandEvent &event)
 				debugEvent.SetExecutableFilename(executableFile.GetFullPath(wxPATH_UNIX));
 			}
 			debugEvent.SetSourceFilenames(sourcefiles);
+
+			wxToolBar* tb = GetToolBar();
+
+			//tb->EnableTool(ID_DEBUG_START, false);
 			break;
+		}
 		case ID_DEBUG_ADD_BREAKPOINT:
+		{
+		
 			// TODO The editor is going to need to know if the user is debugging or not
 			break;
+		}
+		case ID_DEBUG_REMOVE_BREAKPOINT:
+		{
+			break;
+		}
+		default:
+		{
+			wxLogDebug("Bad value in CW::OnDebugCommand.  Value: %d", eventID);
+			break;
+		}
 			
+		m_debugger->AddPendingEvent(debugEvent);
 	}
 
 }
@@ -973,6 +1000,17 @@ void ChameleonWindow::Test(wxCommandEvent& WXUNUSED(event))
 	}
 
 	
+	wxArrayInt lines = m_currentEd->GetBreakpoints();
+
+	wxString msg;
+	
+
+	for(int i = 0; i < lines.GetCount(); i++)
+	{
+		msg << lines[i] << " ";
+	}
+
+	wxLogDebug("Breakpoints: %s", msg);
 
 
 	//TextManager tm = m_terminal->GetTM();
@@ -1725,9 +1763,16 @@ void ChameleonWindow::UpdateToolbar()
 
 		wxBitmap bmStepOut(stepout_xpm);
 		t->AddTool(ID_DEBUG_STEPOUT, "Step out", bmStepOut);
+
+		for(int i = ID_DEBUG_IDS_FIRST; i < ID_DEBUG_IDS_LAST; i++)
+		{
+			t->EnableTool(i, false);
+		}
 	}
 
 	t->Realize();
+
+	
 
 }
 
@@ -1827,6 +1872,7 @@ void ChameleonWindow::EvaluateOptions()
 	m_config->Write("Permissions/enabled", perms->getGlobalEnabled());
 	m_config->Write("Network/hostname", m_options->GetHostname());
 	m_config->Write("Network/username", m_options->GetUsername());
+	m_config->Write("Compiler/mingwpath", m_options->GetMingwPath());
 }
 
 // called after every major network operation
@@ -2129,9 +2175,13 @@ void ChameleonWindow::OnTreeItemActivated(wxTreeEvent &event)
 			(parentItem == m_projectFileFolders[2]))
 		{
 			FileNameTreeData* data = static_cast <FileNameTreeData* > (m_projectTree->GetItemData(item));
-			wxLogDebug("Activated filename: %s", data->filename);
+			
 			wxArrayString filesToOpen;
-			filesToOpen.Add(data->filename);
+			//wxFileName remoteFile(m_currentProjectInfo->projectBasePath, data->filename);
+			//wxString pathname = remoteFile.GetFullPath( (m_currentProjectInfo->isRemote ? wxPATH_UNIX : wxPATH_DOS));
+			wxString pathname = data->filename;
+			wxLogDebug("Activated filename: %s", pathname);
+			filesToOpen.Add(pathname);
 
 			OpenSourceFile(filesToOpen);
 		}
@@ -2233,6 +2283,7 @@ void ChameleonWindow::LoadFilesIntoProjectTree(wxString configPath, wxString con
 		if(fileName != wxEmptyString)
 		{
 			wxFileName newFileName(fileName);
+			newFileName.MakeAbsolute(m_currentProjectInfo->projectBasePath);
 			int iconNum = m_remoteFileDialog->GetIconIndex(newFileName.GetExt());
 
 			FileNameTreeData* data = new FileNameTreeData();
@@ -2308,7 +2359,12 @@ void ChameleonWindow::OnCompile(wxCommandEvent &event)
 			else 
 			{
 				m_compiler->CompileFile(m_currentEd->GetFilePath(), m_currentEd->GetFilenameString(), m_remoteMode, m_compilerTextbox);
+				m_currentEd->SetCompiled();
 			}
+
+			int outputIndex = m_noteTerm->FindPagePosition(m_compilerTextbox);
+
+			m_noteTerm->SetSelection(outputIndex);
 		}
 		else 
 		{
@@ -2447,4 +2503,50 @@ void ChameleonWindow::OnDebugEvent(wxDebugEvent &event)
 	int eventID = event.GetId();
 
 	wxLogDebug("Debug event: %d", eventID);
+
+	switch(eventID)
+	{
+		case ID_DEBUG_STOP:
+		{
+			wxToolBar* tb = GetToolBar();
+
+			for(int i = ID_DEBUG_IDS_FIRST; i < ID_DEBUG_IDS_LAST; i++)
+			{
+				tb->EnableTool(i, false);
+			}
+
+			break;
+		}
+	}
+}
+
+void ChameleonWindow::OnUpdateDebug(wxUpdateUIEvent &event)
+{
+	bool isDebugging = m_debugger->isDebugging();
+	bool isPaused = m_debugger->isPaused();
+
+	wxToolBar* tb = GetToolBar();
+	if(isDebugging)
+	{
+		tb->EnableTool(ID_DEBUG_START, false);
+		tb->EnableTool(ID_DEBUG_STOP, true);
+
+		tb->EnableTool(ID_DEBUG_STEPNEXT, isPaused);
+		tb->EnableTool(ID_DEBUG_STEPOVER, isPaused);
+		tb->EnableTool(ID_DEBUG_STEPOUT, isPaused);
+	}
+	else
+	{
+		// skip ID_DEBUG_START;
+		for(int i = ID_DEBUG_IDS_FIRST + 1; i < ID_DEBUG_IDS_LAST; i++)
+		{
+			tb->EnableTool(i, false);
+		}
+
+		// TODO Better determination (project-based is needed too)
+		bool canStartDebug = !m_currentEd->Modified() && 
+							m_currentEd->HasBeenCompiled() &&
+							m_currentEd->HasBeenSaved();
+		tb->EnableTool(ID_DEBUG_START, canStartDebug);
+	}
 }

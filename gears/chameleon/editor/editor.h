@@ -32,6 +32,9 @@ public:
 	bool SaveFileLocal();
 
 	bool Modified();
+	bool HasBeenCompiled();
+
+	void SetCompiled();
 
 	void OnChar(wxStyledTextEvent &event);
 	void OnRightClick(wxMouseEvent &event);
@@ -86,6 +89,7 @@ private:
 
 	bool m_bLoadingFile;
 	bool m_bLastSavedRemotely;
+	bool m_bHasBeenCompiled;
 	
 	wxMenu m_popupMenu;
 	

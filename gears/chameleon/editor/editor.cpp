@@ -47,6 +47,7 @@ ChameleonEditor::ChameleonEditor( ChameleonWindow *mframe,
 
 	m_bLoadingFile = false;
 	m_bLastSavedRemotely = true;
+	m_bHasBeenCompiled = false;
 
 	m_fileNameAndPath.Assign(wxEmptyString);
 
@@ -137,9 +138,9 @@ ChameleonEditor::ChameleonEditor( ChameleonWindow *mframe,
 
 	m_popupMenu.Append(ID_DEBUG_RUNTOCURSOR, "Run to cursor");
 
-	int modmask = wxSTC_MOD_DELETETEXT | wxSTC_MOD_INSERTTEXT;
+	//int modmask = wxSTC_MOD_DELETETEXT | wxSTC_MOD_INSERTTEXT;
 
-	this->SetModEventMask(modmask);
+	//this->SetModEventMask(modmask);
 
 }
 
@@ -435,6 +436,7 @@ void ChameleonEditor::OnRightClick(wxMouseEvent &event)
 
 void ChameleonEditor::OnEditorModified(wxStyledTextEvent &event)
 {
+	/*
 	int modType = event.GetModificationType();
 
 	wxString debugMessage;
@@ -449,6 +451,8 @@ void ChameleonEditor::OnEditorModified(wxStyledTextEvent &event)
 			message = "Delete mod.";
 			break;
 	}	
+	*/
+	m_bHasBeenCompiled = false;
 }
 
 void ChameleonEditor::OnAddBreakpoint(wxCommandEvent &event)
@@ -501,4 +505,14 @@ wxArrayInt ChameleonEditor::GetBreakpoints()
 
 	linenumbers.Sort((CMPFUNC_wxArraywxArrayInt)CompareInts);
 	return linenumbers;
+}
+
+bool ChameleonEditor::HasBeenCompiled()
+{
+	return m_bHasBeenCompiled;
+}
+
+void ChameleonEditor::SetCompiled()
+{
+	m_bHasBeenCompiled = true;
 }
