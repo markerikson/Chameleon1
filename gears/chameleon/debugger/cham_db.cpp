@@ -77,6 +77,12 @@ Debugger::Debugger(wxTextCtrl* outBox, Networking* networking, wxEvtHandler* poi
 
 	// ints - "$n = val"
 	varRegExes["int"] = "([[:digit:]]+)";
+
+	// ints & - "$n = (int &) val"
+	varRegExes["int&"] = ".+ ([[:digit:]]+)";
+
+	// ints * - "$n = val"
+	varRegExes["int*"] = "([[:digit:]]+)";
 	
 	// double-"$n = val.val"
 	varRegExes["double"] = "([[:digit:]]+\\.[[:digit:]]+)";
@@ -1184,7 +1190,9 @@ void Debugger::sendPrint(wxString fromGDB)
 		else
 		{
 			singleLine = fromGDB.Mid(0, lineBreak);
-			fromGDB.Remove(0, lineBreak);
+			//fromGDB.Remove(0, lineBreak);
+
+			fromGDB = fromGDB.AfterFirst('\n');
 
 			if(singleLine.Mid(0,4) == "type")
 			{
@@ -1197,8 +1205,21 @@ void Debugger::sendPrint(wxString fromGDB)
 				if(ampIdx != -1)
 				{
 					singleLine = singleLine.Remove(ampIdx);
+					singleLine.Append("&");
 				}
+
+				ampIdx = singleLine.Find(" *");
+				if(ampIdx != -1)
+				{
+					singleLine = singleLine.Remove(ampIdx);
+					singleLine.Append("*");
+				}
+
+				//~~DEBUG~~
+				wxLogDebug("--sendPrint: ampIdx:"<<ampIdx<<" // singleLine:"<<singleLine);
+
 				fromWatch.Add(singleLine);
+				ampIdx = -2;
 			}
 			else if(singleLine.Mid(0,9) == "No symbol")
 			{
@@ -1221,17 +1242,24 @@ void Debugger::sendPrint(wxString fromGDB)
 	{
 		for(int i = 0; i < varCount; i++)
 		{
-			ampIdx = ignoreVars.Index(m_varInfo[i].name);
-			if(ampIdx == wxNOT_FOUND)
+			if(ignoreVars.Index(m_varInfo[i].name) == wxNOT_FOUND)
 			{
 				//current variable is not in the "ignoreVars" list...
 				if(m_varInfo[i].type == "null")
 				{
 					m_varInfo[i].type = fromWatch[fromWatchIndex];
 					
+					//special cases:
+					// type==string: append "._M_dataplus._M_p" to format the string
+					// type==[xxx]*: pre-pend "*" to de-reference the pointer type
 					if(m_varInfo[i].type == "string")
 					{
 						m_varInfo[i].name = m_varInfo[i].name + "._M_dataplus._M_p";
+					}
+					if(m_varInfo[i].type.Find("*") != -1)
+					{
+						singleLine = m_varInfo[i].name;
+						m_varInfo[i].name = "*" + singleLine;
 					}
 
 					fromWatchIndex++;
@@ -1276,7 +1304,7 @@ void Debugger::removeVar(wxString varName, wxString funcName, wxString className
 //parseOutput(): takes GDB output & parses it for the "print %s" string
 void Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 {
-	wxString singleLine;
+	wxString singleLine, match;
 	wxArrayString fromWatch, ignoreVars;
 	int lineBreak = 0, endQuote = 0, fromWatchIndex = 0;
 	bool parseError = false, stayIn = true;
@@ -1297,7 +1325,9 @@ void Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 			{
 				lineBreak = fromGDB.Find("\n");
 				singleLine = fromGDB.Mid(0, lineBreak);
-				fromGDB.Remove(0, lineBreak);
+
+				//fromGDB.Remove(0, lineBreak);
+				fromGDB = fromGDB.AfterFirst('\n');
 
 				if( singleLine.Mid(0,1) == "$" ||
 					singleLine.Mid(0,9) == "No symbol" ||
@@ -1305,57 +1335,59 @@ void Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 				{stayIn = false;}
 
 				//fromGDB.Remove(0, 1);	//get rid of the \r
-				fromGDB = fromGDB.AfterFirst('\n');
 			}while(stayIn);
 
 			if(!singleLine.IsEmpty())
 			{
-			if(singleLine.Mid(0,9) == "No symbol")
-			{
-				varValue.Add(singleLine);
-			}
-			else if(m_varInfo[i].type.Find("[") == -1)
-			{
-				wxRegEx global = varRegExes[m_varInfo[i].type];
-				if(global.Matches(singleLine))
+				if(singleLine.Mid(0,9) == "No symbol")
 				{
-					varValue.Add(global.GetMatch(singleLine, 1));
+					varValue.Add(singleLine);
 				}
-				else
+				else if(m_varInfo[i].type.Find("[") == -1)
 				{
-					varValue.Add("Error Parsing Value: RegEx miss-match for "+m_varInfo[i].type);
-				}
-			}
-			else
-			{
-				//we have an array of some type...
-				if(m_varInfo[i].type.Find("char") != -1)
-				{
-					wxRegEx global = varRegExes["char[]"];
-					//it's a char string.  Parse as regular string
+					wxRegEx global = varRegExes[m_varInfo[i].type];
 					if(global.Matches(singleLine))
 					{
-						varValue.Add(global.GetMatch(singleLine, 1));
+						match = global.GetMatch(singleLine, 1);
+						varValue.Add(global.GetMatch(match);
 					}
 					else
 					{
-						varValue.Add("Error Parsing Value: RegEx miss-match for "+m_varInfo[i].type);
+						varValue.Add("Error Parsing Value ["<<singleLine<<"]: RegEx miss-match for "<<m_varInfo[i].type);
 					}
 				}
 				else
 				{
-					wxRegEx global = varRegExes["array"];
-					//it's a regular array.
-					if(global.Matches(singleLine))
+					//we have an array of some type...
+					if(m_varInfo[i].type.Find("char") != -1)
 					{
-						varValue.Add(global.GetMatch(singleLine, 1));
+						wxRegEx global = varRegExes["char[]"];
+						//it's a char string.  Parse as regular string
+						if(global.Matches(singleLine))
+						{
+							match = global.GetMatch(singleLine, 1);
+							varValue.Add(global.GetMatch(match);
+						}
+						else
+						{
+							varValue.Add("Error Parsing Value ["<<singleLine<<"]: RegEx miss-match for "<<m_varInfo[i].type);
+						}
 					}
 					else
 					{
-						varValue.Add("Error Parsing Value: RegEx miss-match for "+m_varInfo[i].type);
+						wxRegEx global = varRegExes["array"];
+						//it's a regular array.
+						if(global.Matches(singleLine))
+						{
+							match = global.GetMatch(singleLine, 1);
+							varValue.Add(global.GetMatch(match);
+						}
+						else
+						{
+							varValue.Add("Error Parsing Value ["<<singleLine<<"]: RegEx miss-match for "<<m_varInfo[i].type);
+						}
 					}
-				}
-			}//end array-test
+				}//end array-test
 			}
 		}
 	}//end for-loop
