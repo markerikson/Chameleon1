@@ -62,6 +62,8 @@ private:
 	wxFileName m_localFileName;
 	wxString m_filename;
 	wxDateTime m_filetime;
+
+	bool m_bLoadingFile;
 	
 	
 	DECLARE_EVENT_TABLE()

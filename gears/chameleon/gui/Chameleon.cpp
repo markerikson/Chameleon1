@@ -765,6 +765,32 @@ void ChameleonWindow::CheckSize()
 void ChameleonWindow::OnUpdateSave(wxUpdateUIEvent &event)
 {
 	bool enable = m_currentEd->Modified();
+
+	int tabNum = m_book->GetSelection();
+	wxString title = m_book->GetPageText(tabNum);
+
+	if(enable)
+	{
+		int tabNum = m_book->GetSelection();
+		wxString title = m_book->GetPageText(tabNum);
+
+		if(!title.Contains("*"))
+		{
+			title += "*";
+			m_book->SetPageText(tabNum, title);
+			//this->Refresh();
+			m_book->Refresh();
+		}		
+	}
+	else
+	{
+		if(title.Contains("*"))
+		{
+			title.RemoveLast(1);
+			m_book->SetPageText(tabNum, title);
+			m_book->Refresh();
+		}
+	}
 	event.Enable(enable);
 	//TODO multiple buffer
 	//ed->GetModify());
@@ -808,6 +834,7 @@ void ChameleonWindow::SaveFile(bool saveas)
 			}
 
 			filename = dlg.GetPath();
+			m_currentEd->SaveFile(filename);
 		}
 		else
 		{

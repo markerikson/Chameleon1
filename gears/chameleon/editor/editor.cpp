@@ -11,7 +11,7 @@
 
 BEGIN_EVENT_TABLE(ChameleonEditor, wxStyledTextCtrl)
 	EVT_STC_CHARADDED(-1, ChameleonEditor::OnChar)
-	EVT_STC_MODIFIED(-1, ChameleonEditor::OnSetTabModified)
+	//EVT_STC_MODIFIED(-1, ChameleonEditor::OnSetTabModified)
 END_EVENT_TABLE()
 
 ChameleonEditor::ChameleonEditor( ChameleonWindow *mframe,
@@ -24,6 +24,8 @@ ChameleonEditor::ChameleonEditor( ChameleonWindow *mframe,
 {
     m_mainFrame = mframe;
 	m_parentNotebook = (ChameleonNotebook*)parent;
+
+	m_bLoadingFile = false;
 
     this->SetTabWidth(4);
 
@@ -111,7 +113,7 @@ bool ChameleonEditor::SaveFileAs()
 
 bool ChameleonEditor::SaveFile()
 {
-	return SaveFile(m_filename);
+	return SaveFile(m_localFileName.GetFullPath());
 }
 
 bool ChameleonEditor::SaveFile( const wxString & filename )
@@ -120,10 +122,15 @@ bool ChameleonEditor::SaveFile( const wxString & filename )
     // return if no change
     if(!Modified() && filename.IsEmpty()) { return true; }
 
-    // save edit in file and clear undo
-    if(!filename.IsEmpty()) { m_filename = filename; }
+	wxFileName fn(filename);
 
-    wxFile file (m_filename, wxFile::write);
+    // save edit in file and clear undo
+    if(!filename.IsEmpty()) 
+	{ 
+		m_filename = fn.GetFullName(); 
+	}
+
+    wxFile file (filename, wxFile::write);
 
     if(!file.IsOpened()) { return false; }
 
@@ -140,8 +147,8 @@ bool ChameleonEditor::SaveFile( const wxString & filename )
 
 
 
-	wxFileName fn;
-	fn.Assign(m_filename);
+	//wxFileName fn;
+	//fn.Assign(m_filename);
 
     m_filetime = fn.GetModificationTime();
 
@@ -185,10 +192,10 @@ bool ChameleonEditor::LoadLocalFile( const wxString & filename )
     // load file in edit and clear undo
     if( !filename.IsEmpty() )
 	{
-        m_filename = filename;
+        m_filename = wxFileName(filename).GetFullName();
 	}
 
-    wxFile file (m_filename);
+    wxFile file (filename);
 
     if( !file.IsOpened() )
 	{
@@ -221,6 +228,7 @@ bool ChameleonEditor::LoadFileText(wxString fileContents)
 {
 	if(fileContents.Length() > 0)
 	{
+		m_bLoadingFile = true;
 		ClearAll();
 		InsertText(0, fileContents);
 	}
@@ -295,6 +303,7 @@ bool ChameleonEditor::LoadFileText(wxString fileContents)
 	//SetTabUnmodified();
 
 
+	m_bLoadingFile = false;
 
     return true;
 }
@@ -302,7 +311,13 @@ bool ChameleonEditor::LoadFileText(wxString fileContents)
 bool ChameleonEditor::Modified () 
 {
     // return modified state
-    return (GetModify() && !GetReadOnly()); 
+	bool modified = GetModify();
+	bool readonly = !GetReadOnly();
+	bool canundo = CanUndo();
+	
+
+	bool returnModify = modified && readonly && canundo;
+    return returnModify; 
 }
 
 void ChameleonEditor::OnSetTabModified(wxStyledTextEvent &event)
@@ -310,12 +325,13 @@ void ChameleonEditor::OnSetTabModified(wxStyledTextEvent &event)
 	int modType = event.GetModificationType();
 	
 
-	if( (modType && wxSTC_MOD_INSERTTEXT) ||
-		(modType && wxSTC_MOD_DELETETEXT))
+	if( (modType & wxSTC_MOD_INSERTTEXT) ||
+		(modType & wxSTC_MOD_DELETETEXT))
 	{
 		bool isModified = this->Modified();
+        		
 
-		if(isModified)
+		if(isModified && !m_bLoadingFile)
 		{
 			int tabNum = m_parentNotebook->GetSelection();
 			wxString title = m_parentNotebook->GetPageText(tabNum);
