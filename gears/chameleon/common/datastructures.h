@@ -137,8 +137,8 @@ wxString GlobalPermStrings[] = {"Syntax highlighting",
 
 typedef struct 
 {
-	int linenumber,
-	wxString sourcefile
+	int gdbNumber,
+	int lineNumber
 } DebugBreakInfo;
 
 
@@ -154,7 +154,7 @@ WX_DECLARE_HASH_MAP(wxString,
 					wxStringEqual,
 					StringIntHashmap);
 
-WX_DECLARE_HASH_MAP(int,
+WX_DECLARE_HASH_MAP(wxString,
 					DebugBreakInfo,
 					wxIntegerHash,
 					wxIntegerEqual,
