@@ -1171,7 +1171,7 @@ void Debugger::sendPrint(wxString fromGDB)
 {
 	wxString singleLine;
 	wxArrayString fromWatch, ignoreVars;
-	int lineBreak = 0, endQuote = 0, fromWatchIndex = 0;
+	int lineBreak = 0, endQuote = 0, fromWatchIndex = 0, ampIdx = -1;
 
 	do
 	{
@@ -1193,7 +1193,7 @@ void Debugger::sendPrint(wxString fromGDB)
 
 
 				// TODO Do something with pointers here?
-				int ampIdx = singleLine.Find(" &");
+				ampIdx = singleLine.Find(" &");
 				if(ampIdx != -1)
 				{
 					singleLine = singleLine.Remove(ampIdx);
@@ -1212,7 +1212,7 @@ void Debugger::sendPrint(wxString fromGDB)
 			}
 
 			//fromGDB.Remove(0, 1);	//get rid of the \r we avoided before
-			fromGDB = fromGDB.AfterFirst('\n');
+			fromGDB = fromGDB.AfterFirst("\n");
 		}
 	}while(fromGDB != PROMPT_CHAR);
 
@@ -1221,7 +1221,8 @@ void Debugger::sendPrint(wxString fromGDB)
 	{
 		for(int i = 0; i < varCount; i++)
 		{
-			if(ignoreVars.Index(m_varInfo[i].name) == wxNOT_FOUND)
+			ampIdx = ignoreVars.Index(m_varInfo[i].name);
+			if(ampIdx == wxNOT_FOUND)
 			{
 				//current variable is not in the "ignoreVars" list...
 				if(m_varInfo[i].type == "null")
@@ -1280,7 +1281,7 @@ void Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 	int lineBreak = 0, endQuote = 0, fromWatchIndex = 0;
 	bool parseError = false, stayIn = true;
 
-	for(int i = 0; (i < varCount) && !parseError && fromGDB != wxEmptyString; i++)
+	for(int i = 0; (i < varCount) && !parseError; i++)
 	{
 		lineBreak = fromGDB.Find("\n");
 
@@ -1300,13 +1301,15 @@ void Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 
 				if( singleLine.Mid(0,1) == "$" ||
 					singleLine.Mid(0,9) == "No symbol" ||
-					singleLine == wxEmptyString)
+					singleLine.IsEmpty())
 				{stayIn = false;}
 
 				//fromGDB.Remove(0, 1);	//get rid of the \r
 				fromGDB = fromGDB.AfterFirst('\n');
 			}while(stayIn);
 
+			if(!singleLine.IsEmpty())
+			{
 			if(singleLine.Mid(0,9) == "No symbol")
 			{
 				varValue.Add(singleLine);
@@ -1353,6 +1356,7 @@ void Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 					}
 				}
 			}//end array-test
+			}
 		}
 	}//end for-loop
 
