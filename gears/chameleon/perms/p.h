@@ -16,13 +16,17 @@ using namespace std;
 
 const int NUM_MODULES = 15;
 //give each module a number
-enum module
+
+
+enum Permissions
 {
-	synLite = 0,
-	synFinish,
-	autoIndent,
-	debugger
+	PERM_SYNTAXHIGHLIGHT = 0,
+	PERM_AUTOCOMPLETE,
+	PERM_AUTOINDENT,
+	PERM_DEBUG,
 };
+
+
 
 class Permission
 {
