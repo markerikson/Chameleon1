@@ -140,6 +140,7 @@ class Debugger : public wxEvtHandler
 		int findBreakpoint(wxString fName, int lineNum, bool andRemove = false);
 		//void sendWatchVariableCommand(wxString varName);
 		bool checkOutputStream(wxString stream);	//true = okay to parse further
+		void grabUserOutput(wxString fromProc, wxString searchString, int offset);
  
 		void sendCommand(wxString send);	//sends command & updates history
 
@@ -227,6 +228,9 @@ class Debugger : public wxEvtHandler
 		ProjectInfo* projectBeingDebugged;
 
 		int m_numberOfDebugEvents;
+
+		//DEBUG//
+		wxArrayString allUserOutput;
 
 		DECLARE_EVENT_TABLE()
 };

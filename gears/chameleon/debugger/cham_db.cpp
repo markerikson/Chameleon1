@@ -26,6 +26,9 @@
 *              shows obvious places i've moded.
 *BSC-04/03/04->So much has changed that it's not funny.  Debug
 *              event code has been changed to work with projects.
+*BSC-04/15/04->... yeah... not EVEN gonna.  To see what's changed,
+*              somehow get your hands on all the previous versions
+*              and do a "DIFF".  ^_^
 \*****************************************************************/
 
 //#define CRTDBG_MAP_ALLOC
@@ -135,6 +138,14 @@ Debugger::~Debugger()
 	for(int o = 0; o < errorCount; o++)
 	{
 		tmp = errorHist[o] + " / ";
+		dumpFile.Write(tmp.c_str(), tmp.Len());
+	}
+
+	tmp = " *-- User Output / ";
+	dumpFile.Write(tmp.c_str(), tmp.Len());
+	for(o = 0; o < (int)allUserOutput.GetCount(); o++)
+	{
+		tmp = allUserOutput[o];
 		dumpFile.Write(tmp.c_str(), tmp.Len());
 	}
 
@@ -1639,9 +1650,10 @@ wxString Debugger::getProcOutput(int numEntries = -1)
 	int loopStop = numEntries;
 	if(outputCount > 0)
 	{
-		if(numEntries == -1)
+		if( numEntries == -1 ||
+			numEntries > outputCount)
 		{loopStop = outputCount;}
-
+		
 		for(int i = 0; i < loopStop; i++)
 		{tmp.Append(fullOutput[i]);}
 	}
@@ -1693,6 +1705,7 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 	//data now has the output...
 	tempHold = e.GetString();
 	data.Add(tempHold);
+	fullOutput.Add(tempHold);
 	
 	//data.Add(e.GetOutput());
 
@@ -1700,10 +1713,11 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 	wxLogDebug("DB output: %s", tempHold);
 	//tempHold.Empty();
 
-	//1) See if the captured string has a [$] all by itself at the end
+	//--NOTE-- In favor of capturing user output, this code is obsolete
+	//1) See if the captured string has [PROMPT_CHAR] all by itself at the end
 	//2) If so, begin parsing.
 	//3) If not, wait for another output
-	if(classStatus != START)
+/*	if(classStatus != START)
 	{
 		for(int i = 0; 
 		    i < (int)data.GetCount() && skipThrough; 
@@ -1721,7 +1735,8 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 			}
 		}
 	}
-	else
+	else*/
+	if(classStatus == START)
 	{
 		skipThrough = false;
 	}
@@ -1766,7 +1781,7 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 		case D_BREAK:		//disable break
 		case K_BREAK:		//kill break
 			//nothing to parse...
-			data.Empty();
+			data.Clear();
 			break;
 
 		case S_BREAK:		//set break
@@ -1803,13 +1818,23 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 			{
 				if(classStatus == STOP)
 				{
-					int progIdx = tempHold.Index("Program");
+					//here the program stopped normally.  That means, for user-
+					//generated output, we can just look to the front of the
+					//output string to the place "Program exited normally"
+					//appears.  Right?  -BSC
+					/*
+					int progIdx = tempHold.Find("Program");
 					if(progIdx != 0)
 					{
+						allUserOutput.Add(tempHold.Mid(0, progIdx));
+
 						wxLogDebug("\n-->Supposed User Output:\n");
-						wxLogDebug(tempHold.Mid(0,progIdx));
+						wxLogDebug(tempHold.Mid(0, progIdx));
 						wxLogDebug("\n");
 					}
+					*/
+					//all that code ^ here \/
+					grabUserOutput(tempHold, "Program", 0);
 
 					outputEvent.SetId(ID_DEBUG_EXIT_NORMAL);
 					guiPointer->AddPendingEvent(outputEvent);
@@ -1820,6 +1845,22 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 				if(reGoCase.Matches(tempHold))
 				{
 					goBreakpoint = reGoCase.GetMatch(tempHold, 1);
+
+					//here we have a "breakpoint" sitting somewhere... and if
+					//there's anything before it, that's user output.
+					/*
+					int progIdx = tempHold.Find("Breakpoint");
+					if( progIdx != 0 &&
+						progIdx != -1)
+					{
+						allUserOutput.Add(tempHold.Mid(0, progIdx));
+
+						wxLogDebug("\n-->Supposed User Output:\n");
+						wxLogDebug(tempHold.Mid(0, progIdx));
+						wxLogDebug("\n");
+					}
+					*/
+					grabUserOutput(tempHold, "Breakpoint ", 0);
 
 					if(reCase1.Matches(tempHold))
 					{
@@ -1848,6 +1889,9 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 				}
 				else
 				{
+					//Either the program stopped with a new error...
+					//OR
+					//It's user input.  Put something here.
 					error.Printf("program stopped for an unknown reason. ClassStatus %d", classStatus);
 					makeGenericError("go parse: ");
 
@@ -1860,6 +1904,9 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 			}
 			else
 			{
+				//here the program has exited badly.  BUT there is still a 
+				//"program" there...
+				/*
 				int progIdx = tempHold.Index("Program");
 				if(progIdx != 0)
 				{
@@ -1867,12 +1914,16 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 					wxLogDebug(tempHold.Mid(0,progIdx));
 					wxLogDebug("\n");
 				}
+				*/
+				grabUserOutput(temHold, "Program ", 0);
 			}
 			data.Empty();
 			break;
 		}
 
-		case JUMP:
+		case JUMP: //NOT USED IN RELEASE VERSION OF CHAMELEON
+			break;
+
 		case SOFT_RESET:
 		case HARD_RESET:
 		case NEW_FILE:		//new file to debug
@@ -1884,7 +1935,7 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 			flushBuffer();
 			break;
 
-		case VAR_ASSIGN:
+		case VAR_ASSIGN: //NOT USED IN RELEASE VERSION OF CHAMELEON
 			//the only time this status occurs is after a "print var = val"
 			//First we check for text.  This means an invalid assignment
 			//Next we check for the same things WATCH_VAR does...
@@ -2046,6 +2097,22 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 			stop(false);
 
 			data.Empty();
+	}
+}
+
+//grabUserOutput(): searches for a particular string & if there, grabs
+//  everything from [offset] to the found index
+void Debugger::grabUserOutput(wxString fromProc, wxString searchString, int offset)
+{
+	int progIdx = fromProc.Find(searchString);
+	if( progIdx != offset &&
+		progIdx != -1)
+	{
+		allUserOutput.Add(fromProc.Mid(offset, progIdx));
+
+		wxLogDebug("\n-->Supposed User Output:\n");
+		wxLogDebug(fromProc.Mid(offset, progIdx));
+		wxLogDebug("\n");
 	}
 }
 
