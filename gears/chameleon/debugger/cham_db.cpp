@@ -56,7 +56,7 @@ BEGIN_EVENT_TABLE(Debugger, wxEvtHandler)
 END_EVENT_TABLE()
 
 //straight up constructor
-Debugger::Debugger(wxTextCtrl* outBox, Networking* networking, wxEvtHandler* pointer)
+Debugger::Debugger(Networking* networking, wxEvtHandler* pointer)
 {
 	flushPrivateVar();
 	varCount = 0;
@@ -64,7 +64,6 @@ Debugger::Debugger(wxTextCtrl* outBox, Networking* networking, wxEvtHandler* poi
 
 	myEvent = NULL;
 
-	outputScreen = outBox;
 	guiPointer = pointer;
 	procLives = false;
 	status = DEBUG_DEAD;
@@ -109,39 +108,6 @@ Debugger::~Debugger()
 {
 	//initial stuff to cleanly exit (sorta)
 	stop(false);
-
-	/*
-	wxString tmp;
-
-	//dump history & errors into debug file
-	wxFile dumpFile;
-	dumpFile.Create("dump.txt",true);
-
-	tmp = "dump v0.1a / ";
-	dumpFile.Write(tmp.c_str(), tmp.Len());
-
-	for(int off = 0; off < histCount; off++)
-	{
-		tmp = getHistoryItem(off) + " / ";
-		dumpFile.Write(tmp.c_str(), tmp.Len());
-	}
-
-	tmp = " *-- Errors: / ";
-	dumpFile.Write(tmp.c_str(), tmp.Len());
-	for(int o = 0; o < errorCount; o++)
-	{
-		tmp = errorHist[o] + " / ";
-		dumpFile.Write(tmp.c_str(), tmp.Len());
-	}
-
-	tmp = " *-- User Output / ";
-	dumpFile.Write(tmp.c_str(), tmp.Len());
-	for(o = 0; o < (int)allUserOutput.GetCount(); o++)
-	{
-		tmp = allUserOutput[o];
-		dumpFile.Write(tmp.c_str(), tmp.Len());
-	}
-	*/
 
 	if(myEvent != NULL)
 	{
@@ -244,7 +210,7 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 
 		//"gdb -q" is the default program run.  Might need to be a "global read-only"
 		//var for ease of use.
-		startProcess(true, event.IsRemote(), execFile, "gdb -q", outputScreen);
+		startProcess(true, event.IsRemote(), execFile, "gdb -q");
 
 		//set breakpoints
 		for(i = 0; i < (int)srcFiles.GetCount(); i++)
@@ -362,34 +328,6 @@ ProjectInfo* Debugger::getCurrentProject()
 //--//
 
 //setFile(): set's the current file to be debugged. Never used.
-/*
-bool Debugger::setFile(wxString fName)
-{
-	if(fileIsSet)
-	{
-		//TODO:Worry about switching files in the middle of a debug here
-		return(false);
-	}
-	else
-	{
-		if(fName.IsEmpty())
-		{
-			return(false);
-		}
-		else
-		{
-			classStatus = NEW_FILE;
-			currFile = fName;
-			command = "file " + currFile + returnChar;
-			sendCommand(command);
-
-			status = DEBUG_STOPPED;
-			fileIsSet = true;
-		}//end file-empty-check
-	}
-	return(fileIsSet);
-}
-*/
 
 //currFile(): returns the currently loaded file
 wxString Debugger::getFile()
@@ -502,21 +440,14 @@ void Debugger::setProcess(bool newIsRemote, wxString newFname, wxString nExec)//
 	stop(false);
 	flushPrivateVar();
 	
-	//Option 1
-	//startProcess(true,newIsRemote, newFname, nExec, newOutbox);
-	
-	//Option 2 (outputscreen used to copy into itself)
-	startProcess(true, newIsRemote, newFname, nExec, outputScreen);
+	startProcess(true, newIsRemote, newFname, nExec);
 }
 
 
-void Debugger::startProcess(bool fullRestart, bool mode, wxString fName, wxString execThis, wxTextCtrl* outBox)
+void Debugger::startProcess(bool fullRestart, bool mode, wxString fName, wxString execThis)
 {
 	if(fullRestart)
 	{
-		//dave code
-		outputScreen = outBox;
-
 		//generic initialization
 		isRemote = mode;			//false = local
 		currFile = fName;
@@ -883,7 +814,7 @@ void Debugger::stop(bool pleaseRestart)
 
 	if(pleaseRestart)
 	{	
-		startProcess(true, isRemote, currFile, firstExecString, outputScreen);
+		startProcess(true, isRemote, currFile, firstExecString);
 	}
 }
 
@@ -918,34 +849,6 @@ void Debugger::cont()
 //VARIABLE FUNCTIONALITY
 //----------------------
 
-//sendWatchVariableCommand(): PRIVATE FUNCTION to simplify [snoopVar()]'s code
-//not used anymore.
-/*
-void Debugger::sendWatchVariableCommand(wxString varName)
-{
-	wxString tmp;
-
-	//re-enable confirming so we can force the "display" command
-	//to return a GDB # and value immediately
-	command.Append("set confirm off" + returnChar);
-
-	//get the type
-	tmp.Printf("whatis %s%s", varName.c_str(), returnChar.c_str());
-	command.Append(tmp.c_str());
-
-	//display
-	tmp.Printf("display %s%s", varName.c_str(), returnChar.c_str());
-	command.Append(tmp.c_str());
-
-	//disable confirming for continuing operation
-	command.Append("set confirm off" + returnChar);
-
-	sendCommand(command);
-
-	command.Clear();
-	varCount++;
-}
-*/
 
 //snoopVar(): adds, if not in the array, the given variable.  Actual snooping
 //  is done in [onOutputEvent]
@@ -1002,97 +905,6 @@ void Debugger::snoopVar(wxString varName, wxString funcName, wxString className,
 
 		classStatus = GET_WHAT;
 	}
-
-	/*to be touched at a later date?  This code makes use of GDB's "display" command
-	 *do do the automatic displaying of variables.  This is slightly less network-
-	 *intensive than sending "prints" for EVERYTHING since "display" 1) Keeps track
-	 *of in-scope and out-scope variables automatically, 2) displays ONLY in-scope
-	 *variables, 3) does not require "print" commands send every time GDB steps.
-	 */
-	/*
-	wxString tmp;
-	wxDebugEvent outputEvent;
-	bool watchingLocal = false;
-
-	//see if the passed function name / class name matches the stored ones
-	if( m_lastFuncVisited == funcName &&
-		m_lastClassVisited == className)
-	{watchingLocal = true;}
-
-	if(	status == DEBUG_WAIT ||
-		status == DEBUG_BREAK)
-	{
-		classStatus = WATCH_VAR;
-		command.Clear();
-
-		if(oneShot)
-		{
-			if(watchingLocal)
-			{
-				command.Printf("print %s%s", varName.c_str(), returnChar.c_str());
-				sendCommand(command);
-			}
-		}
-		else
-		{
-			tmp<<className<<"::"<<funcName;
-
-			//check the function against our repository
-			if(m_varFuncInfo.find(tmp) == m_varFuncInfo.end())
-			{
-				//the function is not in the repository
-				m_varFuncInfo.insert(tmp);
-				m_varFuncInfo[tmp].functionHasBeenVisited = watchingLocal;
-				m_varFuncInfo[tmp].variableDisplayed.Add(watchingLocal);
-				m_varFuncInfo[tmp].variableNames.Add(varName);
-
-				//set it to watching?
-				if(watchingLocal)
-				{
-					sendWatchVariableCommand(varName);
-				}
-			}
-			else	//the function is in the repository...
-			{
-				int varIndex = m_varFuncInfo[tmp].variableNames.Index(varName);
-
-				if(varIndex == wxNOT_FOUND)
-				{
-					//the variable is not in the repository
-					m_varFuncInfo[tmp].variableDisplayed.Add(watchingLocal);
-					m_varFuncInfo[tmp].variableNames.Add(varName);
-
-					//set it to watching?
-					if(watchingLocal)
-					{
-						sendWatchVariableCommand(varName);
-					}
-				}
-				else
-				{
-					//the variable is in the repository!
-					if( !(m_varFuncInfo[tmp].variableDisplayed[varIndex]) &&
-						watchingLocal)
-					{
-						//function has not been visited, and it's the "local" function
-						m_varFuncInfo[tmp].variableDisplayed[varIndex] = true;
-
-						sendWatchVariableCommand(varName);
-					}
-				}
-			}//end function repository check
-		}//end oneShot check
-	}//end status check
-	else//if(status == DEBUG_STOPPED)
-	{
-		//the snoopVar function has been called without a running GDB process
-
-		//COURSE OF ACTION:
-		//
-		we will now fake GDB's numbers using this class's internal [guiVarIndex]??
-		//
-	}
-	*/
 }
 
 //setVar(): set's a variable to a given value.  never used.
@@ -1185,24 +997,18 @@ void Debugger::sendPrint(wxString fromGDB)
 			if(ignoreVars.Index(m_varInfo[i].name) == wxNOT_FOUND)
 			{
 				//current variable is not in the "ignoreVars" list...
-				//if(m_varInfo[i].type == "null")
-				//{
-					if(fromWatchIndex < (int)fromWatch.GetCount())
-					{
-						m_varInfo[i].type = fromWatch[fromWatchIndex];
-					
-						
-
-						fromWatchIndex++;
-					}//testing "fromWatchIndex"
-					else
-					{
-						//if we're down here, then there are more variables than there are
-						//printed outputs.  So we by-pass the output in hopes that the
-						//next few "whatis" statements come through
-						watchStatus = true;
-					}
-				//}
+				if(fromWatchIndex < (int)fromWatch.GetCount())
+				{
+					m_varInfo[i].type = fromWatch[fromWatchIndex];
+					fromWatchIndex++;
+				}
+				else
+				{
+					//if we're down here, then there are more variables than there are
+					//printed outputs.  So we by-pass the output in hopes that the
+					//next few "whatis" statements come through
+					watchStatus = true;
+				}
 			}//end variable ignore existance check
 		}//end for
 	}
@@ -1656,18 +1462,11 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 			flushBuffer();
 			break;
 
-		case NEW_PROC:		//change in process pointer
+		case NEW_PROC:		//change in process pointer.  Never used...?
 			flushBuffer();
 			break;
 
 		case VAR_ASSIGN: //NOT USED IN RELEASE VERSION OF CHAMELEON
-			//the only time this status occurs is after a "print var = val"
-			//First we check for text.  This means an invalid assignment
-			//Next we check for the same things WATCH_VAR does...
-			// so we can probably remove this "break" and let it flow into
-			// WATCH_VAR...
-			//or we could ignore what i wrote a coupl'a months ago ^^ and
-			//let this flow into GET_PRINT.  :)  or an equiv.
 			break;
 
 		case GET_WHAT:
@@ -1833,8 +1632,6 @@ void Debugger::grabUserOutput(wxString fromProc, wxString searchString, int offs
 	if( progIdx != offset &&
 		progIdx != -1)
 	{
-		allUserOutput.Add(fromProc.Mid(offset, progIdx));
-
 		wxLogDebug("\n-->Supposed User Output:\n");
 		wxLogDebug(fromProc.Mid(offset, progIdx));
 		wxLogDebug("\n");
@@ -1863,7 +1660,6 @@ bool Debugger::checkOutputStream(wxString stream)
 			//either way, not good for further parsing.
 			if(reCase1.Matches(thirdCase))
 			{
-				//(*outputScreen)<<"Match for \"Program recieved\".  match 1 = "<<reCase1.GetMatch(thirdCase, 1)<<", match 2 = "<<reCase1.GetMatch(thirdCase, 3)<<"\n";
 				error = "Received bad program signal.  RegEx: " + reCase1.GetMatch(thirdCase, 1) + ", " + reCase1.GetMatch(thirdCase, 3);
 				makeGenericError("checkOutputStream:  ");
 				return(false);

@@ -79,8 +79,7 @@ class Debugger : public wxEvtHandler
 
 		//status modifiers
 		bool getMode();					//get current mode
-		
-		bool setFile(wxString fName);	//sets a file for debugging
+
 		wxString getFile();				//returns current file up for debugging
 
 		int genericStatus();			//returns current debug status
@@ -113,7 +112,6 @@ class Debugger : public wxEvtHandler
 
 		//variable management
 		void snoopVar(wxString varName, wxString funcName, wxString className, bool oneShot = true);
-		//void setVar(wxString varName, wxString newValue, wxString funcName, wxString className);
 		void removeVar(wxString varName, wxString funcName, wxString className);
 
 		//misc management
@@ -135,7 +133,6 @@ class Debugger : public wxEvtHandler
 		void sendPrint(wxString fromGDB);	//for use with snoopVar as well
 		bool parsePrintOutput(wxString fromGDB, wxArrayString &varValue);
 		int findBreakpoint(wxString fName, int lineNum, bool andRemove = false);
-		//void sendWatchVariableCommand(wxString varName);
 		bool checkOutputStream(wxString stream);	//true = okay to parse further
 		void grabUserOutput(wxString fromProc, wxString searchString, int offset);
  
@@ -147,7 +144,6 @@ class Debugger : public wxEvtHandler
 		//ASYNC Event Triggered Functions
 		void onProcessOutputEvent(ChameleonProcessEvent &e);
 		void onProcessErrOutEvent(ChameleonProcessEvent &e);
-		//void onProcessTermEvent(wxProcessEvent &e);
 		void onProcessTermEvent(ChameleonProcessEvent &e);
 
 		//private elements [grouped according to function]
@@ -159,12 +155,9 @@ class Debugger : public wxEvtHandler
 		int status;					//status of debugger
 		int classStatus;			//holds the last function called
 		long pid;					//process ID of GDB (if running)
-		//int currDebugLine;			//holds line number program is on
 		
 		int gdbBreakpointNum;		//keeps track of GDB's #ing system
-		//int deadBreakpoints;		//counts deleted breakpoints
 		int numBreakpoints;			//keeps track of actual number of live ones
-		//wxArrayInt breakpointNum;	//hold breakpoint line #'s
 		DebugBreakHash lineToNum;
 		
 		wxArrayString commandHistory;	//stores command history
@@ -182,33 +175,9 @@ class Debugger : public wxEvtHandler
 		StringStringHashmap varRegExes;
 		wxString Filename, Linenumber, FuncName;	//globals for use in parse
 
-		//obsolete or unused code
-		//wxArrayString varNames;		//holds variables being watched
-		//wxArrayString varValue;		//holds variable values
-		//wxArrayInt varDispIndex;	//holds variable "display#" assigned by GDB
-		//wxString m_lastFuncVisited;	//the last function stepped into
-		//wxString m_lastClassVisited;//the last class stepped into
-		//int guiVarIndex;			//holds the # that the gui uses to display 
-									//variables before a running process is available 
-									//for GDB numbers
-		//int gdbVarIndex;			//holds next GDB display #
 		int varCount;				//holds array position to insert next var
 
 		VariableInfoArray m_varInfo;//same as VariableInfoHash... only an array
-
-		//These two datastructures have been commented out until someone
-		//resurects them.
-		//VariableInfoHash m_varInfo;	//takes a GDB number and holds [string]:
-									//  -type
-									//  -var name
-									//  -function name
-									//  -value
-									//  -regEx for type
-		//FunctionVariableHash m_varFuncInfo;
-									//takes a class/function key and holds:
-									//  -function has been visited [bool]
-									//  -variable is displayed [bool array]
-									//  -var names [arrayString]		
 
 		wxString firstExecString;	//holds the first executed string
 		wxString currentSourceName;	//holds filename source
@@ -217,17 +186,11 @@ class Debugger : public wxEvtHandler
 		wxTextOutputStream* streamOut;	//output to GDB
 		wxDebugEvent* myEvent;		//how i communicate
 
-		//dave code
-		wxTextCtrl* outputScreen;
-
 		//GUI connectivity
 		wxEvtHandler* guiPointer;
 		ProjectInfo* projectBeingDebugged;
 
 		int m_numberOfDebugEvents;
-
-		//DEBUG//
-		wxArrayString allUserOutput;
 
 		DECLARE_EVENT_TABLE()
 };
