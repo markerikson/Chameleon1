@@ -278,7 +278,7 @@ void RemoteFileDialog::SetNetworking(Networking* network)
 {
 	m_network = network;
 
-	wxString userHome = m_network->GetHomeDirPath();
+	//wxString userHome = m_network->GetHomeDirPath();
 	//m_parentFrame->CheckNetworkStatus();
 	m_currentPath.AssignDir("~");
 }

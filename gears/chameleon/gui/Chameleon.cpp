@@ -3,6 +3,7 @@
 
 #include <wx/config.h>
 #include <wx/msw/iniconf.h>
+#include <wx/timer.h>
 #include "../common/debug.h"
 
 #ifdef MSVC6
@@ -62,6 +63,7 @@ bool MyApp::OnInit()
 ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, const wxSize& size)
        : wxFrame((wxFrame *)NULL, -1, title, pos, size)
 {
+	wxStopWatch stopwatch;
 #ifdef __WXMAC__
     // we need this in order to allow the about menu relocation, since ABOUT is
     // not the default id of the about menu
@@ -82,7 +84,8 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	m_remoteMode = true;
 
 
-
+	long time1 = stopwatch.Time();
+	stopwatch.Start();
 	m_perms = new Permission();
 
 	// enable only PERM_AUTOINDENT.  Eventually, will rely only on the provided code.
@@ -103,6 +106,8 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	m_perms->enable(PERM_AUTOINDENT);
 	m_perms->enable(PERM_REMOTELOCAL);
 
+	long time2 = stopwatch.Time();
+	stopwatch.Start();
 
 
 
@@ -119,11 +124,12 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	//CheckNetworkStatus();
 
 	//wxString password = wxGetPasswordFromUser("Password for the current server:", "Password");
-	m_network->SetDetails(hostname, username, "");
+	//m_network->SetDetails(hostname, username, "");
 	//CheckNetworkStatus();
 
 
-
+	long time3 = stopwatch.Time();
+	stopwatch.Start();
 	m_optionsDialog = new OptionsDialog(this, ID_OPTIONSDIALOG, "Options");
 
 	InitializeOptionsDialog();
@@ -133,7 +139,8 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 
 
-
+	long time4 = stopwatch.Time();
+	stopwatch.Start();
 	 
 
 	 //m_openFiles = new wxArrayString();
@@ -198,6 +205,8 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	
 	toolBar->InsertSeparator(3);
 
+	// TODO Mess with these later
+	/*
 	wxBitmap bmBuild(build_xpm);
 	toolBar->AddTool(ID_COMPILE, "Compile", bmBuild);
 
@@ -207,6 +216,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	toolBar->AddTool(ID_TEST, "Test", bmTest);
 
 	toolBar->InsertSeparator(7);
+	*/
 
 	/*
 	toolBar->AddTool(ID_OPEN_REMOTE, "Remote Open", bmOpen);
@@ -231,12 +241,16 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 #endif
 
 
-	
+	long time5 = stopwatch.Time();
+	stopwatch.Start();
 
 	m_remoteFileDialog = new RemoteFileDialog(this, ID_REMOTEFILEDIALOG);
+
+	long time6 = stopwatch.Time();
+	stopwatch.Start();
 	m_remoteFileDialog->SetNetworking(m_network);
-
-
+	long time8 = stopwatch.Time();
+	stopwatch.Start();
 
 	 m_split = new wxSplitterWindow(this, ID_SPLITTER);
 
@@ -277,6 +291,17 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 		m_split->Initialize(m_book);
 	}
 	
+	long time7 = stopwatch.Time();
+	stopwatch.Pause();
+
+	wxLogDebug("Startup timing: initial lines = %d", time1);
+	wxLogDebug("Startup timing: permissions = %d", time2);
+	wxLogDebug("Startup timing: config = %d", time3);
+	wxLogDebug("Startup timing: OptionsDialog = %d", time4);
+	wxLogDebug("Startup timing: menus = %d", time5);
+	wxLogDebug("Startup timing: RemoteFileDialog() = %d", time6);
+	wxLogDebug("Startup timing: rfd->SetNetwork = %d", time8);
+	wxLogDebug("Startup timing: notebook and editor = %d", time7);
 
 }
 
@@ -427,8 +452,9 @@ void ChameleonWindow::CloseFile (int pageNr)
 		}
 		saveMessage += fileName;
 		saveMessage << " has unsaved changes.  Do you want to save them before the file is closed?";
-		if (wxMessageBox (_(saveMessage), _("Close"),
-			wxYES_NO | wxICON_QUESTION) == wxYES) 
+		// TODO: Add a Cancel option here
+		int result = wxMessageBox (_(saveMessage), _("Close"), wxYES_NO | wxICON_QUESTION);
+		if( result == wxYES) 
 		{
 			edit->SaveFileAs();
 			//SaveFileLocal(true);
@@ -457,8 +483,9 @@ void ChameleonWindow::CloseFile (int pageNr)
 			m_currentEd->ClearAll();
 			m_currentEd->SetSavePoint();
 			m_currentEd->EmptyUndoBuffer();
-			wxString noname = "<untitled> " + wxString::Format (".%d", m_fileNum);
+			wxString noname = "<untitled> " + wxString::Format ("%d", m_fileNum);
 			m_book->SetPageText (pageNr, noname);
+			m_book->Refresh();
 			//m_currentEd->SetFilename (wxEmptyString);
 
 			
@@ -808,7 +835,6 @@ void ChameleonWindow::CheckSize()
 	wxString result;
 	result << x << ", " << y;
 	::wxMessageBox(result );
-	// TODO multiple buffer
 	m_currentEd->SetScrollWidth(x);
 	
 }
@@ -843,7 +869,6 @@ void ChameleonWindow::OnUpdateSave(wxUpdateUIEvent &event)
 		}
 	}
 	event.Enable(enable);
-	//TODO multiple buffer
 	//ed->GetModify());
 }
 
