@@ -107,14 +107,13 @@ enum modules
 {
 	PERM_FIRST = 0,
 	PERM_SYNTAXHIGHLIGHT = PERM_FIRST,
-	PERM_AUTOCOMPLETE,
 	PERM_AUTOINDENT,
 	PERM_DEBUG,
 	PERM_TERMINAL,
-	PERM_REMOTELOCAL,
-	PERM_TELNETTEST,
+	PERM_LOCALMODE,
 	PERM_PROJECTS,
 	PERM_COMPILE,
+	PERM_ADVANCEDCOMPILE,
 	PERM_TEST,
 	PERM_LAST
 };
@@ -122,18 +121,17 @@ enum modules
 
 #ifdef PERM___H
 wxString GlobalPermStrings[] = {"Syntax highlighting", 
-								"Name completion",
 								"Auto-indentation",
 								"Debugging",
 								"Terminal",
 								"Local mode",
-								"Telnet testing",
 								"Projects",
 								"Compilation",
+								"Advanced compiler output",
 								"Test permission"};
 
-char AuthCodeLookupTable[] = {'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
-								'U', 'V', 'W', 'X', 'Y', 'Z', 'A', 'B', 'C', 'D', 'E', 'F'};
+//char AuthCodeLookupTable[] = {'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
+//								'U', 'V', 'W', 'X', 'Y', 'Z', 'A', 'B', 'C', 'D', 'E', 'F'};
 #endif
 
 
@@ -191,13 +189,5 @@ enum FileFilterType
 	FILE_ALLFILES,
 	FILE_LASTTYPE,
 };
-
-/*
-class FileNameTreeData : public wxTreeItemData
-{
-public:
-	wxString filename;
-};
-*/
 
 #endif

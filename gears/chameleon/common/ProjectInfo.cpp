@@ -1,6 +1,11 @@
 #include "ProjectInfo.h"
 #include "debug.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
+
 bool ProjectInfo::FileExistsInProject(wxString filename)
 {
 	bool fileInProject = false;

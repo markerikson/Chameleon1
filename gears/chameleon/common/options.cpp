@@ -1,5 +1,12 @@
 #include "Options.h"
 
+#include "debug.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
+
 Options::Options() {
 	// Set Some Default Values (perhaps these should not be set!)
 	m_pscpProg = "pscp.exe";
