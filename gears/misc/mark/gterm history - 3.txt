@@ -1,0 +1,61 @@
+
+
+Mark Philip Erikson wrote:
+
+>Yeah, I really do want a terminal widget.  Actually, I just realized
+>that I'd been assuming wrapping text was how terminals handled resizing,
+>but running PuTTY and resizing it shows that it doesn't do that.  So,
+>scrap the wrapping idea.  If the user wants to resize the window so it's
+>only 40 pixels wide, that's his problem.
+>
+>As far as the bit about a scroll window... what we're trying to write is
+>an IDE with a built-in VT100-capable, SSH-connected terminal.  Text
+>editor in the upper 2/3 of the window, terminal in the lower 1/3.  
+>
+Assuming you're not trying to use GTerm for the editor part, then simply 
+having history in the terminal part should give you what you want, right?
+
+The proper way to add this history functionality is to add a method to 
+the gterm class, right under where ResizeTerminal() is which is used to 
+direct the terminal to display a section of the history buffer.  This 
+would be independent of whatever is going on as a result of input to the 
+terminal.  It would be the responsibility of the "environment" (that 
+which instantiates a gterm object) to decide when to shift back to the 
+"active" section of the display.
+
+So, "scrolling" that happens as a result of input to the terminal is 
+COMPLETELY DIFFERENT from "scrolling" that you do to see the history buffer.
+
+>
+>Actually, if you want to get an idea of what we're doing for the
+>terminal, just look at PuTTY (located at
+>http://www.chiark.greenend.org.uk/~sgtatham/putty/ ).  As far as the
+>scrolling goes, PuTTY has a scrollbar in the window that lets you scroll
+>up and down through the lines received from the terminal.  That's the
+>effect I want to create with this history ability.
+>
+>Does that clear up my intentions and goals a bit?
+>
+
+I think so.
+
+To begin, you should get GTerm out of the sourceforge CVS.  Assuming 
+you're a member, you can just adapt this which I use to your account:
+
+cvs -d:ext:theosib@cvs.gterm.sourceforge.net:/cvsroot/gterm co GTermRoot
+
+ From there, we can begin making changes and then when we're both happy 
+with that, we can check it back in.  Let's try not to do too much at 
+once; otherwise, we'll end up screwing things up and making a harder 
+time for ourselves.
+
+
+To begin with, I think it MIGHT be quicker to directly adapt the 
+terminal to have a history buffer without needing the STL overhead.  
+Notice in gterm.cpp where all the "new" operators are.  Perhaps instead 
+of allocating (width * height), we allocate (width * 
+(height+history_height)), where history_height is a new parameter.
+
+Then, in the sections of code that handle scrolling, we put in the 
+intelligence to scroll the history buffer properly.
+

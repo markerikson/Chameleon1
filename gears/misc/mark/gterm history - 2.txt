@@ -1,0 +1,83 @@
+
+
+Mark Philip Erikson wrote:
+
+>I hadn't particularly thought about adding the changes back into the
+>GTerm project itself, but if the code's going to be written, then might
+>as well do so in a portable and generic fashion.  
+>
+If your code is also going to be released under GPL or LGPL, then you 
+are free to do what you want with it, but as you say, it might benefit 
+others to generically enhance GTerm.
+
+>The main items I was
+>thinking about as far as string-related needs were the ability to access
+>via the [] operator and the ability to append, and that's not a problem
+>since std::string supports those just fine.  And really, a
+>vector<string> does make sense.
+>
+It will introduce some overhead, but it would probably still be faster 
+than copying raw data around in a physically-oriented map of the display.
+
+>
+>My goal is to have our program's terminal surface be a scrolling-capable
+>window, so presumably I'd need to be making a lot of calls to
+>scroll_region.  
+>
+Typically, you wouldn't be calling that directly.  That's an "internal" 
+function that responds to escape sequences.  Are you not using this as a 
+VT102 terminal?
+
+>Also, since the terminal window can be resized at any
+>time, our changes to GTerm will need to handle that.  That's one of the
+>reasons I was thinking of keeping all text in a single string object,
+>because it seemed that handling a wrapped line of text would be more
+>difficult if it was a distinct line.  
+>
+A line is a line.  When do you pull characters off the end/beginning of 
+one line and move them to the beginning/end of another?  Insert/delete 
+character functions don't do that.
+
+The way the terminal works, there is no reason to put different lines 
+into the same string.  In fact, that would hurt performance badly.
+
+>Although, now that I think about
+>it... that may be more a DrawText implementation issue than a GTerm
+>issue.  
+>
+Ok, if you're doing what I think you're doing, you're expecting to 
+"rewrap" the lines when the terminal is resized.  No terminal works like 
+that, but there are "editor widgets" that do that already.
+
+Do you want a terminal or an edit widget?
+
+If you want the latter, check out trebuchet.tk (google for it).  It's a 
+tcl/tk program that has a nice scrollable "terminal" in it that rewraps 
+when you resize because it really just uses the tk editor widget.
+
+GTerm is intended to be a VT102 terminal and therefore lacks some of the 
+concepts that might exist in something with a different purpose.  In a 
+terminal, a line ends at the physical end of line.  Period.
+
+>
+>I'm really hoping to get this done within the next 2-3 weeks.  Odds are
+>I'm being overly optimistic, but we'll see.
+>
+>Anyway, seeing as how you're the one who's more familiar with this...
+>where do we start and how would you like to handle splitting any work
+>that needs to be done?  
+>
+First, we need to be sure that GTerm is the best thing to meet your 
+needs.  I get the impression that what you want isn't REALLY a 
+terminal.  When we clear that up, either we'll modify GTerm, or I'll 
+help you find something that does meet your needs.
+
+>
+>One other question... would you prefer me to email your work account or
+>the Sourceforge account?
+>
+>  
+>
+Work, since it will be nontrivial for me to remember even how to get 
+back into my sourceforge account.  :)
+

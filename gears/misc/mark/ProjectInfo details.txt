@@ -1,0 +1,36 @@
+Project class thoughts
+
+Phases:
+ * Compiling -> project is read only
+ * Debugging -> project is read only
+ * Editing -> project is editable
+
+Editor stores a ProjectInfo*, set on instantiation
+
+CW:
+ * maintains a ProjectInfo* for a multi-file project
+ * On project close:
+	- if not closing the application, ask them if they want to close any open files for that project
+		* if yes, walk project's editor list, and replace each editor's project with a new single-file project
+ * Change "start compile" button to "stop compile" while compiling
+	- note that because the user can switch back and forth between files while compiling, the project NEEDS
+	  to have an IsCompiling flag so CW can update the compiler button appropriately
+	- actually... what happens if the user tries to compile multiple items one after the other?  Any issues?
+
+Compiler:
+ * all compiling is now project-based
+ * must call proj->SetReadOnly(bool)
+
+Debugger:
+ * ProjectInfo* should replace ExecutableFileName, SourceFileNames
+
+ProjectInfo class:
+ * should default to "single-file"
+ * needs to have:
+	- isSingleFile()
+	- isModified()
+	- isCompiled()
+	- SetReadOnly(bool)
+	- ExecutableFileName (wxString or wxFileName?)
+	- list of source files (in there already)
+	- list of open ChameleonEditors that are part of the project

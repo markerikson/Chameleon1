@@ -1,0 +1,95 @@
+Thanks for writing.
+
+As we go further in this discussion, I'll go back and refamiliarize 
+myself with GTerm.  In the mean time, I'll go from memory.
+
+
+Mark Philip Erikson wrote:
+
+>Hi.  I'm a senior CS major, currently working on my senior project. 
+>Part of our project is to incorporate an SSH terminal into our program. 
+>We're trying to reuse code from a program called taTelnet (
+>http://linux.techass.com/projects/tatelnet/ ).  taTelnet includes a
+>wxTerm class which is derived from your GTerm.  
+>
+>As far as I can see, GTerm does not currently support any sort of
+>terminal history (ie, the buffer is limited purely to MAXWIDTH*MAXHEIGHT
+>characters, and is really more like 80x24).  I'd like to add a history
+>capability, and have been reading through the GTerm source trying to
+>figure out what it will take.  I've got somewhat of a grasp on what's
+>going on, but there's still a lot that I don't understand.  
+>
+Ask any questions you want.
+
+>
+>So, as a result of all of this, I was wondering if you could give me
+>some tips on what it would take to modify GTerm to handle an expandable
+>text buffer.  Any tips would be appreciate, but particularly anything
+>you could point out as far as spots where the there are assumptions of
+>size limitations, how much functions like move_text/shift_text/etc are
+>needed if the same lines are no longer being overwritten, and anything
+>else you can think of.
+>
+I have thought some about how to add a history buffer.  To begin with, 
+the way GTerm scrolls is simply by renumbering lines.  This eliminates 
+memory copies that would otherwise be needed, thereby enhancing 
+performance for low-end systems.  This will actually make adding a 
+history buffer _easier_.  See, if you have a scrolling region which is 
+not the whole screen, you need to scroll lines off the top (or bottom) 
+of the region into the history buffer AROUND the rest of the lines on 
+the screen.
+
+My idea to add a history buffer involves making the line reordering a 
+bit more dynamic.  Currently, there are no "unused" lines, so when a 
+scroll occurs, the top line is renumbered to be at the bottom (and 
+cleared), and the others within the scrolling region (which may not be 
+all lines on the screen) are renumbered upwards.  Instead, I propose 
+that we have a large (dynamic even) "pool" of unused lines.  When a line 
+scrolls off the top of a scrolling region, it is added to the unused 
+pool.  The new blank line at the bottom is taken from that pool.  As 
+long as you keep the pool IN ORDER, then it makes a good scrollback buffer.
+
+>
+>I've got a few thoughts as to what needs to be done.  The biggest is
+>how the text is stored.  Our project uses wxWindows, which includes a
+>wxString class.  wxString can be appended to repeatedly, and also
+>accessed using the array operators, just like a char*.  I think that by
+>replacing "char* text" with "wxString text", then appending new blank
+>lines to the string as necessary, I can minimize the changes to
+>accessing the text.
+>
+I would definately not accept changes to GTerm which tie it to anything 
+that makes it non-portable.  Its primary purpose is to be abstract and 
+generic.  I'm sure wxString's are nice, but not appropriate here.  On 
+the other hand, the STL has become standard since I wrote GTerm.  As you 
+increase the number of lines in a static 2D array, it can take up a lot 
+of memory.  If, on the other hand, we used a vector of strings (standard 
+library "string"), then the strings would only be as long as the text 
+(with a little overhead).
+
+To make it very dynamic, instead of using an array of ints for the line 
+numbering, we'll use a "vector<int>", and to hold the physical strings, 
+we'll use "vector<string>".
+
+I thought of using a separate deque<int> for the off-screen lines, but 
+we need to be able to scroll back simply by changing a "top line" 
+offset.  The vector<int> should be managed in such a way that simply 
+changing that top line will cause a scroll-up of the viewport.
+
+Using a list<int> would help with insert/delete, but I think it's more 
+important to be random-access.
+
+>
+>Anyway, any thoughts or suggestions you might have on the topic would
+>be greatly appreciated.  Thanks in advance!
+>
+
+Well, let's work together on this.  I have an attachment to GTerm, so I 
+would prefer that it continue to fit my ideals, but I wrote it for 
+others to benefit from, so I would enjoy working with others, such as 
+yourself, to enhance it to meet their needs.
+
+
+
+
+
