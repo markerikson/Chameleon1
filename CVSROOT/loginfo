@@ -26,5 +26,6 @@
 #DEFAULT (echo ""; id; echo %{sVv}; date; cat) >> $CVSROOT/CVSROOT/commitlog
 
 # syncmail:
+#
 DEFAULT $CVSROOT/CVSROOT/syncmail %{sVv} dczechowski@cedarville.edu
 #gears $CVSROOT/CVSROOT/syncmail %{sVv} dczechowski@cedarville.edu p1164514@cedarville.edu S1278644@cedarville.edu
