@@ -20,6 +20,7 @@ ProjectInfo::ProjectInfo(bool singleFile /* = true */)
 	// in fact, it could almost go in the constructor...
 	m_isRemote = true;
 	m_isBeingCompiled = false;
+	m_projectName = "Chameleon"; // <-- ha ha, just a default
 
 	if(singleFile) {
 		//set some defaults
@@ -30,11 +31,62 @@ ProjectInfo::ProjectInfo(bool singleFile /* = true */)
 		//m_sourcesEnabled = BoolArray;
 		//m_librariesEnabled = BoolArray;
 		//m_edPointers = EditorPointerArray;
-		m_projectBasePath = "";
-		m_projectName = "";
+		//m_projectBasePath = "";
 		//m_executableName = wxFileName;
 	}
 }
+
+//////////////////////////////////////////////////////////////////////////////
+///  public SetProjectFile
+///  Set the project file (blah.cpj).  This will also set the name of the
+///     project.
+///
+///  @param  filename wxFileName  The project file (_.cpj)
+///
+///  @return void
+///
+//////////////////////////////////////////////////////////////////////////////
+void ProjectInfo::SetProjectFile(wxFileName projfile) {
+	m_projectFile = projfile;
+	//if(m_projectName == "") {
+		SetProjectName(projfile.GetName());
+	//}
+}
+
+//////////////////////////////////////////////////////////////////////////////
+///  public GetProjectBasePath
+///  Returns the path of the project file (blah.cpj) with a trailing separator.
+///
+///  @return wxString   Path of project file as a string, or the path of the
+///                        single file.
+///
+//////////////////////////////////////////////////////////////////////////////
+wxString ProjectInfo::GetProjectBasePath() {
+	// path is based on file 1, if it's a single file project, or the project
+	//    file itself.
+	wxFileName f = m_isSingleFile ? wxFileName(m_sourceFiles[0]) : m_projectFile;
+	
+	return f.GetPath(wxPATH_GET_VOLUME | wxPATH_GET_SEPARATOR,
+								m_isRemote ? wxPATH_UNIX : wxPATH_DOS);
+}
+
+//////////////////////////////////////////////////////////////////////////////
+///  public GetProjectName
+///  This is does not always have to relate to the project's filename.
+///
+///  @return wxString   The Name of the Project
+///
+//////////////////////////////////////////////////////////////////////////////
+wxString ProjectInfo::GetProjectName() {
+	if(m_isSingleFile) {
+		wxFileName file(m_sourceFiles[0]);
+		return file.GetName();
+	}
+	else {
+		return m_projectName;
+	}
+}
+
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public FileExistsInProject
@@ -140,12 +192,6 @@ void ProjectInfo::AddFileToProject(wxString filename, FileFilterType filterType)
 	BoolArray* enablelist = SelectBoolArray(filterType);
 	enablelist->Add(true);
 
-	//if(m_isSingleFile) {
-	if(m_projectName == "" && m_sourceFiles.Count() == 1) {
-		wxFileName file(filename);
-		m_projectName = file.GetName();
-		m_projectBasePath = file.GetPath(wxPATH_GET_VOLUME, m_isRemote ? wxPATH_UNIX : wxPATH_DOS);
-	}
 }
 
 //////////////////////////////////////////////////////////////////////////////

@@ -1840,14 +1840,12 @@ bool ChameleonWindow::SaveFile(bool saveas, bool askLocalRemote, FileFilterType 
 		//m_bProjectOpen = true;
 
 		m_projMultiFiles->SetRemote(m_remoteMode);
-		wxFileName projectPath(filename);
-		m_projMultiFiles->SetProjectName(projectPath.GetFullName());
-		wxString path = projectPath.GetPath(wxPATH_GET_VOLUME | wxPATH_GET_SEPARATOR,
-											m_remoteMode ? wxPATH_UNIX : wxPATH_DOS);
-		m_projMultiFiles->SetProjectPath(path);
+		wxFileName projectFile(filename);
+		m_projMultiFiles->SetProjectFile(projectFile);
 
 		wxTreeItemId rootItem = m_projectTree->GetRootItem();
-		m_projectTree->SetItemText(rootItem, projectPath.GetFullName());
+		//m_projectTree->SetItemText(rootItem, projectFile.GetFullName());
+		m_projectTree->SetItemText(rootItem, m_projMultiFiles->GetProjectName());
 	}
 
 	return true;
@@ -2677,8 +2675,7 @@ void ChameleonWindow::OpenProjectFile(bool isRemote)
 
 	wxFileName projectFileName(fileNames[0]);
 
-	m_projMultiFiles->SetProjectPath(projectFileName.GetPath(currentPathFormat));
-	m_projMultiFiles->SetProjectName(projectFileName.GetFullName());
+	m_projMultiFiles->SetProjectFile(projectFileName);
 	m_projMultiFiles->SetRemote(m_remoteMode);
 
 	wxTreeItemId rootItem = m_projectTree->GetRootItem();
@@ -2944,7 +2941,7 @@ void ChameleonWindow::SaveProjectFile()
 
 
 	wxString projBasePath = m_projMultiFiles->GetProjectBasePath();
-	wxString projName = m_projMultiFiles->GetProjectName();
+	wxString projName = m_projMultiFiles->GetProjectFile().GetFullName();
 	if(m_projMultiFiles->IsRemote())
 	{
 		wxFileName fn(projBasePath, projName);

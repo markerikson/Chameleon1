@@ -37,8 +37,9 @@ public:
 	bool IsBeingCompiled() { return m_isBeingCompiled; }
 	bool IsReadOnly() { return m_isReadOnly; }
 	wxString GetExecutableFileName() { return m_executableName.GetFullPath(wxPATH_UNIX); }
-	wxString GetProjectName() { return m_projectName; }
-	wxString GetProjectBasePath() { return m_projectBasePath; }
+	wxString GetProjectName();
+	wxFileName GetProjectFile() { return m_projectFile; }
+	wxString GetProjectBasePath();
 
 	void SetHeaders(wxArrayString headers) {m_headerFiles = headers; }
 	void SetSources(wxArrayString sources) {m_sourceFiles = sources; }
@@ -47,8 +48,8 @@ public:
 	void SetSingleFile(bool singleFile) { m_isSingleFile = singleFile; }
 	void SetCompiled(bool compiled) { m_isCompiled = compiled; }
 	void SetBeingCompiled(bool compiling);
-	void SetProjectPath(wxString path) {m_projectBasePath = path; }
 	void SetProjectName(wxString projname) {m_projectName = projname; }
+	void SetProjectFile(wxFileName projfile);
 	void SetExecutableName(wxFileName filename) {m_executableName = filename; }
 private:
 
@@ -73,8 +74,8 @@ private:
 	bool m_isBeingCompiled;
 	bool m_isReadOnly;
 
-	wxString m_projectBasePath;
-	wxString m_projectName;
+	wxString m_projectName; // not specifically the prj's file name
+	wxFileName m_projectFile;
 	wxFileName m_executableName;
 
 	
