@@ -151,25 +151,7 @@ enum modules
 //				PermStrings array in p.cpp.
 
 
-typedef struct 
-{
-	wxArrayInt gdbNumbers;
-	wxArrayInt lineNumbers;	
-} DebugBreakInfo;
 
-typedef struct 
-{
-	bool functionHasBeenVisited;
-	wxArrayString variableNames;
-} FunctionVariablesInfo;
-
-typedef struct  
-{
-	wxString type;
-	wxString name;
-	wxString value;
-	wxString regexKey;
-} VariableInfo;
 
 
 WX_DECLARE_HASH_MAP( int,
@@ -214,9 +196,29 @@ WX_DECLARE_STRING_HASH_MAP(wxString,
 
 WX_DEFINE_ARRAY(wxWindow*, WindowPointerArray);
 WX_DEFINE_ARRAY(ChameleonEditor*, EditorPointerArray);
+WX_DEFINE_ARRAY(bool, BoolArray);
 
 
+typedef struct 
+{
+	wxArrayInt gdbNumbers;
+	wxArrayInt lineNumbers;	
+} DebugBreakInfo;
 
+typedef struct 
+{
+	bool functionHasBeenVisited;
+	BoolArray variableDisplayed;
+	wxArrayString variableNames;
+} FunctionVariablesInfo;
+
+typedef struct  
+{
+	wxString type;
+	wxString name;
+	wxString value;
+	wxString regexKey;
+} VariableInfo;
 
 
 typedef struct 
