@@ -1001,9 +1001,12 @@ void ChameleonWindow::SaveFile(bool saveas)
 	if(!(m_perms->isEnabled(PERM_REMOTELOCAL) && m_remoteMode))
 	{
 		if(doSaveAs)
-		{			
-			wxFileDialog dlg (this, _T("Save file"), _T(""), _T(""), _T("Any file (*)|*"),
-							wxSAVE | wxOVERWRITE_PROMPT);
+		{		
+			// the last item in a filter's list will be the default extension if none is given
+			// ie, right now, .cpp is the default extension for C++ files
+			wxFileDialog dlg (this, _T("Save file"), _T(""), 
+				_T(""), _T("C++ files (*.cpp, *.h, *.c)|*.c;*.h;*.cpp|All files (*.*)|*.*"),
+							wxSAVE | wxOVERWRITE_PROMPT | wxCHANGE_DIR);
 
 			// ie, user clicked cancel
 			if(dlg.ShowModal() != wxID_OK) 
@@ -1012,9 +1015,11 @@ void ChameleonWindow::SaveFile(bool saveas)
 			}
 
 			m_currentEd->SetFocus();
+			
 			filename = dlg.GetPath();
 			wxFileName fn(filename);
-			//m_currentEd->SetFilename(wxFileName(filename).GetFullPath());
+
+			
 			m_currentEd->SetFileNameAndPath(fn.GetPath(false, wxPATH_DOS), fn.GetFullName(), false);
 			
 			m_currentEd->SaveFile(filename);
