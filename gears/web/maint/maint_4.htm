@@ -18,27 +18,27 @@
       <dt><h3>Dynamically Adapting GUI: Done.</h3></dt>
         <dd>Enabling and Disabling features make GUI elements appear and disappear. Again, nothing needs to be changed unless new features are added.</dd>
       <dt><h3>Built-in Terminal: Done.</h3></dt>
-        <dd>Works well for the intended users.  It is possible an advanced user may , limitations may be discovered.</dd>
+        <dd>Works well for the intended users.  It is possible an advanced user might discover some limitations, such as curses-based programs not working.  Also, the performance seems somewhat slow at times, so there's probably some optimization that could be done.</dd>
       <dt><h3>Syntax Highlighting: Done.</h3></dt>
         <dd>Internal to the Scintilla Widget.</dd>
       <dt><h3>Multi-file Projects: Done.</h3></dt>
-        <dd>The code is tied a little more tightly to the GUI than we would have liked.  But, for this Chameleon a project is basically a list of files.  Any additional project related features may require separating this out.</dd>
+        <dd>The code is tied a little more tightly to the GUI than we would have liked, more in the location of the project-related functions than anything else.  Still, for our purposes, it works pretty well.  Any additional project related features may require separating this somewhat more.  Some library-related functionality is in there, but hasn't really been tested</dd>
       <dt><h3>Integrated Debugger: Done.</h3></dt>
-        <dd>We accomplished what we wanted, which was cross-platform debugging using GDB while inside of Chameleon. It is limited in features, but it works.  Some optimizations could be made inside the debugger regarding how it handles variable watching, but it works fine as-is.</dd>
+        <dd>We accomplished what we wanted, which was remote debugging using GDB while inside of Chameleon (with the possibility of extending it to local as well). It is limited in features, but it works.  Some optimizations could be made inside the debugger regarding how it handles variable watching, but it works fine as-is.</dd>
       <dt><h3>Editor Features: Done.</h3></dt>
         <dd>Clipboard manipulation, text manipulation, and the like are all working. There are always more that could be added, but no critical features are missing.</dd>
       <dt><h3>Compiling: Done.</h3></dt>
-        <dd>Press a button, it compiles.  User is limited to linking with only 1 library.</dd>
+        <dd>Press a button, it compiles.  User is limited to linking with only 1 library.  Local compiling doesn't work, but the foundation for that ability is in place.</dd>
       <dt><h3>Remote File Transparency: Done.</h3></dt>
         <dd>There are some minor glitches with handling empty files, and the user is limited to their home directory and anything higher in the directory structure.  All else is done, and functions as expected.</dd>
     </dl>
 
     <h2>4.2 - Unimplemented Features</h2>
     <dl>
-      <dt><h3>Auto-Completion/Object Member Completion.  Definately Useful.</h3></dt>
-        <dd>This is not a necessary feature, but if implemented would be useful.  We underestimated the complexity of this feature, and ran out of time.  The Scintilla Widget has the hooks to display popup windows for autocompletion and member completion, which is why this feature was added to the requirements list.  But, the Editor would be responsible for keeping track of what's typed and telling Scintilla to pop up a window with the appropriate information.</dd>
-      <dt><h3>Code Folding.  Potentially Useful.</h3></dt>
-        <dd>Again, Scintilla supports this, and shouldn't be that hard to implement. We just didn't have enough time.</dd>
+      <dt><h3>Auto-Completion/Object Member Completion.  </h3></dt>
+        <dd>Definitely useful.  This is not a necessary feature, but if implemented would be useful.  We underestimated the complexity of this feature, and ran out of time.  The Scintilla Widget has the hooks to display popup windows for autocompletion and member completion, which is why this feature was added to the requirements list.  But, the Editor would be responsible for keeping track of what's typed and telling Scintilla to pop up a window with the appropriate information.</dd>
+      <dt><h3>Code Folding.  </h3></dt>
+        <dd>Potentially useful.  Again, Scintilla supports this, and shouldn't be that hard to implement. We just didn't have enough time.</dd>
     </dl>
 
     <br>

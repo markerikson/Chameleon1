@@ -1,135 +1,106 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-    <meta name="Template_Author" content="John Cox">
     <title>Maintenance Manual</title>
   </head>
 
   <body>
 
-    <h1>6.0 - Detailed Documentation (cont'd)</h1>
+    <h1>6.0 - Detailed Documentation (continued)</h1>
 
     <h2>6.2 - Files</h2>
 
     <ul>
       <li>/
         <ul>
-          <li>Chameleon.rc - </li>
-          <li>chameleon.ico - </li>
+          <li>Chameleon.rc - resource file (defines the application icon)</li>
+          <li>chameleon.ico - the application icon</li>
         </ul>
       </li>
       <li>common/
         <ul>
-          <li>ChameleonPrintout.cpp - </li>
-          <li>ChameleonPrintout.h - </li>
-          <li>chameleonprocessevent.cpp - ChameleonProcessEvent class definition</li>
-          <li>chameleonprocessevent.h - ChameleonProcessEvent class declaration</li>
+          <li>ChameleonPrintout.cpp/.h - provides required printing functionality</li>
+          <li>chameleonprocessevent.cpp/.h - custom event class used by Networking</li>
           <li>CommonHeaders.h - Frequent #include's are listed here</li>
-          <li>Crc16.cpp - </li>
-          <li>Crc16.h - </li>
-          <li>datastructures.h - Datastructures that are used by more than 1 class</li>
-          <li>debug.h - </li>
-          <li>DebugEvent.cpp - </li>
-          <li>DebugEvent.h - </li>
-          <li>options.cpp - Options Class</li>
-          <li>Options.h - Declaration of Options class</li>
-          <li>ProjectInfo.cpp - </li>
-          <li>ProjectInfo.h - </li>
-          <li>fixvsbug.h - This is a fix for the VisualStudio 6.0 scoping bug</li>
+          <li>Crc16.cpp/.h - Checksum routines used to verify authorization codes</li>
+          <li>datastructures.h - Program-wide enumerations and datastructures</li>
+          <li>debug.h - enables memory leak checks</li>
+          <li>DebugEvent.cpp/.h - custom event class used by ChameleonWindow and Debugger</li>
+          <li>options.cpp/.h - Stores program options, used to initialize the state of the options dialog</li>
+          <li>ProjectInfo.cpp/.h - Stores information relating to a project, whether single- or multi-file</li>
+          <li>fixvsbug.h - This is a fix for the VisualStudio 6.0 for-loop scoping bug</li>
         </ul>
       </li>
       <li>compiler/
         <ul>
-          <li>compiler.cpp - Compiler class definition</li>
-          <li>compiler.h - Compiler class declaration</li>
-          <li>compilerevent.cpp - ChameleonCompilerEvent class definition</li>
-          <li>compilerevent.h - ChameleonCompilerEvent class declaration</li>
+          <li>compiler.cpp/.h - Compiler class</li>
+          <li>compilerevent.cpp/.h - custom event used by Compiler and ChameleonWindow</li>
         </ul>
       </li>
       <li>debugger/
         <ul>
-          <li>cham_db.cpp - </li>
-          <li>cham_db.h - </li>
+          <li>cham_db.cpp/.h - Debugger class</li>
         </ul>
       </li>
       <li>editor/
         <ul>
-          <li>editor.cpp - </li>
-          <li>editor.h - </li>
+          <li>editor.cpp/.h - Editor class</li>
         </ul>
       </li>
       <li>gui/
         <ul>
           <li>dialogs/
             <ul>
-              <li>AboutChameleon.pjd - </li>
-              <li>AboutChameleonDialog.cpp - </li>
-              <li>AboutChameleonDialog.h - </li>
-              <li>AddVariableWatch.cpp - </li>
-              <li>AddVariableWatch.h - </li>
-              <li>AddVariableWatch.pjd - </li>
-              <li>CompilerOutputPanel.cpp - </li>
-              <li>CompilerOutputPanel.h - </li>
-              <li>CompilerOutputPanel.pjd - </li>
-              <li>opensave.pjd - </li>
-              <li>OptionsDialog.cpp - </li>
-              <li>OptionsDialog.h - </li>
-              <li>options.pjd - </li>
-              <li>RemoteFileDialog.cpp - </li>
-              <li>RemoteFileDialog.h - </li>
-              <li>VariableWatchPanel.cpp - </li>
-              <li>VariableWatchPanel.h - </li>
-              <li>VariableWatchPanel.pjd - </li>
-              <li>wxTermContainer.cpp - </li>
-              <li>wxTermContainer.h - </li>
-              <li>wxTermContainer.pjd - </li>
-              <li>*.xpm - Embedded Graphic Files</li>
+              <li>AboutChameleon.pjd - DialogBlocks project file for the about box</li>
+              <li>AboutChameleonDialog.cpp/.h - About box</li>
+              <li>AddVariableWatch.cpp/.h - Dialog for adding variable watches (wound up unused, but might be useful later)</li>
+              <li>AddVariableWatch.pjd - DialogBlocks project file for the AVW dialog</li>
+              <li>CompilerOutputPanel.cpp/.h - Displays compiler output in a textbox or grid</li>
+              <li>CompilerOutputPanel.pjd - DialogBlocks project file for the COP</li>
+              <li>opensave.pjd - DialogBlocks project file for the RemoteFileDialog</li>
+              <li>OptionsDialog.cpp/.h - The options dialog</li>
+              <li>options.pjd - DialogBlocks project file for the </li>
+              <li>RemoteFileDialog.cpp/.h - Custom file dialog for showing remote files, modeled after the Windows common dialog</li>
+              <li>VariableWatchPanel.cpp/.h - Displays the values of variables while debugging</li>
+              <li>VariableWatchPanel.pjd - DialogBlocks project file for the VWP</li>
+              <li>wxTermContainer.cpp/.h - Holds a wxTerm widget and a scrollbar</li>
+              <li>wxTermContainer.pjd - DialogBlocks project file for the wxTermContainer</li>
+              <li>*.xpm - Icons used in the various dialogs</li>
             </ul>
           </li>
-          <li>Chameleon.cpp - </li>
-          <li>ChameleonNotebook.cpp - </li>
-          <li>ChameleonNotebook.h - </li>
-          <li>ChameleonWindow.h - </li>
-          <li>wxssh.cpp - wxSSH class definition</li>
-          <li>wxssh.h - wxSSH class declaration</li>
-          <li>wxterm.cpp - </li>
-          <li>wxterm.h - </li>
-          <li>*.xpm - Embedded Graphic Files for Buttons</li>
+          <li>Chameleon.cpp - Contains the guts of the program, including the main application class ChameleonWindow</li>
+          <li>ChameleonNotebook.cpp/.h - Extra custom functionality on top of the standard notebook widget</li>
+          <li>ChameleonWindow.h - Declaration of the ChameleonWindow class</li>
+          <li>wxssh.cpp/.h - Derivation of wxTerm, specialized for SSH I/O</li>
+          <li>wxterm.cpp/.h - VT100-capable terminal widget</li>
+          <li>*.xpm - Icons used in the various windows</li>
         </ul>
       </li>
       <li>network/
         <ul>
-          <li>actions.cpp - more gterm class definitions</li>
-          <li>gtelnet.cpp - gtelnet class definition</li>
-          <li>gtelnet.hpp - gtelnet class declaration</li>
-          <li>gterm.cpp - gterm class definition</li>
-          <li>gterm.hpp - gterm class declaration</li>
-          <li>keytrans.cpp - </li>
-          <li>networking.cpp - Networking class defintion</li>
-          <li>networking.h - Networking class declaration</li>
-          <li>plinkconnect.cpp - PlinkConnect class definition</li>
-          <li>plinkconnect.h - PlinkConnect class declaration</li>
-          <li>states.cpp - Telnet (vt100) state definitions</li>
-          <li>TextManager.cpp - </li>
-          <li>TextManager.h - </li>
-          <li>utils.cpp - more gterm class definitions</li>
-          <li>vt52_states.cpp - Telnet (vt52) state definitions</li>
-          <li>winmesgbeep.cpp - gterm bell definition</li>
+          <li>actions.cpp - GTerm state machine actions</li>
+          <li>gtelnet.cpp/.h - GTelnet class definition</li>
+          <li>gterm.cpp/.h - GTerm class, the abstract core behind wxTerm</li>
+          <li>keytrans.cpp - GTerm keycode stuff</li>
+          <li>networking.cpp/.h - Networking class definition</li>
+          <li>plinkconnect.cpp/.h - PlinkConnect class definition</li>
+          <li>states.cpp - Telnet (vt100) state definitions used by GTerm</li>
+          <li>TextManager.cpp/.h - Handles terminal history and scrolling</li>
+          <li>utils.cpp - GTerm's main functions</li>
+          <li>vt52_states.cpp - Telnet (vt52) state definitions used by GTerm</li>
+          <li>winmesgbeep.cpp - GTerm bell definition</li>
         </ul>
       </li>
       <li>perms/
         <ul>
-          <li>p.cpp - </li>
-          <li>p.h - </li>
+          <li>p.cpp/.h - Permissions class</li>
         </ul>
       </li>
       <li>profmanager/
         <ul>
-          <li>OptionsManager.pjd - </li>
-          <li>ProfOptionsDialog.cpp - </li>
-          <li>ProfOptionsDialog.h - </li>
-          <li>ProfOptionsManager.cpp - </li>
+          <li>OptionsManager.pjd - DialogBlocks project file for the Professor Options program</li>
+          <li>ProfOptionsDialog.cpp/.h - The dialog for the Professor Options program</li>
+          <li>ProfOptionsManager.cpp - Application code for the Professor Options program</li>
         </ul>
       </li>
     </ul>
