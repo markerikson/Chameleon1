@@ -36,10 +36,10 @@
   <p>For the networking modules, it is assumed that there is a server that users can log into via Secure Shell (SSH).</p> 
 
 <h2><a name="global">5.4 Global Data Objects</a><br></h2>
-  <p>We plan to have no particular global objects other than those provide by the wxWindows toolkit by default (such as an Application object).&nbsp; Most objects belong to the GUI MOdule, which belongs to the wxWindows Application object.<br></p> 
+  <p>We plan to have no particular global objects other than those provide by the wxWindows toolkit by default (such as an Application object).&nbsp; Most objects belong to the GUI Module, which belongs to the wxWindows Application object.<br></p> 
 
 <h2><a name="errors">5.5 Error Handling</a></h2>
-  Because of the level of user we are targetting, we plan to handle as many errors internally as possible and only alert the user if absolutely necessary.&nbsp; Error handling details have not been completely determined yet, but may include both wxWindows assert macros and standard C++ exceptions.&nbsp; Because of the nature of the program, user input errors are not nearly as big an issue as they might be with other types of applications.  Because of the ownership heirarchy (wxApplication -> GUI -> modules) most errors will be dealt with by the GUI.  During testing and early stages, it is likely many errors will be displayed that won't be in the production version.<br></p> 
+  Because of the level of user we are targetting, we plan to handle as many errors internally as possible and only alert the user if absolutely necessary.&nbsp; Error handling methods will done using wxWindows debugging and logging functions.&nbsp; Because of the nature of the program, user input errors are not nearly as big an issue as they might be with other types of applications.  Because of the ownership heirarchy (wxApplication -> GUI -> modules) most errors will be dealt with by the GUI.  During testing and early stages, it is likely many errors will be displayed that won't be in the production version.<br></p> 
 
 <h2><a name="language">5.6 Development Language</a></h2>
   <p>We are using standard C++, with macros and data structures from the wxWindows toolkit.&nbsp; We plan to compile Chameleon using several different compilers, including Microsoft's C++ compiler versions 6 and 7, and the GNU MinGW compiler. &nbsp;</p> 
