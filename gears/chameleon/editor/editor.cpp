@@ -15,6 +15,7 @@
 #include "../common/DebugEvent.h"
 #include "../common/ProjectInfo.h"
 #include "../common/debug.h"
+#include "../common/fixvsbug.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

@@ -155,7 +155,7 @@ enum modules
 
 WX_DEFINE_ARRAY(wxWindow*, WindowPointerArray);
 WX_DEFINE_ARRAY(ChameleonEditor*, EditorPointerArray);
-WX_DEFINE_ARRAY(bool, BoolArray);
+//WX_DEFINE_ARRAY(bool, BoolArray);
 
 
 typedef struct 
@@ -164,12 +164,12 @@ typedef struct
 	wxArrayInt lineNumbers;	
 } DebugBreakInfo;
 
-typedef struct 
-{
-	bool functionHasBeenVisited;
-	BoolArray variableDisplayed;
-	wxArrayString variableNames;
-} FunctionVariablesInfo;
+//typedef struct 
+//{
+//	bool functionHasBeenVisited;
+//	BoolArray variableDisplayed;
+//	wxArrayString variableNames;
+//} FunctionVariablesInfo;
 
 typedef struct  
 {
@@ -216,11 +216,11 @@ WX_DECLARE_HASH_MAP(int,
 					wxIntegerEqual,
 					VariableInfoHash);
 
-WX_DECLARE_HASH_MAP(wxString,
-					FunctionVariablesInfo,
-					wxStringHash,
-					wxStringEqual,
-					FunctionVariablesHash);
+//WX_DECLARE_HASH_MAP(wxString,
+//					FunctionVariablesInfo,
+//					wxStringHash,
+//					wxStringEqual,
+//					FunctionVariablesHash);
 
 WX_DECLARE_STRING_HASH_MAP(wxString, 
 						   StringStringHashmap);

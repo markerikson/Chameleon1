@@ -1216,7 +1216,7 @@ void Debugger::sendPrint(wxString fromGDB)
 				}
 
 				//~~DEBUG~~
-				wxLogDebug("--sendPrint: ampIdx:"<<ampIdx<<" // singleLine:"<<singleLine);
+				wxLogDebug("--sendPrint: ampIdx:"+ ampIdx +" // singleLine:" +singleLine);
 
 				fromWatch.Add(singleLine);
 				ampIdx = -2;
@@ -1233,7 +1233,7 @@ void Debugger::sendPrint(wxString fromGDB)
 			}
 
 			//fromGDB.Remove(0, 1);	//get rid of the \r we avoided before
-			fromGDB = fromGDB.AfterFirst("\n");
+			fromGDB = fromGDB.AfterFirst('\n');
 		}
 	}while(fromGDB != PROMPT_CHAR);
 
@@ -1349,11 +1349,11 @@ void Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 					if(global.Matches(singleLine))
 					{
 						match = global.GetMatch(singleLine, 1);
-						varValue.Add(global.GetMatch(match);
+						varValue.Add(match);
 					}
 					else
 					{
-						varValue.Add("Error Parsing Value ["<<singleLine<<"]: RegEx miss-match for "<<m_varInfo[i].type);
+						varValue.Add("Error Parsing Value ["+singleLine+"]: RegEx miss-match for "+m_varInfo[i].type);
 					}
 				}
 				else
@@ -1366,11 +1366,11 @@ void Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 						if(global.Matches(singleLine))
 						{
 							match = global.GetMatch(singleLine, 1);
-							varValue.Add(global.GetMatch(match);
+							varValue.Add(match);
 						}
 						else
 						{
-							varValue.Add("Error Parsing Value ["<<singleLine<<"]: RegEx miss-match for "<<m_varInfo[i].type);
+							varValue.Add("Error Parsing Value ["+singleLine+"]: RegEx miss-match for "+m_varInfo[i].type);
 						}
 					}
 					else
@@ -1380,11 +1380,11 @@ void Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 						if(global.Matches(singleLine))
 						{
 							match = global.GetMatch(singleLine, 1);
-							varValue.Add(global.GetMatch(match);
+							varValue.Add(match);
 						}
 						else
 						{
-							varValue.Add("Error Parsing Value ["<<singleLine<<"]: RegEx miss-match for "<<m_varInfo[i].type);
+							varValue.Add("Error Parsing Value ["+singleLine+"]: RegEx miss-match for "+m_varInfo[i].type);
 						}
 					}
 				}//end array-test
