@@ -155,7 +155,7 @@ bool CompilerOutputPanel::ShowToolTips()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public ClearOutput
-///  <TODO: insert text here>
+///  Clears the output from both the grid and the textbox
 ///
 ///  @return void
 ///

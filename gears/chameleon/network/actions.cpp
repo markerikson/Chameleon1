@@ -14,7 +14,7 @@
 
 //////////////////////////////////////////////////////////////////////////////
 ///  private normal_input
-///  <TODO: insert text here>
+///  Handles most of the input stuff for GTerm
 ///
 ///  @return void
 ///
@@ -946,7 +946,8 @@ void GTerm::pc_arg( void )
 						tm[idx2].replace(pc_args[4], pc_args[2], substring);
 
                         memmove(& color[yp2 + pc_args[4]], & color[yp + pc_args[0]], pc_args[2]);
-						// TODO Need to come up with a working idea here... just a for loop maybe?
+						// TODO Doesn't seem to get here in normal use, but probably ought to
+						//		eventually figure out what's going on so I can manipulate the text manager here
                         changed_line(pc_args[5] + i, pc_args[4], pc_args[4] + pc_args[2] - 1);
                     }
                 }

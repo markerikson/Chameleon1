@@ -331,7 +331,7 @@ wxTextOutputStream* PlinkConnect::executeCmd(wxString command, wxEvtHandler* lis
 ///
 ///  @param  command  wxString  what to execute on the remote server.
 ///
-///  @return wxString <TODO: insert text here>
+///  @return wxString The resulting output
 ///
 ///  @author David Czechowski @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////

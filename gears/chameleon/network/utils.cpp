@@ -12,7 +12,7 @@ int GTerm::calc_color( int fg, int bg, int flags )
 
 //////////////////////////////////////////////////////////////////////////////
 ///  private update_changes
-///  <TODO: insert text here>
+///  GTerm's main update function.  Lots of my (MPE) modifications here
 ///
 ///  @return void
 ///
@@ -184,13 +184,17 @@ void GTerm::update_changes ()
 // num is the number of lines to scroll at a time
 //////////////////////////////////////////////////////////////////////////////
 ///  private scroll_region
-///  <TODO: insert text here>
+///  Scrolls the text in the buffer as needed
 ///
-///  @param  start_y int  <TODO: insert text here>
-///  @param  end_y   int  <TODO: insert text here>
-///  @param  num     int  <TODO: insert text here>
+///  @param  start_y int  The starting index
+///  @param  end_y   int  The ending index
+///  @param  num     int  Some value I don't quite understand
 ///
 ///  @return void
+///
+///  @remarks Please note that the only comments in here are mine (MPE), 
+///  @remarks not Tim Miller's.  Basically, this function works, you shouldn't
+///  @remarks have to worry about it.
 ///
 ///  @author Timothy Miller @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -291,12 +295,12 @@ void GTerm::scroll_region( int start_y, int end_y, int num )
 
 //////////////////////////////////////////////////////////////////////////////
 ///  private shift_text
-///  <TODO: insert text here>
+///  Moves text around on a given line in the buffer
 ///
-///  @param  y       int  <TODO: insert text here>
-///  @param  start_x int  <TODO: insert text here>
-///  @param  end_x   int  <TODO: insert text here>
-///  @param  num     int  <TODO: insert text here>
+///  @param  y       int  The line to rearrange
+///  @param  start_x int  The starting spot in the line
+///  @param  end_x   int  The ending spot in the line
+///  @param  num     int  The number of characters to shift
 ///
 ///  @return void
 ///
@@ -390,12 +394,12 @@ void GTerm::shift_text( int y, int start_x, int end_x, int num )
 
 //////////////////////////////////////////////////////////////////////////////
 ///  private clear_area
-///  <TODO: insert text here>
+///  Clears out a given area on the screen
 ///
-///  @param  start_x int  <TODO: insert text here>
-///  @param  start_y int  <TODO: insert text here>
-///  @param  end_x   int  <TODO: insert text here>
-///  @param  end_y   int  <TODO: insert text here>
+///  @param  start_x int  The starting x coordinate
+///  @param  start_y int  The starting y coordinate
+///  @param  end_x   int  The ending x coordinate
+///  @param  end_y   int  The ending y coordinate
 ///
 ///  @return void
 ///
@@ -469,10 +473,6 @@ void GTerm::clear_area( int start_x, int start_y, int end_x, int end_y )
 
         memset(text + yp + start_x, 32, w);
 
-		// TODO Do I need this here?  I'm guessing so in some fashion...
-		//tm[y].replace(start_x, w, w, ' ');
-
-
 		//memset(alttext + altY + start_x, 32, w);
 		//stringtext.replace(altY + start_x, w, w, ' ');
 
@@ -496,10 +496,10 @@ void GTerm::changed_line( int y, int start_x, int end_x )
 
 //////////////////////////////////////////////////////////////////////////////
 ///  private move_cursor
-///  <TODO: insert text here>
+///  Moves the cursor to a new location
 ///
-///  @param  x    int  <TODO: insert text here>
-///  @param  y    int  <TODO: insert text here>
+///  @param  x    int  The new x coordinate
+///  @param  y    int  The new y coordinate
 ///
 ///  @return void
 ///

@@ -6,7 +6,12 @@
 
 class ChameleonEditor;
 
-class ChameleonPrintout: public wxPrintout {
+/** 
+ * This class was swiped almost entirely from wxGuide, and only had a couple slight changes made.  
+ * Basically, it works, and that's all I need to know.
+ */
+class ChameleonPrintout: public wxPrintout 
+{
 
 public:
 

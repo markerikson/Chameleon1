@@ -446,38 +446,18 @@ void RemoteFileDialog::SetNetworking(Networking* network)
 //////////////////////////////////////////////////////////////////////////////
 bool RemoteFileDialog::ShowDirectory(wxString dirname, bool refresh, bool showHidden)
 {
-
 	m_currentPath.AssignDir(dirname);
 	m_pathBox->SetValue(dirname);	
 
 	m_list->ClearAll();
 
 	DirListing dl;	
-	//wxBeginBusyCursor();
-	//dl= m_network->GetDirListing(dirname, refresh, showHidden);
 	if(!m_network->GetDirListing(dirname, dl, refresh, showHidden))
 	{
-		// TODO error stuff here
 		return false;
 	}
-	//wxEndBusyCursor();
-
-	/*
-	NetworkCallResult netStatus = m_parentFrame->CheckNetworkStatus();
-	if(netStatus == NETCALL_REDO)
-	{
-		wxBeginBusyCursor();
-		dl = m_network->GetDirListing(dirname);
-		wxEndBusyCursor();
-	}
-	else if(netStatus == NETCALL_FAILED)
-	{
-		return false;
-	}
-	*/
 
 	m_currentDirListing = dl;
-
 	FillListView();
 
 	return true;

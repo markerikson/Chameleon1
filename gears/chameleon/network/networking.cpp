@@ -688,11 +688,11 @@ void Networking::PingOptions() {
 ///  Extremely simple: if isRemote is true, it calls StartRemoteCommand,
 ///     otherwise, it calls StartLocalCommand.
 ///
-///  @param  isRemote             bool           <TODO: insert text here>
-///  @param  cmd                  wxString       <TODO: insert text here>
-///  @param  owner                wxEvtHandler * <TODO: insert text here>
+///  @param  isRemote             bool           Whether command should be run remotely or locally
+///  @param  cmd                  wxString       The commandline to run
+///  @param  owner                wxEvtHandler * The object to notify when stuff happens
 ///
-///  @return wxTextOutputStream * <TODO: insert text here>
+///  @return wxTextOutputStream * The new process's stream, so the owner can send stuff to the process
 ///
 ///  @author David Czechowski @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -728,12 +728,12 @@ wxTextOutputStream* Networking::StartRemoteCommand(wxString cmd, wxEvtHandler* o
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public StartLocalCommand
-///  <TODO: insert text here>
+///  Will run a local command, once implemented
 ///
-///  @param  cmd                  wxString       <TODO: insert text here>
-///  @param  owner                wxEvtHandler * <TODO: insert text here>
+///  @param  cmd                  wxString       The command to execute
+///  @param  owner                wxEvtHandler * The object to notify when stuff happens
 ///
-///  @return wxTextOutputStream * <TODO: insert text here>
+///  @return wxTextOutputStream * The new process's stream, so the owner can send stuff to it
 ///
 ///  @author David Czechowski @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -753,7 +753,7 @@ wxTextOutputStream* Networking::StartLocalCommand(wxString cmd, wxEvtHandler* ow
 ///  @param  isRemote bool      Whether this is to be executed remotely.
 ///  @param  cmd      wxString  What command to execute.
 ///
-///  @return wxString <TODO: insert text here>
+///  @return wxString The resulting output
 ///
 ///  @author David Czechowski @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -772,9 +772,9 @@ wxString Networking::ExecuteCommand(bool isRemote, wxString cmd)
 ///  public ExecuteRemoteCommand
 ///  This starts a command, and waits until it has come to completion.
 ///
-///  @param  cmd      wxString  <TODO: insert text here>
+///  @param  cmd      wxString  The command to execute
 ///
-///  @return wxString <TODO: insert text here>
+///  @return wxString The resulting output
 ///
 ///  @author David Czechowski @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -786,11 +786,11 @@ wxString Networking::ExecuteRemoteCommand(wxString cmd)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public ExecuteLocalCommand
-///  <TODO: insert text here>
+///  This will (when implemented) execute a command locally, and wait until it comes to completion
 ///
-///  @param  cmd      wxString  <TODO: insert text here>
+///  @param  cmd      wxString  The command to execute
 ///
-///  @return wxString <TODO: insert text here>
+///  @return wxString The resulting output
 ///
 ///  @author David Czechowski @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -806,7 +806,7 @@ wxString Networking::ExecuteLocalCommand(wxString cmd)
 ///  This is certainly not a common-sense thing to pass when desiring to
 ///     terminate a process
 ///
-///  @param  w    wxTextOutputStream * <TODO: insert text here>
+///  @param  w    wxTextOutputStream * The output stream from the process to kill
 ///
 ///  @return void
 ///

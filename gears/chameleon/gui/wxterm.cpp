@@ -1331,12 +1331,12 @@ wxTerm::DrawText(int fg_color, int bg_color, int flags,
 ///  private DoDrawCursor
 ///  Does the actual work of drawing the cursor
 ///
-///  @param  fg_color int            <TODO: insert text here>
-///  @param  bg_color int            <TODO: insert text here>
-///  @param  flags    int            <TODO: insert text here>
-///  @param  x        int            <TODO: insert text here>
-///  @param  y        int            <TODO: insert text here>
-///  @param  c        unsigned char  <TODO: insert text here>
+///  @param  fg_color int            The index of the foreground color
+///  @param  bg_color int            The index of the background color
+///  @param  flags    int            Modifier flags
+///  @param  x        int            The x position of the cursor, in characters
+///  @param  y        int            The y position of the cursor, in characters
+///  @param  c        unsigned char  The character the cursor is over
 ///
 ///  @return void
 ///
@@ -1666,11 +1666,6 @@ void wxTerm::UpdateSize()
 			// tell the GTerm core to resize itself
 			ResizeTerminal(numCharsInLine, numLinesShown);	
 		}
-
-		// TODO Obviously this isn't working right.  I'll come back to it when I tackle
-		//		the line history issue
-
-		// On second thought, the "refresh on resize" issue seems to have taken care of itself
 	}
 
 	m_inUpdateSize = false;

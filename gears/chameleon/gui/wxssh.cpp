@@ -17,23 +17,6 @@ BEGIN_EVENT_TABLE(wxSSH, wxTerm)
 	EVT_PROCESS_ENDED(wxSSH::OnPlinkTerm)
 END_EVENT_TABLE()
 
-
-//////////////////////////////////////////////////////////////////////////////
-///  public constructor wxSSH
-///  <TODO: insert text here>
-///
-///  @param  parent  wxWindow *       <TODO: insert text here>
-///  @param  id      wxWindowID       <TODO: insert text here>
-///  @param  network Networking *     <TODO: insert text here>
-///  @param  pos     const wxPoint &  [=wxDefaultPosition] <TODO: insert text here>
-///  @param  width   int              [=80] <TODO: insert text here>
-///  @param  height  int              [=25] <TODO: insert text here>
-///  @param  name    const wxString & [="wxSSH"] <TODO: insert text here>
-///
-///  @return void
-///
-///  @author David Czechowski @date 04-22-2004
-//////////////////////////////////////////////////////////////////////////////
 wxSSH::wxSSH(wxWindow* parent, wxWindowID id, Networking* network, const wxPoint& pos, int width, int height, const wxString& name)
 	: wxTerm(parent, id, pos, width, height, name)
 {

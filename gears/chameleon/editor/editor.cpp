@@ -44,7 +44,7 @@ int CompareInts(int n1, int n2)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public constructor ChameleonEditor
-///  <TODO: insert text here>
+///  General-purpose editor creation and stuff
 ///
 ///  @param  mframe  ChameleonWindow * A pointer to the main application frame
 ///  @param  options Options *         A pointer to the main Options object
@@ -371,8 +371,6 @@ void ChameleonEditor::OnChar( wxStyledTextEvent &event )
 	const int currentLine = GetCurrentLine();
 	const int tabWidth = GetTabWidth();
 	const int eolMode = GetEOLMode();
-
-	// TODO Block indent/dedent isn't workng yet.  OnChar not being called?
 
     if( chr == WXK_TAB )
     {
@@ -832,26 +830,6 @@ void ChameleonEditor::SetCompiled()
 	m_project->SetCompiled(true);
 }
 
-/*
-//////////////////////////////////////////////////////////////////////////////
-///  private OnCompilerEnded
-///  <TODO: insert text here>
-///
-///  @param  event CompilerEvent & <TODO: insert text here>
-///
-///  @return void
-///
-///  @author Mark Erikson @date 04-22-2004
-//////////////////////////////////////////////////////////////////////////////
-void ChameleonEditor::OnCompilerEnded(CompilerEvent &event)
-{
-	if(event.GetResult() == CR_OK) {
-		m_bHasBeenCompiled = true;
-		m_executableFilename = event.GetFile();
-	}
-}
-*/
-
 //////////////////////////////////////////////////////////////////////////////
 ///  public FocusOnLine
 ///  Moves the cursor to the given line number, optionally showing a highlight marker
@@ -920,23 +898,6 @@ void ChameleonEditor::SetProject(ProjectInfo* project)
 	m_project = project;
 	m_project->AddEditor(this);
 }
-
-/*
-//////////////////////////////////////////////////////////////////////////////
-///  public SetExecutableFilename
-///  <TODO: insert text here>
-///
-///  @param  filename wxFileName  <TODO: insert text here>
-///
-///  @return void
-///
-///  @author Mark Erikson @date 04-22-2004
-//////////////////////////////////////////////////////////////////////////////
-void ChameleonEditor::SetExecutableFilename(wxFileName filename)
-{
-	m_project->SetExecutableName(filename);
-}
-*/
 
 //////////////////////////////////////////////////////////////////////////////
 ///  private OnRunToCursor

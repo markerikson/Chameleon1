@@ -14,18 +14,6 @@
 extern wxPrintData *g_printData;
 extern wxPageSetupData *g_pageSetupData;
 
-
-//////////////////////////////////////////////////////////////////////////////
-///  public constructor ChameleonPrintout
-///  <TODO: insert text here>
-///
-///  @param  edit  ChameleonEditor * <TODO: insert text here>
-///  @param  title wxChar *          [=""] <TODO: insert text here>
-///
-///  @return void
-///
-///  @author Mark Erikson @date 04-23-2004
-//////////////////////////////////////////////////////////////////////////////
 ChameleonPrintout::ChameleonPrintout (ChameleonEditor *edit, wxChar *title)
 : wxPrintout(title) {
 	m_edit = edit;
@@ -35,11 +23,11 @@ ChameleonPrintout::ChameleonPrintout (ChameleonEditor *edit, wxChar *title)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public OnPrintPage
-///  <TODO: insert text here>
+///  Called by the wxWidgets printing code as needed
 ///
-///  @param  page int  <TODO: insert text here>
+///  @param  page int  The page to print
 ///
-///  @return bool <TODO: insert text here>
+///  @return bool Whether or not the print succeeded
 ///
 ///  @author Mark Erikson @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -63,12 +51,12 @@ bool ChameleonPrintout::OnPrintPage (int page) {
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public OnBeginDocument
-///  <TODO: insert text here>
+///  A setup called by the wxWidgets printing code
 ///
-///  @param  startPage int  <TODO: insert text here>
-///  @param  endPage   int  <TODO: insert text here>
+///  @param  startPage int  The starting page
+///  @param  endPage   int  The ending page
 ///
-///  @return bool      <TODO: insert text here>
+///  @return bool      Whether or not the setup succeeded
 ///
 ///  @author Mark Erikson @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -84,12 +72,12 @@ bool ChameleonPrintout::OnBeginDocument (int startPage, int endPage) {
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public GetPageInfo
-///  <TODO: insert text here>
+///  Returns various formatting info needed by wxWidgets
 ///
-///  @param  minPage     int * <TODO: insert text here>
-///  @param  maxPage     int * <TODO: insert text here>
-///  @param  selPageFrom int * <TODO: insert text here>
-///  @param  selPageTo   int * <TODO: insert text here>
+///  @param  minPage     int * Filled with some minimum number of pages
+///  @param  maxPage     int * Filled with some maximum number of pages
+///  @param  selPageFrom int * Filled with something
+///  @param  selPageTo   int * Filled with something
 ///
 ///  @return void
 ///
@@ -148,11 +136,11 @@ void ChameleonPrintout::GetPageInfo (int *minPage, int *maxPage, int *selPageFro
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public HasPage
-///  <TODO: insert text here>
+///  Checks to see if a given page exists
 ///
-///  @param  page int  <TODO: insert text here>
+///  @param  page int  The page number to check
 ///
-///  @return bool <TODO: insert text here>
+///  @return bool Whether or not the page exists
 ///
 ///  @author Mark Erikson @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -163,11 +151,11 @@ bool ChameleonPrintout::HasPage (int WXUNUSED(page)) {
 
 //////////////////////////////////////////////////////////////////////////////
 ///  private PrintScaling
-///  <TODO: insert text here>
+///  Scales the output (for print preview, etc)
 ///
-///  @param  dc   wxDC * <TODO: insert text here>
+///  @param  dc   wxDC * The wxDC to use for calculations
 ///
-///  @return bool <TODO: insert text here>
+///  @return bool Whether or not the function succeeded
 ///
 ///  @author Mark Erikson @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////

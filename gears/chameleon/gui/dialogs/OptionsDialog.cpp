@@ -336,16 +336,6 @@ void OptionsDialog::OnButtonCancelClick( wxCommandEvent& event )
 	m_optionsNotebook->SetSelection(0);
 }
 
-//////////////////////////////////////////////////////////////////////////////
-///  public OnChar
-///  <TODO: insert text here>
-///
-///  @param  event wxKeyEvent & <TODO: insert text here>
-///
-///  @return void
-///
-///  @author Mark Erikson @date 04-22-2004
-//////////////////////////////////////////////////////////////////////////////
 void OptionsDialog::OnChar(wxKeyEvent &event)
 {
 	if(event.GetKeyCode() == WXK_RETURN)

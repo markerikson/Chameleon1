@@ -17,13 +17,13 @@ using namespace std;
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public constructor TextManager
-///  <TODO: insert text here>
+///  It's a constructor.  Yay.
 ///
-///  @param  parent    GTerm * [=0] <TODO: insert text here>
-///  @param  width     int     [=80] <TODO: insert text here>
-///  @param  height    int     [=24] <TODO: insert text here>
-///  @param  maxWidth  int     [=160] <TODO: insert text here>
-///  @param  maxHeight int     [=100] <TODO: insert text here>
+///  @param  parent    GTerm * [=0] The GTerm that owns this textmanager
+///  @param  width     int     [=80] The starting width in characters
+///  @param  height    int     [=24] The starting height in characters
+///  @param  maxWidth  int     [=160] The maximum possible characters in a line
+///  @param  maxHeight int     [=100] The maximum lines of history to store
 ///
 ///  @return void
 ///
@@ -41,7 +41,7 @@ TextManager::TextManager(GTerm* parent, int width, int height, int maxWidth, int
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public Reset
-///  <TODO: insert text here>
+///  Clears out the text and resets everything
 ///
 ///  @return void
 ///
@@ -67,7 +67,7 @@ void TextManager::Reset()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public overloaded AddNewLine
-///  <TODO: insert text here>
+///  Inserts a new blank line at the bottom
 ///
 ///  @return void
 ///
@@ -80,9 +80,9 @@ void TextManager::AddNewLine()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public overloaded AddNewLine
-///  <TODO: insert text here>
+///  Adds a new line to the bottom
 ///
-///  @param  newline string  <TODO: insert text here>
+///  @param  newline string  The new line to insert
 ///
 ///  @return void
 ///
@@ -102,48 +102,44 @@ void TextManager::AddNewLine(string newline)
 
 	m_linesReceived++;
 
+	// make sure that we no more than m_maxHeight lines stored
 	if((int)m_text.size() > m_maxHeight)
 	{
-		cout << "Popping front" << endl;
 		m_text.pop_front();
 		m_color.pop_front();
 	}
 	else
 	{
+		// cursor tracking
 		if(m_bottomLine < (m_maxHeight - 1))
 		{
 			m_bottomLine++;
 			m_topLine = m_bottomLine - m_viewportHeight + 1;
 		}
-		//printf("Bottom: %d, top: %d\n", m_bottomLine, m_topLine);
 	}
 }
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public operator []
-///  <TODO: insert text here>
+///  Allows access to a given line
 ///
-///  @param  index    int  <TODO: insert text here>
+///  @param  index    int  The index of the line to retrieve (0 to number of lines displayed)
 ///
-///  @return string & <TODO: insert text here>
+///  @return string & The line at that index
 ///
 ///  @author Mark Erikson @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
 string &TextManager::operator [](int index)
 {
-	if(index != m_cursorLine)
-	{
-		//wxLogDebug("m_cursorLine: %d, index: %d", m_cursorLine, index);
-	}
 	return GetLineAdjusted(index);
 }
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public Scroll
-///  <TODO: insert text here>
+///  Scrolls the viewport the given number of lines up or down
 ///
-///  @param  numLines int   <TODO: insert text here>
-///  @param  scrollUp bool  <TODO: insert text here>
+///  @param  numLines int   The number of lines to scroll
+///  @param  scrollUp bool  True to scroll up, false to scroll down
 ///
 ///  @return void
 ///
@@ -155,6 +151,7 @@ void TextManager::Scroll(int numLines, bool scrollUp)
 	
 	if(scrollUp)
 	{
+		// skip out if we're scrolled all the way up
 		if( ( (m_topLine - m_numLinesScrolledUp) == 0) || 
 			( (m_numLinesScrolledUp + m_viewportHeight) >= (m_linesReceived -1)))
 		{
@@ -166,14 +163,11 @@ void TextManager::Scroll(int numLines, bool scrollUp)
 		}
 
 		int limiter = m_topLine - m_numLinesScrolledUp;
-		//wxLogDebug("nLSU: %d, tL: %d, limiter: %d", m_numLinesScrolledUp, m_topLine, limiter);
 		if(actualLinesToScroll > limiter)
 		{
 			actualLinesToScroll = limiter;
 		}
-		
-		//m_topLine -= actualLinesToScroll;
-		//m_bottomLine -= actualLinesToScroll;
+
 		m_numLinesScrolledUp += actualLinesToScroll;
 	}
 	else
@@ -188,9 +182,6 @@ void TextManager::Scroll(int numLines, bool scrollUp)
 		{
 			actualLinesToScroll = linesBelow;
 		}
-		
-		//m_topLine += actualLinesToScroll;
-		//m_bottomLine += actualLinesToScroll;
 		m_numLinesScrolledUp -= actualLinesToScroll;
 
 		if(m_numLinesScrolledUp < 0)
@@ -202,9 +193,9 @@ void TextManager::Scroll(int numLines, bool scrollUp)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public GetSize
-///  <TODO: insert text here>
+///  Returns the number of lines stored
 ///
-///  @return int <TODO: insert text here>
+///  @return int The number of lines stored
 ///
 ///  @author Mark Erikson @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -215,10 +206,10 @@ int TextManager::GetSize()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public Resize
-///  <TODO: insert text here>
+///  Resizes the stored text to a given number of characters wide and high
 ///
-///  @param  width  int  <TODO: insert text here>
-///  @param  height int  <TODO: insert text here>
+///  @param  width  int  The new number of characters displayed
+///  @param  height int  The new number of lines displayed
 ///
 ///  @return void
 ///
@@ -270,11 +261,11 @@ void TextManager::Resize(int width, int height)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public GetLine
-///  <TODO: insert text here>
+///  Retrieves a line without any adjustments for the viewport
 ///
-///  @param  index    int  <TODO: insert text here>
+///  @param  index    int  The absolute value of the line to retrieve (0 to (maxheight - 1))
 ///
-///  @return string & <TODO: insert text here>
+///  @return string & The string at that location
 ///
 ///  @author Mark Erikson @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -285,11 +276,11 @@ string& TextManager::GetLine(int index)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public GetLineAdjusted
-///  <TODO: insert text here>
+///  Returns a line from within the viewport
 ///
-///  @param  index    int  <TODO: insert text here>
+///  @param  index    int  The index of the line to retrieve (0 to (lines displayed - 1))
 ///
-///  @return string & <TODO: insert text here>
+///  @return string & The string at that location
 ///
 ///  @author Mark Erikson @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -301,10 +292,10 @@ string& TextManager::GetLineAdjusted(int index)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public SetLine
-///  <TODO: insert text here>
+///  Sets a line without any adjustments for the viewport
 ///
-///  @param  index int     <TODO: insert text here>
-///  @param  line  string  <TODO: insert text here>
+///  @param  index int     The absolute index of the line to set
+///  @param  line  string  The line to set
 ///
 ///  @return void
 ///
@@ -317,10 +308,10 @@ void TextManager::SetLine(int index, string line)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public SetLineAdjusted
-///  <TODO: insert text here>
+///  Sets a line within the viewport
 ///
-///  @param  index int     <TODO: insert text here>
-///  @param  line  string  <TODO: insert text here>
+///  @param  index int     The index within the viewport of the line to set
+///  @param  line  string  The line to set
 ///
 ///  @return void
 ///
@@ -335,11 +326,11 @@ void TextManager::SetLineAdjusted(int index, string line)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public SetCharAdjusted
-///  <TODO: insert text here>
+///  Sets a character, adjusted for the viewport
 ///
-///  @param  y    int   <TODO: insert text here>
-///  @param  x    int   <TODO: insert text here>
-///  @param  c    char  <TODO: insert text here>
+///  @param  y    int   The y position within the viewport
+///  @param  x    int   The x position on that line
+///  @param  c    char  The character to set
 ///
 ///  @return void
 ///
@@ -347,12 +338,13 @@ void TextManager::SetLineAdjusted(int index, string line)
 //////////////////////////////////////////////////////////////////////////////
 void TextManager::SetCharAdjusted(int y, int x, char c)
 {
-	//wxLogDebug("SCA: y: %d, x: %d, c: %s");
 	int actualLine = AdjustIndex(y);
 
 	if( (actualLine > MAXHEIGHT) || (y >= m_viewportHeight))
 	{
-		wxLogDebug("Bad Y value in TM::GCA.  y = %d, viewport height = %d", y, m_viewportHeight);
+		// if we're here, then there's a good chance that the server thinks we're
+		// doing 80x24, when we're actually something smaller.  At the moment, tough.
+		wxLogDebug("Bad Y value in TextManagerM::SetCharAdjusted.  y = %d, viewport height = %d", y, m_viewportHeight);
 		return;
 	}
 	m_text[actualLine][x] = c;
@@ -360,12 +352,12 @@ void TextManager::SetCharAdjusted(int y, int x, char c)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public GetCharAdjusted
-///  <TODO: insert text here>
+///  Gets a character, adjusted for the viewport
 ///
-///  @param  y    int  <TODO: insert text here>
-///  @param  x    int  <TODO: insert text here>
+///  @param  y    int  The line within the viewport that the character is on
+///  @param  x    int  The character position within that line
 ///
-///  @return char <TODO: insert text here>
+///  @return char The character at that position
 ///
 ///  @author Mark Erikson @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -375,7 +367,7 @@ char TextManager::GetCharAdjusted(int y, int x)
 
 	if( (actualLine > MAXHEIGHT) || (y >= m_viewportHeight))
 	{
-		wxLogDebug("Bad Y value in TM::GCA.  y = %d, viewport height = %d", y, m_viewportHeight);
+		wxLogDebug("Bad Y value in TextManager::GetCharAdjusted.  y = %d, viewport height = %d", y, m_viewportHeight);
 		return ' ';
 	}
 
@@ -384,12 +376,12 @@ char TextManager::GetCharAdjusted(int y, int x)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public GetColor
-///  <TODO: insert text here>
+///  Gets an encoded color without adjusting for the viewport
 ///
-///  @param  y              int  <TODO: insert text here>
-///  @param  x              int  <TODO: insert text here>
+///  @param  y              int  The line number
+///  @param  x              int  The character on that line
 ///
-///  @return unsigned short <TODO: insert text here>
+///  @return unsigned short The encoded color
 ///
 ///  @author Mark Erikson @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -400,12 +392,12 @@ unsigned short TextManager::GetColor(int y, int x)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public GetColorAdjusted
-///  <TODO: insert text here>
+///  Gets an encoded color, adjusted for the viewport
 ///
-///  @param  y              int  <TODO: insert text here>
-///  @param  x              int  <TODO: insert text here>
+///  @param  y              int  The line number in the viewport
+///  @param  x              int  The character on that line
 ///
-///  @return unsigned short <TODO: insert text here>
+///  @return unsigned short The encoded color
 ///
 ///  @author Mark Erikson @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -423,11 +415,11 @@ unsigned short TextManager::GetColorAdjusted(int y, int x)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public SetColor
-///  <TODO: insert text here>
+///  Sets an encoded color without adjusting for the viewport
 ///
-///  @param  y     int             <TODO: insert text here>
-///  @param  x     int             <TODO: insert text here>
-///  @param  value unsigned short  <TODO: insert text here>
+///  @param  y     int             The unadjusted line
+///  @param  x     int             The character position on that line
+///  @param  value unsigned short  The new encoded color
 ///
 ///  @return void
 ///
@@ -440,11 +432,11 @@ void TextManager::SetColor(int y, int x, unsigned short value)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public SetColorAdjusted
-///  <TODO: insert text here>
+///  Sets an encoded color, adjusting the location for the viewport
 ///
-///  @param  y     int             <TODO: insert text here>
-///  @param  x     int             <TODO: insert text here>
-///  @param  value unsigned short  <TODO: insert text here>
+///  @param  y     int             The line within the viewport
+///  @param  x     int             The character on that line
+///  @param  value unsigned short  The new encoded color
 ///
 ///  @return void
 ///
@@ -469,9 +461,9 @@ void TextManager::SetColorAdjusted(int y, int x, unsigned short value)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public SetCursorLine
-///  <TODO: insert text here>
+///  Sets the line that the cursor should be on
 ///
-///  @param  line int  <TODO: insert text here>
+///  @param  line int  The new line for the cursor
 ///
 ///  @return void
 ///
@@ -479,7 +471,6 @@ void TextManager::SetColorAdjusted(int y, int x, unsigned short value)
 //////////////////////////////////////////////////////////////////////////////
 void TextManager::SetCursorLine(int line)
 {
-	//wxLogDebug("line: %d", line);
 	if(line >= m_viewportHeight)
 	{
 		string bottomString = GetLineAdjusted(m_viewportHeight - 1);
@@ -493,7 +484,6 @@ void TextManager::SetCursorLine(int line)
 			}
 		}
 		
-
 		line = m_viewportHeight - 1;		
 	}
 	else if(line < 0)
@@ -502,12 +492,11 @@ void TextManager::SetCursorLine(int line)
 	}
 
 	m_cursorLine = line;
-
 }
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public CursorDown
-///  <TODO: insert text here>
+///  Moves the cursor down one line
 ///
 ///  @return void
 ///
@@ -515,22 +504,14 @@ void TextManager::SetCursorLine(int line)
 //////////////////////////////////////////////////////////////////////////////
 void TextManager::CursorDown()
 {
-	string bottomLine = GetLineAdjusted(m_cursorLine);
-	//wxLogDebug("CursorDown: %d/%d, line: %s", m_cursorLine, m_cursorLine + 1, bottomLine.c_str());
-
-	if(m_cursorLine == m_viewportHeight - 1)
-	{
-		int q = 42;
-	}
 	SetCursorLine(m_cursorLine + 1);
 
-	m_linesReceived++;
-	
+	m_linesReceived++;	
 }
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public CursorUp
-///  <TODO: insert text here>
+///  Moves the cursor up a line
 ///
 ///  @return void
 ///
@@ -543,11 +524,11 @@ void TextManager::CursorUp()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  private AdjustIndex
-///  <TODO: insert text here>
+///  Adjusts an index within the viewport to the absolute index in the main arrays
 ///
-///  @param  index int  <TODO: insert text here>
+///  @param  index int  The unadjusted index
 ///
-///  @return int   <TODO: insert text here>
+///  @return int   The adjusted index
 ///
 ///  @author Mark Erikson @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -559,9 +540,9 @@ int TextManager::AdjustIndex(int index)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public GetNumLinesScrolled
-///  <TODO: insert text here>
+///  Returns the number of lines scrolled upwards
 ///
-///  @return int <TODO: insert text here>
+///  @return int The number of lines scrolled up
 ///
 ///  @author Mark Erikson @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -572,9 +553,9 @@ int TextManager::GetNumLinesScrolled()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public SetMaxSize
-///  <TODO: insert text here>
+///  Sets the maximum number of lines of history
 ///
-///  @param  newSize int  <TODO: insert text here>
+///  @param  newSize int  The new maximum size
 ///
 ///  @return void
 ///
@@ -602,9 +583,9 @@ void TextManager::SetMaxSize(int newSize)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public GetLinesReceived
-///  <TODO: insert text here>
+///  Returns the number of lines received
 ///
-///  @return int <TODO: insert text here>
+///  @return int The number of lines received
 ///
 ///  @author Mark Erikson @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
