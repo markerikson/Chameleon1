@@ -1333,8 +1333,13 @@ NetworkCallResult ChameleonWindow::CheckNetworkStatus()
 		}
 		case NET_ERROR_MESSAGE:
 		{		
-			wxString message = "An unknown network error has occurred.  \nPlease contact mark.erikson@cedarville.edu";
-			message += "\nError details: " + m_network->GetStatusDetails();
+			wxString message = "An unknown network error has occurred.";
+			message += "\nPlease save the information in the debug window to a file (Log menu -> Save)";
+			message += "\n and email it to Ben Carhart at p1164514@cedarville.edu.";
+			message += "\nA description of what led to the problem would also help us."
+			wxString statusDetails = m_network->GetStatusDetails();;
+			message += "\nError details: " + statusDetails;
+			wxLogDebug("NET_ERROR_MESSAGE: %s", statusDetails);
 			wxMessageBox(message, "Unknown network error", wxOK | wxICON_EXCLAMATION);
 			return NETCALL_FAILED;
 			break;
