@@ -1,6 +1,0 @@
-base referer
-rect $editor_8cpp.html 7,17 71,44
-rect $_chameleon_8cpp.html 95,17 193,44
-rect $_chameleon_notebook_8cpp.html 217,17 369,44
-rect $_options_dialog_8cpp.html 393,17 508,44
-rect $_remote_file_dialog_8cpp.html 532,17 665,44

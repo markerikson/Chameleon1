@@ -1,6 +1,0 @@
-base referer
-rect $_common_headers_8h.html 133,167 317,193
-rect $debug_8h.html 328,92 381,119
-rect $_chameleon_window_8h.html 392,167 520,193
-rect $_chameleon_notebook_8h.html 544,167 682,193
-rect $datastructures_8h.html 520,92 688,119

@@ -1,6 +1,0 @@
-base referer
-rect $class_g_term.html 18,32 64,59
-rect $class_g_telnet.html 114,7 165,33
-rect $classwx_term.html 113,57 166,84
-rect $classwx_s_s_h.html 218,32 269,59
-rect $classwx_telnet.html 214,83 273,109

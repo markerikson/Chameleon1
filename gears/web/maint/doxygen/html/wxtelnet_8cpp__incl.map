@@ -1,7 +1,0 @@
-base referer
-rect $_common_headers_8h.html 108,241 292,268
-rect $debug_8h.html 231,166 284,193
-rect $wxtelnet_8h.html 492,241 559,268
-rect $gterm_8hpp.html 557,17 683,44
-rect $gtelnet_8hpp.html 553,92 687,118
-rect $wxterm_8h.html 521,166 583,193
