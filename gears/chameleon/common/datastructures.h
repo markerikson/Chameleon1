@@ -282,6 +282,7 @@ typedef struct
 	wxTextOutputStream* stdinStream;
 	wxString outputBuf;
 	wxEvtHandler* owner;
+	bool isRunSynch;
 } ProcessInfo;
 
 WX_DECLARE_LIST(ProcessInfo, ProcessInfoList);

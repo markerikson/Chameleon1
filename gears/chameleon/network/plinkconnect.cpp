@@ -1,8 +1,6 @@
 //////////////////////////////////////////
 //
-// Notes: I will always have a process going if I can.  So, if I'm PC_NOGO it's
-//            because user/host/pass/physical can't connect
-//        There is always an available process -- the last in the list.  If I
+// Notes: There is always an available process -- the last in the list.  If I
 //            start to use one, I open another one.
 //        I designate methods as "ASYNCHRONOUS" if they don't have a wait-loop
 //        If I assume that having had at least one connection determines a new
@@ -10,7 +8,7 @@
 //
 // Todo: Determine return status of run programs
 //       Change struct ProcessInfo into a class (use good defaults & a destructor)
-//       Use "Kill(pid, wxSIGTERM);" in terminateConnection -- ^C ain't good 'nuff
+//       Instead of always killing and opening processes, I could keep some live
 //
 ////////////////////////////////////////
 #include <wx/txtstrm.h>
@@ -67,6 +65,15 @@ PlinkConnect::PlinkConnect(wxString plinkApp, wxString host, wxString user, wxSt
 // SYNCHRONOUS
 PlinkConnect::~PlinkConnect()
 {
+	// Send NO more events:
+	for(ProcessInfoList::Node* node = m_processes.GetFirst(); node; node = node->GetNext() ) {
+		ProcessInfo* p = node->GetData();
+		if(p->owner != NULL) {
+			wxLogDebug("BAD BAD - PlinkConnect Deleted with a process still live!");
+			p->owner = NULL;
+		}
+	}
+
 	terminateAllConnections();
 
 	while(m_processes.GetCount() != 0) {
@@ -174,9 +181,17 @@ bool PlinkConnect::getIsSettled()
 }
 
 
+//Public:
+wxTextOutputStream* PlinkConnect::executeCommand(wxString command, wxEvtHandler* listener)
+{
+	return executeCmd(command, listener, false);
+}
+
+
 // This method should only be called if IsConnected().
 // ASYNCHRONOUS (relatively)
-wxTextOutputStream* PlinkConnect::executeCommand(wxString command, wxEvtHandler* listener)
+//Private:
+wxTextOutputStream* PlinkConnect::executeCmd(wxString command, wxEvtHandler* listener, bool isSynch)
 {
 
 	if(!getIsConnected()) { // <-- synchronous
@@ -187,12 +202,14 @@ wxTextOutputStream* PlinkConnect::executeCommand(wxString command, wxEvtHandler*
 	// Set the owner who will listen for Events
 	ProcessInfo* p = (ProcessInfo*)m_processes.Last()->GetData();
 	p->owner = listener;
+	p->isRunSynch = isSynch;
 
 	// Wrap the command:
 	wxString cmd = "echo St_Ar_Tt_oK_eN ; " + command + " ; echo En_Dt_oK_eN\r";
 	//wxString cmd = "echo St_Ar_Tt_oK_eN ; " + command + " && echo Ch_Ls_Uc_Es_S ; echo En_Dt_oK_eN\r";
 	
 	// Send it:
+//wxLogDebug("PC(%d) cmd is: %s", p->pid, cmd);
 	*(p->stdinStream) << cmd;
 	p->state = PC_EXECUTING;
 
@@ -206,7 +223,7 @@ wxTextOutputStream* PlinkConnect::executeCommand(wxString command, wxEvtHandler*
 // SYNCHRONOUS
 wxString PlinkConnect::executeSyncCommand(wxString command)
 {
-	executeCommand(command, NULL);
+	executeCmd(command, NULL, true);
 
 	// executeCommand spawns a new process, so my process is the next-to-last one
 	ProcessInfo* p = (ProcessInfo*)m_processes.GetLast()->GetPrevious()->GetData();
@@ -215,6 +232,8 @@ wxString PlinkConnect::executeSyncCommand(wxString command)
 		// Perhaps this should terminate after an amount of time
 		wxSafeYield();
 	}
+
+	terminateConnection(p);
 
 	return p->outputBuf;
 }
@@ -228,10 +247,12 @@ void PlinkConnect::parseOutput(ProcessInfo* p, wxString output, wxString errLog)
 //	wxLogDebug("Plink stdout: \"" + output + "\"");
 //	wxLogDebug("Plink stderr: \"" + errLog + "\"");
 
-	p->outputBuf += output;
+	if(p->state != PC_ENDING) {
+		p->outputBuf += output;
+	}
 
 	if(p->state == PC_STARTING) {
-		if(p->outputBuf.Contains("Last login:")) {
+		if(p->outputBuf.Contains("Last login:")) { // <------------------------ FIX ME !!
 			// Yeah!  It succeeded
 			p->outputBuf = "";
 			m_isConnected = true;
@@ -245,18 +266,18 @@ void PlinkConnect::parseOutput(ProcessInfo* p, wxString output, wxString errLog)
 			terminateConnection(p);
 		}
 		else {
-			// "FATAL ERROR: Network error: Connection refused"
-			// "FATAL ERROR: Unable to authenticate"
-			m_message += errLog;
-			// this state transition should occur when the process terminates
+			// Do nothing.  Just continue waiting.
 //*(p->stdinStream) << "echo \"Last Login:\"" << endl;
+
+			// (in the meantime:)
+			m_message += errLog;
 		}
 		
 	}
 
 	if(p->state == PC_READY) {
 		// nothing to do
-		wxLogDebug("PlinkConnect: extranious output: \"" + p->outputBuf + "\"");
+//		wxLogDebug("PlinkConnect(%d): extranious output: \"%s\"", p->pid, p->outputBuf);
 	}
 
 	if(p->state == PC_EXECUTING) {
@@ -278,7 +299,7 @@ void PlinkConnect::parseOutput(ProcessInfo* p, wxString output, wxString errLog)
 
 		//Throw Appropriate Events:
 		if(p->outputBuf != "") {
-			if(p->owner != NULL) { // if not being run in SYNCH
+			if(p->owner != NULL) { // if someone is listening
 				ChameleonProcessEvent e(chEVT_PROCESS_STDOUT);
 				e.SetString(p->outputBuf);
 				p->owner->AddPendingEvent(e);
@@ -294,13 +315,27 @@ void PlinkConnect::parseOutput(ProcessInfo* p, wxString output, wxString errLog)
 			}
 
 			// proc not being used any more, so terminate it
-			terminateConnection(p);
+			if(!p->isRunSynch) {
+				terminateConnection(p);
+			}
+			//else -- it's terminated from within execSynchCommand
+			//           to prevent early deletion
 		}
 	}
 
 	if(p->state == PC_ENDING) {
 		// nothing to do
-		wxLogDebug("PlinkConnect: extranious output: \"" + p->outputBuf + "\"");
+		#ifdef _DEBUG
+			wxString temp = output;
+			int start = temp.Find("En_Dt_oK_eN");
+			if(start != -1) {
+				temp.Remove(start);
+			}
+			
+			if(temp != "") {
+//				wxLogDebug("PlinkConnect(%d): extranious output: \"%s\"", p->pid, temp);
+			}
+		#endif
 	}
 
 	return;
@@ -312,19 +347,9 @@ void PlinkConnect::parseOutput(ProcessInfo* p, wxString output, wxString errLog)
 void PlinkConnect::terminateConnection(ProcessInfo* p)
 {
 	if(p->state == PC_BUSY || p->state == PC_EXECUTING) {
-		////send break signal:
-		//*(p->stdinStream) << (char)3; // SIGINT
-		//// Wait for it the process to cancel
-		//while(p->state == PC_BUSY || p->state == PC_EXECUTING) {
-		//	// Perhaps this should SIGKILL after an amount of time
-		//	wxSafeYield();
-		//}
-
-		// There is no definite intkey that will stop and procress in bash because
-		//   the processes can trap the signals and do as they please
-		// Therefore: (gently) Kill the plink process
+		// Kill the plink process
 		p->state = PC_ENDING;
-		wxKill(p->pid, wxSIGKILL); //SIGTERM
+		wxKill(p->pid, wxSIGKILL); // SIGTERM (doesn't always work!?)
 	}
 	else {
 		//send exit:
@@ -373,6 +398,7 @@ void PlinkConnect::PollTick() {
 		}
 
 		if(output != "" || errout != "") {
+//wxLogDebug("ProcessOutput(%d) - \"%s\"", p->pid, output);
 			parseOutput(p, output, errout);
 		}
 	}

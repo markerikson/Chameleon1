@@ -45,6 +45,7 @@ class PlinkConnect : public wxEvtHandler {
 		// Methods:
 		void spawnConnection();
 		void parseOutput(ProcessInfo* proc, wxString output, wxString errlog = "");
+		wxTextOutputStream* executeCmd(wxString command, wxEvtHandler* listener, bool isSynch);
 		void terminateConnection(ProcessInfo* proc);
 		void terminateAllConnections();
 

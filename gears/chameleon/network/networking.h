@@ -2,7 +2,8 @@
 #define __CHAMELEON__NETWORKING__H__
 ///////////////////////////////////////
 //
-// Internally, I (presently) am ignorant of trailing "/"s on directories
+// Notes: I strongly recommend anything that uses an asynch process, that it call ForceKill
+//           in it's destructor if it's process hasn't terminated.
 //
 // Caution: sendFileContents will overwrite anything in it's way.
 //
