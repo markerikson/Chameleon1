@@ -36,7 +36,7 @@ class wxSSH : public wxTerm
 
 		virtual void SendBack(int len, char *data);
 
-		virtual void Connect(wxString hostname, wxString username, wxString passphrase);
+		virtual void Connect();
 		virtual void Disconnect(void);
 		virtual bool IsConnected(void);
 
@@ -44,8 +44,6 @@ class wxSSH : public wxTerm
 		bool m_connected;
 		wxTextOutputStream* m_plinkStdIn;
 		Networking* m_networking;
-		//wxString m_host;
-		//wxString m_user;
 		wxString m_inputBuffer;
 		bool m_isInESCsequence;
 

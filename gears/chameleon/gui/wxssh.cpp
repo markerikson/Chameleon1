@@ -34,26 +34,26 @@ wxSSH::~wxSSH()
 		// "No time for pleasantries"
 		m_networking->ForceKillProcess(m_plinkStdIn);
 		wxUsleep(250);
-		wxLogDebug("wxSSH tried to kill m_plink.");
+		wxLogDebug("wxSSH force killed m_plink.");
 	}
 }
 
 void wxSSH::SendBack(int len, char *data)
 {
 	if(m_connected) {
-		wxString s = "";
-		for(int i = 0; i < len; i++) {
-			//wxLogDebug("%d ", data[i]);
-			s += data[i];
-		}
+		wxString s(data, len); // = "";
+		//for(int i = 0; i < len; i++) {
+		//	//wxLogDebug("%d ", data[i]);
+		//	s += data[i];
+		//}
 		m_plinkStdIn->WriteString(s);
 	}
 }
 
-void wxSSH::Connect(wxString hostname, wxString username, wxString passphrase)
+void wxSSH::Connect()
 {
 	if(m_connected) {
-		Disconnect(); // might this be a problem because it's Asynchronous?  Is wxProcess2 this independant?
+		Disconnect(); // might this be a problem because it's Asynchronous?
 	}
 
 	Reset();
@@ -90,7 +90,7 @@ bool wxSSH::IsConnected(void)
 	return m_connected;
 }
 
-// wxSSH will catch XTerm specific escape sequences (coming from the server)
+// wxSSH should catch XTerm specific escape sequences (coming from the server)
 // The following sequences are useful in this respect:
 //    * ESC]0;stringBEL -- Set icon name and window title to string
 //    * ESC]1;stringBEL -- Set icon name to string
@@ -100,7 +100,7 @@ bool wxSSH::IsConnected(void)
 //
 // Currently the plan is just to surpress them because they aren't relevant to Chameleon
 //wxSSH should override the input mechanism, and when any of the xterm escape sequences are issued it should eat them(into a buffer).  If a max STRING length is reached with out getting BEL the buffer can be 're-issued'.
-//**Note: if a vt52 printscreen is sent, the screen will be blank until MAX characters are sent
+// **Note: if a vt52 printscreen is sent, the screen will be blank until MAX characters are sent
 void wxSSH::OnPlinkOut(ChameleonProcessEvent &e)
 {
 	wxString s = e.GetString();
@@ -115,39 +115,16 @@ void wxSSH::OnPlinkOut(ChameleonProcessEvent &e)
 
 	ProcessInput(len, (unsigned char*)s.c_str());
 	return;
-/*
-	int escPos = s.Find((char)27);
-	if(escPos != -1) {	//if contains ESC
-		if(m_isInESCsequence) {
-			m_inputBuffer += s.Remove(0,escPos);
-
-			// determine the fate of the buffer
-
-			ProcessInput(s.Length(), (unsigned char*)s.c_str());
-		}
-		else { // begining
-			ProcessInput(escPos, (unsigned char*)s.Remove(0,escPos).c_str());
-		}
-
-	}
-	else {
-		//continue adding to the buffer
-	}
-*/
 }
 
 void wxSSH::OnPlinkErr(ChameleonProcessEvent &e)
 {
-	//wxString s = e.GetString();
-	//int len = s.Length();
-	//ProcessInput(len, (unsigned char*)s.c_str()); // dump errors to the terminal window
-
 	wxLogDebug("Terminal-StdError: "+e.GetString());
 }
 
 void wxSSH::OnPlinkTerm(ChameleonProcessEvent &e)
 {
-	wxLogDebug("Terminal's Plink Terminated!");
+	wxLogDebug("Terminal's External Process Terminated!");
 
 	m_connected = false;
 }

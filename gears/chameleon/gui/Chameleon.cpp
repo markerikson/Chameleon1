@@ -592,7 +592,7 @@ void ChameleonWindow::OnMenuEvent(wxCommandEvent &event)
 			NetworkStatus isok = m_network->GetStatus();
 			if(isok == NET_GOOD) 
 			{ 
-				m_terminal->Connect(wxEmptyString, wxEmptyString, wxEmptyString);
+				m_terminal->Connect();
 				wxLogDebug("Connected: %d", m_terminal->IsConnected());
 				//Highlight Terminal:
 				int terminalIndex = m_noteTerm->FindPagePosition(m_termContainer);
