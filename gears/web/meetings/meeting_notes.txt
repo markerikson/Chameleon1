@@ -839,3 +839,16 @@ by: Ben
 		--Mark is in favor of "resource re-allocation"
 		--Dave wants Mark to commit things in small chunks so Ben can work on it
 	*Networking: finish!
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Group Meeting 4/08/2004 8:45pm
+by: Ben
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+>>For this meeting:
+	*Instalation
+	*Documents MOD
+>>Documents (revising to reflect the project)
+	-Ben has to link up this document
+	-These are LOW PRIORITY
+>>Code:
+	*DONE BY WEDNESDAY April 14th
+	*Wrap up test prog Dave sent me to put in the Maint. Manual.
