@@ -70,16 +70,15 @@
 
 
 //#include "stc.h"
-class wxGridCellEditorEvtHandler;
+//class wxGridCellEditorEvtHandler;
 #include "../editor/editor.h"
 #include "updateuihandler.h"
 #include "../common/datastructures.h"
 #include "wxtelnet.h"
 #include "dialogs/OptionsDialog.h"
 #include "dialogs/RemoteFileDialog.h"
-//#include "GridCellEditorEvtHandler.h"
-//#include "GridCellCheckboxRenderer.h"
 #include "../perms/p.h"
+//#include "../network/networking.h"
 
 #include "ChameleonNotebook.h"
 
@@ -113,6 +112,11 @@ public:
 
 	void EvaluateOptions();
 
+	void OpenFile(wxArrayString fnames);
+
+	//ChameleonEditor* GetCurrentEditor();
+	//Networking* GetNetworking();
+
 
 
 private:
@@ -127,8 +131,8 @@ private:
 	void OnAbout(wxCommandEvent& event);
 	void OnSave(wxCommandEvent &event);
 	void OnSaveAs(wxCommandEvent &event);
-	void SaveFileLocal(bool saveas);
-	void OpenFile(wxCommandEvent& event);
+	//void SaveFileLocal(bool saveas);
+	void OpenFile();
 	void Test(wxCommandEvent& event);
 	//void SaveFileAs(wxCommandEvent& event);
 	void OnUpdateSave(wxUpdateUIEvent &event);
@@ -159,7 +163,7 @@ private:
 
 
 
-	void OpenFile(wxArrayString fnames);
+	
 	void CloseFile(int pageNr = -1);
 	void CloseTab();
 	void PageHasChanged (int pageNr = -1);
@@ -187,7 +191,7 @@ private:
 	UpdateUIHandler*  uih;
 	wxTelnet*  m_telnet;
 	OptionsDialog*  m_optionsDialog;
-	RemoteFileDialog* m_remoteFiles;
+	RemoteFileDialog* m_remoteFileDialog;
 	wxGrid* m_optGrid;
 
 
@@ -199,6 +203,8 @@ private:
 
 	Permission*  m_perms;
 
+	//Networking* m_network;
+
 	//wxArrayPtrVoid* docArray; 
 	//scintillaDocPageHash* docHash;
 
@@ -209,6 +215,7 @@ private:
 
 	bool m_appClosing;
 	bool m_setSelection;
+	bool m_remoteMode;
 
 
 	//ChameleonEditor* m_edit;

@@ -36,6 +36,7 @@ class wxListCtrl;
 class ChameleonEditor;
 class ChameleonWindow;
 class Networking;
+class wxListEvent;
 
 /*!
  * Control identifiers
@@ -43,7 +44,6 @@ class Networking;
 
 ////@begin control identifiers
 #define ID_DIALOG 10000
-#define ID_COMBOBOX2 10006
 #define ID_BUTTON2 10007
 #define ID_LISTCTRL 10001
 #define ID_TXTFILENAME 10008
@@ -81,7 +81,13 @@ public:
 ////@begin RemoteFileDialog event handler declarations
 
     /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON2
-    void OnButtonBackClick( wxCommandEvent& event );
+    void OnButtonUpClick( wxCommandEvent& event );
+
+    /// wxEVT_COMMAND_LIST_ITEM_SELECTED event handler for ID_LISTCTRL
+    void OnItemSelected( wxListEvent& event );
+
+    /// wxEVT_COMMAND_LIST_ITEM_ACTIVATED event handler for ID_LISTCTRL
+    void OnItemActivated( wxListEvent& event );
 
     /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON
     void OnButtonOpenClick( wxCommandEvent& event );
@@ -99,22 +105,30 @@ public:
 ////@end RemoteFileDialog member function declarations
 
 	void SetNetworking(Networking* network);
-	wxString GetFileNameAndPath();
+	wxString GetLocalFileNameAndPath();
+	wxString GetRemoteFileNameAndPath();
+
+	void OpenRemoteFile();
+
+	void ShowDirectory(wxString dirname);
+	void LoadTestData();
 
     /// Should we show tooltips?
     static bool ShowToolTips();
 
 ////@begin RemoteFileDialog member variables
-    wxComboBox* m_pathlist;
     wxListCtrl* m_list;
     wxTextCtrl* m_txtFilename;
     wxButton* m_buttonOpen;
     wxComboBox* m_comboFiletypes;
     wxButton* m_buttonCancel;
     wxString m_currentPath;
-    wxFileName m_fullPathName;
 ////@end RemoteFileDialog member variables
 
+	wxFileName m_localFileNamePath;
+	wxFileName m_remoteFileNamePath;
+	wxSortedArrayString m_currentDirs;
+	wxSortedArrayString m_currentFiles;
 	ChameleonWindow* m_parentFrame;
 	Networking* m_network;
 };

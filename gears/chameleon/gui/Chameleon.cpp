@@ -73,18 +73,21 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	wxIcon icon(moz_xpm);
 	SetIcon(icon);
 
-	 m_perms = new Permission();
+	m_remoteMode = false;
 
-	 // enable only PERM_AUTOINDENT.  Eventually, will rely only on the provided code.
-	 m_perms->setGlobal(0x4);
+	//m_network = new Networking();
+	m_perms = new Permission();
 
-	 /*
-	 for(int i = PERM_FIRST; i < PERM_LAST; i++)
-	 {
-		 m_perms->enable(i);
-	 }
-	 */
-	 m_perms->enable(PERM_AUTOINDENT);
+	// enable only PERM_AUTOINDENT.  Eventually, will rely only on the provided code.
+	m_perms->setGlobal(0x4);
+
+	/*
+	for(int i = PERM_FIRST; i < PERM_LAST; i++)
+	{
+		m_perms->enable(i);
+	}
+	*/
+	m_perms->enable(PERM_AUTOINDENT);
 	 
 
 	 //m_openFiles = new wxArrayString();
@@ -157,6 +160,11 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	toolBar->AddTool(ID_TEST, "Test", bmTest);
 
 	toolBar->InsertSeparator(7);
+
+	/*
+	toolBar->AddTool(ID_OPEN_REMOTE, "Remote Open", bmOpen);
+	toolBar->AddTool(ID_SAVE_REMOTE, "Remote Save", bmSave);
+	*/
 	
 
 
@@ -180,7 +188,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 	InitializeOptionsDialog();
 
-	m_remoteFiles = new RemoteFileDialog(this, ID_REMOTEFILEDIALOG);
+	m_remoteFileDialog = new RemoteFileDialog(this, ID_REMOTEFILEDIALOG);
 
 
 
@@ -397,21 +405,7 @@ void ChameleonWindow::CloseFile (int pageNr)
 
 void ChameleonWindow::OnFileOpen (wxCommandEvent &WXUNUSED(event)) 
 {
-	if (!m_currentEd)
-	{
-		return;
-	}
-
-	wxArrayString fnames;
-	wxFileDialog dlg (this, _("Open files"), "", "", "C++ files (*.cpp, *.h)|*.cpp;*.h",
-		wxOPEN | wxFILE_MUST_EXIST | wxMULTIPLE | wxCHANGE_DIR);
-	if (dlg.ShowModal() != wxID_OK)
-	{
-		return;
-	}
-	dlg.GetPaths (fnames);
-	OpenFile (fnames);
-	PageHasChanged (m_currentPage);
+	OpenFile();
 }
 
 void ChameleonWindow::OpenFile (wxArrayString fnames) 
@@ -514,30 +508,41 @@ void ChameleonWindow::OnFileClose (wxCommandEvent &WXUNUSED(event))
 	PageHasChanged();
 }
 
-void ChameleonWindow::OpenFile(wxCommandEvent& WXUNUSED(event))
+void ChameleonWindow::OpenFile()
 {
-	/*
-	wxString filetext;
-	wxString filename = ::wxFileSelector("Pick a file", "",
-		"", "", "", wxOPEN, NULL);
-	if(!filename.empty())
+	if (!m_currentEd)
 	{
-
-		wxFile file(filename);
-		wxString st;
-
-		char* buff = st.GetWriteBuf(file.Length());
-		file.Read(buff, file.Length());
-		st.UngetWriteBuf();
-
-		// TODO multiple buffer
-		ed->InsertText(0, st);
-
-		saveFileName = filename;
-
+		return;
 	}
-	*/
-	::wxMessageBox("Open File: obsolete function");
+
+	wxArrayString fnames;
+
+	if(m_perms->isEnabled(PERM_REMOTELOCAL) && m_remoteMode)
+	{
+		wxFileDialog dlg (this, _("Open files"), "", "", "C++ files (*.cpp, *.h)|*.cpp;*.h",
+			wxOPEN | wxFILE_MUST_EXIST | wxMULTIPLE | wxCHANGE_DIR);
+		if (dlg.ShowModal() != wxID_OK)
+		{
+			return;
+		}
+		dlg.GetPaths (fnames);
+	}
+	else
+	{
+		int result = m_remoteFileDialog->ShowModal();
+
+		if(result != wxOK)
+		{
+			return;
+		}
+
+		fnames.Add(m_remoteFileDialog->GetLocalFileNameAndPath());
+	}
+
+
+
+	OpenFile (fnames);
+	PageHasChanged (m_currentPage);
 }
 
 
@@ -556,7 +561,11 @@ void ChameleonWindow::OnConnect(wxCommandEvent& WXUNUSED(event))
 // event handlers
 void ChameleonWindow::Test(wxCommandEvent& WXUNUSED(event))
 {
-	int result = m_remoteFiles->ShowModal();
+	m_remoteFileDialog->LoadTestData();
+	OpenFile();
+	//int result = m_remoteFileDialog->ShowModal();
+	//wxLogDebug("Result: %d", result);
+
 
 	
 
@@ -691,116 +700,12 @@ void ChameleonWindow::OnSaveAs(wxCommandEvent& WXUNUSED(event))
 	m_currentEd->SaveFileAs();
 }
 
-
+/*
 void ChameleonWindow::SaveFileLocal(bool saveas)
 {
-
 	::wxMessageBox("SaveFileLocal: obsolete function!");
-
-
-/*
-
-	wxString name = wxEmptyString;
-
-	
-	if( (m_currentEd->GetFilename() == wxEmptyString) ||
-		(saveas) )
-	{
-
-		///SaveFileDialog sfd = new SaveFileDialog();
-		///sfd.Filter = "HTML files (*.html)|*.html|All files (*.*)|*.*";
-		///DialogResult dr = sfd.ShowDialog();
-
-		wxString filetext;
-		wxString filetypes = "C++ files (*.cpp)|*.cpp|Header files (*.h)|*.h|All files (*.*)|*.*";
-		//wxString filename = ::wxFileSelector("Pick a file", "",
-		//	"", "", "", wxSAVE, NULL);
-		wxFileDialog fd(NULL, "Save As", wxEmptyString, 
-						wxEmptyString, filetypes, wxSAVE);
-
-		int dialogResult = fd.ShowModal();
-		//ed->On
-
-		if(dialogResult == wxID_OK)
-		{			
-			wxString filename = fd.GetFilename();
-			int filteridx = fd.GetFilterIndex();
-
-			
-			wxString message = "Filter index: ";
-			message << filteridx;
-			
-			//::wxMessageBox(message);
-
-			
-			switch(filteridx)
-			{
-				case 0:
-					::wxMessageBox("Filter index: 0");
-					break;
-				case 1:
-					::wxMessageBox()
-			}
-			
-			
-		
-
-
-			wxFile file(filename, wxFile::write);
-
-			// TODO multiple buffer
-			file.Write(ed->GetText());
-			file.Close();
-	
-
-			
-			wxTextFile file(filename);
-			file.Read
-			if(!file.Exists())
-			{
-			file.Create();
-			}
-			wxString buffertext = ed->GetText();
-
-			file.AddLine(buffertext);
-			file.Write();
-			file.Close();
-			
-		}
-
-
-		if(dr == DialogResult.OK)
-		{	
-			name  = sfd.FileName;
-
-			if(sfd.FilterIndex == 1)
-			{
-				int idx = name.LastIndexOf(".");
-				string justname = name.Substring(0, idx);
-				name = justname + ".html";
-			}	
-		}
-		else
-		{
-			return;
-		}
-	}
-	else
-	{
-		name = saveFileName;
-	}			
-
-	StreamWriter sw = new StreamWriter(name);
-	sw.WriteLine(ed.TextBox.Text);			
-	sw.Close();
-	ed.TextBox.Modified = false;
-
-
-
-	}
-
-*/
 }
+*/
 
 
 void ChameleonWindow::ResizeSplitter()
@@ -860,6 +765,20 @@ void ChameleonWindow::SetIntVar(int variableName, int value)
 	}
 
 }
+
+/*
+ChameleonEditor* ChameleonWindow::GetCurrentEditor()
+{
+	return m_currentEd;
+}
+*/
+
+/*
+Networking* ChameleonWindow::GetNetworking()
+{
+	return NULL;//m_network;
+}
+*/
 
 int ChameleonWindow::GetIntVar(int variableName)
 {

@@ -1,6 +1,8 @@
 #ifndef DEBUG__H
 #define DEBUG__H
 
+#include <wx/log.h>
+
 #ifdef _DEBUG
 #include <crtdbg.h>
 #define DEBUG_NEW new(_NORMAL_BLOCK ,__FILE__, __LINE__)

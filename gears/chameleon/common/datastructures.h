@@ -91,13 +91,6 @@ enum modules
 };
 
 
-struct DirListing
-{
-    wxArrayString dirNames;
-    wxArrayString fileNames;
-};
-
-
 #ifdef PERM___H
 wxString GlobalPermStrings[] = {"Syntax Highlighting", 
 								"Name completion",
@@ -113,6 +106,12 @@ WX_DECLARE_HASH_MAP( int,
 					wxIntegerHash,
 					wxIntegerEqual,
 					IntIntHashmap );
+
+typedef struct 
+{
+	wxArrayString dirNames;
+	wxArrayString fileNames;
+} DirListing;
 
 
 #endif
