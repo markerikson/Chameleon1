@@ -254,13 +254,14 @@ void Compiler::OnProcessTerm(ChameleonProcessEvent& e)
 		else {
 			// have I compiled all the files?
 			if( m_currFileNum >= (int)m_currProj->GetSourcesToBuild().GetCount() ) {
-				// Yes, so determine if I should link:
+				m_isCompiling = false;
+				// Determine if I should link:
 				if(m_compilingStatus == CR_OK) {
-					m_isCompiling = false;
 					m_isLinking = true;
 					StartLinking();
 				}
-				else {
+				else { // it failed
+					RemoveIntermediateFiles();
 					//signal user
 					CompilerEvent e(chEVT_COMPILER_END);
 					e.SetResult(CR_ERROR);
