@@ -169,16 +169,45 @@ void PlinkConnect::scrubLogs() {
 }
 
 
+// I am assuming!!! that the connection should work, and I'm just doing this to
+//  accept the cache.
 //Public:
 void PlinkConnect::acceptCacheFingerprint() {
 	//start the program asynchonously
-	wxString cmd = plinkApp + " " + host;
+	wxString cmd = plinkApp + " -batch -pw password nobody@" + host + " exit";
 	proc = new wxProcess(NULL);
 	proc->Redirect();
+
 	wxExecute(cmd, wxEXEC_ASYNC, proc);
 
+#ifdef _DEBUG
+	wxString tempOutput = "";
+	wxString tempErrlog = "";
+	// Grab the outputs
+	rin = proc->GetInputStream();
+	rerr = proc->GetErrorStream();
+	while(!rin->Eof()) {
+		tempOutput += rin->GetC();
+	}
+	while(!rerr->Eof()) {
+		tempErrlog += rerr->GetC();
+	}
+#endif
+
 	sendToStream("y\n");
-	sendToStream("^C");
+	//sendToStream("^C\n");
+	//sendToStream("\n");
+
+#ifdef _DEBUG
+	while(!rin->Eof()) {
+		tempOutput += rin->GetC();
+	}
+	while(!rerr->Eof()) {
+		tempErrlog += rerr->GetC();
+	}
+	rin = NULL;
+	rerr = NULL;
+#endif
 
 	delete proc;
 }
