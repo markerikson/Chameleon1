@@ -73,6 +73,8 @@ enum WindowID
 	ID_COPY,
 	ID_CUT,
 	ID_PASTE,
+	ID_FIND,
+	ID_REPLACE,
 	ID_INDENT,
 	ID_UNINDENT,
 	ID_SELECTALL,
@@ -155,6 +157,20 @@ typedef struct
 	wxArrayInt lineNumbers;	
 } DebugBreakInfo;
 
+typedef struct 
+{
+	bool functionHasBeenVisited;
+	wxArrayString variableNames;
+} FunctionVariablesInfo;
+
+typedef struct  
+{
+	wxString type;
+	wxString name;
+	wxString value;
+	wxString regexKey;
+} VariableInfo;
+
 
 WX_DECLARE_HASH_MAP( int,
 					int,
@@ -179,6 +195,18 @@ WX_DECLARE_HASH_MAP(wxString,
 					wxStringHash,
 					wxStringEqual,
 					FileBreakpointHash);
+
+WX_DECLARE_HASH_MAP(int,
+					VariableInfo,
+					wxIntegerHash,
+					wxIntegerEqual,
+					VariableInfoHash);
+
+WX_DECLARE_HASH_MAP(wxString,
+					FunctionVariablesInfo,
+					wxStringHash,
+					wxStringEqual,
+					FunctionVariablesHash);
 
 WX_DECLARE_STRING_HASH_MAP(wxString, 
 						   StringStringHashmap);

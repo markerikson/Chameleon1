@@ -22,6 +22,8 @@ class wxDebugEvent : public wxEvent
 		void SetVariableTypes(wxArrayString types);
 		//void SetSourceFilenames(wxArrayString filenames);
 		void SetSourceFilename(wxString filename);
+		void SetFunctionName(wxString funcname);
+		void SetClassName(wxString classname);
 		void SetErrorMessage(wxString message);
 		//void SetRemoteMode(bool remote);
 		void SetFileBreakpoints(FileBreakpointHash filebreakpoints);
@@ -34,6 +36,8 @@ class wxDebugEvent : public wxEvent
 		wxArrayString GetVariableTypes() { return m_variableTypes; }
 		//wxArrayString GetSourceFilenames() { return m_sourceFilenames; }
 		wxString GetSourceFilename() { return m_filename; }
+		wxString GetFunctionName() { return m_functionName; }
+		wxString GetClassName() { return m_className; }
 		wxString GetErrorMessage() {return m_errorMessage; }
 		bool IsRemote() { return m_project->IsRemote(); }
 		FileBreakpointHash GetFileBreakpoints() { return m_filebreakpoints; }
@@ -48,6 +52,8 @@ public:
 		//wxArrayString m_sourceFilenames;
 		wxString m_filename;
 		wxString m_errorMessage;
+		wxString m_functionName;
+		wxString m_className;
 		//wxString m_executableFilename;
 		bool m_remoteMode;
 		FileBreakpointHash m_filebreakpoints;

@@ -87,3 +87,13 @@ void wxDebugEvent::SetProject(ProjectInfo* project)
 {
 	m_project = project;
 }
+
+void wxDebugEvent::SetFunctionName(wxString funcname)
+{
+	m_functionName = funcname;
+}
+
+void wxDebugEvent::SetClassName(wxString classname)
+{
+	m_className = classname;
+}
