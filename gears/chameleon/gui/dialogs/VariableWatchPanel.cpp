@@ -99,18 +99,20 @@ VariableWatchPanel::VariableWatchPanel( wxWindow* parent, ChameleonWindow* mainf
 	itemCol.m_width = 400;
 	m_list->InsertColumn(2, itemCol);
 
+	/*
 	wxListItem testitem;
 	testitem.m_mask = wxLIST_MASK_TEXT;
 	testitem.m_itemId = 0;
 	testitem.m_text = "var1";
 	testitem.m_col = 0;
 	m_list->InsertItem(testitem);
-	testitem.m_text = "string";
+	testitem.m_text = "string blah blah blah blahdy blah blah blah blah blahdy blah blah blah blahdy blah and wow this is really long";
 	testitem.m_col = 1;
 	m_list->SetItem(testitem);
 	testitem.m_text = "blah blah blah blahdy blah";
 	testitem.m_col = 2;
 	m_list->SetItem(testitem);
+	*/
 }
 
 /*!
@@ -231,7 +233,7 @@ void VariableWatchPanel::AddWatch()
 		dbg.SetVariableNames(vars);
 		dbg.SetFunctionName(funcName);
 		dbg.SetClassName(className);
-		//m_mainFrame->AddPendingEvent(dbg);		
+		m_mainFrame->AddPendingEvent(dbg);		
 
 		m_list->InsertItem(m_list->GetItemCount(), varName);
 	}
@@ -272,7 +274,7 @@ void VariableWatchPanel::UpdateVariableInfo(wxDebugEvent event)
 
 	//wxSortedArrayString sortedNames(names);
 
-	m_list->DeleteAllItems();
+	//m_list->DeleteAllItems();
 
 	wxListItem textColorItem;
 	textColorItem.SetTextColour(wxColour("black"));

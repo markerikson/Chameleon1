@@ -2726,6 +2726,9 @@ void ChameleonWindow::OnDebugEvent(wxDebugEvent &event)
 			m_debugger->AddPendingEvent(event);
 			break;
 		}
+		case ID_DEBUG_VARINFO:
+			m_watchPanel->UpdateVariableInfo(event);
+			break;
 		default:
 			wxLogDebug("Default DebugEvent.  Value: %d", eventID);
 			break;
