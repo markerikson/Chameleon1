@@ -1,0 +1,143 @@
+GDB commands
+==============================
+Quik Notz for some commands in GDB:
+
+-silent:: hides GDB infro info (copyrights, etc)
+q = quit
+s = step (into) [note:  apparently skips defined operators]
+n = next (executes function but doesn't step into)
+break @ = breaks at @ (@=func, line #)
+[print] p @ = prints @ (@= var)
+p <exp> = displays value of <exp>
+	<exp> = some expression that can use function
+		calls in the current program being
+		debugged.  Like a = strlen(c.c_str())
+		This will SET the value of "a".  If
+		c="cat", and a=12 at the current line,
+		issuing p a=strlen(c.c_str()) changes
+		a to 3.
+[list] l = shows 10 lines 'round cur pos (5 up, 4 down)
+[continue] c = continues execution of program
+disable # # = disable breakpoint num #, #
+delete # # = delete breakpoint num #, #
+delete break = delete all breakpoints (y or n)
+
+notes on behavior:
+%while stepping into/out of functions, gdb displays your return position.
+eg: you go into x=foobar(15) at line 13.  When you exit, gdb will say 
+"main () at mycpp.cpp:14" and then display the line
+
+%breakpoints on loop structures or brackets aren't acknowledged.  eg: a 
+breakpoint on "do {" isn't watched
+
+Detailz:
+=========================================================================
+(gdb) help running
+Running the program.
+
+List of commands:
+
+attach -- Attach to a process or file outside of GDB
+continue -- Continue program being debugged
+detach -- Detach a process or file previously attached
+finish -- Execute until selected stack frame returns
+handle -- Specify how to handle a signal
+info handle -- What debugger does when program gets various signals
+interrupt -- Interrupt the execution of the debugged program
+jump -- Continue program being debugged at specified line or address
+kill -- Kill execution of program being debugged
+next -- Step program
+nexti -- Step one instruction
+run -- Start debugged program
+set args -- Set argument list to give program being debugged when it is started
+set environment -- Set environment variable value to give the program
+set follow-fork-mode -- Set debugger response to a program call of fork or vfor
+
+set scheduler-locking -- Set mode for locking scheduler during execution
+set step-mode -- Set mode of the step operation
+show args -- Show argument list to give program being debugged when it is start
+
+(gdb) help interrupt
+Interrupt the execution of the debugged program.
+(gdb) interrupt
+
+(gdb) help jump
+Continue program being debugged at specified line or address.
+Give as argument either LINENUM or *ADDR, where ADDR is an expression
+for an address to start at.
+=========================================================================
+(gdb) help info
+Generic command for showing things about the program being debugged.
+
+List of info subcommands:
+
+info address -- Describe where symbol SYM is stored
+info all-registers -- List of all registers and their contents
+info args -- Argument variables of current stack frame
+info breakpoints -- Status of user-settable breakpoints
+info catch -- Exceptions that can be caught in the current stack frame
+info common -- Print out the values contained in a Fortran COMMON block
+info copying -- Conditions for redistributing copies of GDB
+info dcache -- Print information on the dcache performance
+info display -- Expressions to display when program stops
+info dll -- Status of loaded DLLs
+info extensions -- All filename extensions associated with a source language
+info files -- Names of targets and files being debugged
+info float -- Print the status of the floating point unit
+info frame -- All about selected stack frame
+info functions -- All function names
+info handle -- What debugger does when program gets various signals
+info line -- Core addresses of the code for a source line
+info locals -- Local variables of current stack frame
+info mem -- Memory region attributes
+info program -- Execution status of the program
+info registers -- List of integer registers and their contents
+info remote-process -- Query the remote system for process info
+info scope -- List the variables local to a scope
+info set -- Show all GDB settings
+info signals -- What debugger does when program gets various signals
+info source -- Information about the current source file
+info sources -- Source files in the program
+info stack -- Backtrace of the stack
+info symbol -- Describe what symbol is at location ADDR
+info target -- Names of targets and files being debugged
+info terminal -- Print inferior's saved terminal status
+info threads -- IDs of currently known threads
+info tracepoints -- Status of tracepoints
+info types -- All type names
+info variables -- All global and static variable names
+info w32 -- Print information specific to Win32 debugging
+info warranty -- Various kinds of warranty you do not have
+info watchpoints -- Synonym for ``info breakpoints''
+
+Type "help info" followed by info subcommand name for full documentation.
+Command name abbreviations are allowed if unambiguous.
+=========================================================================
+(gdb) help data
+Examining data.
+
+List of commands:
+
+call -- Call a function in the program
+delete display -- Cancel some expressions to be displayed when program stops
+delete mem -- Delete memory region
+disable display -- Disable some expressions to be displayed when program stops
+disable mem -- Disable memory region
+disassemble -- Disassemble a specified section of memory
+display -- Print value of expression EXP each time the program stops
+enable display -- Enable some expressions to be displayed when program stops
+enable mem -- Enable memory region
+inspect -- Same as "print" command
+mem -- Define attributes for memory region
+output -- Like "print" but don't put in value history and don't print newline
+print -- Print value of expression EXP
+printf -- Printf "printf format string"
+ptype -- Print definition of type TYPE
+set -- Evaluate expression EXP and assign result to variable VAR
+set variable -- Evaluate expression EXP and assign result to variable VAR
+undisplay -- Cancel some expressions to be displayed when program stops
+whatis -- Print data type of expression EXP
+x -- Examine memory: x/FMT ADDRESS
+
+Type "help" followed by command name for full documentation.
+Command name abbreviations are allowed if unambiguous.

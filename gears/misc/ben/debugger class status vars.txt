@@ -1,0 +1,50 @@
+Debugger Status Variables:
+--------------------------
+These are the flags I use inside the debugger class to 
+keep track of it.
+
+[classStatus] is the state-machine flag, and holds where I
+just "came" from in my class.
+
+[status] is the generic "we can do stuff" flag, telling me 
+what state the process is in
+
+Note that many of the flags in [classStatus], if ever used, 
+are actually "overloaded" in that, in my gigantic switch-
+statement where i use the status, many of them just flow
+into one another & then exit.  For example: CONTINUE flows
+into GO; STEP_OVER and STEP_OUT flow into STEP.
+
+output parsing flags: [classStatus]
+	START = -1,		//program start
+	CONTINUE = 134242,
+	E_BREAK,		//enable break
+	D_BREAK,		//disable break
+	K_BREAK,		//kill break
+	S_BREAK,		//set break
+	GO,
+	JUMP,
+	SOFT_RESET,
+	HARD_RESET,
+	NEW_FILE,		//new file to debug
+	NEW_MODE,		//change in program mode
+	NEW_PROC,		//change in process pointer
+	VAR_ASSIGN,		//never used...?
+	WATCH_VAR,
+	STEP,
+	STEP_OVER,
+	STEP_OUT,
+	STOP,
+	GET_WHAT,
+	GET_PRINT,
+	RUN_TO_CURSOR,
+	WAITING,	//134260
+
+program status flags: [status]
+	DEBUG_RUNNING = 135401,		//program running / command executing
+	DEBUG_STOPPED,			//nothing happening right now
+	DEBUG_WAIT,			//waiting for instruction
+	DEBUG_BREAK,			//program paused (because of breakpoint)
+	DEBUG_ERROR,			//problem with debug
+	DEBUG_NEED_FILE,		//waiting for a file
+	DEBUG_DEAD,			//there AIN'T no debug! 

@@ -1,0 +1,63 @@
+This is code for catching the "cases" involved with GDB after certain commands.
+There is a specific reg-ex for each case, except 3 which was developed into
+ it's own function.
+
+These reg-Exs are probably out of date.  Check the source file for the most
+ recent ones.
+--BSC--
+
+wxString case1a = "Breakpoint 1, main () at my program.cpp:65\n65              foo[2] = 'd';";
+wxString case1b = "AnObject::setData(int) (this=, what=33) at stupid.cpp:13\n13              theData[point] = what;";
+wxString case2 = "66              foo[3] = 'b'\n%";
+wxString case3 = "Program received signal SIGFPE, Arithmetic exception.\nmain () at my program.cpp:71\n71              amount = foo[1] / 0;";
+	
+wxRegEx reCase1 = "at (([[:alnum:]]|[[:blank:]]|\\.)+):([[:digit:]]+)";
+wxRegEx reCase2 = "([[:digit:]]+)[[:blank:]]+";
+
+if(reCase1.Matches(case1a))
+{
+	wxLogDebug("Case 1a: match 1 = \"%s\", match 2 = \"%s\"", reCase1.GetMatch(case1a, 1), reCase1.GetMatch(case1a, 3));
+}
+else
+{
+	wxLogDebug("No match for case 1");
+}
+
+if(reCase1.Matches(case1b))
+{
+	wxLogDebug("Case 1b: match 1 = \"%s\", match 2 = \"%s\"", reCase1.GetMatch(case1b, 1), reCase1.GetMatch(case1b, 3));
+}
+else
+{
+	wxLogDebug("No match for case 1");
+}
+
+if(reCase2.Matches(case2))
+{
+	wxLogDebug("match 1: \"%s\"", reCase2.GetMatch(case2, 1));
+}
+else
+{
+	wxLogDebug("No match for case 1");
+}
+
+wxString case3tmp = case3;
+if(case3tmp.Left(8) == "Program ")
+{
+	case3tmp.Remove(0, 8);
+
+	if(case3tmp.Left(8) == "received")
+	{
+	int newlineIndex = case3tmp.find_first_of("\n");
+	case3tmp.Remove(0, newlineIndex);
+
+		if(reCase1.Matches(case3tmp))
+		{
+			wxLogDebug("Match for \"Program recieved\".  match 1 = %s, match 2 = %s", reCase1.GetMatch(case3tmp, 1), reCase1.GetMatch(case3tmp, 3));
+		}
+		else
+		{
+			wxLogDebug("Found \"Program received\", but regex failed.");
+		}
+	}
+}

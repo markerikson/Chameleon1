@@ -1,0 +1,68 @@
+Goals for GDB:
+==============
+Things we need to be able to do:
+	X-breakpoint manipulation
+	X-stepping & all that entails
+	X-executing & killing
+	X-built-in data-types
+	X-arrays
+
+What GUI Needs
+-------------------------------
+*when linking external files, i need to send a file name.  :)
+*line number <-integer
+*array of variable names
+*complementary array of variable values
+*status indicator <-integer
+*mode (remote / local) <-boolean
+*error message (if any) <-string
+
+Notes:
+===============================
+*in windows, or when not using "plink", \n is needed to send commands.  Otherwise \r.
+*when dealing with externally linked .h files, check out this output:
+======================================================================
+Sending 'step'...command sent.
+-StdOut-
+57	        AnObject duoh;
+$
+-999-end StdOut-
+Sending 'step'...command sent.
+-StdOut-
+AnObject::AnObject() (this=) at stupid.cpp:5
+5	        point = 0;
+$
+-999-end StdOut-
+Sending 'step'...command sent.
+-StdOut-
+6	}
+
+-999-end StdOut-
+-StdOut-
+$
+-999-end StdOut-
+Sending 'step'...command sent.
+-StdOut-
+main () at testprog.cpp:59
+59			doNothing pikachu;
+$
+-999-end StdOut-
+Sending 'step'...command sent.
+-StdOut-
+doNothing::doNothing() (this=) at testprog.cpp:24
+24		more = 42;
+$
+-999-end StdOut-
+Sending 'step'...command sent.
+-StdOut-
+25	}
+$
+-999-end StdOut-
+Sending 'step'...command sent.
+-StdOut-
+main () at testprog.cpp:62
+62	        foo[0] = '!';
+$
+-999-end StdOut-
+======================================================================
+*it seems that linking external files is findable by looking for "at f_name.ext:ln".
