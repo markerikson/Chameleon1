@@ -57,9 +57,6 @@ class wxSSH : public wxTerm
 				const wxString& name = "wxSSH");
 		virtual ~wxSSH();
 
-		//void SetNetworking(Networking* networking);
-
-		void OnPlinkEvent(wxProcess2StdOutEvent& event);
 		void OnPlinkOut(wxProcess2StdOutEvent& event);
 		void OnPlinkErr(wxProcess2StdErrEvent& event);
 		void OnPlinkTerm(wxProcess2EndedEvent& event);
