@@ -44,9 +44,19 @@
 #include "build.xpm"
 #include "button.xpm"
 
+#include "start.xpm"
+#include "stop.xpm"
+#include "stepnext.xpm"
+#include "stepout.xpm"
+#include "stepover.xpm"
+#include "pause.xpm"
+
+
 //#include "stc.h"
 #include "../editor/editor.h"
 #include "updateuihandler.h"
+#include "../common/datastructures.h"
+#include "wxtelnet.h"
 
 //----------------------------------------------------------------------
 
@@ -71,6 +81,8 @@ private:
 	void CheckSize();
 	void ResizeSplitter();
 
+	void CloseApp();
+
 
 	void OnQuit(wxCommandEvent& event);
 	void OnAbout(wxCommandEvent& event);
@@ -83,6 +95,9 @@ private:
 	void OnUpdateSave(wxUpdateUIEvent &event);
 	void OnUndo(wxCommandEvent &event);
 	void OnRedo(wxCommandEvent &event);
+	void OnCloseWindow(wxCloseEvent& event);
+	void OnConnect(wxCommandEvent &event);
+	
 
 
 
@@ -91,6 +106,7 @@ private:
 	wxSplitterWindow* split;
 	wxTextCtrl* textbox;
 	UpdateUIHandler* uih;
+	wxTelnet* telnet;
 
 	wxString saveFileName;
 
@@ -111,6 +127,7 @@ enum
 
 
 	ID_ED,
+	ID_TELNET,
 
 	ID_UNDO,
 	ID_REDO,
@@ -121,20 +138,29 @@ enum
 
 	ID_COMPILE,
 	ID_TEST,
+
+	ID_START,
+	ID_STOP,
+	ID_PAUSE,
+	ID_STEPNEXT,
+	ID_STEPOVER,
+	ID_STEPOUT,
 };
 
-BEGIN_EVENT_TABLE(ChameleonWindow, wxFrame)
-EVT_MENU			(ID_OPEN, ChameleonWindow::OpenFile)
-EVT_MENU            (ID_QUIT,  ChameleonWindow::OnQuit)
-EVT_MENU            (ID_ABOUT, ChameleonWindow::OnAbout)
-EVT_MENU			(ID_TEST, ChameleonWindow::Test)
-EVT_MENU			(ID_SAVE, ChameleonWindow::OnSave)
-//
-//EVT_SIZE			(ChameleonWindow::ResizeSplitter)
-EVT_UPDATE_UI		(ID_SAVE, ChameleonWindow::OnUpdateSave)
 
-EVT_MENU			(ID_UNDO, ChameleonWindow::OnUndo)
-EVT_MENU			(ID_REDO, ChameleonWindow::OnRedo)
+BEGIN_EVENT_TABLE(ChameleonWindow, wxFrame)
+	EVT_MENU			(ID_OPEN, ChameleonWindow::OpenFile)
+	EVT_MENU            (ID_QUIT,  ChameleonWindow::OnQuit)
+	EVT_MENU            (ID_ABOUT, ChameleonWindow::OnAbout)
+	//EVT_MENU			(ID_TEST, ChameleonWindow::Test)
+	EVT_MENU			(ID_SAVE, ChameleonWindow::OnSave)
+	//
+	//EVT_SIZE			(ChameleonWindow::ResizeSplitter)
+	EVT_UPDATE_UI		(ID_SAVE, ChameleonWindow::OnUpdateSave)
+	EVT_MENU			(ID_TEST, ChameleonWindow::OnConnect)
+	EVT_MENU			(ID_UNDO, ChameleonWindow::OnUndo)
+	EVT_MENU			(ID_REDO, ChameleonWindow::OnRedo)
+	EVT_CLOSE			(ChameleonWindow::OnCloseWindow)
 END_EVENT_TABLE()
 
 
