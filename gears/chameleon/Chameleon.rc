@@ -1,1 +1,2 @@
-#include "wx/msw/wx.rc"
+IDI_APPICON ICON "chameleon.ico"
+#include <wx/msw/wx.rc>
