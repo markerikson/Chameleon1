@@ -1,0 +1,14 @@
+base referer
+rect $_common_headers_8h.html 197,7 381,33
+rect $wxssh_8h.html 486,57 542,84
+rect $_chameleon_window_8h.html 450,311 578,337
+rect $editor_8h.html 465,564 564,591
+rect $_chameleon_notebook_8h.html 445,615 584,641
+rect $_options_dialog_8h.html 442,665 586,692
+rect $_remote_file_dialog_8h.html 432,716 597,743
+rect $wx_term_container_8h.html 433,767 596,793
+rect $p_8h.html 476,817 553,844
+rect $_project_info_8h.html 216,209 362,236
+rect $compiler_8h.html 449,159 580,185
+rect $networking_8h.html 218,108 360,135
+rect $_options_8h.html 17,133 148,160

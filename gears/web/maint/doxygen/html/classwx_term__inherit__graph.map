@@ -1,0 +1,4 @@
+base referer
+rect $classwx_s_s_h.html 6,166 57,193
+rect $classwx_telnet.html 81,166 140,193
+rect $class_g_term.html 48,17 93,44

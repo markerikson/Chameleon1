@@ -1,0 +1,4 @@
+base referer
+rect $_common_headers_8h.html 7,17 191,44
+rect $updateuihandler_8h.html 215,17 324,44
+rect $stc_8h.html 348,17 433,44

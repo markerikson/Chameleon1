@@ -1,0 +1,5 @@
+base referer
+rect $class_options.html 34,17 88,44
+rect $class_networking.html 112,108 184,134
+rect $classwx_process2.html 212,108 292,134
+rect $class_plink_connect.html 154,17 240,44

@@ -1,0 +1,10 @@
+base referer
+rect $_common_headers_8h.html 7,167 191,193
+rect $debug_8h.html 305,17 359,44
+rect $networking_8h.html 420,167 561,193
+rect $process2_8h.html 473,92 612,119
+rect $_options_8h.html 268,92 399,119
+rect $process2events_8h.html 541,17 651,44
+rect $gterm_8hpp.html 741,17 867,44
+rect $gtelnet_8hpp.html 737,92 871,119
+rect $wxterm_8h.html 788,167 849,193
