@@ -156,7 +156,7 @@ bool Permission::setGlobal(wxString newAuthCode)
 
 	charTwoPos = charOnePos - specialTwo; //charOne = [charTwo + specialTwo)]
 	if(charTwoPos < 0)
-	{charTwoPos += 26;}
+	{charTwoPos += 25;}
 
 	//first pass
 	if(AuthCodeLookupTable[charTwoPos] == charTwo)
