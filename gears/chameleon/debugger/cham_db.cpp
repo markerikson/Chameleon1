@@ -1299,6 +1299,10 @@ void Debugger::sendPrint(wxString fromGDB)
 
 				ignoreVars.Add(singleLine);
 			}
+			else if(singleLine.Mid(0,9) == "Attempt t")
+			{
+				fromWatch.Add("error");
+			}
 
 		}
 	}while(fromGDB != PROMPT_CHAR);
@@ -1319,6 +1323,13 @@ void Debugger::sendPrint(wxString fromGDB)
 					m_varInfo[i].type = fromWatch[fromWatchIndex];
 
 					fromWatchIndex++;
+
+					//illegal variable name watch
+					if(m_varInfo[i].type == "error")
+					{
+						m_varInfo.RemoveAt(i);
+						varCount--;
+					}
 				}//testing "fromWatchIndex"
 				else
 				{
