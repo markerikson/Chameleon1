@@ -146,7 +146,8 @@ private:
 	void OpenProjectFile(bool isRemote);
 	void AddFileToProject();
 	void RemoveFileFromProject();
-	void CloseProjectFile();
+	void SaveProjectFile();
+	void CloseProjectFile(bool canUserCancel = true);
 	void LoadFilesIntoProjectTree(wxString configPath, FileFilterType fileType, wxTreeItemId treeid, 
 								wxFileConfig& config, wxPathFormat currentPathFormat);
 

@@ -76,6 +76,7 @@ CompilerOutputPanel::CompilerOutputPanel( wxWindow* parent, ChameleonWindow* mai
 	//m_grid->EnableGridLines(false);
 	m_grid->SetGridLineColour(wxColour("black"));
 	m_grid->SetColumnWidth(0, 200);
+	m_grid->SetColumnWidth(1, 60);
 	m_grid->SetColumnWidth(2, 480);
 	m_grid->SetColLabelValue(0, "Filename");
 	m_grid->SetColLabelValue(1, "Line");
@@ -135,7 +136,7 @@ void CompilerOutputPanel::CreateControls()
     item4->SetDefaultColSize(80);
     item4->SetDefaultRowSize(20);
     item4->SetColLabelSize(20);
-    item4->SetRowLabelSize(20);
+    item4->SetRowLabelSize(0);
     item4->CreateGrid(1, 3, wxGrid::wxGridSelectRows);
     item2->Add(item4, 1, wxGROW|wxALL, 5);
 

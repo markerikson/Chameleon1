@@ -101,7 +101,7 @@ void AboutChameleonDialog::CreateControls()
     item3->SetForegroundColour(wxColour(255, 255, 255));
     item3->SetBackgroundColour(wxColour(255, 255, 255));
     wxNotebookSizer* item3Sizer = new wxNotebookSizer(item3);
-    wxPanel* item4 = new wxPanel( item3, ID_PANEL4, wxDefaultPosition, wxSize(100, 80), wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
+    wxPanel* item4 = new wxPanel( item3, ID_PROGPANEL, wxDefaultPosition, wxSize(100, 80), wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
     item4->SetForegroundColour(wxColour(255, 255, 255));
     item4->SetBackgroundColour(wxColour(255, 255, 255));
     wxBoxSizer* item5 = new wxBoxSizer(wxVERTICAL);
@@ -116,7 +116,7 @@ void AboutChameleonDialog::CreateControls()
     item7->SetFont(wxFont(12, wxSWISS, wxNORMAL, wxBOLD, FALSE, _T("Verdana")));
     item5->Add(item7, 0, wxALIGN_CENTER_HORIZONTAL|wxALL|wxADJUST_MINSIZE, 5);
     item3->AddPage(item4, _("The Program"));
-    wxPanel* item8 = new wxPanel( item3, ID_PANEL, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
+    wxPanel* item8 = new wxPanel( item3, ID_TEAMPANEL, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
     item8->SetForegroundColour(wxColour(255, 255, 255));
     item8->SetBackgroundColour(wxColour(255, 255, 255));
     wxBoxSizer* item9 = new wxBoxSizer(wxVERTICAL);
@@ -136,15 +136,15 @@ void AboutChameleonDialog::CreateControls()
     item12->SetFont(wxFont(10, wxSWISS, wxNORMAL, wxNORMAL, FALSE, _T("Verdana")));
     item9->Add(item12, 0, wxGROW|wxALL|wxADJUST_MINSIZE, 5);
     item3->AddPage(item8, _("The Team"));
-    wxPanel* item13 = new wxPanel( item3, ID_PANEL1, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
+    wxPanel* item13 = new wxPanel( item3, ID_CREDITSPANEL, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
     item13->SetForegroundColour(wxColour(255, 255, 255));
     item13->SetBackgroundColour(wxColour(255, 255, 255));
     item3->AddPage(item13, _("The Credits"));
-    wxPanel* item14 = new wxPanel( item3, ID_PANEL2, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
+    wxPanel* item14 = new wxPanel( item3, ID_STATSPANEL, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
     item14->SetForegroundColour(wxColour(255, 255, 255));
     item14->SetBackgroundColour(wxColour(255, 255, 255));
     item3->AddPage(item14, _("The Stats"));
-    wxPanel* item15 = new wxPanel( item3, ID_PANEL3, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
+    wxPanel* item15 = new wxPanel( item3, ID_QUOTESPANEL, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
     item15->SetForegroundColour(wxColour(255, 255, 255));
     item15->SetBackgroundColour(wxColour(255, 255, 255));
     item3->AddPage(item15, _("The Quotes"));

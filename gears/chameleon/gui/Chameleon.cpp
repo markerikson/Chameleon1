@@ -2213,6 +2213,10 @@ void ChameleonWindow::EvaluateOptions()
 	}
 	else
 	{
+		if(m_projMultiFiles != NULL)
+		{
+			CloseProjectFile(false);
+		}
 		if(m_projectTree->IsShown())
 		{
 			m_splitProjectEditor->Unsplit(m_projectTree);
@@ -2576,6 +2580,8 @@ void ChameleonWindow::AddFileToProject()
 		ChameleonEditor* edit = static_cast<ChameleonEditor*> (m_book->GetPage(pageNum));
 		edit->SetProject(m_projMultiFiles);
 	}
+
+	SaveProjectFile();
 }
 
 void ChameleonWindow::OnTreeItemActivated(wxTreeEvent &event)
@@ -2612,7 +2618,7 @@ void ChameleonWindow::OnTreeItemActivated(wxTreeEvent &event)
 	m_book->Refresh();
 }
 
-void ChameleonWindow::CloseProjectFile()
+void ChameleonWindow::CloseProjectFile(bool canUserCancel)
 {
 	if(!m_appClosing)
 	{
@@ -2620,8 +2626,15 @@ void ChameleonWindow::CloseProjectFile()
 
 		if(edList.GetCount() > 0)
 		{
+			int allowedResponse = wxYES_NO;
+
+			if(canUserCancel)
+			{
+				allowedResponse |= wxCANCEL;
+			}
+
 			int response = wxMessageBox("Do you want to close all files from this project?", 
-				"Close Project", wxYES_NO | wxCANCEL | wxCENTER);
+				"Close Project", allowedResponse | wxCENTER);
 
 			if(response == wxYES)
 			{
@@ -2648,6 +2661,21 @@ void ChameleonWindow::CloseProjectFile()
 		}
 	}
 
+	SaveProjectFile();
+	
+	m_projectTree->DeleteChildren(m_projectFileFolders[0]);
+	m_projectTree->DeleteChildren(m_projectFileFolders[1]);
+	m_projectTree->DeleteChildren(m_projectFileFolders[2]);
+
+	m_projectTree->SetItemText(m_projectTree->GetRootItem(), "No project");
+
+	delete m_projMultiFiles;
+	m_projMultiFiles = NULL;
+	//m_bProjectOpen = false;
+}
+
+void ChameleonWindow::SaveProjectFile()
+{
 	wxPathFormat currentPathFormat = (m_projMultiFiles->IsRemote() ? wxPATH_UNIX : wxPATH_DOS);
 	wxMemoryInputStream mis("", 0);
 	wxFileConfig config(mis);
@@ -2699,7 +2727,7 @@ void ChameleonWindow::CloseProjectFile()
 		outputStream.CopyTo(bufptr,streamsize);
 		resultContents.UngetWriteBuf();
 	}
-	
+
 
 	wxString projBasePath = m_projMultiFiles->GetProjectBasePath();
 	wxString projName = m_projMultiFiles->GetProjectName();
@@ -2715,16 +2743,6 @@ void ChameleonWindow::CloseProjectFile()
 		projectFile.Write(resultContents);
 		projectFile.Close();		
 	}
-	
-	m_projectTree->DeleteChildren(m_projectFileFolders[0]);
-	m_projectTree->DeleteChildren(m_projectFileFolders[1]);
-	m_projectTree->DeleteChildren(m_projectFileFolders[2]);
-
-	m_projectTree->SetItemText(m_projectTree->GetRootItem(), "No project");
-
-	delete m_projMultiFiles;
-	m_projMultiFiles = NULL;
-	//m_bProjectOpen = false;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -2830,8 +2848,7 @@ void ChameleonWindow::RemoveFileFromProject()
 	if(m_projMultiFiles->FileExistsInProject(treeData->filename))
 	{
 		m_projMultiFiles->RemoveFileFromProject(treeData->filename, m_projectSelectedFolderType);
-		m_projectTree->Delete(m_clickedTreeItem);
-
+		
 		wxFileName fn(treeData->filename);
 		int pageNum = GetPageNum(fn);
 		
@@ -2841,6 +2858,10 @@ void ChameleonWindow::RemoveFileFromProject()
 			ProjectInfo* proj = new ProjectInfo();
 			pEdit->SetProject(proj);
 		}
+
+		m_projectTree->Delete(m_clickedTreeItem);
+
+		SaveProjectFile();
 	}
 }
 
@@ -3069,9 +3090,13 @@ void ChameleonWindow::OnUpdateDebugUI()//wxUpdateUIEvent &event)
 
 		// TODO Better determination (project-based is needed too)
 		// TODO The debugger still isn't responding properly... status issues?
+		ProjectInfo* proj = m_currentEd->GetProject();
+		/*
 		bool canStartDebug = !m_currentEd->Modified() && 
 							m_currentEd->HasBeenCompiled() &&
 							m_currentEd->HasBeenSaved();
+							*/
+		bool canStartDebug = proj->IsCompiled();
 		tb->EnableTool(ID_DEBUG_START, canStartDebug);
 	}
 }
@@ -3233,6 +3258,20 @@ void ChameleonWindow::FocusOnLine(wxString filename, int linenumber, bool showMa
 	wxFileName fn(filename);
 
 	int tabNum = GetPageNum(fn, false);
+
+	if(tabNum == -1)
+	{
+		if(m_projMultiFiles != NULL)
+		{
+			if(m_projMultiFiles->FileExistsInProject(filename))
+			{
+				wxArrayString filesToOpen;
+				filesToOpen.Add(filename);
+				OpenSourceFile(filesToOpen);
+				tabNum = GetPageNum(fn, false);
+			}
+		}
+	}
 
 	if(tabNum != -1)
 	{
