@@ -113,6 +113,7 @@ bool OptionsDialog::Create( wxWindow* parent, wxWindowID id, const wxString& cap
     m_password2 = NULL;
     m_txtMingwPath = NULL;
     m_butBrowseMingw = NULL;
+    m_printStyle = NULL;
 ////@end OptionsDialog member initialisation
 
 ////@begin OptionsDialog creation
@@ -219,16 +220,33 @@ void OptionsDialog::CreateControls()
     m_butBrowseMingw = item34;
     item32->Add(item34, 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT|wxBOTTOM, 5);
     item3->AddPage(item28, _("Compiler"));
+    wxPanel* item35 = new wxPanel( item3, ID_PANEL3, wxDefaultPosition, wxSize(100, 80), wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
+    wxBoxSizer* item36 = new wxBoxSizer(wxHORIZONTAL);
+    item35->SetSizer(item36);
+    item35->SetAutoLayout(TRUE);
+    wxBoxSizer* item37 = new wxBoxSizer(wxVERTICAL);
+    item36->Add(item37, 0, wxALIGN_TOP, 5);
+    wxStaticText* item38 = new wxStaticText( item35, wxID_STATIC, _("Print text in:"), wxDefaultPosition, wxDefaultSize, 0 );
+    item37->Add(item38, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
+    wxString item39Strings[] = {
+        _("Black and white"),
+        _("Color")
+    };
+    wxComboBox* item39 = new wxComboBox( item35, ID_PRINTSTYLE, _("Black and white"), wxDefaultPosition, wxDefaultSize, 2, item39Strings, wxCB_READONLY );
+    m_printStyle = item39;
+    item39->SetStringSelection(_("Black and white"));
+    item37->Add(item39, 0, wxALIGN_CENTER_HORIZONTAL|wxLEFT|wxRIGHT|wxBOTTOM, 5);
+    item3->AddPage(item35, _("Miscellaneous"));
     item2->Add(item3, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
-    wxBoxSizer* item35 = new wxBoxSizer(wxHORIZONTAL);
-    item2->Add(item35, 0, wxALIGN_RIGHT|wxALL, 0);
+    wxBoxSizer* item40 = new wxBoxSizer(wxHORIZONTAL);
+    item2->Add(item40, 0, wxALIGN_RIGHT|wxALL, 0);
 
-    wxButton* item36 = new wxButton( item1, ID_BUTTON_OK, _("OK"), wxDefaultPosition, wxDefaultSize, 0 );
-    item35->Add(item36, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxButton* item41 = new wxButton( item1, ID_BUTTON_OK, _("OK"), wxDefaultPosition, wxDefaultSize, 0 );
+    item40->Add(item41, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxButton* item37 = new wxButton( item1, ID_BUTTON_CANCEL, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
-    item35->Add(item37, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxButton* item42 = new wxButton( item1, ID_BUTTON_CANCEL, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
+    item40->Add(item42, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
 ////@end OptionsDialog content construction
 }
@@ -516,6 +534,17 @@ bool OptionsDialog::EvaluateOptions()
 		m_options->SetPassphrase(m_password1->GetValue());
 
 		m_options->SetMingwPath(mingwPath);
+
+		wxString selectedPrintStyleString = m_printStyle->GetValue();
+		
+		if(selectedPrintStyleString == "Color")
+		{
+			m_options->SetPrintStyle(wxSTC_PRINT_COLOURONWHITE);
+		}
+		else
+		{
+			m_options->SetPrintStyle(wxSTC_PRINT_BLACKONWHITE);
+		}
 	}
 	else
 	{
@@ -540,6 +569,18 @@ void OptionsDialog::InitializeDialog()
 	m_txtMingwPath->SetValue(m_options->GetMingwPath());
 
 	m_authCodeLabel->SetLabel(perms->GetAuthCode());
+
+	wxString printStyleString;
+	if(m_options->GetPrintStyle() == wxSTC_PRINT_COLOURONWHITE)
+	{
+		printStyleString = "Color";
+	}
+	else
+	{
+		printStyleString = "Black and white";
+	}
+
+	m_printStyle->SetValue(printStyleString);
 
 }
 

@@ -170,6 +170,7 @@ int MyApp::OnRun()
 	catch (...) 
 	{
 		int q = 42;
+		return -1;
 	}
 }
 
@@ -667,6 +668,7 @@ void ChameleonWindow::OnMenuEvent(wxCommandEvent &event)
 
 		case ID_PRINT_PAGE:
 		{
+			m_currentEd->SetPrintColourMode(m_options->GetPrintStyle());
 			wxPrintDialogData printDialogData( *g_printData);
 			wxPrinter printer (&printDialogData);
 			ChameleonPrintout printout (m_currentEd);
@@ -674,9 +676,8 @@ void ChameleonWindow::OnMenuEvent(wxCommandEvent &event)
 			{
 				if (wxPrinter::GetLastError() == wxPRINTER_ERROR) 
 				{
-					wxMessageBox (_("There was a problem with printing.\n\
-									Perhaps your current printer is not correctly?"),
-									_("Previewing"), wxOK);
+					wxMessageBox ("There was a problem with printing.\nPlease check your printer setup and try again.",
+									"Print failed", wxOK);
 					return;
 				}
 			}
@@ -686,6 +687,7 @@ void ChameleonWindow::OnMenuEvent(wxCommandEvent &event)
 
 		case ID_PRINT_PREVIEW:
 		{
+			m_currentEd->SetPrintColourMode(m_options->GetPrintStyle());
 			wxPrintDialogData printDialogData( *g_printData);
 			wxPrintPreview *preview = new wxPrintPreview (new ChameleonPrintout (m_currentEd),
 				new ChameleonPrintout (m_currentEd),
@@ -693,9 +695,8 @@ void ChameleonWindow::OnMenuEvent(wxCommandEvent &event)
 			if (!preview->Ok()) 
 			{
 				delete preview;
-				wxMessageBox (_("There was a problem with previewing.\n\
-								Perhaps your current printer is not correctly?"),
-								_("Previewing"), wxOK);
+				wxMessageBox ("There was a problem with previewing.\nPlease check your printer setup and try again.",
+								"Preview failed", wxOK);
 				return;
 			}
 			wxRect rect = DeterminePrintSize();
@@ -2005,6 +2006,8 @@ void ChameleonWindow::UpdateToolbar()
 void ChameleonWindow::EvaluateOptions()
 {
 	// update permissions settings from the options dialog
+
+	m_network->PingOptions();
 
 	Permission* perms = m_options->GetPerms();
 

@@ -20,6 +20,9 @@ Options::Options()
 	m_password = "password";
 	m_remoteCompileOut = "a.out";
 
+	// Default to printing with black text, white background
+	m_printStyle = wxSTC_PRINT_BLACKONWHITE;
+
 	m_perms = new Permission();
 	int q = 42;
 	//wxFileName pscpPath(wxGetCwd(), "pscp.exe");
@@ -100,6 +103,11 @@ bool Options::SetRemoteCompileOut(wxString path_and_file) {
 bool Options::SetLocalCompileOut(wxString path_and_file) {
 	m_localCompileOut = path_and_file;
 	return true;
+}
+
+void Options::SetPrintStyle(int style)
+{
+	m_printStyle = style;
 }
 
 

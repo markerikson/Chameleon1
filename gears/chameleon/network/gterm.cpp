@@ -131,7 +131,7 @@ GTerm::~GTerm()
 	delete[] color;
 #ifdef GTERM_PC
         if(pc_machinename)
-          delete pc_machinename;
+          delete[] pc_machinename;
 #endif // GTERM_PC
 }
 

@@ -60,6 +60,8 @@ class ChameleonWindow;
 #define ID_PANEL2 10013
 #define ID_MINGWPATH 10014
 #define ID_MINGWBROWSE 10015
+#define ID_PANEL3 10016
+#define ID_PRINTSTYLE 10017
 #define ID_BUTTON_OK 10002
 #define ID_BUTTON_CANCEL 10003
 ////@end control identifiers
@@ -158,6 +160,7 @@ public:
     wxTextCtrl* m_password2;
     wxTextCtrl* m_txtMingwPath;
     wxButton* m_butBrowseMingw;
+    wxComboBox* m_printStyle;
 ////@end OptionsDialog member variables
 
 	ChameleonWindow* m_parentFrame;

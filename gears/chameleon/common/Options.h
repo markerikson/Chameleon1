@@ -8,6 +8,13 @@
 
 class Permission;
 
+// copied from stc.h
+// PrintColourMode - force black text on white background for printing.
+#define wxSTC_PRINT_BLACKONWHITE 2
+
+// PrintColourMode - text stays coloured, but all background is forced to be white for printing.
+#define wxSTC_PRINT_COLOURONWHITE 3
+
 
 class Options
 {
@@ -28,6 +35,7 @@ class Options
 		bool SetPassphrase(wxString pass);
 		bool SetRemoteCompileOut(wxString path_and_file);
 		bool SetLocalCompileOut(wxString path_and_file);
+		void SetPrintStyle(int style);
 
 		// Accessors:  (inlined)
 		wxString GetPscpApp() { return m_pscpProg; }
@@ -39,6 +47,7 @@ class Options
 		wxString GetRemoteCompileOut() { return m_remoteCompileOut; }
 		wxString GetLocalCompileOut() { return m_localCompileOut; }
 		Permission* GetPerms() { return m_perms; }
+		int GetPrintStyle() { return m_printStyle; }
 
 	private:
 		wxString m_pscpProg;
@@ -51,6 +60,8 @@ class Options
 
 		wxString m_remoteCompileOut;
 		wxString m_localCompileOut;
+
+		int m_printStyle;
 
 		Permission* m_perms;
 };
