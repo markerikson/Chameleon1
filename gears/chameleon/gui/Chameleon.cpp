@@ -730,6 +730,7 @@ void ChameleonWindow::OnMenuEvent(wxCommandEvent &event)
 
 		case ID_PROJECT_REMOVEFILE:
 			RemoveFileFromProject();
+			break;
 
 		case ID_PROJECT_EXCLUDE_FILE:
 		case ID_PROJECT_INCLUDE_FILE:
@@ -2826,13 +2827,6 @@ void ChameleonWindow::Compile()
 
 		m_compiler->CompileProject(projToCompile, m_outputPanel);
 
-//		wxFileName editorFile = m_currentEd->GetFileName();
-//		//editorFile.SetFullName(m_options->GetRemoteCompileOut());
-//		editorFile.SetExt("out");
-//		wxString fullpath = editorFile.GetFullPath(m_remoteMode ? wxPATH_UNIX : wxPATH_DOS);
-//		//fullpath.Replace("~", m_network->GetHomeDirPath());
-//		m_currentEd->SetExecutableFilename(fullpath);
-
 		//Highlight CompilerOutputPanel:
 		int outputIndex = m_noteTerm->FindPagePosition(m_outputPanel);
 		m_noteTerm->SetSelection(outputIndex);		
@@ -3119,36 +3113,30 @@ void ChameleonWindow::OnUpdateConnectionUI()//wxUpdateUIEvent &event)
 
 void ChameleonWindow::OnUpdateCompileUI()//wxUpdateUIEvent &event)
 {
-	bool canCompile = false;
 	ProjectInfo* edProj = m_currentEd->GetProject();
-	
 	wxToolBar* tb = GetToolBar();
-	
 	wxToolBarToolBase* compileButton = tb->FindById(ID_COMPILE);
-	
-	bool isCompiling = m_compiler->IsCompiling();
 
-	wxBitmap bmBuild(build_xpm);
+	bool canCompile = !edProj->IsCompiled();
+	bool currProjIsCompiling = m_compiler->IsCompiling() && edProj->IsBeingCompiled();
 
-	bool currentProjCompiling = isCompiling && edProj->IsBeingCompiled();
-
-	if(currentProjCompiling)
+	// Choose the image & caption:
+	if(currProjIsCompiling)
 	{
 		wxBitmap bmStopCompile(stop1_xpm);
 		compileButton->SetNormalBitmap(bmStopCompile);
-		compileButton->SetLabel("Cancel");		
+		compileButton->SetLabel("Stop");
 	}
 	else
 	{
+		wxBitmap bmBuild(build_xpm);
 		compileButton->SetNormalBitmap(bmBuild);
 		compileButton->SetLabel("Compile");
 	}
 
-	bool enableButton = currentProjCompiling || !isCompiling;
-	
-
+	// Should the button be Enabled:
+	bool enableButton = currProjIsCompiling || canCompile;
 	tb->EnableTool(ID_COMPILE, enableButton);
-	//tb->EnableTool(ID_COMPILE, !edProj->IsCompiled() && !edProj->IsBeingCompiled());
 }
 
 void ChameleonWindow::OnStatusTimer(wxTimerEvent &WXUNUSED(event)) 
