@@ -32,6 +32,7 @@
 #include "dialogs/wxTermContainer.h"
 #include "dialogs/VariableWatchPanel.h"
 #include "dialogs/CompilerOutputPanel.h"
+#include "dialogs/AboutChameleonDialog.h"
 #include "../common/ChameleonPrintout.h"
 #include "../perms/p.h"
 #include "../common/ProjectInfo.h"
@@ -678,11 +679,15 @@ void ChameleonWindow::OnMenuEvent(wxCommandEvent &event)
 
 		case ID_ABOUT:
 		{
+			/*
 			wxString msg;
 			msg.Printf( _T("Chameleon: The Adaptive IDE "));
 			msg += CHAMELEON_VERSION_NUM;
 
 			wxMessageBox(msg, "About Chameleon", wxOK | wxICON_INFORMATION, this);
+			*/
+			AboutChameleonDialog acd(this);
+			acd.ShowModal();
 			break;
 		}
 		

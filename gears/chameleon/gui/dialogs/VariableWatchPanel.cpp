@@ -26,7 +26,7 @@
 #include <wx/textdlg.h>
 
 #include "VariableWatchPanel.h"
-#include "AddVariableWatch.h"
+//#include "AddVariableWatch.h"
 #include "../ChameleonWindow.h"
 #include "../../common/fixvsbug.h"
 
@@ -206,33 +206,37 @@ bool VariableWatchPanel::ShowToolTips()
 
 void VariableWatchPanel::AddWatch()
 {
-	//wxString varName = wxGetTextFromUser("Variable name to watch:", "Add Variable Watch");
+	wxString varName = wxGetTextFromUser("Variable name to watch:", "Add Variable Watch");
 
-	AddVariableWatchDialog avwd(this);
+	//AddVariableWatchDialog avwd(this);
 
-	int result = avwd.ShowModal();
+	//int result = avwd.ShowModal();
+	
 
 
-	if(result == wxOK)
+	//if(result == wxOK)
+	if(varName != wxEmptyString)
 	{
 		wxDebugEvent dbg;
 
 		dbg.SetId(ID_DEBUG_ADD_WATCH);
 
-		wxString varName = avwd.GetVariableName();
-		wxString funcName = avwd.GetFunctionName();
-		wxString className = wxEmptyString;
+		/*
+		//wxString varName = avwd.GetVariableName();
+		//wxString funcName = avwd.GetFunctionName();
+		//wxString className = wxEmptyString;
 
 		if(avwd.FunctionInClass())
 		{
 			className = avwd.GetClassName();
 		}
+		*/
 
 		wxArrayString vars;
 		vars.Add(varName);
 		dbg.SetVariableNames(vars);
-		dbg.SetFunctionName(funcName);
-		dbg.SetClassName(className);
+		//dbg.SetFunctionName(funcName);
+		//dbg.SetClassName(className);
 		m_mainFrame->AddPendingEvent(dbg);		
 
 		m_list->InsertItem(m_list->GetItemCount(), varName);
