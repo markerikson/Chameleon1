@@ -1,5 +1,6 @@
 #ifndef __PLINK_CONNECT__H__
 #define __PLINK_CONNECT__H__
+
 //=================================================================
 // PlinkConnect
 //=================================================================
@@ -8,34 +9,43 @@
 #include <wx/event.h>
 
 
-const char PLINK_LOCATION[] = "plink.exe";
-const char HOSTNAME[] = "163.11.160.218";
-const char USERNAME[] = "danroeber";
-const char PASSPHRASE[] = "dayspring";
-
-
 class PlinkConnect : public wxEvtHandler {
 
 	public:
 		// ..structors:
-		PlinkConnect();
+		PlinkConnect(wxString plinkApplication, wxString hostname,
+					wxString username, wxString passphrase);
 		~PlinkConnect();
 		// Methods:
-		wxString send(wxString cmd);
-		wxString getOutput();
 		bool getIsConnected();
+		void sendCmd(wxString command);
+		wxString getOutput();
+		wxString getErrors();
+		wxString getMessage();
+
 		// Event Handlers:
 		void onProcessTermEvent(wxProcessEvent &UNUSED);
 		//void onTimerEvent(wxEvent &UNUSED);
 
 	private:
-		void connect();
+		// Methods:
+		void send(wxString strng);
+		void sendCommand(wxString command, bool isBatch);
+		void cleanlogs();
+		// Data:
+		wxString plinkApp, host, user, pass;
 		wxProcess* proc;
 		bool isConnected;
 		long pid;
-		wxString plinkApp, host, user, pass;
+		wxString output;
+		wxString errlog;
+		wxString message;
+		// Streams:
 		wxInputStream* rin;
-		wxTextInputStream* rerr;
+		wxInputStream* rerr;
+
+		//to be removed:
+		bool confirmConnected();
 
 	public:
 		DECLARE_EVENT_TABLE()
