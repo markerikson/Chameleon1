@@ -379,7 +379,14 @@ void Debugger::clearError()
 {
 	if(fileIsSet)
 	{
-		status = DEBUG_WAIT;
+		if(classStatus == START || classStatus == HARD_RESET)
+		{
+			status = DEBUG_STOPPED;
+		}
+		else
+		{
+			status = DEBUG_WAIT;
+		}
 	}
 	else
 	{
@@ -851,7 +858,7 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 
 	//!!END variables!!//
 
-	status = DEBUG_WAIT;
+	//status = DEBUG_WAIT;
 
 	//data now has the output...
 	tempHold = e.GetOutput();
@@ -884,7 +891,7 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 	}
 
 	//check to see if something good was found.
-	if(classStatusBackup != 0)
+	if(classStatusBackup == 0)
 	{
 		classStatusBackup = classStatus;
 		classStatus = WAITING;
@@ -895,6 +902,7 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 	{
 		case START:			//program start
 			flushBuffer();
+			status = DEBUG_STOPPED;
 			break;
 
 		case E_BREAK:		//enable break
@@ -911,6 +919,7 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 
 		case NEW_PROC:		//change in process pointer
 			flushBuffer();
+			status = DEBUG_STOPPED;
 			break;
 
 		case VAR_ASSIGN:
@@ -1026,7 +1035,6 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 			break;
 
 		case WAITING:		//i'm waiting...
-			classStatus = classStatusBackup;
 			break;
 
 		case STOP:
@@ -1044,6 +1052,8 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 			makeGenericError("failure on output parse:");
 			data.Empty();
 	}
+
+	classStatus = classStatusBackup;
 }
 
 void Debugger::onProcessErrOutEvent(wxProcess2StdErrEvent &e)
