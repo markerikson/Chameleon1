@@ -9,6 +9,14 @@
 
 #include "process2events.h"
 
+#include "debug.h"
+
+#ifdef _DEBUG
+
+#define new DEBUG_NEW
+
+#endif
+
 //-------------------------------------------------------------------
 // wxProcess2EndedEvent
 //-------------------------------------------------------------------

@@ -1,4 +1,11 @@
 #include "process2.h"
+#include "debug.h"
+
+#ifdef _DEBUG
+
+#define new DEBUG_NEW
+
+#endif
 
 // Event Table Declaration
 BEGIN_EVENT_TABLE(wxProcess2, wxProcess)
@@ -71,8 +78,9 @@ void wxProcess2::PollOutputs() {
 		while(IsInputAvailable()) {
 			out += m_inputStream->GetC();
 		}
-		wxProcess2StdOutEvent* event = new wxProcess2StdOutEvent(pid, out);
-		AddPendingEvent(*event);
+		//wxProcess2StdOutEvent* event = new wxProcess2StdOutEvent(pid, out);
+		wxProcess2StdOutEvent event(pid, out);
+		AddPendingEvent(event);
 	}
 }
 
