@@ -15,6 +15,7 @@
 #include "../perms/p.h"
 #include "../common/ProjectInfo.h"
 #include "../network/networking.h"
+#include "../compiler/compiler.h"
 #include "../common/Options.h"
 //#include "wxtelnet.h"
 #include "wxssh.h"
@@ -59,6 +60,7 @@ BEGIN_EVENT_TABLE(ChameleonWindow, wxFrame)
 	EVT_UPDATE_UI					(ID_SAVE, ChameleonWindow::OnUpdateSave)
 	EVT_MENU						(ID_STARTCONNECT, ChameleonWindow::OnConnect)
 	EVT_MENU						(ID_DISCONNECT, ChameleonWindow::OnDisconnect)
+	EVT_MENU						(ID_COMPILE, ChameleonWindow::OnCompile)
 	EVT_MENU						(ID_UNDO, ChameleonWindow::OnUndo)
 	EVT_MENU						(ID_REDO, ChameleonWindow::OnRedo)
 	EVT_MENU						(ID_OPTIONS, ChameleonWindow::OnToolsOptions)
@@ -198,6 +200,8 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	m_network = new Networking(m_options);
 	//m_network->SetDetailsNoStatus(hostname, username, "");
 
+	m_compiler = new Compiler(m_network);
+
 
 	long time3 = stopwatch.Time();
 	stopwatch.Start();
@@ -312,7 +316,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	m_compilerOutput = new wxTextCtrl(m_noteTerm, ID_COMPILERTEXTBOX, wxEmptyString, wxDefaultPosition,
 									wxDefaultSize, wxTE_RICH | wxTE_MULTILINE | wxTE_READONLY);
 
-	m_noteTerm->AddPage(m_compilerOutput, "Output");
+	m_noteTerm->AddPage(m_compilerOutput, "Compiler Output");
 	m_infoTabTracker.Add(m_compilerOutput);
 
 	m_projectTree = new wxTreeCtrl(m_splitProjectEditor, ID_PROJECTTREE);
@@ -397,6 +401,7 @@ ChameleonWindow::~ChameleonWindow()
 	delete m_perms;
 	delete m_optionsDialog;
 	delete m_network;
+	delete m_compiler;
 	delete m_config;
 	delete m_options;
 
@@ -2569,6 +2574,11 @@ void ChameleonWindow::LoadFilesIntoProjectTree(wxString configPath, wxString con
 void ChameleonWindow::OnDisconnect(wxCommandEvent &event)
 {
 	m_telnet->Disconnect();
+}
+
+void ChameleonWindow::OnCompile(wxCommandEvent &event)
+{
+	m_compiler->SimpleCompileFile("some file", m_compilerOutput);
 }
 
 void ChameleonWindow::OnFileNewProject(wxCommandEvent &event)

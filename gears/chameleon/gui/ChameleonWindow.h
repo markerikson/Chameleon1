@@ -51,6 +51,7 @@ class RemoteFileDialog;
 class OptionsDialog;
 class Permission;
 class Networking;
+class Compiler;
 class wxFileConfig;
 class wxTelnet;
 class wxMenu;
@@ -132,6 +133,7 @@ private:
 	void OnConnect(wxCommandEvent &event);
 	void OnDisconnect(wxCommandEvent &event);
 	void OnToolsOptions(wxCommandEvent &event);
+	void OnCompile(wxCommandEvent &event);
 	void OnSplitterDoubleClick(wxSplitterEvent &event);
 	void OnSize(wxSizeEvent &event);
 
@@ -224,6 +226,7 @@ private:
 
 	Permission*  m_perms;
 	Networking* m_network;
+	Compiler* m_compiler;
 	Options* m_options;
 	ProjectInfo* m_currentProjectInfo;
 
