@@ -27,8 +27,8 @@ const int NUM_MODULES = 15;
 class Permission
 {
 	public:
-		Permission();
-		Permission(wxString loadAuthCode, wxString loadPermCode);
+		//Permission();
+		Permission(wxString loadAuthCode = "10A80000000", wxString loadPermCode = "0");
 		~Permission();
 
 		bool isEnabled(int id);		//module-specific permissions request
