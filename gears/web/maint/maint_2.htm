@@ -68,7 +68,7 @@
 
     <h2>2.5 - Networking / Processes</h2>
     <p>Networked communications to the remote server are done over an SSH connection.  Fortunately, making use of the Plink utility allows almost complete abstraction from the details.</p>
-    <p>For using external processes a strong knowledge of managing processes within the wxWidgets toolkit was needed.  This also required an understanding of threading (synchronous and asynchronous) to be able to write thread-safe code.  Additionally, knowing some basic Bash and win32 Commandline commands is needed.</p>
+    <p>For using external processes a strong knowledge of managing processes within the wxWidgets toolkit was needed.  This also required an understanding of threading (synchronous and asynchronous) to be able to write thread-safe code.  Additionally, basic knowledge of Bash and win32 commandline commands is needed.</p>
     <p>Useful References:</p>
     <ul>
       <li><a href="http://www.tartarus.org/~simon/puttydoc/Chapter7.html#7">Plink Documentation</a>: The Official manual.</li>
@@ -79,7 +79,7 @@
     <br>
 
     <h2>2.6 - Interfacing</h2>
-    <p>Chameleon is designed around the wxWidgets toolkit event loop.  For inter-feature communications we use the wxEvents and macros.</p>
+    <p>Chameleon is designed around the wxWidgets event loop.  For inter-feature communications we used wxWidgets events, as well as some direct function calls.</p>
     <p>Useful References:</p>
     <ul>
       <li><a href="http://wxwindows.org/manuals/2.4.2/wx470.htm#eventhandlingoverview">Event Handling Overview</a>.</li>
