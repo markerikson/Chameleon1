@@ -2267,9 +2267,9 @@ NetworkCallResult ChameleonWindow::CheckNetworkStatus()
 		case NET_ERROR_MESSAGE:
 		{		
 			wxString message = "An unknown network error has occurred.";
-			message += "\nPlease save the information in the debug window to a file (Log menu -> Save)";
-			message += "\n and email it to Ben Carhart at p1164514@cedarville.edu.";
-			message += "\nA description of what led to the problem would also help us.";
+			//message += "\nPlease save the information in the debug window to a file (Log menu -> Save)";
+			//message += "\n and email it to Ben Carhart at p1164514@cedarville.edu.";
+			//message += "\nA description of what led to the problem would also help us.";
 			wxString statusDetails = m_network->GetStatusDetails();;
 			message += "\nError details: " + statusDetails;
 			wxLogDebug("NET_ERROR_MESSAGE: %s", statusDetails);
@@ -2279,6 +2279,19 @@ NetworkCallResult ChameleonWindow::CheckNetworkStatus()
 		}
 		case NET_AUTH_FAILED:
 		{
+			if(m_options->GetPassphrase() == "" &&
+			   m_options->GetHostname() != "127.0.0.1" &&
+			   m_options->GetUsername() != "username") {
+				// Idea: if the user
+				wxTextEntryDialog getPW(this, "Please enter your password and try again.", "Missing Password", "", wxTE_PASSWORD | wxOK | wxCANCEL);
+				int oked = getPW.ShowModal();
+				if(oked == wxID_OK) {
+					m_options->SetPassphrase(getPW.GetValue());
+					return NETCALL_FAILED;
+					break;
+				}
+				//else - user clicked cancel
+			}
 			wxString message = "Chameleon was unable to log you in using the current username and password.";
 			message += "\nPlease check them in the Options menu and try again.";
 			wxMessageBox(message, "Login failed", wxOK | wxICON_EXCLAMATION);
