@@ -28,6 +28,8 @@ ChameleonEditor::ChameleonEditor( ChameleonWindow *mframe,
 	m_bLoadingFile = false;
 	m_bLastSavedRemotely = true;
 
+	m_fileNameAndPath.Assign(wxEmptyString);
+
     this->SetTabWidth(4);
 
     this->SetMarginWidth(0, 40);
@@ -209,6 +211,7 @@ bool ChameleonEditor::Modified ()
 	bool readonly = !GetReadOnly();
 	bool canundo = CanUndo();
 	
+	
 
 	bool returnModify = modified && readonly && canundo;
     return returnModify; 
@@ -319,10 +322,12 @@ void ChameleonEditor::UpdateSyntaxHighlighting()
 			"sizeof static static_cast struct switch template this "
 			"throw true try typedef typeid typename union unsigned "
 			"using virtual void volatile wchar_t while");
+		this->Colourise(0, -1);
 	}
 	else
 	{
-		this->SetLexer(wxSTC_LEX_CONTAINER);
+		this->SetLexer(wxSTC_LEX_NULL);
+		this->ClearDocumentStyle();
 	}
 }
 
@@ -335,7 +340,8 @@ void ChameleonEditor::SetFileNameAndPath(wxString path, wxString name, bool file
 
 wxString ChameleonEditor::GetFileNameAndPath()
 {
-	return m_fileNameAndPath.GetFullPath(m_bLastSavedRemotely ? wxPATH_UNIX : wxPATH_DOS);
+	wxString nameAndPath = m_fileNameAndPath.GetFullPath(m_bLastSavedRemotely ? wxPATH_UNIX : wxPATH_DOS);
+	return nameAndPath;
 }
 
 wxString ChameleonEditor::GetFilename()

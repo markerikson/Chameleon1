@@ -25,6 +25,8 @@
 ////@end includes
 
 #include "ProfOptionsDialog.h"
+#include "../perms/p.h"
+#include <stdlib.h>
 
 ////@begin XPM images
 
@@ -48,6 +50,8 @@ BEGIN_EVENT_TABLE( ProfOptionsDialog, wxDialog )
     EVT_BUTTON( ID_EXITBUTTON, ProfOptionsDialog::OnExitbuttonClick )
 
 ////@end ProfOptionsDialog event table entries
+
+	EVT_CLOSE(ProfOptionsDialog::OnQuit)
 
 END_EVENT_TABLE()
 
@@ -81,6 +85,13 @@ bool ProfOptionsDialog::Create( wxWindow* parent, wxWindowID id, const wxString&
     GetSizer()->SetSizeHints(this);
     Centre();
 ////@end ProfOptionsDialog creation
+
+	for(int i = PERM_FIRST; i < PERM_LAST; i++)
+	{
+		m_chklstModules->Append(GlobalPermStrings[i]);
+	}
+
+	srand(time(0));
     return TRUE;
 }
 
@@ -146,6 +157,33 @@ void ProfOptionsDialog::OnGenerateClick( wxCommandEvent& event )
 {
     // Insert custom code here
     event.Skip();
+
+	unsigned int newCode = 0;
+
+	for(int i = 0; i < m_chklstModules->GetCount(); i++)
+	{
+		if(m_chklstModules->IsChecked(i))
+		{
+			newCode |= 1 << i;
+		}
+	}
+
+	if(m_chkRandomize->IsChecked())
+	{
+		int bitcounter = sizeof(int) * 8;
+		for(bitcounter; bitcounter >= PERM_LAST; bitcounter--)
+		{
+			if(rand() % 2 == 0)
+			{
+				newCode |= 1 << bitcounter;
+			}
+
+		}
+	}
+	wxString message;
+	message.Printf("%u", newCode);
+	
+	m_txtGeneratedCode->SetValue(message);
 }
 
 /*!
@@ -156,6 +194,7 @@ void ProfOptionsDialog::OnExitbuttonClick( wxCommandEvent& event )
 {
     // Insert custom code here
     event.Skip();
+	Destroy();
 }
 
 /*!
@@ -165,4 +204,9 @@ void ProfOptionsDialog::OnExitbuttonClick( wxCommandEvent& event )
 bool ProfOptionsDialog::ShowToolTips()
 {
   return TRUE;
+}
+
+void ProfOptionsDialog::OnQuit(wxCommandEvent &event)
+{
+	Destroy();
 }

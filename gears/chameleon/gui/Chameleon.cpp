@@ -6,6 +6,7 @@
 #include <wx/timer.h>
 #include <wx/regex.h>
 #include <wx/splash.h>
+#include <wx/utils.h>
 #include "../common/debug.h"
 #include "../common/datastructures.h"
 
@@ -38,7 +39,7 @@ BEGIN_EVENT_TABLE(ChameleonWindow, wxFrame)
 	EVT_MENU						(ID_PASTE, ChameleonWindow::OnPaste)
 	EVT_CLOSE						(ChameleonWindow::OnClose)
 	EVT_NOTEBOOK_PAGE_CHANGED		(ID_NOTEBOOK_ED,   ChameleonWindow::OnPageChange)
-
+	//EVT_SPLITTER_SASH_POS_CHANGED	(ID_SPLITTER, ChameleonWindow::OnTermResize)
 	
 END_EVENT_TABLE()
 
@@ -86,17 +87,19 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	stopwatch.Start();
 
 
-	m_perms = new Permission();
+	
 
 	// enable only PERM_AUTOINDENT and PERM_REMOTELOCAL.  Eventually, will rely only on the provided value.
 
+	/*
 	int permBitmask = 0;
 
 	permBitmask |= 1 << PERM_AUTOINDENT;
 	permBitmask |= 1 << PERM_REMOTELOCAL;
-	//permBitmask |= 1 << PERM_TERMINAL;
+	permBitmask |= 1 << PERM_SYNTAXHIGHLIGHT;
+	permBitmask |= 1 << PERM_TERMINAL;
 
-	m_perms->setGlobal(permBitmask);
+	m_perms->setGlobalAuthorized(permBitmask);
 
 	
 	for(int i = PERM_FIRST; i < PERM_LAST; i++)
@@ -106,17 +109,47 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	
 	m_perms->enable(PERM_AUTOINDENT);
 	m_perms->enable(PERM_REMOTELOCAL);
-	//m_perms->enable(PERM_TERMINAL);
+	m_perms->enable(PERM_SYNTAXHIGHLIGHT);
+	m_perms->enable(PERM_TERMINAL);
 
+	*/
 	long time2 = stopwatch.Time();
 	stopwatch.Start();
 
 
-	// Open up the configuration file, assumed to be in the same directory as the executable
-	m_config = new wxIniConfig("Chameleon", wxEmptyString, wxGetCwd() + "\\chameleon.ini");
+	// Open up the configuration file, assumed to be in the user's home directory
 
-	wxString hostname = m_config->Read("Network/hostname");
-	wxString username = m_config->Read("Network/username");
+	wxString hostname = wxEmptyString; 
+	wxString username = wxEmptyString;
+	long authorizedCode;
+	long enabledCode;
+
+	// by default, enable pretty much everything
+	long defaultEnableCode = 0xff;
+	long defaultAuthorizedCode = 0xff;
+
+	wxFileName configName(wxGetHomeDir(), "chameleon.ini");
+	if(configName.FileExists())
+	{
+		m_config = new wxIniConfig("Chameleon", wxEmptyString, configName.GetFullPath());
+
+		hostname = m_config->Read("Network/hostname");
+		username = m_config->Read("Network/username");
+
+		authorizedCode = m_config->Read("Permissions/authorized", defaultAuthorizedCode);
+		enabledCode = m_config->Read("Permissions/enabled", defaultEnableCode);
+		wxLogDebug("Loaded permissions from config: authorizedCode = %u, enabledCode = %u", authorizedCode, enabledCode);
+
+	}
+	else
+	{
+		wxLogDebug("Failed to locate config file, loading default permissions");
+		authorizedCode = defaultAuthorizedCode;
+		enabledCode = defaultEnableCode;
+	}
+
+	m_perms = new Permission(authorizedCode, enabledCode);
+	
 
 	m_network = new Networking();
 
@@ -161,8 +194,8 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 	menuTools->Append(ID_OPTIONS, "&Options");
 
-	//menuTools->Append(ID_STARTCONNECT, "&Connect");
-	//menuTools->InsertSeparator(2);
+	menuTools->Append(ID_STARTCONNECT, "&Connect");
+	menuTools->InsertSeparator(2);
 
 	wxMenu* menuEdit = new wxMenu();
 
@@ -269,7 +302,9 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	if(m_perms->isEnabled(PERM_TERMINAL))
 	{
 		m_split->SplitHorizontally(m_book, m_noteTerm, -200);		
-		m_split->SetMinimumPaneSize(200);
+		//m_split->SetMinimumPaneSize(200);
+
+
 	}
 	else
 	{
@@ -545,8 +580,12 @@ void ChameleonWindow::OpenFile()
 	// in remote mode
 	else
 	{
+		SetStatusText("Showing remote file dialog...");
+		wxBeginBusyCursor();
+
 		if(m_remoteFileDialog->Prepare(true))
 		{
+			wxEndBusyCursor();
 			int result = m_remoteFileDialog->ShowModal();
 			m_currentEd->SetFocus();
 
@@ -560,6 +599,7 @@ void ChameleonWindow::OpenFile()
 		}
 		else
 		{
+			wxEndBusyCursor();
 			return;
 		}
 	}
@@ -796,8 +836,12 @@ void ChameleonWindow::OnConnect(wxCommandEvent& WXUNUSED(event))
 	wxIPV4address local;
 	local.LocalHost();
 
-	DEBUGLOG("Address: " + local.Hostname())
-	m_telnet->Connect(local.Hostname(), 3012);
+	wxString hostName = "163.11.42.198";
+	//("Address: " + local.Hostname())
+	wxLogDebug("Connecting to address: %s", hostName);
+	//m_telnet->Connect(local.Hostname(), 3012);
+	m_telnet->Connect(hostName, 23);
+	wxLogDebug("Connected: %d", m_telnet->IsConnected());
 
 }
 
@@ -1288,7 +1332,7 @@ void ChameleonWindow::EvaluateOptions()
 	wxString username = m_optionsDialog->GetUsername();
 	wxString password1 = m_optionsDialog->GetPassword1();
 	
-	m_network->SetDetails(hostname, username, password1);
+	m_network->SetDetailsNoStatus(hostname, username, password1);
 
 	m_config->Write("Network/hostname", hostname);
 	m_config->Write("Network/username", username);
@@ -1358,4 +1402,16 @@ NetworkCallResult ChameleonWindow::CheckNetworkStatus()
 			return NETCALL_WORKED;
 			break;
 	}
+}
+
+void ChameleonWindow::OnTermResize(wxCommandEvent &event)
+{
+	//wxSize telnetSize = m_telnet->GetClientSize();
+
+	//wxString message;
+	//message.Printf("Size: %d, %d", telnetSize.GetX(), telnetSize.GetY());
+	//wxMessageBox(message);
+
+	//m_telnet->ResizeTerminal(telnetSize.GetX(), telnetSize.GetY());
+	//m_telnet->UpdateSize();
 }

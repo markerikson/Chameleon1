@@ -72,6 +72,8 @@ public:
 
 ////@end ProfOptionsDialog event handler declarations
 
+	void OnQuit(wxCommandEvent &event);
+
 ////@begin ProfOptionsDialog member function declarations
 ////@end ProfOptionsDialog member function declarations
 

@@ -95,6 +95,9 @@ public:
     wxString GetPassword1();
     wxString GetPassword2();
 
+	void ExitDialog();
+	void OnEnter(wxCommandEvent &event);
+
 
     void SetServerAddress(wxString address);
     void SetUsername(wxString username);

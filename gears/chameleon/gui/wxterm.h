@@ -154,6 +154,8 @@ public:
   wxString GetSelection();
   void SelectAll();
 
+  void UpdateSize(wxSizeEvent &event);
+
   /*
   **  GTerm stuff
   */

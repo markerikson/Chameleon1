@@ -1,3 +1,6 @@
+
+
+
 /*
     taTelnet - A cross-platform telnet program.
     Copyright (c) 2000 Derry Bryson.
@@ -381,6 +384,8 @@ BEGIN_EVENT_TABLE(wxTerm, wxWindow)
 #if 0
   EVT_KEY_DOWN(wxTerm::OnKeyDown)
 #endif
+
+  //EVT_SIZE(wxTerm::UpdateSize)
 END_EVENT_TABLE()
 
 wxTerm::wxTerm(wxWindow* parent, wxWindowID id,
@@ -428,6 +433,8 @@ wxTerm::wxTerm(wxWindow* parent, wxWindowID id,
   m_printerFN = 0;
   m_printerName = 0;
 
+ 
+
   m_normalFont = GetFont();
   m_underlinedFont = GetFont();
   m_underlinedFont.SetUnderlined(TRUE);
@@ -443,6 +450,9 @@ wxTerm::wxTerm(wxWindow* parent, wxWindowID id,
   m_init = 0;
 
   SetCursor(wxCursor(wxCURSOR_IBEAM));
+
+  wxFont monospacedFont(10, wxMODERN, wxNORMAL, wxNORMAL, false, "Courier New");
+  SetFont(monospacedFont);
 }
 
 wxTerm::~wxTerm()
@@ -1247,6 +1257,36 @@ wxTerm::Bell()
 #else
   wxBell();
 #endif
+}
+
+void wxTerm::UpdateSize(wxSizeEvent &event)
+{
+	
+	if(this->IsShown())
+	{
+		int charWidth, charHeight;
+
+
+		wxClientDC dc(this);
+		
+		dc.SetFont(m_normalFont);
+		dc.GetTextExtent("M", &charWidth, &charHeight);
+
+		wxSize currentClientSize = GetClientSize();
+		int numCharsInLine = currentClientSize.GetX() / charWidth;
+		int numLinesShown = currentClientSize.GetY() / charHeight;
+
+		wxString message;
+
+		message.Printf("numCharsInLine: %d, numLinesShown: %d", numCharsInLine, numLinesShown);
+		wxLogDebug(message);
+		ResizeTerminal(numCharsInLine, numLinesShown);
+		
+	}
+	
+	
+
+
 }
 
 void

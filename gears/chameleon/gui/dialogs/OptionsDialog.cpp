@@ -57,6 +57,11 @@ BEGIN_EVENT_TABLE( OptionsDialog, wxDialog )
 
 ////@end OptionsDialog event table entries
 	EVT_CHAR(OptionsDialog::OnChar)
+	EVT_TEXT_ENTER( ID_PROFCODE, OptionsDialog::OnEnter )
+	EVT_TEXT_ENTER(ID_TEXTCTRL1, OptionsDialog::OnEnter)
+	EVT_TEXT_ENTER(ID_TEXTCTRL2, OptionsDialog::OnEnter)
+	EVT_TEXT_ENTER(ID_TEXTCTRL3, OptionsDialog::OnEnter)
+	EVT_TEXT_ENTER(ID_TEXTCTRL4, OptionsDialog::OnEnter)
 
 END_EVENT_TABLE()
 
@@ -128,7 +133,7 @@ void OptionsDialog::CreateControls()
     item7->Add(item11, 0, wxGROW, 5);
     wxStaticText* item12 = new wxStaticText( item4, wxID_STATIC, _("Enter the code from your professor here\n(note: currently disabled):"), wxDefaultPosition, wxDefaultSize, 0 );
     item11->Add(item12, 0, wxALIGN_CENTER_HORIZONTAL|wxALL|wxADJUST_MINSIZE, 5);
-    wxTextCtrl* item13 = new wxTextCtrl( item4, ID_PROFCODE, _(""), wxDefaultPosition, wxDefaultSize, 0 );
+    wxTextCtrl* item13 = new wxTextCtrl( item4, ID_PROFCODE, _(""), wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER );
     item11->Add(item13, 0, wxGROW|wxLEFT|wxRIGHT|wxBOTTOM, 5);
     item3->AddPage(item4, _("Features"));
     wxPanel* item14 = new wxPanel( item3, ID_PANEL, wxDefaultPosition, wxSize(100, 80), wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
@@ -139,22 +144,22 @@ void OptionsDialog::CreateControls()
     item15->Add(item16, 0, wxALIGN_TOP, 5);
     wxStaticText* item17 = new wxStaticText( item14, wxID_STATIC, _("Network server address:"), wxDefaultPosition, wxDefaultSize, 0 );
     item16->Add(item17, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
-    wxTextCtrl* item18 = new wxTextCtrl( item14, ID_TEXTCTRL1, _(""), wxDefaultPosition, wxSize(160, -1), 0 );
+    wxTextCtrl* item18 = new wxTextCtrl( item14, ID_TEXTCTRL1, _(""), wxDefaultPosition, wxSize(160, -1), wxTE_PROCESS_ENTER );
     m_serverAddress = item18;
     item16->Add(item18, 0, wxALIGN_CENTER_HORIZONTAL|wxLEFT|wxRIGHT|wxBOTTOM, 5);
     wxStaticText* item19 = new wxStaticText( item14, wxID_STATIC, _("Username:"), wxDefaultPosition, wxDefaultSize, 0 );
     item16->Add(item19, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
-    wxTextCtrl* item20 = new wxTextCtrl( item14, ID_TEXTCTRL2, _(""), wxDefaultPosition, wxSize(160, -1), 0 );
+    wxTextCtrl* item20 = new wxTextCtrl( item14, ID_TEXTCTRL2, _(""), wxDefaultPosition, wxSize(160, -1), wxTE_PROCESS_ENTER );
     m_username = item20;
     item16->Add(item20, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxBOTTOM, 5);
     wxStaticText* item21 = new wxStaticText( item14, wxID_STATIC, _("Password:"), wxDefaultPosition, wxDefaultSize, 0 );
     item16->Add(item21, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
-    wxTextCtrl* item22 = new wxTextCtrl( item14, ID_TEXTCTRL3, _(""), wxDefaultPosition, wxSize(160, -1), wxTE_PASSWORD );
+    wxTextCtrl* item22 = new wxTextCtrl( item14, ID_TEXTCTRL3, _(""), wxDefaultPosition, wxSize(160, -1), wxTE_PROCESS_ENTER|wxTE_PASSWORD );
     m_password1 = item22;
     item16->Add(item22, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxBOTTOM, 5);
     wxStaticText* item23 = new wxStaticText( item14, wxID_STATIC, _("Confirm password:"), wxDefaultPosition, wxDefaultSize, 0 );
     item16->Add(item23, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
-    wxTextCtrl* item24 = new wxTextCtrl( item14, ID_TEXTCTRL4, _(""), wxDefaultPosition, wxSize(160, -1), wxTE_PASSWORD );
+    wxTextCtrl* item24 = new wxTextCtrl( item14, ID_TEXTCTRL4, _(""), wxDefaultPosition, wxSize(160, -1), wxTE_PROCESS_ENTER|wxTE_PASSWORD );
     m_password2 = item24;
     item16->Add(item24, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxBOTTOM, 5);
     item3->AddPage(item14, _("Network"));
@@ -236,18 +241,7 @@ void OptionsDialog::OnButtonOkClick( wxCommandEvent& event )
     // Insert custom code here
     event.Skip();
 
-	wxString pwd1 = m_password1->GetValue();
-	wxString pwd2 = m_password2->GetValue();
-
-	if(pwd1 == pwd2)
-	{
-		EndModal(wxOK);
-	}
-	else
-	{
-		wxMessageBox("Please enter the same password in both fields");
-	}
-	
+	ExitDialog();
 }
 
 /*!
@@ -268,4 +262,31 @@ void OptionsDialog::OnChar(wxKeyEvent &event)
 		event.Skip();
 	}
 
+}
+/*!
+ * wxEVT_COMMAND_TEXT_ENTER event handler for ID_PROFCODE
+ */
+
+void OptionsDialog::OnEnter( wxCommandEvent& event )
+{
+    // Insert custom code here
+	event.Skip();
+
+	ExitDialog();
+}
+
+
+void OptionsDialog::ExitDialog()
+{
+	wxString pwd1 = m_password1->GetValue();
+	wxString pwd2 = m_password2->GetValue();
+
+	if(pwd1 == pwd2)
+	{
+		EndModal(wxOK);
+	}
+	else
+	{
+		wxMessageBox("Please enter the same password in both fields");
+	}
 }

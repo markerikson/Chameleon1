@@ -24,12 +24,15 @@
 ////@end includes
 
 #include <wx/filename.h>
+#include <wx/toolbar.h>
 
+#include "../../common/datastructures.h"
 /*!
  * Forward declarations
  */
 
 ////@begin forward declarations
+class wxBoxSizer;
 class wxListCtrl;
 ////@end forward declarations
 
@@ -45,13 +48,16 @@ class wxListEvent;
 ////@begin control identifiers
 #define ID_DIALOG 10000
 #define ID_PATHBOX 10002
-#define ID_BUTTONUPFOLDER 10007
 #define ID_LISTCTRL 10001
 #define ID_TXTFILENAME 10008
 #define ID_BUTTONOPEN 10003
 #define ID_COMBOBOX1 10004
 #define ID_BUTTONCANCEL 10005
 ////@end control identifiers
+
+#define ID_DIALOGTOOLBAR 10099
+#define ID_UPFOLDER 10097
+#define ID_REFRESHFOLDER 10098
 
 /*!
  * RemoteFileDialog class declaration
@@ -81,9 +87,6 @@ public:
 
 ////@begin RemoteFileDialog event handler declarations
 
-    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTONUPFOLDER
-    void OnButtonUpClick( wxCommandEvent& event );
-
     /// wxEVT_COMMAND_LIST_ITEM_SELECTED event handler for ID_LISTCTRL
     void OnItemSelected( wxListEvent& event );
 
@@ -93,10 +96,17 @@ public:
     /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTONOPEN
     void OnButtonOpenClick( wxCommandEvent& event );
 
+    /// wxEVT_COMMAND_COMBOBOX_SELECTED event handler for ID_COMBOBOX1
+    void OnCombobox1Selected( wxCommandEvent& event );
+
     /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTONCANCEL
     void OnButtonCancelClick( wxCommandEvent& event );
 
 ////@end RemoteFileDialog event handler declarations
+
+	void OnButtonUpFolder(wxCommandEvent& event );
+	void OnButtonRefresh(wxCommandEvent &event);
+	void OnEnter(wxCommandEvent &event);
 
 ////@begin RemoteFileDialog member function declarations
 
@@ -113,7 +123,8 @@ public:
 	void SaveRemoteFile();
 	bool Prepare(bool open);
 
-	bool ShowDirectory(wxString dirname);
+	bool ShowDirectory(wxString dirname, bool refresh = false, bool showHidden = false);
+	void FillListView();
 	void LoadTestData();
 
     /// Should we show tooltips?
@@ -125,6 +136,7 @@ private:
 	void ItemActivated();
 
 ////@begin RemoteFileDialog member variables
+    wxBoxSizer* m_sizToolbar;
     wxTextCtrl* m_pathBox;
     wxListCtrl* m_list;
     wxTextCtrl* m_txtFilename;
@@ -133,9 +145,14 @@ private:
     wxButton* m_buttonCancel;
 ////@end RemoteFileDialog member variables
 
+	wxToolBar* m_toolbar;
+
 	wxFileName m_currentPath;
 	
 	bool m_openMode;
+
+	int m_currentFilterIndex;
+	DirListing m_currentDirListing;
 
 	wxFileName m_localFileNamePath;
 	wxFileName m_remoteFileNamePath;

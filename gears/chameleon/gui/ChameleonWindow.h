@@ -147,6 +147,7 @@ private:
 	void OnCloseWindow(wxCloseEvent& event);
 	void OnConnect(wxCommandEvent &event);
 	void OnToolsOptions(wxCommandEvent &event);
+	void OnTermResize(wxCommandEvent &event);
 
 	void OnGridClicked(wxGridEvent& event);
 
