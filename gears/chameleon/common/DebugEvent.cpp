@@ -92,3 +92,8 @@ void wxDebugEvent::SetClassName(wxString classname)
 {
 	m_className = classname;
 }
+
+void wxDebugEvent::SetTTYString(wxString tty)
+{
+	m_ttyString = tty;
+}

@@ -27,6 +27,7 @@ class wxDebugEvent : public wxEvent
 		//void SetRemoteMode(bool remote);
 		void SetFileBreakpoints(FileBreakpointHash filebreakpoints);
 		void SetProject(ProjectInfo* project);
+		void SetTTYString(wxString tty);
 
 		int GetLineNumber() { return m_lineNumber;}
 		wxArrayString GetVariableNames() { return m_variableNames; }
@@ -40,6 +41,7 @@ class wxDebugEvent : public wxEvent
 		bool IsRemote() { return m_project->IsRemote(); }
 		FileBreakpointHash GetFileBreakpoints() { return m_filebreakpoints; }
 		ProjectInfo* GetProject() { return m_project; }
+		wxString GetTTYString() { return m_ttyString; }
 
 public:
 		int m_lineNumber;
@@ -51,6 +53,7 @@ public:
 		wxString m_errorMessage;
 		wxString m_functionName;
 		wxString m_className;
+		wxString m_ttyString;
 		//wxString m_executableFilename;
 		bool m_remoteMode;
 		FileBreakpointHash m_filebreakpoints;
