@@ -36,10 +36,11 @@ class wxProcess2EndedEvent : public wxEvent
 };
 
 typedef void (wxEvtHandler::*wxProcess2EndedEventFunction)(wxProcess2EndedEvent&);
+
 #define EVT_PROCESS2_ENDED(fn) \
 	DECLARE_EVENT_TABLE_ENTRY( \
 			wxEVT_PROCESS2_ENDED, wxID_ANY, wxID_ANY, \
-			(wxObjectEventFunction)(wxEventFunction)&fn, \
+			(wxObjectEventFunction)(wxEventFunction)(wxProcess2EndedEventFunction)&fn, \
 			(wxObject *) NULL),
 
 
@@ -96,10 +97,11 @@ class wxProcess2StdErrEvent : public wxEvent
 };
 
 typedef void (wxEvtHandler::*wxProcess2StdErrEventFunction)(wxProcess2StdErrEvent&);
+
 #define EVT_PROCESS2_STDERR(fn) \
 	DECLARE_EVENT_TABLE_ENTRY( \
 			wxEVT_PROCESS2_STDERR, wxID_ANY, wxID_ANY, \
-			(wxObjectEventFunction)(wxEventFunction)&fn, \
+			(wxObjectEventFunction)(wxEventFunction)(wxProcess2StdErrEventFunction)&fn, \
 			(wxObject *) NULL),
 
 
