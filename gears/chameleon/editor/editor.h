@@ -6,6 +6,7 @@
 #include <wx/menu.h>
 #include <wx/dynarray.h>
 #include "../common/datastructures.h"
+#include "../compiler/compilerevent.h"
 //#include <wx/wx.h>
 
 class ChameleonWindow;
@@ -71,6 +72,7 @@ private:
 	void OnEditorModified(wxStyledTextEvent &event);
 	void OnAddBreakpoint(wxCommandEvent &event);
 	void OnRemoveBreakpoint(wxCommandEvent &event);
+	void OnCompilerEnded(wxCompilerEndedEvent &event);
 	
 
 	ChameleonWindow* m_mainFrame;

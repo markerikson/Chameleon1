@@ -14,8 +14,8 @@ class Compiler : public wxEvtHandler
 		Compiler(Options* options, Networking* network);
 
 		// Simple Output:
-		void CompileFile(wxString path, wxString filename, bool isRemote, wxTextCtrl* textbox);
-		void CompileProject(ProjectInfo* proj, bool isRemote, wxTextCtrl* textbox);
+		void CompileFile(wxFileName file, bool isRemote, wxTextCtrl* textbox, wxEvtHandler* h);
+		void CompileProject(ProjectInfo* proj, bool isRemote, wxTextCtrl* textbox, wxEvtHandler* h);
 		// Advanced Output:
 		//void CompileFile(wxString path, wxString file, bool isRemote, CompilerWindow* window);
 		//void CompileProject(ProjectInfo* proj, bool isRemote, CompilerWindow* window);
@@ -30,8 +30,8 @@ class Compiler : public wxEvtHandler
 		void OnProcessOut(wxProcess2StdOutEvent& e);
 		void OnProcessErr(wxProcess2StdErrEvent& e);
 
-		void CompileRemoteFile(wxString filename, wxString outfile);
-		void CompileLocalFile(wxString filename, wxString outfile);
+		void CompileRemoteFile(wxFileName file, wxString outfile);
+		void CompileLocalFile(wxFileName file, wxString outfile);
 
 		// Data:
 		Options* m_options;

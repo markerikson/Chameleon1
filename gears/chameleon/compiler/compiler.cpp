@@ -5,6 +5,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 #include "compiler.h"
+#include "compilerevent.h"
 
 #include "../common/debug.h"
 
@@ -28,38 +29,52 @@ Compiler::Compiler(Options* options, Networking* network) {
 }
 
 
-void Compiler::CompileFile(wxString path, wxString filename, bool isRemote, wxTextCtrl* textbox) {
+void Compiler::CompileFile(wxFileName file, bool isRemote, wxTextCtrl* textbox, wxEvtHandler* h) {
 	m_out = textbox;
+	SetNextHandler(h);
+	wxString outfile = file.GetName();
 
-	// I really wish I could merge these two:
+	// Start a process and point m_proc at it:
 	if(isRemote) {
 		m_proc = m_network->GetPlinkProcess(this);
-		if(m_proc != NULL) {
-			*m_out << "Compiling...\n";
-			wxTextOutputStream os(* (m_proc->GetOutputStream()) );
-			os.WriteString("cd " + path + "\r");
-			CompileRemoteFile(filename, m_options->GetRemoteCompileOut());
-		}
-		else {
-			wxLogDebug("Compiler could not get a process.");
-		}
+		outfile += ".out"; // extension
 	}
 	else { // Local:
 		m_proc = m_network->GetLocalProcess(this);
-		if(m_proc != NULL) {
-			*m_out << "Compiling...\n";
-			wxTextOutputStream os(* (m_proc->GetOutputStream()) );
-			os.WriteString("cd " + path + "\r");
-			CompileLocalFile(filename, m_options->GetLocalCompileOut());
+		outfile += ".exe"; // extension
+	}
+
+	// Signal the user, and get going
+	if(m_proc != NULL) {
+		*m_out << "Compiling...\n";
+		*m_out << file.GetFullName() << "\n";
+
+		//Unfortunately the shells are not identical:
+		if(isRemote) {
+			CompileRemoteFile(file, outfile);
 		}
-		else {
-			wxLogDebug("Compiler could not get a local process.");
+		else { // isLocal
+			CompileLocalFile(file, outfile);
 		}
 	}
+	else {
+		*m_out << "Error: Could not start a process to begin compiling.\n";
+
+		// Remember, for a remote compilation to be started, the person needs to
+		//   have a remote file open (aka. successful user/pw/connection)
+
+#ifdef _DEBUG
+		if(isRemote)
+			wxLogDebug("Compiler could not get a remote process.");
+		else
+			wxLogDebug("Compiler could not get a local process.");
+#endif
+	}
+
 }
 
 
-void Compiler::CompileProject(ProjectInfo* proj, bool isRemote, wxTextCtrl* textbox) {
+void Compiler::CompileProject(ProjectInfo* proj, bool isRemote, wxTextCtrl* textbox, wxEvtHandler* h) {
 	m_out = textbox;
 
 	if(isRemote) {
@@ -76,18 +91,52 @@ void Compiler::CompileProject(ProjectInfo* proj, bool isRemote, wxTextCtrl* text
 
 // This assumes that I already have a live process (m_proc)
 //Private:
-void Compiler::CompileRemoteFile(wxString filename, wxString outfile) {
+void Compiler::CompileRemoteFile(wxFileName file, wxString outfile)
+{
+	wxString cmd;
+	wxString blank = ""; // oddity
+	wxTextOutputStream os( *(m_proc->GetOutputStream()) );
 
-	wxString blank = ""; // ummm this is weird
-	wxString cmd = blank + "echo S_T_A_R_T_COMPILE ; "
-		+ " g++ " // compiler
+	// Enter appropriate directory:
+	cmd = "cd " + file.GetPath(0, wxPATH_UNIX) + "\r";
+	os.WriteString(cmd); // SEND
+
+
+	cmd = blank + "echo S_T_A_R_T_COMPILE ; "
+		+ " g++ " // compiler (assuming it is in the PATH)
 		+ " -g "
 		+ " -o " + outfile + " "
-		+ filename
-		+ " ; echo E_N_D_COMPILE\r";
+		+ file.GetFullName()
+		+ " && echo C_O_M_P_I_L_E_SUCCESS ; echo E_N_D_COMPILE\r";
+	os.WriteString(cmd); // SEND
 
-	wxTextOutputStream os(* (m_proc->GetOutputStream()) );
-	os.WriteString(cmd);
+	m_receivedToken = false;
+	m_isCompiling = true;
+}
+
+
+// This assumes that I already have a live process (m_proc)
+//Private:
+void Compiler::CompileLocalFile(wxFileName file, wxString outfile)
+{
+	wxString cmd;
+	wxString blank = ""; // oddity
+	wxTextOutputStream os( *(m_proc->GetOutputStream()) );
+
+	// Enter appropriate directory:
+	cmd = file.GetVolume() + ":\n"; // change to the drive
+	cmd += "cd " + file.GetPath(0, wxPATH_DOS) + "\n";
+	os.WriteString(cmd); // SEND
+
+
+	cmd = blank + "echo S_T_A_R_T_COMPILE & "
+		+ "\"" + m_options->GetMingwPath() + "g++.exe\" " // compiler
+		+ " -g "
+		+ " -o " + outfile + " "
+		+ file.GetFullName()
+		+ " & echo E_N_D_COMPILE\n";
+	cmd = "";
+	os.WriteString(cmd); // SEND
 
 	m_receivedToken = false;
 	m_isCompiling = true;
@@ -95,16 +144,9 @@ void Compiler::CompileRemoteFile(wxString filename, wxString outfile) {
 
 
 //Private:
-void Compiler::CompileLocalFile(wxString filename, wxString outfile)
-{
-	//
-}
-
-
-//Private:
 void Compiler::OnProcessTerm(wxProcess2EndedEvent& e)
 {
-	*m_out << "\nDone.";
+	*m_out << "Done.";
 	m_out = NULL;
 	m_isCompiling = false;
 }
@@ -112,6 +154,7 @@ void Compiler::OnProcessTerm(wxProcess2EndedEvent& e)
 
 void Compiler::OnProcessOut(wxProcess2StdOutEvent& e)
 {
+//wxLogDebug("--------------------------------------------\nCompiler Recieved Output\n--------------------------------------------\n" + e.GetOutput());
 	if(m_isCompiling) {
 		wxString s = e.GetOutput();
 		if(!m_receivedToken) {
@@ -123,9 +166,21 @@ void Compiler::OnProcessOut(wxProcess2StdOutEvent& e)
 
 		if(m_receivedToken) {
 			if(s.Contains("E_N_D_COMPILE\r")) {
+				bool success = false;
+				if(s.Contains("C_O_M_P_I_L_E_SUCCESS")) {
+					s.Remove(s.Find("C_O_M_P_I_L_E_SUCCESS"), 21);
+					success = true;
+				}	
 				s.Remove(s.Find("E_N_D_COMPILE\r"));
 				m_isCompiling = false;
 				m_receivedToken = false;
+
+				// Signal
+				wxCompilerEndedEvent e(success);
+				ProcessEvent(e); // synchronous because I detach in the very next line
+				SetNextHandler(NULL);
+
+				// Terminate the process:
 				wxTextOutputStream os(* (m_proc->GetOutputStream()) );
 				os.WriteString("exit\r");
 			}

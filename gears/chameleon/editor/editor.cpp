@@ -24,6 +24,7 @@ BEGIN_EVENT_TABLE(ChameleonEditor, wxStyledTextCtrl)
 	EVT_RIGHT_DOWN		(ChameleonEditor::OnRightClick)
 	EVT_MENU			(ID_DEBUG_ADD_BREAKPOINT, ChameleonEditor::OnAddBreakpoint)
 	EVT_MENU			(ID_DEBUG_REMOVE_BREAKPOINT, ChameleonEditor::OnRemoveBreakpoint)
+	EVT_COMPILER_ENDED	(ChameleonEditor::OnCompilerEnded)
 END_EVENT_TABLE()
 
 int CompareInts(int n1, int n2)
@@ -515,4 +516,11 @@ bool ChameleonEditor::HasBeenCompiled()
 void ChameleonEditor::SetCompiled()
 {
 	m_bHasBeenCompiled = true;
+}
+
+void ChameleonEditor::OnCompilerEnded(wxCompilerEndedEvent &event)
+{
+	if(event.wasSuccessful()) {
+		m_bHasBeenCompiled = true;
+	}
 }

@@ -2350,15 +2350,15 @@ void ChameleonWindow::OnCompile(wxCommandEvent &event)
 			isProj = true;
 		}
 
-		if(!isAdvanced) 
+		if(!isAdvanced)
 		{
 			if(isProj) 
 			{
-				m_compiler->CompileProject(m_currentProjectInfo, m_remoteMode, m_compilerTextbox);
+				m_compiler->CompileProject(m_currentProjectInfo, m_remoteMode, m_compilerTextbox, this);
 			}
 			else 
 			{
-				m_compiler->CompileFile(m_currentEd->GetFilePath(), m_currentEd->GetFilenameString(), m_remoteMode, m_compilerTextbox);
+				m_compiler->CompileFile(m_currentEd->GetFileName(), m_remoteMode, m_compilerTextbox, m_currentEd);
 				m_currentEd->SetCompiled();
 			}
 
