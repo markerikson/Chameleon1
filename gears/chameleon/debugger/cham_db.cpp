@@ -420,21 +420,38 @@ void Debugger::startProcess(bool fullRestart, bool mode, wxString fName, wxStrin
 		fileIsSet = false;
 	}
 	
-
-	//begin funky process stuff
-	debugProc = new wxProcess2(this);	procLives = false;
+	procLives = false;
 	classStatus = NEW_PROC;
 	
+	//begin funky process stuff
+	if(isRemote)
+	{
+		debugProc = myConnection->GetPlinkProcess();
+
+		pid = myConnection->GetPID();
+		if(pid > 0) {procLives = true;}
+		if(procLives)
+		{
+			wxTextOutputStream streamOut(*(debugProc->GetOutputStream()));//me to GDB
+			streamOut.WriteString(send);
+			send = send + "<- sent";
+		//(*outputScreen)<<send<<"\n";
+		}
+		else
+		{
+			send = send + "<- NOT SENT: PROC DEAD";
+		}
+		updateHistory(send);
+	}
+	else
+	{
+		debugProc = new wxProcess2(this);
+		pid = wxExecute(execThis, wxEXEC_ASYNC, debugProc);
+		command = execThis;
+		updateHistory(command);
+	}
+
 	//initial commands to GDB
-	command = execThis;
-	updateHistory(command);
-	
-	//this is dave's \/ 
-	//pid = wxExecute("plink.exe -pw dayspring danroeber@163.11.160.218 gdb -q", wxEXEC_ASYNC, debugProc);
-
-	//this is me.
-	pid = wxExecute(execThis, wxEXEC_ASYNC, debugProc);
-
 	if (pid == 0)
 	{
 		//Debug started unsuccessfully
@@ -854,8 +871,10 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 {
 	//variables to hold stuff for parsing...
 	wxString tempHold, Filename, Linenumber, goBreakpoint;
+	wxArrayString tmpArrayString;
 	
 	int classStatusBackup = 0;
+	long tmpLong;
 
 	bool skipThrough = true, 
 		 keepParsing = false;
@@ -956,6 +975,12 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 
 			if(keepParsing)
 			{
+				if(classStatus == STOP)
+				{
+					myEvent.SetStatus(ID_DEBUG_EXIT_NORMAL);
+					guiPointer->AddPendingEvent(myEvent);
+				}
+
 				if(reGoCase.Matches(tempHold))
 				{
 					goBreakpoint = reGoCase.GetMatch(tempHold, 1);
@@ -966,6 +991,15 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 						Filename = reCase1.GetMatch(tempHold, 1);
 						Linenumber = reCase1.GetMatch(tempHold, 3);
 						status = DEBUG_BREAK;
+
+						Linenumber.ToULong(&tmpLong);
+						tmpArrayString = myEvent.GetSourceFilenames();
+						tmpArrayString[0] = Filename;
+
+						myEvent.SetLineNumber((int)tmpLong);
+						myEvent.SetSourceFilenames(tmpArrayString);
+						myEvent.SetStatus(ID_DEBUG_BREAKPOINT);
+						guiPointer->AddPendingEvent(myEvent);
 						//(*outputScreen)<<"\nCASE1 Matches: fname="<<Filename<<" #="<<Linenumber<<"\n\n";
 					}
 					else
@@ -977,6 +1011,10 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 				{
 					error.Printf("program stopped for an unknown reason. ClassStatus %d", classStatus);
 					makeGenericError("go parse: ");
+
+					myEvent.SetStatus(ID_DEBUG_EXIT_ERROR);
+					guiPointer->AddPendingEvent(myEvent);
+					stop(false);
 				}
 			}
 			data.Empty();
@@ -1046,11 +1084,26 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 				{
 					Filename = reCase1.GetMatch(tempHold, 1);
 					Linenumber = reCase1.GetMatch(tempHold, 3);
+
+					Linenumber.ToULong(&tmpLong);
+					tmpArrayString = myEvent.GetSourceFilenames();
+					tmpArrayString[0] = Filename;
+
+					myEvent.SetLineNumber((int)tmpLong);
+					myEvent.SetSourceFilenames(tmpArrayString);
+					myEvent.SetStatus(ID_DEBUG_STEPNEXT);
+					guiPointer->AddPendingEvent(myEvent);
 					//(*outputScreen)<<"\nCASE 1: file="<<Filename<<" line="<<Linenumber<<"\n\n";
 				}
 				else if(reCase2.Matches(tempHold))
 				{
 					Linenumber = reCase2.GetMatch(tempHold, 1);
+	
+					Linenumber.ToULong(&tmpLong);
+					
+					myEvent.SetLineNumber((int)tmpLong);
+					myEvent.SetStatus(ID_DEBUG_STEPNEXT);
+					guiPointer->AddPendingEvent(myEvent);
 					//(*outputScreen)<<"\nCASE 2: #="<<Linenumber<<"\n\n";
 				}
 				else
@@ -1058,7 +1111,17 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 					//(*outputScreen)<<"Couldn't parse STEP output\n";
 					error = "Failed to match STEP output";
 					makeGenericError("step parse:");
+
+					myEvent.SetStatus(ID_DEBUG_EXIT_ERROR);
+					guiPointer->AddPendingEvent(myEvent);
+					stop(false);
 				}
+			}
+			else
+			{
+				myEvent.SetStatus(ID_DEBUG_EXIT_ERROR);
+				guiPointer->AddPendingEvent(myEvent);
+				stop(false);
 			}
 
 			data.Empty();
@@ -1076,6 +1139,11 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 			classStatus = STOP;
 			error = "Extreme debug error OR quit-command sent before output finished: received output with ClassStatus=STOP.";
 			makeGenericError("See previous error messages (if any)");
+
+			myEvent.SetStatus(ID_DEBUG_EXIT_ERROR);
+			guiPointer->AddPendingEvent(myEvent);
+			stop(false);
+
 			data.Empty();
 			break;
 
@@ -1084,6 +1152,11 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 			classStatus = STOP;
 			error = "[classStatus] value not recognized";
 			makeGenericError("failure on output parse:");
+
+			myEvent.SetStatus(ID_DEBUG_EXIT_ERROR);
+			guiPointer->AddPendingEvent(myEvent);
+			stop(false);
+
 			data.Empty();
 	}
 }
@@ -1130,7 +1203,7 @@ bool Debugger::checkOutputStream(wxString stream)
 			{
 				status = DEBUG_STOPPED;
 				classStatus = STOP;
-				return(false);
+				return(true);
 			}
 			else
 			{

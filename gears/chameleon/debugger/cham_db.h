@@ -22,6 +22,7 @@
 #include "../common/process2.h"
 #include "../common/process2events.h"
 #include "../common/debugevent.h"
+#include "../network/networking.h"
 
 //dave code
 #include <wx/textctrl.h>
@@ -179,9 +180,11 @@ class Debugger : public wxEvtHandler
 		int varCount;				//holds array position to insert next var
 		
 		wxString firstExecString;	//holds the first executed string
+		Networking *myConnection;	//the networking object for remote
 		wxProcess2 *debugProc;		//holds pointer to process pipe
 		wxInputStream *streamIn;		//GDB to me
 		wxInputStream *streamError;		//problems
+		wxDebugEvent myEvent;		//how i communicate
 
 		//dave code
 		wxTextCtrl* outputScreen;
