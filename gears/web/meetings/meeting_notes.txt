@@ -465,3 +465,52 @@ by: Ben
 	Mark: prof program, terminal code, USER MANUAL
 	Dave: terminal code
 	Ben: Debugger
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Group Meeting 02/08/2004 10:40pm
+by: Ben
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+>>Progress?
+	-Mark: Re-vamped open-file dialogue.  Perm Manager commited.  Minor research into password encrypting.
+	-Note: we don't intend to save passwords, unless customer makes request or other idea.
+	-Dave: Async issues:
+		*multithreading difficulties.
+		*event loops in core of WxWin was not running code when it should have been
+>>Presentation
+	-same presentation as last time... tweak things that are empty / need tweaking.
+	-Chat for Monday: make sure we're set
+	-Talk
+		*3-6 Major Activities or tasks: (1) File dialogue [complete], (2) Networking [ongoing],
+			(3) Debugger [ongoing], (4) Terminal [ongoing], (5) GUI [ongoing], (6) Beta [accomplishment]
+		*Beta: We've showed it, crashed it, gotten bugs... but that means people are USING it!
+		*--which means it CAN be used!!
+		*Follow e-mail for what & when to talk?
+	-Who's Who:
+		>Dave: (3) Networking
+		>Ben: (1) Beta (4) Debug
+		>Mark: (2) Remote File Dialogue
+		>Tag-Team:(5) Terminal (6) Bug Fixin
+	>>>>watch e-mail for outline presentation
+		1-D-overview
+		2-A-status (6 items)
+		3-M-demonstration (demo)
+		4-A-Chameleon: show it off?
+			%text editor
+			%mult. tabs (closing non-active tab!!)
+			%saving (it asks for saving modified files; no save yet!)
+			%networking--open file, walk DIR tree, save file
+			%perm manager (if it works, show.  otherwise, NOOO)
+		5-M-Project Summary (Task list) :: WE have a firm foundation.  Now it's building on it.
+		6-A-Q's
+>>Installer
+	-we're gonna need it at some point...
+	-looked at options.  NSIS: very complicated, but powerful.
+>>Task List Review.
+	-Debugger... ONE WEEK AT LEAST
+	-Terminal Talk... scrolling & stuff
+>>Requirements:
+	-prof. codes by demo time (TUESDAY).
+	-asynch Plink by Monday Nite.
+	-Ben: DEBUG DEBUG DEBUG!!!  Strip all file I/O from perm. prog.
+	-Mark: Saving .ini file to %user_path%
+	-Dave: put up a build monday night
+	**UpDaTe TASK LISTS**
