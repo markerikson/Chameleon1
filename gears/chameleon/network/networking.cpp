@@ -3,18 +3,28 @@
 //
 // ToDo: prevent anything external from being used if status == not good
 //       (if I use my own GetStatus(), it will make sure m_curr$ are always accurate)
+//       Move MaintainSettings into GetStatus.
 //
 //
 ////////////////////////////////////////////////////
-
+#include <wx/regex.h> // for finding the host fingerprint
+#include <wx/file.h>
+#include <wx/process.h>
+#include <wx/txtstrm.h>
 #include "networking.h"
-
+#include "plinkconnect.h"
+#include "../common/datastructures.h"
+#include "../common/Options.h"
 #include "../common/debug.h"
 
 #ifdef _DEBUG
-#define new DEBUG_NEW
+	#define new DEBUG_NEW
 #endif
 
+BEGIN_EVENT_TABLE(Networking, wxEvtHandler)
+	EVT_TIMER(-1, Networking::onTimerTick)
+    EVT_END_PROCESS(-1, Networking::onTerm)
+END_EVENT_TABLE()
 
 
 Networking::Networking(Options* options)
@@ -23,111 +33,230 @@ Networking::Networking(Options* options)
 	m_currHost = m_options->GetHostname();
 	m_currUser = m_options->GetUsername();
 	m_currPass = m_options->GetPassphrase();
-	//status = NET_GOOD;
-	//statusDetails = "SSH Settings Have Not Been Initialized";
-	ssh_plink = new PlinkConnect(m_options->GetPlinkApp(), m_currHost, m_currUser, m_currPass);
-	SSHSendCommand(wxEmptyString);
+	m_plinks = new PlinkConnect(m_options->GetPlinkApp(), m_currHost,
+								m_currUser, m_currPass);
+
+	m_status = NET_STARTING;
+	//GetStatus(); <-- no need to be pre-emptive (here it's best not to be)
 }
 
 
 Networking::~Networking()
 {
-	delete ssh_plink;
+	delete m_plinks;
 }
 
 
-wxString Networking::GetFileContents(wxString file, wxString path)
+bool Networking::GetHomeDirPath(wxString &path)
 {
-	wxString cmd = "cd " + path + " && cat " + file + " ";
-	return SSHSendCommand(cmd);
+	bool success = false;
+
+	if(GetStatus() == NET_GOOD) {
+		// mini-caching:
+		if(m_userHomeDir == wxEmptyString)
+		{
+			if( SSHGetHomeDirPath(path) ) {
+				m_userHomeDir = path;
+				success = true;
+				m_statusDetails = "";
+			}
+		}
+	}
+
+	return success;
 }
 
 
-DirListing Networking::GetDirListing(wxString dirPath, bool forceRefresh, bool includeHidden)
+bool Networking::GetFileContents(wxFileName file, wxString &contents)
 {
-	// internally could also manage dirListing caches to increase speed
-	// dirPath has no trailing "/"
-	return SSHGetDirListing(dirPath, includeHidden);
+	if(GetStatus() == NET_GOOD) {
+		if( SSHGetFileContents(file.GetFullPath(wxPATH_UNIX), contents) ) {
+			m_statusDetails = "";
+			return true;
+		}
+	}
+	//else
+		return false;
 }
 
 
-void Networking::SendFileContents(wxString strng, wxString rfile, wxString rpath)
+bool Networking::SendFileContents(wxString strng, wxFileName file)
 {
-	// Save the file someplace:
-	wxString fname = wxFileName::CreateTempFileName("chm"); // chm?????.tmp
-	if(fname != "") {
-		wxFile f(fname, wxFile::write);
-		if(f.IsOpened()) {
-			bool written = f.Write(strng);
-			f.Close();
-			if(written) {
-				// YEAH!, now I can send the file
-				SCPDoTransfer(fname, rpath+"/"+rfile); // also sets Status
+	bool success = false;
 
-				// Remove the temp file
-				wxRemoveFile(fname);
+	if(GetStatus() == NET_GOOD) {
+		// Save the file someplace:
+		wxString fname = wxFileName::CreateTempFileName("chm"); // chm?????.tmp
+		if(fname != "") {
+			wxFile f(fname, wxFile::write);
+			if(f.IsOpened()) {
+				bool written = f.Write(strng);
+				f.Close();
+				if(written) {
+					// YEAH!, now I can send the file
+					if( SCPDoTransfer(fname, file.GetFullPath(wxPATH_UNIX)) ) {
+						success = true;
+						m_statusDetails = "";
+					}
+
+					// Remove the temp file:
+					wxRemoveFile(fname);
+				}
+				else {
+					//success = false;
+					m_statusDetails = "Could not write to the temp file " + fname;
+				}
 			}
 			else {
-				status = NET_WRITE_ERROR;
-				statusDetails = "Could not write to the temp file " + fname;
+				//success = false;
+				m_statusDetails = "Could not open the temp file " + fname;
 			}
 		}
 		else {
-			status = NET_WRITE_ERROR;
-			statusDetails = "Could not open the temp file " + fname;
+			//success = false;
+			m_statusDetails = "Could not create a temp file";
 		}
 	}
-	else {
-		status = NET_WRITE_ERROR;
-		statusDetails = "Could not create a temp file";
-	}
 
-	return;
+	return success;
 }
 
 
-wxString Networking::GetHomeDirPath()
+bool Networking::GetDirListing(wxString dirPath, DirListing &listing, bool forceRefresh,
+							   bool includeHidden)
 {
-	if(userHomeDir == wxEmptyString)
-	{
-		// Does not return a trailing /
-		wxString cmd = "cd ~ && pwd ";
-		userHomeDir = SSHSendCommand(cmd);
-		userHomeDir.Remove(userHomeDir.Length()-1,1); // remove the "\n"
+	if(GetStatus() == NET_GOOD) {
+		// internally manage dirListing caches to increase speed
+		//if(in cache) {
+		//	blah
+		//}
+		//else
+		if( SSHGetDirListing(dirPath, listing, includeHidden) ) {
+			m_statusDetails = "";
+			return true;
+		}
 	}
-	
-	return userHomeDir;
+	//else
+		return false;
 }
 
 
 //Private:
-DirListing Networking::SSHGetDirListing(wxString dirPath, bool includeHidden)
-{
-	DirListing r;
+bool Networking::SSHGetHomeDirPath(wxString &path) {
+	wxString cmd = "cd ~ && pwd && echo Get-tingH_O_M_E_DIR";
+	
+	wxString output;
 
-	// Files:
-	wxString files = "";
-	wxString dirs = SSHSendCommand("cd " + dirPath
-								+ " && find -maxdepth 1 -type f "
-								+ " && echo N_E_TwOrKiNg-DiRs"
-								+ " && find -maxdepth 1 -type d");
-	if(status == NET_GOOD) {
-		while(dirs.Left(18) != "N_E_TwOrKiNg-DiRs\n") {
-			files += dirs.Left(1); // peek
-			dirs.Remove(0,1); // pop
-		}
-		dirs.Remove(0,18);
-
-		r.fileNames = ParseLS(files, includeHidden);
-		if(dirs.Left(2) == ".\n") {
-			//Special Case for "." directory
-			dirs.Remove(0,2);
-		}
-		r.dirNames = ParseLS(dirs, includeHidden);
+	if( SSHExecSyncCommand(cmd, output) ) {
+		output.Remove(output.Length()-1); // remove pwd's EOL
+		path = output;
+		m_statusDetails = "";
+		return true;
 	}
-	//else there was an error
+	//else
+		m_statusDetails = output;
+		path = "~";
+		return false;
+}
 
-	return r;
+
+//Private:
+bool Networking::SSHGetFileContents(wxString file, wxString &contents)
+{
+	wxString cmd = "cat " + file + " && echo Fi_Le_Li_St-YEAH";
+	wxString output;
+
+	if( SSHExecSyncCommand(cmd, output) ) {
+
+		output.Remove(output.Length()-1); // remove cat's EOL
+		contents = output;
+		m_statusDetails = "";
+		return true;
+	}
+	//else
+		m_statusDetails = output;
+		contents = "";
+		return false;
+
+}
+
+
+// Re-write this to use: "output = ExecuteLocalCommand(cmd);"
+//Private:
+bool Networking::SCPDoTransfer(wxString from_path_name, wxString to_path_name)
+{
+	// right now this only does local -> remote transfers
+	wxString cmd = m_options->GetPscpApp() // + " -l " + ssh_user 
+					+ " -pw " + m_currPass + " -batch "
+					+ from_path_name + " " 
+					+ m_currUser + "@" + m_currHost + ":" + to_path_name
+					+ " && echo Chameleon-Transfer-Success";
+	wxProcess* proc = new wxProcess();
+	proc->Redirect();
+	int pid = wxExecute(cmd, wxEXEC_SYNC, proc);
+
+	// Determine success:
+	bool success = false;
+
+	if (pid == -1) { // Bad Exit -- Could not start process
+		m_statusDetails = "Could not start the file transfer process.";
+		//success = false;
+	}
+	else { // Not bad Exit(hopefully good):
+		// Grab the outputs:
+		wxString output = "";
+		wxString errlog = "";
+		wxInputStream* rin = proc->GetInputStream();
+		wxInputStream* rerr = proc->GetErrorStream();
+		while(!rin->Eof()) {
+			output += rin->GetC();
+		}
+		while(!rerr->Eof()) {
+			errlog += rerr->GetC();
+		}
+
+		// Determine the success:
+		if(output.Contains("Chameleon-Transfer-Success")) {
+			success = true;
+			m_statusDetails = "";
+		}
+		else {
+			m_statusDetails = output + errlog;
+		}
+	}
+	delete proc;
+
+	return success;
+}
+
+
+// It would be nice to use: "ls --color=never -Q --format=vertical -1 -A", but I can't
+//    tell from this what is a dir, and what is a file.  I could later use that with "-l"
+//    and parse for the "d"
+//Private:
+bool Networking::SSHGetDirListing(wxString dirPath, DirListing &listing,
+									bool includeHidden)
+{
+	wxString cmd = "cd " + dirPath
+					+ " && find -maxdepth 1 -type f "
+					+ " && echo N_E_TwOrKiNg-DiRs"
+					+ " && find -maxdepth 1 -type d";
+	wxString output;
+	
+	if( SSHExecSyncCommand(cmd, output) ) {
+
+		int tokenPos = output.Find("N_E_TwOrKiNg-DiRs\n");
+		wxString files = output.Left(tokenPos+1);
+		wxString dirs = output.Right(tokenPos+18);
+
+		listing.fileNames = ParseFindOutput(files, includeHidden);
+		listing.dirNames = ParseFindOutput(dirs, includeHidden);
+
+		return true;
+	}
+	//else
+		m_statusDetails = output;
+		return false;
 }
 
 
@@ -135,7 +264,7 @@ DirListing Networking::SSHGetDirListing(wxString dirPath, bool includeHidden)
 //   in the integrity of the string I'm parsing, because I know
 //   what's coming in.
 // Private:
-wxArrayString Networking::ParseLS(wxString strng, bool includeHidden)
+wxArrayString Networking::ParseFindOutput(wxString strng, bool includeHidden)
 {
 	wxArrayString r;
 	r.Empty();
@@ -178,105 +307,24 @@ wxArrayString Networking::ParseLS(wxString strng, bool includeHidden)
 
 
 //Private:
-wxString Networking::SSHSendCommand(wxString command)
-{
-	MaintainSettings();
+bool Networking::SSHExecSyncCommand(wxString command, wxString &output) {
+	command += " && Su_CC_ess-CMD";
 
-	if(command == "") {
-		// because I'm using boolean logic to determine the success of the command
-		//  I need to have at least have true
-		command = "true";
+	output = m_plinks->executeSyncCommand(command);
+
+	int tokenPos = output.Find("Su_CC_ess-CMD");
+	if(tokenPos != -1) {
+		output.Remove(tokenPos);
+		return true;
 	}
-
-	command += " && echo \"C_O_M_P_L_E_T_E_D_OK\"";
-
-	ssh_plink->sendCommand(command);
-	wxString output = ssh_plink->getOutput();
-
-	// Confirm that all went according to plan
-	if(output.Right(21) == "C_O_M_P_L_E_T_E_D_OK\n") {
-		status = NET_GOOD;
-		output.Truncate(output.Length()-21); // remove C_O_M_P_L_E_T_E_D_OK\n
-	}
-	else {
-		DetermineStatusError(ssh_plink->getErrors(), ssh_plink->getOutput());
-	}
-
-	return output;
+	// else
+		return false;	
 }
 
 
-// Before Entering this code, the errlog and output should be accurate
-void Networking::DetermineStatusError(wxString errlog, wxString output)
-{
-	while(errlog.Right(1) == "\n") {
-		errlog.RemoveLast();
-	}
-
-	// Default:
-	status = NET_ERROR_MESSAGE;
-	statusDetails = errlog;
-
-	if(errlog.Contains("key is not cached") && errlog.Contains("Connection abandoned.") ) {
-		status = NET_UNKNOWN_HOST;	// and StatusDetail will be the key
-
-		// Screen-scrape for the key:
-		// these lines doesn't work properly... returns 0xffffff + 1 + 16, result is 0x00000010
-		//int len = 1+ statusDetails.Index("fingerprint is:\n")+16;
-		//statusDetails.Remove(0,len);
-		/*	MPE:
-			This regular expression looks for the following:
-			one or more digits (0-9) followed by one more more whitespace characters
-			followed by one or more pairs of two hex digits and a colon, followed by two final hex digits
-				
-			Since I know this is a valid regex, I'm leaving out the .IsValid() check that would otherwise
-			be a good idea
-		*/
-		wxRegEx reFingerprint = "[[:digit:]]+[[:blank:]]+([[:xdigit:]]{2}:)+[[:xdigit:]]{2}";
-
-		if(reFingerprint.Matches(errlog))
-		{
-			wxString match = reFingerprint.GetMatch(errlog);
-			wxLogDebug("Matched fingerprint: \"%s\"", match);
-			statusDetails = match;
-		}
-		else
-		{
-			wxLogDebug("Failed to match the fingerprint in: %s", errlog);
-			statusDetails = "*unknown* - could not parse fingerprint";
-		}
-
-	}
-	else if(errlog.Contains("Unable to authenticate")) {
-		status = NET_AUTH_FAILED;
-		statusDetails.RemoveLast(); // "\n"
-	}
-	else if(errlog.Contains("Permission denied")) {
-		status = NET_WRITE_ERROR;
-		while(errlog.Right(1) == "\n") {
-			errlog.RemoveLast(); // Remove any trailing new-lines for aesthetic purposes
-		}
-		statusDetails = "Could not write to destination file or directory. (Check permissions)";
-	}
-	else if(errlog.Contains("Connection refused")) {
-		status = NET_CONN_REFUSED;
-		while(errlog.Right(1) == "\n") {
-			errlog.RemoveLast(); // Remove any trailing new-lines for aesthetic purposes
-		}
-		statusDetails = errlog;
-	}
-	else if(false) {
-		status = NET_READ_ERROR;
-		statusDetails = "Read Error";
-	}
-	//else -- defaults
-
-	
-	return;
-}
-
-
-//returns true if any settings have changed.  I need to do this polling because Options is passive.
+// Not meant to update my status -- just my settings (if necessary)
+// This returns true if any settings have changed.  I need to do this polling because
+//   Options is passive.
 //Private:
 bool Networking::MaintainSettings() {
 	wxString newH = m_options->GetHostname();
@@ -290,13 +338,8 @@ bool Networking::MaintainSettings() {
 		m_currUser = newU;
 		m_currPass = newP;
 
-		// Update all the PlinkProcess's
-		//walk the list of pointers
-
 		//Update PlinkConnect
-		ssh_plink->setHostname(newH);
-		ssh_plink->setUsername(newU);
-		ssh_plink->setPassphrase(newP);
+		m_plinks->setLogin(newH, newU, newP);
 
 		return true;
 	}
@@ -306,145 +349,72 @@ bool Networking::MaintainSettings() {
 }
 
 
-// I recommend OptionsDialog call this after a change
+// I might recommend OptionsDialog call this after a change
 NetworkStatus Networking::GetStatus()
 {
 	if(MaintainSettings()) {
 		// Update the status
-		SSHSendCommand("");
+		if(m_plinks->getIsConnected()) {
+			m_status = NET_GOOD;
+		}
+		else {
+			m_status = NET_ERROR_MESSAGE; //default
+
+			wxString message = m_plinks->getMessage();
+			if(message.Contains("")) {
+				// host finger print not in cache
+				m_status = NET_UNKNOWN_HOST;
+				m_statusDetails = "";
+			}
+			else if(message.Contains("")) {
+				// host wouldn't allow a connection
+				m_status = NET_CONN_REFUSED;
+			}
+			else if(message.Contains("")) {
+				// user+pass did not work on host
+				m_status = NET_AUTH_FAILED;
+			}
+		}
 	}
 
-	return status;
+	return m_status;
 }
 
 
 wxString Networking::GetStatusDetails()
 {
-	return statusDetails;
+	return m_statusDetails;
 }
 
 
+// I am assuming!!! that the connection should work, and I'm just doing this to
+//  accept the cache.
+//Public:
 void Networking::SSHCacheFingerprint()
 {
-	ssh_plink->acceptCacheFingerprint();
-	// Set the status:
-	SSHSendCommand("");
-}
-
-
-void Networking::SCPDoTransfer(wxString from_path_name, wxString to_path_name)
-{
-	// right now this only does local -> remote transfers
-	wxString cmd = m_options->GetPscpApp() // + " -l " + ssh_user 
-					+ " -pw " + m_currPass + " -batch "
-					+ from_path_name + " " 
-					+ m_currUser + "@" + m_currHost + ":" + to_path_name;
-	wxProcess* proc = new wxProcess();
+	//Start the program asynchonously, answer "y" to caching, then Kill it:
+	wxString cmd = m_options->GetPlinkApp() + " " + m_currHost;
+	wxProcess* proc = new wxProcess(NULL);
 	proc->Redirect();
-	int pid = wxExecute(cmd, wxEXEC_SYNC, proc);
-
-	if (pid == -1) {
-		// Bad Exit
-		// Could not start process
-		status = NET_ERROR_MESSAGE;
-		statusDetails = "Could not start the file transfer process.";
-		delete proc;
-	}
-	else { // Not bad Exit(hopefully good):
-		// Grab the outputs:
-		wxString output = "";
-		wxString errlog = "";
-		wxInputStream* rin = proc->GetInputStream();
-		wxInputStream* rerr = proc->GetErrorStream();
-		while(!rin->Eof()) {
-			output += rin->GetC();
-		}
-		while(!rerr->Eof()) {
-			errlog += rerr->GetC();
-		}
-		delete proc;
-		//delete rin; // don't delete these
-		//delete rerr;
-
-		// Determine the success:
-		if(output.Contains("100%")) {
-			status = NET_GOOD;
-			statusDetails = "";
-		}
-		else {
-			DetermineStatusError(errlog, output);
-		}
-	}
-
-	return;
-}
-
-
-wxProcess2* Networking::GetPlinkProcess(wxEvtHandler* owner)
-{
-	// I should call GetStatus();
-
-	// Start the new Process
-	wxString cmd = m_options->GetPlinkApp();
-	if(m_currPass != "") { // Why am I checking for an empty pass?
-		cmd += " -pw " + m_currPass;
-	}
-	if(m_currUser != "") { // Why am I checking for an empty user?
-		cmd += " " + m_currUser + "@" + m_currHost;
-	}
-	else
-	{
-		cmd += " " + m_currHost;
-	}
-	
-	wxProcess2* proc = new wxProcess2(owner);
 	long pid = wxExecute(cmd, wxEXEC_ASYNC, proc);
+	wxTextOutputStream pout(*proc->GetOutputStream(), wxEOL_UNIX);
+	pout << "y\n";
 
-	if(pid == 0) {
-		//Command could not be executed
-		wxLogDebug("Could not start a Plink process -- Command could not be executed.");
-		delete proc; //proc = NULL;
-	}
-	else if (pid == -1) {
-		// BAD ERROR!  User ought to upgrade their operating system
-		// User has DDE running under windows (OLE deprecated this)
-		wxLogDebug("Could not start a Plink process(DDE).");
-		delete proc; // proc = NULL;
-	}
-	else { // Process is Live
-		proc->SetPID(pid); // Temporary Solution?
-		//wxLogDebug("Started a Plink process successfully.");
-	}
+	// Sending wxSIGTERM to the process is all that's needed to close it out gracefully.
+	// It also takes care of deleting the process, so we don't have to do that manually.
+	wxKill(pid, wxSIGTERM);
 
-	// Add this process to an internal list?
-
-	return proc;
 }
 
-wxProcess2* Networking::GetLocalProcess(wxEvtHandler* owner) {
-	// ::wxGetOsVersion()
-	wxString cmd = "cmd.exe"; // "command"
 
-	wxProcess2* proc = new wxProcess2(owner);
-	long pid = wxExecute(cmd, wxEXEC_ASYNC, proc);
-
-	if(pid == 0) {
-		//Command could not be executed
-		wxLogDebug("Could not start a local process.");
-		delete proc; //proc = NULL;
-	}
-	else if (pid == -1) {
-		// BAD ERROR!  User ought to upgrade their operating system
-		// User has DDE running under windows (OLE deprecated this)
-		wxLogDebug("Could not start a local process(DDE).");
-		delete proc; // proc = NULL;
-	}
-	else { // Process is Live
-		proc->SetPID(pid); // Temporary Solution?
-		wxLogDebug("Started a local process successfully.");
-	}
-
-	// Add this process to an internal list?
-
-	return proc;
+//Private:
+void Networking::onTerm(wxProcessEvent &e) {
+	//
 }
+
+
+//Private:
+void Networking::onTimerTick(wxTimerEvent &e) {
+	//
+}
+

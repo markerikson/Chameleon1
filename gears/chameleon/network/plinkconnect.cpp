@@ -1,219 +1,396 @@
 //////////////////////////////////////////
 //
-// Notes: This code has Plink.exe used SYNCHRONOUSLY which means
-//         that when a command is sent, the main thread waits for it
-//         to end before continuing.  This is (sort of) alright
-//         because Plink is now run in 'batch' mode, which means it
-//         runs whatever command is pass on the commandline, then
-//         it terminates.
+// Notes: I will always have a process going if I can.  So, if I'm PC_NOGO it's
+//            because user/host/pass/physical can't connect
+//        There is always an available process -- the last in the list.  If I
+//            start to use one, I open another one.
+//        I designate methods as "ASYNCHRONOUS" if they don't have a wait-loop
+//        If I assume that having had at least one connection determines a new
+//            one will be ok, this might become asynchornous?
 //
-// ToDo: In ScrubLogs
+// Todo: Determine return status of run programs
+//       Change struct ProcessInfo into a class (use good defaults & a destructor)
+//       Use "Kill(pid, wxSIGTERM);" in terminateConnection -- ^C ain't good 'nuff
 //
 ////////////////////////////////////////
-
-#include <wx/utils.h>
 #include <wx/txtstrm.h>
+#include <wx/process.h>
+#include <wx/listimpl.cpp> // CAREFUL!
 #include "plinkconnect.h"
+#include "../common/processevents.h"
+#include "../common/datastructures.h"
 #include "../common/debug.h"
 
 #ifdef _DEBUG
-#define new DEBUG_NEW
+	#define new DEBUG_NEW
 #endif
 
 
-PlinkConnect::PlinkConnect(wxString plinkApplication, wxString hostname,
-				wxString username, wxString passphrase) {
-	// Set default values:
-	plinkApp = plinkApplication;
-	host = hostname;
-	user = username;
-	pass = passphrase;
-	output = "";
-	errlog = "";
-	message = "";
-	pid = -2;
-	proc = NULL;
-	rin = NULL;
-	rerr = NULL;
+#ifdef _PC_INTERNAL_TIMER_ //#ifdef's not allowed inside Event Table
+BEGIN_EVENT_TABLE(PlinkConnect, wxEvtHandler)
+	EVT_TIMER(-1, PlinkConnect::OnTimerEvent)
+    EVT_END_PROCESS(-1, PlinkConnect::onTerminate)
+END_EVENT_TABLE()
+#else
+BEGIN_EVENT_TABLE(PlinkConnect, wxEvtHandler)
+    EVT_END_PROCESS(-1, PlinkConnect::onTerminate)
+END_EVENT_TABLE()
+#endif
 
-}
+// List & HashMap Types:
+WX_DEFINE_LIST(ProcessInfoList);
 
-PlinkConnect::~PlinkConnect() {
-	// There's nothing to do.
-	//proc is almost always NULL
-}
 
-//Public:
-wxString PlinkConnect::getOutput() {
-	// Output 'log' is cleared before each sendCommand()
-	return output;
-}
+// ASYNCHRONOUS
+PlinkConnect::PlinkConnect(wxString plinkApp, wxString host, wxString user, wxString pass)
+{
+	m_plinkApp = plinkApp; // essentially this is assumed accurate, and can't change
+	m_isConnected = false;
 
-//Public:
-wxString PlinkConnect::getErrors() {
-	// Error Log is cleared before each sendCommand()
-	return errlog;
-}
-
-//Public:
-wxString PlinkConnect::getMessage() {
-	return message;
-}
-
-//Public:
-void PlinkConnect::setPlinkApp(wxString path_name) {
-	plinkApp = path_name;
-}
-
-//Public:
-void PlinkConnect::setHostname(wxString hostname) {
-	host = hostname;
-}
-
-//Public:
-void PlinkConnect::setUsername(wxString username) {
-	user = username;
-}
-
-//Public:
-void PlinkConnect::setPassphrase(wxString passphrase) {
-	if(passphrase.Contains("\"")) {
-		// this user's passphrase just isn't going to work
+#ifdef _PC_INTERNAL_TIMER_
+	m_timer.SetOwner(this);
+	bool timerSuccess =	m_timer.Start(POLL_RATE);
+	if(!timerSuccess) {
+		wxLogDebug("PlinkConnect could not get a timer.\n");
 	}
-	passphrase = "\"" + passphrase + "\"";
-	pass = passphrase;
+#endif
+
+	m_host = host;
+	m_user = user;
+	m_pass = pass;
+
+	spawnConnection(); // jumpstart the 1-always-open-connection
+					   //   this will also establish my status
 }
 
 
-//Public:
-void PlinkConnect::sendCommand(wxString command) {
-	// the choice to run in non-batch mode is not for the weak of heart
-	//   it can easily cause the process to never terminate
-	sendCommand(command, true);
+// SYNCHRONOUS
+PlinkConnect::~PlinkConnect()
+{
+	terminateAllConnections();
+
+	while(m_processes.GetCount() != 0) {
+		// wait for the processes to remove themselves
+		wxSafeYield();
+	}
 }
 
-// This function starts a wxProcess to asynchornously execute the command.
-// A connection is made, the command is run, then the connection is ended.
+
+// Anything that is "" will be ignored
+// This also acts as a way to restart/reset the connection/s
+// ASYNCHRONOUS
+void PlinkConnect::setLogin(wxString host, wxString user, wxString pass)
+{
+	// Set appropriate values:
+	if(host != "") {
+		m_host = host;
+	}
+	if(user != "") {
+		m_user = user;
+	}
+	if(pass != "") {
+		#ifdef _DEBUG
+			if(pass.Contains("\"")) {
+				// this user's passphrase just isn't going to work
+				wxLogDebug("Passwords with \" will not work! -- Unstable state entered.");
+			}
+		#endif
+		m_pass = "\"" + pass + "\"";
+	}
+
+	// No if-changed test - otherwise, why was this method called
+
+	// Reset:
+	terminateAllConnections();
+
+	// Start:
+	spawnConnection(); // try to start the 1-always-open-connection
+}
+
+
+// This will create a process and add it to the hash of processes, and append
+//    it's pid to the tail of the PID list
+// ASYNCHRONOUS
 //Private:
-void PlinkConnect::sendCommand(wxString command, bool isBatch) {
-	output = ""; // clear the ouput log
-	errlog = ""; // clear the error log
-	lastcmd = command;
-
-	proc = new wxProcess(NULL);
+void PlinkConnect::spawnConnection()
+{
+	wxProcess* proc = new wxProcess(this);
 	proc->Redirect();
 
-	wxString batch = " -batch ";
-	if(!isBatch) { batch = ""; }
-	
-	wxString cmd = plinkApp
-		+ batch
-		+ " -pw " + pass + " "
-		//+ " -l " + user
-		//+ " " + host + " "
-		+ user + "@" + host
-		+ " \"echo cHaMeLeOnCoNnEcTeD ; " //wrapper
-		+ " " + command // <--- command
-		+ " ; echo cHaMeLeOnDoNe\""; // wrapper
+	wxString cmd = m_plinkApp
+		+ " -pw " + m_pass + " "
+		+ m_user + "@" + m_host;
 
-	pid = wxExecute(cmd, wxEXEC_SYNC, proc);
-
-	if (pid == -1) {
-		// Bad Exit
-		message = "Could not start process.";
-		delete proc;
-	}
-	else {
-		// Not bad Exit
-		rin = proc->GetInputStream();
-		rerr = proc->GetErrorStream();
-
-		// Grab the outputs
-		while(!rin->Eof()) {
-			output += rin->GetC();
-		}
-		while(!rerr->Eof()) {
-			errlog += rerr->GetC();
-		}
-
-		scrubLogs();
-
-		// Set exit status:
-		// ???
-
-		delete proc;
-		rin = NULL;
-		rerr = NULL;
-	}
-
-	return;
-}
-
-
-
-
-//Private:
-void PlinkConnect::scrubLogs() {
-	// Clean the output and determine the success of the command:
-
-	if(errlog.Contains("key is not cached")) {
-		message = "The server's host key is not cached in the registry.";
-	}
-	else if(errlog.Contains("FATAL ERROR")) {
-		// ie. "FATAL ERROR: Network error: Connection refused"
-		// ie. "FATAL ERROR: Unable to authenticate"
-		message = errlog;
-	}
-	if(output.Contains("cHaMeLeOnCoNnEcTeD\n") ) {
-		// Yeah!  It succeeded
-		//message = "success"; // would overwrite fingerpring caching message
-		int start = output.Find("cHaMeLeOnCoNnEcTeD\n") + 19;
-		int len = output.Find("cHaMeLeOnDoNe\n") - start;
-		output = output.Mid(start, len);
-	}
-
-	return;
-}
-
-
-// I am assuming!!! that the connection should work, and I'm just doing this to
-//  accept the cache.
-//Public:
-void PlinkConnect::acceptCacheFingerprint() {
-	//start the program asynchonously
-
-	// MPE: For some rason, running with this command line doesn't seem to 
-	//		get Plink to properly save the key.  The simple command line does.
-	// DJC: I think because I had "-batch".
-	//      I want to actually do an actual connection sending the command exit
-	//        so that I can also set the StatusFlags from the results
-	
-	//wxString cmd = plinkApp + " -batch -pw password nobody@" + host + " exit";
-
-	// This simple command line does work right
-	wxString cmd = plinkApp + " " + host;
-
-
-	proc = new wxProcess(NULL);
-	proc->Redirect();
 	long pid = wxExecute(cmd, wxEXEC_ASYNC, proc);
 
-	sendToStream("y\n");
+	if(pid == 0) {
+		//Command could not be executed
+		wxLogDebug("Could not start a Plink process -- Command could not be executed.");
+		m_message = "Could not start a Plink process -- Command could not be executed.";
+		m_isConnected = false;
+		//delete proc not needed because ASYNC
+	}
+	else if (pid == -1) {
+		// BAD ERROR!  User ought to upgrade their operating system
+		// User has DDE running under windows (OLE deprecated this)
+		wxLogDebug("Could not start a Plink process -- DDE in use.");
+		m_message = "Could not start a Plink process -- DDE in use.";
+		m_isConnected = false;
+		//delete proc not needed because ASYNC
+	}
+	else { // Process is Live
+		wxLogDebug("Starting a Plink process...");
+		ProcessInfo* p = new ProcessInfo;
+		p->pid = pid;
+		p->proc = proc;
+		p->state = PC_STARTING;
+		p->stdinStream = new wxTextOutputStream(*proc->GetOutputStream(), wxEOL_UNIX);
+		p->outputBuf = "";
+		p->owner = NULL; // set when process gets used
+		m_processes.Append(p);
+	}
 
-	// Sending wxSIGTERM to the process is all that's needed to close it out gracefully.
-	// It also takes care of deleting the process, so we don't have to do that manually.
-	proc->Kill(pid, wxSIGTERM);
+	return;
 }
+
+
+// SYNCHRONOUS
+bool PlinkConnect::getIsConnected()
+{
+	while(m_processes.GetFirst() != NULL && m_processes.GetFirst()->GetData()->state == PC_STARTING) {
+		// If the first connection is in the starting
+		//   state, wait till "the dust settles"
+		wxSafeYield();
+	}
+
+	return m_isConnected;
+}
+
+
+// This method should only be called if IsConnected().
+// ASYNCHRONOUS (relatively)
+wxTextOutputStream* PlinkConnect::executeCommand(wxString command, wxEvtHandler* listener)
+{
+
+	if(!getIsConnected()) { // <-- synchronous
+		// Prevent a stupid-user error
+		return NULL;
+	}
+
+	// Set the owner who will listen for Events
+	ProcessInfo* p = (ProcessInfo*)m_processes.Last()->GetData();
+	p->owner = listener;
+
+	// Wrap the command:
+	wxString cmd = "echo St_Ar_Tt_oK_eN ; " + command + " ; echo En_Dt_oK_eN\r";
+	//wxString cmd = "echo St_Ar_Tt_oK_eN ; " + command + " && echo Ch_Ls_Uc_Es_S ; echo En_Dt_oK_eN\r";
+	
+	// Send it:
+	*(p->stdinStream) << cmd;
+	p->state = PC_EXECUTING;
+
+	spawnConnection(); // pre-spawn the next connection
+
+	return 	p->stdinStream;
+
+}
+
+
+// SYNCHRONOUS
+wxString PlinkConnect::executeSyncCommand(wxString command)
+{
+	executeCommand(command, NULL);
+
+	ProcessInfo* p = (ProcessInfo*)m_processes.Last()->GetData();
+	while(p->state == PC_BUSY || p->state == PC_EXECUTING) {
+		// Perhaps this should terminate after an amount of time
+		wxSafeYield();
+	}
+
+	return "";
+}
+
+
+// Errlog default is ""
+// Errlog it is useless except for during PC_STARTING
+//Private:
+void PlinkConnect::parseOutput(ProcessInfo* p, wxString output, wxString errLog)
+{
+//	wxLogDebug("Plink stdout: \"" + output + "\"");
+//	wxLogDebug("Plink stderr: \"" + errLog + "\"");
+
+	p->outputBuf += output;
+
+	if(p->state == PC_STARTING) {
+		if(p->outputBuf.Contains("Last login:")) {
+			// Yeah!  It succeeded
+			p->outputBuf = "";
+			m_isConnected = true;
+
+			// State transition:
+			p->state = PC_READY;
+		}
+		else if(errLog.Contains("Store key in cache? (y/n)")) {
+			// "Store key in cache? (y/n)"
+			m_message += errLog;
+			terminateConnection(p);
+		}
+		else {
+			// "FATAL ERROR: Network error: Connection refused"
+			// "FATAL ERROR: Unable to authenticate"
+			m_message += errLog;
+			// this state transition should occur when the process terminates
+		}
+		
+	}
+
+	if(p->state == PC_READY) {
+		// nothing to do
+		wxLogDebug("PlinkConnect: extranious output: \"" + p->outputBuf + "\"");
+	}
+
+	if(p->state == PC_EXECUTING) {
+		if(p->outputBuf.Contains("St_Ar_Tt_oK_eN\r")) {
+			// Scrub the output (remove start-token and prior)
+			int end = p->outputBuf.Find("St_Ar_Tt_oK_eN\r")+16;
+			p->outputBuf.Remove(0,end);
+			p->state = PC_BUSY;
+		}
+	}
+
+	if(p->state == PC_BUSY) {
+		if(p->outputBuf.Contains("En_Dt_oK_eN")) {
+			// Scrub the output (remove end-token and beyond)
+			int start = p->outputBuf.Find("En_Dt_oK_eN");
+			p->outputBuf.Remove(start);
+			p->state = PC_ENDING;
+		}
+
+		//Throw Appropriate Events:
+		if(p->outputBuf != "") {
+			if(p->owner != NULL) { // (if not being run in SYNCH)
+				ProcessStdOutEvent e(p->outputBuf);
+				p->owner->AddPendingEvent(e);
+				// Clear the buffer:
+				p->outputBuf = "";
+			}
+		}
+		if(p->state == PC_ENDING) { // ie. just finished
+			if(p->owner != NULL) {
+				ProcessEndedEvent e(0); // <-- this is incomplete
+				p->owner->AddPendingEvent(e);
+			}
+
+			// proc not being used any more, so terminate it
+			terminateConnection(p);
+		}
+	}
+
+	if(p->state == PC_ENDING) {
+		// nothing to do
+		wxLogDebug("PlinkConnect: extranious output: \"" + p->outputBuf + "\"");
+	}
+
+	return;
+}
+
+
+// ASYNCHRONOUS (?)
+//Private:
+void PlinkConnect::terminateConnection(ProcessInfo* p)
+{
+	if(p->state == PC_BUSY || p->state == PC_EXECUTING) {
+		//send break signal:
+		*(p->stdinStream) << (char)3; // SIGINT
+
+		// Wait for it the process to cancel
+		while(p->state == PC_BUSY || p->state == PC_EXECUTING) {
+			// Perhaps this should terminate after an amount of time
+			wxSafeYield();
+		}
+	}
+
+	//send exit:
+	p->state = PC_ENDING;
+	*(p->stdinStream) <<  "exit" << endl;
+	// do all the termination clean-up in onTerminate()
+}
+
+	
+// ASYNCHRONOUS (?)
+//Private:
+void PlinkConnect::terminateAllConnections()
+{
+	m_isConnected = false;
+
+	// Walk thru list m_procPID's
+	for(ProcessInfoList::Node *node = m_processes.GetFirst(); node; node = node->GetNext() ) {
+		ProcessInfo *p = node->GetData();
+		terminateConnection(p);
+	}
+}
+
+
+void PlinkConnect::PollTick() {
+	// Check on all of the processes:
+	for(ProcessInfoList::Node *node = m_processes.GetFirst(); node; node = node->GetNext() ) {
+		ProcessInfo *p = node->GetData();
+
+		wxProcess* proc = p->proc;
+		wxString errout = "";
+		wxString output = "";
+
+		wxInputStream* pStdOut = proc->GetInputStream();
+		while(proc->IsInputAvailable()) {
+			output += pStdOut->GetC();
+		}
+
+		if(p->state == PC_STARTING) {
+			// Also check STDERR if I'm in the starting phase
+			wxInputStream* pStdErr = proc->GetErrorStream();
+			while(proc->IsErrorAvailable()) {
+				errout += pStdErr->GetC();
+			}
+		}
+
+		if(output != "" || errout != "") {
+			parseOutput(p, output, errout);
+		}
+	}
+
+}
+
 
 //Private:
-void PlinkConnect::sendToStream(wxString strng) {
-	// Probably should check for a connection first
+void PlinkConnect::onTerminate(wxProcessEvent& event) {
 
-	//open
-	wxTextOutputStream os(* (proc->GetOutputStream()) );
-	//send
-	os.WriteString(strng);
-	//close
-	proc->CloseOutput();
+	PollTick(); // Catch any last Outputs
+
+	// Determine which process:
+	long pid = event.GetPid();
+	ProcessInfo* p;
+	for(ProcessInfoList::Node* node = m_processes.GetFirst(); node; node = node->GetNext() ) {
+		p = node->GetData();
+		if(p->pid == pid) {
+			break;
+		}
+	}
+
+	//Remove and Delete the process:
+	delete p->proc;
+	delete p->stdinStream;
+	m_processes.DeleteObject(p);
+
+	if(m_processes.GetCount() == 0) {
+		m_isConnected = false;
+		wxLogDebug("All Plink Processes Terminated");
+	}
+
 }
 
+
+#ifdef _PC_INTERNAL_TIMER_
+void PlinkConnect::OnTimerEvent(wxTimerEvent &event) {
+	PollTick();
+}
+#endif
