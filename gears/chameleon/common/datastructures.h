@@ -216,6 +216,7 @@ typedef struct
 {
 	wxString type;
 	wxString name;
+	wxString functionName;
 	wxString value;
 	wxString regexKey;
 } VariableInfo;
