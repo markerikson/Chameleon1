@@ -93,6 +93,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 	permBitmask |= 1 << PERM_AUTOINDENT;
 	permBitmask |= 1 << PERM_REMOTELOCAL;
+	//permBitmask |= 1 << PERM_TERMINAL;
 
 	m_perms->setGlobal(permBitmask);
 
@@ -104,6 +105,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	
 	m_perms->enable(PERM_AUTOINDENT);
 	m_perms->enable(PERM_REMOTELOCAL);
+	//m_perms->enable(PERM_TERMINAL);
 
 	long time2 = stopwatch.Time();
 	stopwatch.Start();
@@ -308,6 +310,7 @@ void ChameleonWindow::OnFileNew (wxCommandEvent &WXUNUSED(event))
 	ChameleonEditor* edit = new ChameleonEditor (this, m_book, -1);
 	m_currentEd = edit;
 	m_currentPage = m_book->GetPageCount();
+	//m_currentEd->SetFileNameAndPath(wxEmptyString, wxEmptyString, true);
 	m_book->AddPage (edit, noname, true);
 }
 
@@ -412,13 +415,12 @@ void ChameleonWindow::CloseFile (int pageNr)
 
 	if (m_book->GetPageCount() > 0) 
 	{
+		wxString currentFileName = wxEmptyString;
 		if ((m_book->GetPageCount() > 1) || m_appClosing) 
 		{
+			currentFileName = m_currentEd->GetFileNameAndPath();
 			ChameleonEditor* pEdit = (ChameleonEditor*)m_book->GetPage(pageNr);
-			ChameleonEditor* tmpEditor = m_currentEd;
 			m_book->DeletePage (pageNr);
-			m_currentEd = tmpEditor;
-			//m_book->Refresh();
 		}
 		// closing out the last buffer, reset it to act as a new one
 		else
@@ -429,15 +431,17 @@ void ChameleonWindow::CloseFile (int pageNr)
 			m_currentEd->EmptyUndoBuffer();
 			wxString noname = "<untitled> " + wxString::Format ("%d", m_fileNum);
 			m_book->SetPageText (pageNr, noname);
-			//m_book->Refresh();
-
-			//m_currentEd->SetFilename(wxEmptyString);
-			//m_currentEd->SetRemoteFileNameAndPath(wxEmptyString, wxEmptyString);
-			//m_currentEd->SetLocalFileNameAndPath(wxEmptyString, wxEmptyString);
 			m_currentEd->SetFileNameAndPath(wxEmptyString, wxEmptyString, true);
 		}
-		int newSelectedPageNum = GetPageNum(m_currentEd->GetFileNameAndPath());
-		PageHasChanged(newSelectedPageNum);
+		if(m_book->GetPageCount() > 0)
+		{
+			//wxString currentEditorFileName = m_currentEd->GetFileNameAndPath();
+			if(currentFileName != wxEmptyString)
+			{
+				int newSelectedPageNum = GetPageNum(currentFileName);
+				PageHasChanged(newSelectedPageNum);
+			}
+		}		
 	}
 }
 
