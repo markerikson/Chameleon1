@@ -43,10 +43,6 @@ void wxSSH::SendBack(int len, char *data)
 {
 	if(m_connected) {
 		wxString s(data, len); // = "";
-		//for(int i = 0; i < len; i++) {
-		//	//wxLogDebug("%d ", data[i]);
-		//	s += data[i];
-		//}
 		m_plinkStdIn->WriteString(s);
 	}
 }
@@ -110,7 +106,7 @@ wxString wxSSH::ConnectForDebug()
 }
 
 
-void wxSSH::Disconnect()
+void wxSSH::Disconnect(bool clearDisplay)
 {
 	if(m_connected)
 	{
@@ -120,10 +116,12 @@ void wxSSH::Disconnect()
 		//wxUsleep(250);
 		m_connected = false;
 
-		GTerm::Reset();
-		set_mode_flag(CURSORINVISIBLE);
-		GTerm::Update();
-		Refresh();
+		if(clearDisplay) {
+			GTerm::Reset();
+			set_mode_flag(CURSORINVISIBLE);
+			GTerm::Update();
+			Refresh();
+		}
 	}
 }
 

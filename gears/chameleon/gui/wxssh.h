@@ -38,7 +38,7 @@ class wxSSH : public wxTerm
 
 		virtual void Connect();
 		wxString ConnectForDebug();
-		virtual void Disconnect(void);
+		virtual void Disconnect(bool clearDisplay = true);
 		virtual bool IsConnected(void);
 
 	private:
