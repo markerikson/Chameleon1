@@ -50,8 +50,6 @@ WX_DEFINE_OBJARRAY(VariableInfoArray);
 #define new DEBUG_NEW
 #endif
 
-//using namespace std;
-
 //event handling
 BEGIN_EVENT_TABLE(Debugger, wxEvtHandler)
 	EVT_PROCESS_ENDED(Debugger::onProcessTermEvent)
@@ -558,10 +556,6 @@ void Debugger::setProcess(bool newIsRemote, wxString newFname, wxString nExec)
 	stop(false);
 	flushPrivateVar();
 	
-	//Option 1
-	//startProcess(true,newIsRemote, newFname, nExec, newOutbox);
-	
-	//Option 2 (outputscreen used to copy into itself)
 	startProcess(true,newIsRemote, newFname, nExec);
 }
 
@@ -620,40 +614,6 @@ void Debugger::startProcess(bool fullRestart, bool mode, wxString fName, wxStrin
 	
 
 	streamOut = myConnection->StartCommand(isRemote, execThis, this);
-
-	//begin funky process stuff
-/*	if(isRemote)
-	{
-
-		debugProc = myConnection->GetPlinkProcess(this);
-
-		pid = debugProc->GetPID();
-		if(pid > 0) {procLives = true;}
-
-		command = execThis + returnChar;
-		if(procLives)
-		{
-			wxTextOutputStream streamOut(*(debugProc->GetOutputStream()));//me to GDB
-			streamOut.WriteString(command);
-			command = command + "<- sent";
-		//(*outputScreen)<<send<<"\n";
-		}
-		else
-		{
-			command = command + "<- NOT SENT: PROC DEAD";
-		}
-		updateHistory(command);
-
-	}
-	else
-	{
-		//CHANGE ME!!!//
-		debugProc = new wxProcess2(this);
-		pid = wxExecute(execThis, wxEXEC_ASYNC, debugProc);
-		command = execThis;
-		updateHistory(command);
-	}
-*/
 
 	command = execThis;
 	updateHistory(command);
@@ -859,7 +819,6 @@ int Debugger::findBreakpoint(wxString fName, int lineNum, bool andRemove)
 	int arrayCount = lineToNum[fName].lineNumbers.GetCount();
 	wxArrayInt tmp = lineToNum[fName].lineNumbers;
 
-	//if(found)
 	int lineIndex = tmp.Index(lineNum);
 	if(lineIndex != wxNOT_FOUND)
 	{
@@ -1220,10 +1179,6 @@ void Debugger::snoopVar(wxString varName, wxString funcName, wxString className,
 	if( notFound &&
 		(status == DEBUG_BREAK || status == DEBUG_WAIT))
 	{
-		
-		//command.Printf("whatis %s%s", varName.c_str(), returnChar.c_str());
-		//sendCommand(command);
-		
 		sendWhat();
 
 		classStatus = GET_WHAT;
@@ -1330,7 +1285,7 @@ void Debugger::sendPrint(wxString fromGDB)
 				}
 
 				//~~DEBUG~~//
-				wxLogDebug("\n--sendPrint: singleLine added: "+singleLine+"\n");
+				//wxLogDebug("\n--sendPrint: singleLine added: "+singleLine+"\n");
 
 				fromWatch.Add(singleLine);
 			}
@@ -1359,7 +1314,7 @@ void Debugger::sendPrint(wxString fromGDB)
 				if(fromWatchIndex < (int)fromWatch.GetCount())
 				{
 					//~~DEBUG CODE~~//
-					wxLogDebug("\n--sendPrint: type set: "+fromWatch[fromWatchIndex]+"\n");
+					//wxLogDebug("\n--sendPrint: type set: "+fromWatch[fromWatchIndex]+"\n");
 
 					m_varInfo[i].type = fromWatch[fromWatchIndex];
 
@@ -1483,7 +1438,6 @@ bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 				singleLine = fromGDB.Mid(0, lineBreak + 1);
 				//singleLine = singleLine.BeforeLast('\r');
 
-				//fromGDB.Remove(0, lineBreak);
 				fromGDB = fromGDB.AfterFirst('\n');
 
 				if(singleLine.IsEmpty())
@@ -1514,7 +1468,7 @@ bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 				if(singleLine.Mid(0,9) == "No symbol")
 				{
 					//~~DEBUG CODE~~//
-					wxLogDebug("no symbol found: "+singleLine+"\n");
+					//wxLogDebug("no symbol found: "+singleLine+"\n");
 
 					varValue.Add(singleLine);
 					continue;
@@ -1568,7 +1522,7 @@ bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 				if(regexString == wxEmptyString)
 				{
 					//~~DEBUG CODE~~//
-					wxLogDebug("\n--parsePrint: unknown type: "+singleLine+"\n");
+					//wxLogDebug("\n--parsePrint: unknown type: "+singleLine+"\n");
 
 					//continue;
 					m_varInfo[i].type = "Unknown";
@@ -1586,7 +1540,7 @@ bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 							match = varParser.GetMatch(singleLine, 1);
 
 							//~~DEBUG CODE~~//
-							wxLogDebug("\n--parsePrint: added match: "+match+"\n");
+							//wxLogDebug("\n--parsePrint: added match: "+match+"\n");
 
 							varValue.Add(match);
 							keepMatching = false;
@@ -1630,7 +1584,6 @@ bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 
 	if(parseError)
 	{
-		//varValue.Add("Fewer items in GDB output than with current varCount");
 		return(false);
 	}
 	return(true);
@@ -1746,7 +1699,7 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 	data.Add(tempHold);
 	
 	//~~DEBUG CODE~~//
-	wxLogDebug("DB output: %s", tempHold);
+	//wxLogDebug("DB output: %s", tempHold);
 
 	//I don't think this code is effectual anymore... -B
 	//REVISED: This code here is VITAL: DO NOT REMOVE unless you improve it -B
@@ -1803,10 +1756,6 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 					//and we can start the program.
 					status = DEBUG_STOPPED;
 					go();
-				}
-				else
-				{
-					//(*outputScreen)<<"\n\nreStart does not match error\n\n";
 				}
 			}
 
@@ -1870,8 +1819,6 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 
 					if(reCase1.Matches(tempHold))
 					{
-						//funcName is for adv. variable watching
-						//FuncName = reCase1.GetMatch(tempHold, 1);
 						Filename = reCase1.GetMatch(tempHold, 1);
 						Linenumber = reCase1.GetMatch(tempHold, 3);
 
@@ -1888,30 +1835,10 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 
 						sendWhat();
 					}
-					else
-					{
-						//(*outputScreen)<<"Unable to grab filename from breakpoint?!\n";
-					}
 				}
-				else
-				{
-					//given synchronous issues, this code is invalid.
-					//the fact that a command was sent can reach me before the
-					//actual result of the command, which i need.
-					/*
-					if(classStatus != RUN_TO_CURSOR)
-					{
-						error.Printf("program stopped for an unknown reason. ClassStatus %d", classStatus);
-						makeGenericError("go parse: ");
-
-					
-						outputEvent.SetId(ID_DEBUG_EXIT_ERROR);
-						guiPointer->AddPendingEvent(outputEvent);
-						stop(false);
-						break;
-					}
-					*/
-				}//end goCase regEx check
+				//given synchronous issues, an "else" here is invalid.  Why?
+				//the fact that a command was sent can reach me before the
+				//actual result of the command, which i need.
 			}
 			else
 			{
@@ -2044,18 +1971,7 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 					outputEvent.SetId(ID_DEBUG_BREAKPOINT);
 					guiPointer->AddPendingEvent(outputEvent);
 				}
-				else
-				{
-					//since we're pulling right through, this code is no good
-					/*
-					error = "Failed to match STEP output";
-					makeGenericError("step parse:");
-					
-					outputEvent.SetId(ID_DEBUG_EXIT_ERROR);
-					guiPointer->AddPendingEvent(outputEvent);
-					stop(false);
-					*/
-				}
+				//since we can pull right through, an "else" here is no good
 			}
 			else
 			{
@@ -2278,7 +2194,6 @@ void Debugger::sendCommand(wxString send)
 {
 	if(procLives)
 	{
-		//wxTextOutputStream streamOut(*(debugProc->GetOutputStream()));//me to GDB
 		streamOut->WriteString(send);
 		send = send + "<- sent";
 		
