@@ -62,12 +62,19 @@ class wxTerm : public wxScrolledWindow, public GTerm/*lnet*/
     m_curState,
     m_curBlinkRate;
 
+  int m_scrollBarWidth;
+  int m_charsInLine;
+  int m_linesDisplayed;
+
   unsigned char
     m_curChar;
 
   bool
     m_selecting,
     m_marking;
+
+  bool m_inUpdateSize;
+  bool m_isActive;
 
   wxColour
     m_vt_colors[16],
@@ -191,6 +198,7 @@ private:
   void OnLeftUp(wxMouseEvent& event);
   void OnMouseMove(wxMouseEvent& event);
   void OnTimer(wxTimerEvent& event);
+  void OnActivate(wxActivateEvent &event);
 
   DECLARE_EVENT_TABLE()
 };

@@ -13,7 +13,7 @@
 #include <stdio.h>
 
 #define MAXWIDTH 200
-#define MAXHEIGHT 100
+#define MAXHEIGHT 200
 
 #ifndef min
 #define min(x,y) ((x)<(y)?(x):(y))

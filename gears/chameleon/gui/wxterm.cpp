@@ -389,20 +389,29 @@ BEGIN_EVENT_TABLE(wxTerm, wxWindow)
   EVT_KEY_DOWN(wxTerm::OnKeyDown)
 #endif
 
-  //EVT_SIZE(wxTerm::UpdateSize)
+  EVT_SIZE(wxTerm::UpdateSize)
 END_EVENT_TABLE()
 
 wxTerm::wxTerm(wxWindow* parent, wxWindowID id,
                const wxPoint& pos,
                int width, int height,
                const wxString& name) :
-  wxScrolledWindow(parent, id, pos, wxSize(-1, -1), wxHSCROLL | wxVSCROLL /*wxWANTS_CHARS*/, name),
+  wxScrolledWindow(parent, id, pos, wxSize(-1, -1), wxHSCROLL | wxVSCROLL | wxWANTS_CHARS, name),
   GTerm/*lnet*/(width, height)
 {
   int
     i;
 
+  m_inUpdateSize = false;
+  m_isActive = false;
+  m_scrollBarWidth = wxSystemSettings::GetMetric(wxSYS_VSCROLL_ARROW_X);
+
   m_init = 1;
+
+  m_curDC = 0;
+
+  m_charsInLine = width;
+  m_linesDisplayed = height;
 
   m_selecting = FALSE;
   m_selx1 = m_sely1 = m_selx2 = m_sely2 = 0;
@@ -452,7 +461,7 @@ wxTerm::wxTerm(wxWindow* parent, wxWindowID id,
   ResizeTerminal(width, height);
 
   
-  SetVirtualSize(m_charWidth * 80, m_charHeight * 100);
+  //SetVirtualSize(m_charWidth * 80, m_charHeight * 100);
   SetScrollRate(m_charWidth, m_charHeight);
 
   m_init = 0;
@@ -1234,9 +1243,21 @@ wxTerm::ClearChars(int bg_color, int x, int y, int w, int h)
   w = w * m_charWidth;
   h = h * m_charHeight;
 
+  bool deleteDC = false;
+  if(!m_curDC)
+  {
+	  m_curDC = new wxClientDC(this);
+	  deleteDC = true;
+  }
   m_curDC->SetPen(m_colorPens[bg_color]);
   m_curDC->SetBrush(wxBrush(m_colors[bg_color], wxSOLID));
   m_curDC->DrawRectangle(x, y, w /* + 1*/, h /*+ 1*/);
+
+  if(deleteDC)
+  {
+	  delete m_curDC;
+	  m_curDC = 0;
+  }
 }
 
 void
@@ -1269,32 +1290,49 @@ wxTerm::Bell()
 
 void wxTerm::UpdateSize(wxSizeEvent &event)
 {
+	event.Skip();
+	if(m_inUpdateSize)
+	{		
+		return;
+	}
+
+	m_inUpdateSize = true;
+	int charWidth, charHeight;
+
+	wxClientDC* dc = new wxClientDC(this);
+
+	if(!m_curDC)
+	{			
+		m_curDC = dc;
+	}
 	
-	if(this->IsShown())
+	dc->SetFont(m_normalFont);
+	dc->GetTextExtent("M", &charWidth, &charHeight);
+	wxSize currentClientSize = GetClientSize();
+	int numCharsInLine = (currentClientSize.GetX() - m_scrollBarWidth) / charWidth;
+	int numLinesShown = currentClientSize.GetY() / charHeight;
+
+	
+
+	if( (numCharsInLine != m_charsInLine) || (numLinesShown != m_linesDisplayed))
 	{
-		int charWidth, charHeight;
-
-
-		wxClientDC dc(this);
-		
-		dc.SetFont(m_normalFont);
-		dc.GetTextExtent("M", &charWidth, &charHeight);
-
-		wxSize currentClientSize = GetClientSize();
-		int numCharsInLine = currentClientSize.GetX() / charWidth;
-		int numLinesShown = currentClientSize.GetY() / charHeight;
-
 		wxString message;
 
 		message.Printf("numCharsInLine: %d, numLinesShown: %d", numCharsInLine, numLinesShown);
 		wxLogDebug(message);
-		ResizeTerminal(numCharsInLine, numLinesShown);
-		
+
+		m_charsInLine = numCharsInLine;
+		m_linesDisplayed = numLinesShown;
+		ResizeTerminal(numCharsInLine, numLinesShown);		
 	}
-	
-	
 
+	m_inUpdateSize = false;
 
+	if(dc)
+	{
+		delete dc;
+		m_curDC = 0;
+	}
 }
 
 void
@@ -1455,4 +1493,9 @@ wxTerm::PrintChars(int len, unsigned char *data)
   {
     fwrite(data, len, 1, m_printerFN);
   }
+}
+
+void wxTerm::OnActivate(wxActivateEvent &event)
+{
+	m_isActive = event.GetActive();
 }

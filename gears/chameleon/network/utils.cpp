@@ -275,7 +275,15 @@ void GTerm::clear_area( int start_x, int start_y, int end_x, int end_y )
 
     for( y = start_y; y <= end_y; y++ )
     {
-        yp = linenumbers[y] * MAXWIDTH;
+		if(linenumbers[y] < 0)
+		{
+			yp = (MAXHEIGHT - 1) * MAXWIDTH;
+		}
+		else
+		{
+
+			yp = linenumbers[y] * MAXWIDTH;
+		}
 
         memset(text + yp + start_x, 32, w);
 

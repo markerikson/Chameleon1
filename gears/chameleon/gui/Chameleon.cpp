@@ -1232,7 +1232,7 @@ void ChameleonWindow::SaveFile(bool saveas)
 	}
 
 	// check if we're in local mode or not
-	if(!remoteEnabled || !m_remoteMode)
+	if(!remoteEnabled && !m_remoteMode)
 	{
 		if(doSaveAs)
 		{		
@@ -1276,7 +1276,9 @@ void ChameleonWindow::SaveFile(bool saveas)
 	{
 		wxString remotePath, remoteFile, fileContents;
 
+		m_currentEd->SetEOLMode(wxSTC_EOL_LF);
 		fileContents = m_currentEd->GetText();
+		m_currentEd->SetEOLMode(wxSTC_EOL_CRLF);
 		if(doSaveAs)
 		{
 			if(m_remoteFileDialog->Prepare(false, m_filterCPPFiles))//FILE_SOURCECODE))
