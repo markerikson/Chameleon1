@@ -34,6 +34,9 @@ enum WindowID
 	ID_PANEL_ED,
 	ID_ED,
 	ID_TELNET,
+	ID_SPLITTER,
+	ID_OPTIONSDIALOG,
+	ID_REMOTEFILEDIALOG,
 
 	// edit menu items
 	ID_UNDO,

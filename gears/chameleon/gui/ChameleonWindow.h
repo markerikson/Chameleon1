@@ -76,6 +76,7 @@ class wxGridCellEditorEvtHandler;
 #include "../common/datastructures.h"
 #include "wxtelnet.h"
 #include "dialogs/OptionsDialog.h"
+#include "dialogs/RemoteFileDialog.h"
 //#include "GridCellEditorEvtHandler.h"
 //#include "GridCellCheckboxRenderer.h"
 #include "../perms/p.h"
@@ -165,6 +166,7 @@ private:
 	int GetPageNum(const wxString& fname);
 
 	void AddDebugButtons();
+	void InitializeOptionsDialog();
 
 	int* TargetInt(int variableName);
 
@@ -185,6 +187,7 @@ private:
 	UpdateUIHandler*  uih;
 	wxTelnet*  m_telnet;
 	OptionsDialog*  m_optionsDialog;
+	RemoteFileDialog* m_remoteFiles;
 	wxGrid* m_optGrid;
 
 

@@ -108,7 +108,7 @@ bool ChameleonEditor::SaveFileAs()
     if( !Modified() )
         return true;
 
-    // get filname
+    // get filename
     if( !m_filename )
     {
         wxFileDialog

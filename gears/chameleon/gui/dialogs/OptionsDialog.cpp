@@ -130,16 +130,43 @@ void OptionsDialog::CreateControls()
     wxTextCtrl* item13 = new wxTextCtrl( item4, ID_TEXTCTRL, _(""), wxDefaultPosition, wxDefaultSize, 0 );
     item11->Add(item13, 0, wxGROW|wxLEFT|wxRIGHT|wxBOTTOM, 5);
     item3->AddPage(item4, _("Features"));
+    wxPanel* item14 = new wxPanel( item3, ID_PANEL, wxDefaultPosition, wxSize(100, 80), wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
+    wxBoxSizer* item15 = new wxBoxSizer(wxHORIZONTAL);
+    item14->SetSizer(item15);
+    item14->SetAutoLayout(TRUE);
+    wxBoxSizer* item16 = new wxBoxSizer(wxVERTICAL);
+    item15->Add(item16, 0, wxALIGN_TOP, 5);
+    wxStaticText* item17 = new wxStaticText( item14, wxID_STATIC, _("Network server address:"), wxDefaultPosition, wxDefaultSize, 0 );
+    item16->Add(item17, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
+    wxTextCtrl* item18 = new wxTextCtrl( item14, ID_TEXTCTRL1, _(""), wxDefaultPosition, wxSize(160, -1), 0 );
+    m_serverAddress = item18;
+    item16->Add(item18, 0, wxALIGN_CENTER_HORIZONTAL|wxLEFT|wxRIGHT|wxBOTTOM, 5);
+    wxStaticText* item19 = new wxStaticText( item14, wxID_STATIC, _("Username:"), wxDefaultPosition, wxDefaultSize, 0 );
+    item16->Add(item19, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
+    wxTextCtrl* item20 = new wxTextCtrl( item14, ID_TEXTCTRL2, _(""), wxDefaultPosition, wxSize(160, -1), 0 );
+    m_username = item20;
+    item16->Add(item20, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxBOTTOM, 5);
+    wxStaticText* item21 = new wxStaticText( item14, wxID_STATIC, _("Password:"), wxDefaultPosition, wxDefaultSize, 0 );
+    item16->Add(item21, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
+    wxTextCtrl* item22 = new wxTextCtrl( item14, ID_TEXTCTRL3, _(""), wxDefaultPosition, wxSize(160, -1), wxTE_PASSWORD );
+    m_password1 = item22;
+    item16->Add(item22, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxBOTTOM, 5);
+    wxStaticText* item23 = new wxStaticText( item14, wxID_STATIC, _("Confirm password:"), wxDefaultPosition, wxDefaultSize, 0 );
+    item16->Add(item23, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
+    wxTextCtrl* item24 = new wxTextCtrl( item14, ID_TEXTCTRL4, _(""), wxDefaultPosition, wxSize(160, -1), wxTE_PASSWORD );
+    m_password2 = item24;
+    item16->Add(item24, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxBOTTOM, 5);
+    item3->AddPage(item14, _("Network"));
     item2->Add(item3, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
-    wxBoxSizer* item14 = new wxBoxSizer(wxHORIZONTAL);
-    item2->Add(item14, 0, wxALIGN_RIGHT|wxALL, 0);
+    wxBoxSizer* item25 = new wxBoxSizer(wxHORIZONTAL);
+    item2->Add(item25, 0, wxALIGN_RIGHT|wxALL, 0);
 
-    wxButton* item15 = new wxButton( item1, ID_BUTTON_OK, _("OK"), wxDefaultPosition, wxDefaultSize, 0 );
-    item14->Add(item15, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxButton* item26 = new wxButton( item1, ID_BUTTON_OK, _("OK"), wxDefaultPosition, wxDefaultSize, 0 );
+    item25->Add(item26, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxButton* item16 = new wxButton( item1, ID_BUTTON_CANCEL, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
-    item14->Add(item16, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxButton* item27 = new wxButton( item1, ID_BUTTON_CANCEL, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
+    item25->Add(item27, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
 ////@end OptionsDialog content construction
 }
@@ -157,6 +184,48 @@ wxCheckListBox* OptionsDialog::GetListBox()
 {
     return this->m_checkList;
 }
+
+wxString OptionsDialog::GetServerAddress()
+{
+    return m_serverAddress->GetValue();
+}
+
+wxString OptionsDialog::GetUsername()
+{
+	return m_username->GetValue();
+}
+
+wxString OptionsDialog::GetPassword1()
+{
+	return m_password1->GetValue();
+}
+
+wxString OptionsDialog::GetPassword2()
+{
+	return m_password2->GetValue();
+}
+
+void OptionsDialog::SetServerAddress(wxString address)
+{
+	m_serverAddress->SetValue(address);
+}
+
+void OptionsDialog::SetUsername(wxString username)
+{
+	m_username->SetValue(username);
+}
+
+void OptionsDialog::SetPassword1(wxString pwd)
+{
+	m_password1->SetValue(pwd);
+}
+
+void OptionsDialog::SetPassword2(wxString pwd)
+{
+	m_password2->SetValue(pwd);
+}
+
+
 /*!
  * wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_OK
  */
@@ -165,6 +234,7 @@ void OptionsDialog::OnButtonOkClick( wxCommandEvent& event )
 {
     // Insert custom code here
     event.Skip();
+
 	EndModal(wxOK);
 }
 

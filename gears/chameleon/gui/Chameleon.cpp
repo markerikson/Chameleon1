@@ -75,6 +75,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 	 m_perms = new Permission();
 
+	 // enable only PERM_AUTOINDENT.  Eventually, will rely only on the provided code.
 	 m_perms->setGlobal(0x4);
 
 	 /*
@@ -86,7 +87,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	 m_perms->enable(PERM_AUTOINDENT);
 	 
 
-	 m_openFiles = new wxArrayString();
+	 //m_openFiles = new wxArrayString();
 
 
     // create a menu bar
@@ -144,7 +145,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	wxBitmap bmSave(save_xpm);
 	toolBar->AddTool(ID_SAVE, "Save File", bmSave);
 
-	/*
+	
 	toolBar->InsertSeparator(3);
 
 	wxBitmap bmBuild(build_xpm);
@@ -156,7 +157,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	toolBar->AddTool(ID_TEST, "Test", bmTest);
 
 	toolBar->InsertSeparator(7);
-	*/
+	
 
 
 	if(m_perms->isEnabled(PERM_DEBUG))
@@ -164,62 +165,26 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 		AddDebugButtons();
 	}
 
-
-
-
 	toolBar->Realize();
 
 	SetToolBar(toolBar);
 	
-    // ... and attach this menu bar to the frame
     SetMenuBar(menuBar);
 
 #if wxUSE_STATUSBAR
     CreateStatusBar(2);
-    //SetStatusText("Statusbar text");
-#endif // wxUSE_STATUSBAR
+#endif
 
 
-	 m_optionsDialog = new OptionsDialog(this, -1, "Options");
+	m_optionsDialog = new OptionsDialog(this, ID_OPTIONSDIALOG, "Options");
 
-	
+	InitializeOptionsDialog();
 
-	
-	
-	
+	m_remoteFiles = new RemoteFileDialog(this, ID_REMOTEFILEDIALOG);
 
 
-	//m_permNumMap = new IntIntHashmap();
-	wxCheckListBox* checkList = m_optionsDialog->GetListBox();
-	wxString optionname;
-	wxArrayString optionList;
 
-	for(int i = PERM_FIRST; i < PERM_LAST; i++)
-	{
-		
-		if(m_perms->isAuthorized(i))
-		{
-			optionname = m_perms->getPermName(i);
-			
-			int optionMapNum = checkList->GetCount();
-			checkList->Append(optionname);//optionList.GetCount();
-			
-			m_permNumMap[optionMapNum] = i;
-
-			if(m_perms->isEnabled(i))
-			{
-				checkList->Check(optionMapNum, true);
-			}
-		}		
-	}
-	
-
-	
-
-
-	
-	 m_split = new wxSplitterWindow(this, 5205);
-	
+	 m_split = new wxSplitterWindow(this, ID_SPLITTER);
 
 
     //----------------------------------------
@@ -264,7 +229,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 ChameleonWindow::~ChameleonWindow()
 {
 	delete m_perms;
-	delete m_openFiles;
+	//delete m_openFiles;
 	delete m_optionsDialog;
 
 
@@ -276,10 +241,9 @@ void ChameleonWindow::OnFileNew (wxCommandEvent &WXUNUSED(event))
 	wxString noname = "<untitled> " + wxString::Format ("%d", m_fileNum);
 	ChameleonEditor* edit = new ChameleonEditor (this, m_book, -1);
 	m_currentEd = edit;
-	//m_currentEd->SetDropTarget (new DropFiles (this));
 	m_currentPage = m_book->GetPageCount();
 	m_book->AddPage (edit, noname, true);
-	m_openFiles->Add (noname);
+	//m_openFiles->Add (noname);
 
 }
 
@@ -388,7 +352,10 @@ void ChameleonWindow::CloseFile (int pageNr)
 
 	if (edit->Modified()) 
 	{
-		if (wxMessageBox (_("Text is not saved, save before closing?"), _("Close"),
+		wxString fileName = wxFileName(edit->GetFilename()).GetFullName();
+		wxString saveMessage = fileName;
+		saveMessage << " has unsaved changes.  Do you want to save them before the file is closed?";
+		if (wxMessageBox (_(saveMessage), _("Close"),
 			wxYES_NO | wxICON_QUESTION) == wxYES) 
 		{
 			edit->SaveFileAs();
@@ -396,7 +363,9 @@ void ChameleonWindow::CloseFile (int pageNr)
 
 			if (edit->Modified()) 
 			{
-				wxMessageBox (_("Text could not be saved!"), _("Close abort"),
+
+				wxString errorMessage = fileName + " could not be saved!";
+				wxMessageBox (_(errorMessage), _("Close abort"),
 					wxOK | wxICON_EXCLAMATION);
 				return;
 			}
@@ -413,12 +382,13 @@ void ChameleonWindow::CloseFile (int pageNr)
 		else
 		{
 			m_fileNum = 1;
-			wxString noname = "<untitled> " + wxString::Format (".%d", m_fileNum);
-			m_book->SetPageText (pageNr, noname);
-			//m_currentEd->SetFilename (wxEmptyString);
 			m_currentEd->ClearAll();
 			m_currentEd->SetSavePoint();
 			m_currentEd->EmptyUndoBuffer();
+			wxString noname = "<untitled> " + wxString::Format (".%d", m_fileNum);
+			m_book->SetPageText (pageNr, noname);
+			//m_currentEd->SetFilename (wxEmptyString);
+
 			
 			//m_files->Add (noname);
 		}
@@ -586,6 +556,7 @@ void ChameleonWindow::OnConnect(wxCommandEvent& WXUNUSED(event))
 // event handlers
 void ChameleonWindow::Test(wxCommandEvent& WXUNUSED(event))
 {
+	int result = m_remoteFiles->ShowModal();
 
 	
 
@@ -853,46 +824,10 @@ void ChameleonWindow::OnToolsOptions(wxCommandEvent &event)
 
 	if(result == wxOK)
 	{
-		//wxGrid* m_optGrid = m_optionsDialog->GetGrid();
-		//:wxMessageBox("wxOK");
-		//for(int i = PERM_FIRST; i < PERM_LAST; i++)
-		//{
-			//wxString value = m_optGrid->GetCellValue(i, 0);
-			wxCheckListBox* checkList = m_optionsDialog->GetListBox();
+		EvaluateOptions();
 
-			for(int i = 0; i < checkList->GetCount(); i++)
-			{
-				int mappedPermNum = m_permNumMap[i];
-
-				bool enableOption = checkList->IsChecked(i);
-
-				wxLogDebug("Setting permissions: %s = %s", 
-							m_perms->getPermName(mappedPermNum),
-							enableOption ? "true" : "false");
-
-				if(enableOption)
-				{
-					m_perms->enable(mappedPermNum);
-				}
-				else
-				{
-					m_perms->disable(mappedPermNum);
-				}
-			}
-
-/*			if(value == "No")
-			{
-				m_perms->disable(i);
-			}
-			else
-			{
-				m_perms->enable(i);
-			}
-			*/
-		//}
+		
 	}
-	EvaluateOptions();
-
 }
 
 
@@ -1007,8 +942,64 @@ void ChameleonWindow::AddDebugButtons()
 
 }
 
+void ChameleonWindow::InitializeOptionsDialog()
+{
+	m_optionsDialog->SetServerAddress("james.cedarville.edu");
+	m_optionsDialog->SetUsername("testuser1");
+	m_optionsDialog->SetPassword1("password");
+	m_optionsDialog->SetPassword2("password");
+
+	wxCheckListBox* checkList = m_optionsDialog->GetListBox();
+	wxString optionname;
+	wxArrayString optionList;
+
+	for(int i = PERM_FIRST; i < PERM_LAST; i++)
+	{		
+		if(m_perms->isAuthorized(i))
+		{
+			optionname = m_perms->getPermName(i);
+
+			int optionMapNum = checkList->GetCount();
+			checkList->Append(optionname);//optionList.GetCount();
+
+			// need to keep track of which perm is which list item
+			m_permNumMap[optionMapNum] = i;
+
+			if(m_perms->isEnabled(i))
+			{
+				checkList->Check(optionMapNum, true);
+			}
+		}		
+	}
+}
+
 void ChameleonWindow::EvaluateOptions()
 {
+	// update permissions settings from the options dialog
+	wxCheckListBox* checkList = m_optionsDialog->GetListBox();
+
+	for(int i = 0; i < checkList->GetCount(); i++)
+	{
+		int mappedPermNum = m_permNumMap[i];
+
+		bool enableOption = checkList->IsChecked(i);
+
+		wxLogDebug("Setting permissions: %s = %s", 
+			m_perms->getPermName(mappedPermNum),
+			enableOption ? "true" : "false");
+
+		if(enableOption)
+		{
+			m_perms->enable(mappedPermNum);
+		}
+		else
+		{
+			m_perms->disable(mappedPermNum);
+		}
+	}
+
+
+	// update the debug buttons
 	wxToolBar* t = GetToolBar();
 
 	bool debugEnabled = m_perms->isEnabled(PERM_DEBUG);
@@ -1018,7 +1009,6 @@ void ChameleonWindow::EvaluateOptions()
 
 	for(int i = ID_DEBUG_IDS_FIRST; i < ID_DEBUG_IDS_LAST; i++)
 	{
-		//t->RemoveTool(i);
 		t->DeleteTool(i);		
 	}
 	
@@ -1028,5 +1018,9 @@ void ChameleonWindow::EvaluateOptions()
 		AddDebugButtons();		
 		t->Realize();
 	}	
+
+
+
+
 }
 
