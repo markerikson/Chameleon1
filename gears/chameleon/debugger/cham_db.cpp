@@ -1367,7 +1367,11 @@ bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 						VariableInfo varInfo = m_varInfo[i];
 						wxString type = varInfo.type;
 						wxString regex;
-						if(varRegExes.find(type) == varRegExes.end())
+						if(varRegExes.find(type) != varRegExes.end())
+						{
+							regex = varRegExes[type];
+						}
+						else
 						{
 							regex = varRegExes["class"];
 						}
