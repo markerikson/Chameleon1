@@ -116,8 +116,12 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	wxString username = m_config->Read("Network/username");
 
 	m_network = new Networking();
+
 	wxFileName plinkPath(wxGetCwd(), "plink.exe");
 	m_network->SetPlinkProg(plinkPath.GetFullPath());
+
+	wxFileName pscpPath(wxGetCwd(), "pscp.exe");
+	m_network->SetPlinkProg(pscpPath.GetFullPath());
 
 	m_network->SetDetailsNoStatus(hostname, username, "");
 
@@ -188,7 +192,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	wxBitmap bmSave(save_xpm);
 	toolBar->AddTool(ID_SAVE, "Save File", bmSave);
 
-	
+	/*
 	toolBar->InsertSeparator(3);
 	
 	wxBitmap bmBuild(build_xpm);
@@ -200,6 +204,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	toolBar->AddTool(ID_TEST, "Test", bmTest);
 
 	toolBar->InsertSeparator(7);
+	*/
 	
 
 	/*
@@ -454,7 +459,7 @@ int ChameleonWindow::HandleModifiedFile(int pageNr, bool closingFile)
 			fileName = tabText;
 		}
 		saveMessage += fileName;
-		saveMessage << " has unsaved changes.  Do you want to save them before the file is";
+		saveMessage << " has unsaved changes.  Do you want to save them before the file is ";
 		
 		if(closingFile)
 		{
