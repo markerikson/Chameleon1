@@ -1,8 +1,7 @@
 #ifndef EDITOR__H
 #define EDITOR_H
 
-
-#include "stc.h"
+#include <wx/stc/stc.h>
 #include <wx/menu.h>
 #include <wx/dynarray.h>
 #include "../common/datastructures.h"

@@ -6,7 +6,6 @@
 
 #include <wx/datetime.h>
 
-#include <wx/stc/stc.h>
 #include "editor.h"
 #include "../perms/p.h"
 #include "../gui/ChameleonWindow.h"

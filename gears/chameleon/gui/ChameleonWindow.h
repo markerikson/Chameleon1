@@ -114,7 +114,7 @@ private:
 	void OnUpdateDebugUI();//wxUpdateUIEvent &event);
 	void OnUpdateConnectionUI();//wxUpdateUIEvent &event);
 	void OnUpdateCompileUI();//wxUpdateUIEvent &event);
-	void OnUpdatePrintPreviewUI();//wxUpdateUIEvent &event);	
+	void OnUpdateProjectUI();//wxUpdateUIEvent &event);	
 	void OnIdle(wxIdleEvent &event);
 	void UpdateStatusBar();
 	
@@ -246,6 +246,7 @@ private:
 	bool m_remoteMode;
 	bool m_appStarting;
 	bool m_currentlyDebugging;
+	bool m_compileProject;
 
 	wxString m_filterCPPFiles;
 	wxString m_filterHeaderFiles;

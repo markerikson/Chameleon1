@@ -11,6 +11,7 @@
 #include <wx/msw/tbar95.h>
 #include <wx/print.h>
 #include <wx/printdlg.h>
+#include <wx/mimetype.h>
 
 #include <math.h>
 
@@ -34,9 +35,10 @@
 #include "wxssh.h"
 #include "../compiler/compilerevent.h"
 
-#include "new.xpm"
-#include "open.xpm"
-#include "save.xpm"
+#include "newfile.xpm"
+#include "openremote.xpm"
+#include "openlocal.xpm"
+#include "savefile.xpm"
 
 #include "build.xpm"
 #include "compilestop.xpm"
@@ -76,7 +78,7 @@ BEGIN_EVENT_TABLE(ChameleonWindow, wxFrame)
 	EVT_MENU						(ID_CLOSEALL, ChameleonWindow::OnMenuEvent)
 	EVT_MENU						(ID_STARTCONNECT, ChameleonWindow::OnMenuEvent)
 	EVT_MENU						(ID_DISCONNECT, ChameleonWindow::OnMenuEvent)
-	EVT_MENU						(ID_COMPILE, ChameleonWindow::OnMenuEvent)
+	EVT_MENU_RANGE					(ID_COMPILE, ID_COMPILE_PROJECT, ChameleonWindow::OnMenuEvent)
 	EVT_MENU						(ID_UNDO, ChameleonWindow::OnMenuEvent)
 	EVT_MENU						(ID_REDO, ChameleonWindow::OnMenuEvent)
 	EVT_MENU						(ID_OPTIONS, ChameleonWindow::OnMenuEvent)
@@ -118,6 +120,7 @@ BEGIN_EVENT_TABLE(ChameleonWindow, wxFrame)
 	EVT_DEBUG						(ChameleonWindow::OnDebugEvent)
 	EVT_IDLE						(ChameleonWindow::OnIdle)
 	EVT_TIMER						(ID_STATUSTIMER, ChameleonWindow::OnStatusTimer)
+	EVT_MENU						(ID_HELP, ChameleonWindow::OnMenuEvent)
 END_EVENT_TABLE()
 
 IMPLEMENT_APP(MyApp)
@@ -275,6 +278,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	// project setup
 	m_projMultiFiles = NULL;
 	m_projectTree = new wxTreeCtrl(m_splitProjectEditor, ID_PROJECTTREE);
+	m_projectTree->Hide();
 
 	m_remoteFileDialog = new RemoteFileDialog(this, ID_REMOTEFILEDIALOG);
 	m_remoteFileDialog->SetNetworking(m_network);
@@ -348,6 +352,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	g_printData->SetPaperId(wxPAPER_LETTER);
 
 	m_appStarting = false;
+	m_compileProject = false;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -660,6 +665,7 @@ void ChameleonWindow::OnMenuEvent(wxCommandEvent &event)
 			break;
 		}
 
+		case ID_COMPILE_PROJECT:
 		case ID_COMPILE:
 		{
 			// We didn't have time to really test compile cancelation, so this 
@@ -674,6 +680,11 @@ void ChameleonWindow::OnMenuEvent(wxCommandEvent &event)
 				Compile();
 			}
 			*/
+
+			if(id == ID_COMPILE_PROJECT)
+			{
+				m_compileProject = true;
+			}
 			Compile();
 			break;
 		}
@@ -721,7 +732,7 @@ void ChameleonWindow::OnMenuEvent(wxCommandEvent &event)
 				if (wxPrinter::GetLastError() == wxPRINTER_ERROR) 
 				{
 					wxMessageBox ("There was a problem with printing.\nPlease check your printer setup and try again.",
-									"Print failed", wxOK);
+									"Print failed", wxOK | wxICON_WARNING);
 					return;
 				}
 			}
@@ -740,7 +751,7 @@ void ChameleonWindow::OnMenuEvent(wxCommandEvent &event)
 			{
 				delete preview;
 				wxMessageBox ("There was a problem with previewing.\nPlease check your printer setup and try again.",
-								"Preview failed", wxOK);
+								"Preview failed", wxOK | wxICON_WARNING);
 				return;
 			}
 			wxRect rect = DeterminePrintSize();
@@ -760,6 +771,33 @@ void ChameleonWindow::OnMenuEvent(wxCommandEvent &event)
 			(*g_printData) = pageSetupDialog.GetPageSetupData().GetPrintData();
 			(*g_pageSetupData) = pageSetupDialog.GetPageSetupData();
 			break;
+		}
+
+		case ID_HELP:
+		{
+			wxString helpFile = "chameleon.chm";
+			wxString ext = "chm";
+			wxFileType *ft = wxTheMimeTypesManager->GetFileTypeFromExtension(ext);
+			if ( !ft )
+			{
+				return;
+			}
+
+			wxString cmd;
+			bool ok = ft->GetOpenCommand(&cmd,
+				wxFileType::MessageParameters(helpFile, _T("")));
+			delete ft;
+			if ( !ok )
+			{
+				return;
+			}
+
+			wxProcess *process = new wxProcess();
+			long pidLast = wxExecute(cmd, wxEXEC_ASYNC, process);
+			if ( !pidLast )
+			{
+				delete process;
+			}
 		}
 	}
 }
@@ -1198,7 +1236,7 @@ int ChameleonWindow::HandleModifiedFile(int pageNr, bool closingFile)
 			saveMessage += "reloaded?";
 		}
 
-		int result = wxMessageBox (_(saveMessage), _("Close"), wxYES_NO | wxCANCEL | wxICON_QUESTION);
+		int result = wxMessageBox (saveMessage, "Close", wxYES_NO | wxCANCEL | wxICON_QUESTION);
 		if( result == wxYES) 
 		{
 			ChameleonEditor* tmpCurrentEd = m_currentEd;
@@ -1211,7 +1249,7 @@ int ChameleonWindow::HandleModifiedFile(int pageNr, bool closingFile)
 			if (edit->Modified()) 
 			{
 				wxString errorMessage = fileName + " could not be saved!";
-				wxMessageBox (_(errorMessage), _("File not closed"),
+				wxMessageBox (errorMessage, "File not closed",
 					wxOK | wxICON_EXCLAMATION);
 				m_currentEd->Refresh();
 			}
@@ -1735,7 +1773,7 @@ void ChameleonWindow::CheckSize()
 	this->GetClientSize(&x, &y);
 	wxString result;
 	result << x << ", " << y;
-	::wxMessageBox(result );
+	wxMessageBox(result );
 	m_currentEd->SetScrollWidth(x);
 	
 }
@@ -1782,7 +1820,7 @@ void ChameleonWindow::OnStatusTimer(wxTimerEvent &WXUNUSED(event))
 		OnUpdateDebugUI();
 		OnUpdateConnectionUI();
 		OnUpdateCompileUI();
-		OnUpdatePrintPreviewUI();
+		OnUpdateProjectUI();
 	}
 }
 
@@ -2015,19 +2053,24 @@ void ChameleonWindow::OnUpdateSaveUI()//wxUpdateUIEvent &event)
 }
 
 //////////////////////////////////////////////////////////////////////////////
-///  private OnUpdatePrintPreviewUI
-///  Updates the print preview menu item
+///  private OnUpdateProjectUI
+///  Updates project-related menu items
 ///
 ///  @return void
 ///
 ///  @author Mark Erikson @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
-void ChameleonWindow::OnUpdatePrintPreviewUI ()//wxUpdateUIEvent &event) 
+void ChameleonWindow::OnUpdateProjectUI ()
 {
+	/*
 	bool enable = (m_book->GetPageCount() > 1) ||
 		(m_currentEd && (m_currentEd->GetLength() > 0));
+	*/
+	bool projectOpen = (m_projMultiFiles != NULL);
 
-	GetMenuBar()->FindItem(ID_PRINT_PREVIEW)->Enable(enable);
+	wxMenuBar* mb = GetMenuBar();
+	mb->FindItem(ID_CLOSE_PROJECT)->Enable(projectOpen);
+	mb->FindItem(ID_COMPILE_PROJECT)->Enable(projectOpen);
 }
 
 // Gets / sets begin here
@@ -2312,6 +2355,9 @@ void ChameleonWindow::UpdateMenuBar()
 		menuProject->Append(ID_OPEN_PROJECT_REMOTE, "Open Project File (Remote)");
 		menuProject->Append(ID_CLOSE_PROJECT, "Close Project");
 
+		menuProject->AppendSeparator();
+		menuProject->Append(ID_COMPILE_PROJECT, "Compile Active Project");
+
 		menuBar->Append(menuProject, "&Projects");
 	}
 
@@ -2368,17 +2414,20 @@ void ChameleonWindow::UpdateToolbar()
 	t = new wxToolBar(this, -1, wxDefaultPosition, wxDefaultSize, style);
 	SetToolBar(t);
 
-	wxBitmap bmNew(new_xpm);
+	wxBitmap bmNew(newfile_xpm);
 	t->AddTool(ID_NEW_SOURCE, "New", bmNew, "New source file");	
     
-	wxBitmap bmOpen(open_xpm);
+	//wxBitmap bmOpen((open_xpm);
+	
 	if(perms->isEnabled(PERM_LOCALMODE))
 	{
-		t->AddTool(ID_OPEN_SOURCE_LOCAL, "Open (L)", bmOpen, "Open a file from the local computer");
+		wxBitmap bmOpenLocal(openlocal_xpm);
+		t->AddTool(ID_OPEN_SOURCE_LOCAL, "Open (L)", bmOpenLocal, "Open a file from the local computer");
 	}	
-	t->AddTool(ID_OPEN_SOURCE_REMOTE, "Open (R)", bmOpen, "Open a file from the remote server");
+	wxBitmap bmOpenRemote(openremote_xpm);
+	t->AddTool(ID_OPEN_SOURCE_REMOTE, "Open (R)", bmOpenRemote, "Open a file from the remote server");
 
-	wxBitmap bmSave(save_xpm);
+	wxBitmap bmSave(savefile_xpm);
 	t->AddTool(ID_SAVE, "Save", bmSave, "Save the current file");
 
 	if(perms->isEnabled(PERM_TERMINAL))
@@ -2578,6 +2627,7 @@ void ChameleonWindow::OnTreeItemRightClick(wxTreeEvent& event)
 	{
 		if(m_projMultiFiles != NULL)
 		{
+			popupMenu.Append(ID_COMPILE_PROJECT, "Compile this project");
 			popupMenu.Append(ID_CLOSE_PROJECT, "Close this project");
 		}
 		else
@@ -2646,7 +2696,7 @@ void ChameleonWindow::OpenProjectFile(bool isRemote)
 	{
 		wxString message = "A project is already open.  Do you want to replace the currently open project";
 		message += " with a different one?";
-		int result = wxMessageBox(message, "Project already open", wxOK | wxCANCEL);
+		int result = wxMessageBox(message, "Project already open", wxOK | wxCANCEL | wxICON_QUESTION);
 
 		if(result == wxCANCEL)
 		{
@@ -2800,7 +2850,7 @@ void ChameleonWindow::OnTreeItemActivated(wxTreeEvent &event)
 		}
 		else if(parentItem == m_projectFileFolders[2])
 		{
-			wxMessageBox("Only source files can be opened", "Chameleon");
+			wxMessageBox("Only source files can be opened", "Chameleon", wxOK | wxICON_INFORMATION);
 			return;
 		}
 	}
@@ -2834,7 +2884,7 @@ void ChameleonWindow::CloseProjectFile(bool canUserCancel)
 			}
 
 			int response = wxMessageBox("Do you want to close all files from this project?", 
-				"Close Project", allowedResponse | wxCENTER);
+				"Close Project", allowedResponse | wxCENTER | wxICON_QUESTION);
 
 			if(response == wxYES)
 			{
@@ -3127,26 +3177,37 @@ void ChameleonWindow::Compile()
 {
 	bool doCompile = true;
 
-	if(!m_currentEd->HasBeenSaved())
+	if(!m_compileProject)
 	{
-		wxMessageBox("Please save this file before trying to compile it.", 
-			"Unsaved File", wxOK | wxICON_INFORMATION);
+		if(!m_currentEd->HasBeenSaved())
+		{
+			wxMessageBox("Please save this file before trying to compile it.", 
+				"Unsaved File", wxOK | wxICON_INFORMATION);
 
-		doCompile = false;
-	}
-	else if(m_currentEd->Modified())
-	{
-		// yes, same message... this can later be changed to ask about 
-		// saving, then do the appropriate thing.
-		wxMessageBox("Please save this file before trying to compile it.", "Unsaved File",
-			wxOK | wxICON_INFORMATION);
+			doCompile = false;
+		}
+		else if(m_currentEd->Modified())
+		{
+			// yes, same message... this can later be changed to ask about 
+			// saving, then do the appropriate thing.
+			wxMessageBox("Please save this file before trying to compile it.", "Unsaved File",
+				wxOK | wxICON_INFORMATION);
 
-		doCompile = false;
-	}
+			doCompile = false;
+		}
+	}	
 
 	if(doCompile)
 	{		
-		ProjectInfo* projToCompile = m_currentEd->GetProject();
+		ProjectInfo* projToCompile;
+		if(m_compileProject)
+		{
+			projToCompile = m_projMultiFiles;
+		}
+		else
+		{
+			projToCompile = m_currentEd->GetProject();
+		}
 
 		if(!projToCompile->IsRemote())
 		{
