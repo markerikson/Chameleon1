@@ -27,6 +27,7 @@
 #include "ProfOptionsDialog.h"
 #include "../perms/p.h"
 #include "../common/Crc16.h"
+#include "../common/fixvsbug.h"
 #include <stdlib.h>
 
 ////@begin XPM images
