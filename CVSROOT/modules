@@ -25,5 +25,5 @@
 # can be useful for creating a module that consists of many directories
 # spread out over the entire source repository.
 gears_web gears/web
-#web -a gears_web
 gears_chameleon gears/chameleon
+gears_misc gears/misc
