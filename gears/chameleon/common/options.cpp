@@ -14,7 +14,7 @@ Options::Options()
 	// Set Some Default Values (perhaps these should not be set!)
 	m_pscpProg = "pscp.exe";
 	m_plinkProg = "plink.exe";
-	m_mingwPath = "c:\\program files\\mingw\\";
+	m_mingwPath = "C:\\Program Files\\MinGW\\bin\\";
 	m_username = "username";
 	m_hostname = "localhost";
 	m_password = "password";
