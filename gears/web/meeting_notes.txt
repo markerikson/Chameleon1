@@ -218,3 +218,32 @@ by: Ben
 
 >>Comming up!!
 	*Meeting with Shomper: 8am Wed.; presenting the SRS (2nd revision... who has that?)
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Group Meeting 10/19/2003 11:20pm
+by: Ben
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Quickie Update
+>>Needs?
+	*SRS: Use case, due Thurs.  Mark's got it.  I should do it.  :)
+	*Presentation!!
+	*Requirements Mng. Position??
+	*Permissions Interface: bit-matching!
+		~32 bits!  w00t!
+		~passwords?  that he can rotate?
+		~based on password it decides what's enabled
+		~passwords with bit-matching?  woah
+		~no server connection.  no daemon program.
+>>Presentation
+	~Mark sends list with our Initials for ideas research
+	~have all ideas back by Tuesday 6p
+	~Wed: 15 min presentation: 10pm
+>>No meetin' Thursday
+>>Next meetin': Monday, 11
+>Items for consideration
+	*Threading
+	*Eclipse experimentation (IDE... Dave's development env.)
+	*Plink (commandline version of putty)-- Dave's arena
+>>Goals
+	Dave: getting Plink to run, WXWindows
+	Mark: GUI! GUI! GUI!
+	Ben: begin code>> permissions manager (experiment with bitmatching)
