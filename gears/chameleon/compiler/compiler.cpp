@@ -107,10 +107,10 @@ void Compiler::StartLinking() {
 	// Create outfile name:
 	wxString name = m_currProj->GetProjectBasePath();
 	if(isRemote) {
-		name += "/" + m_currProj->GetProjectName() + ".exe";
+		name += "/" + m_currProj->GetProjectName() + ".out";
 	}
 	else {
-		name += "\\" + m_currProj->GetProjectName() + ".out";
+		name += "\\" + m_currProj->GetProjectName() + ".exe";
 	}
 	wxFileName outFile(name);
 
@@ -145,6 +145,7 @@ void Compiler::StartLinking() {
 	CompilerEvent e(chEVT_COMPILER_START);
 	e.SetRemoteFile(isRemote);
 	e.SetFile(wxFileName("Linking")); // kind of icky
+	AddPendingEvent(e);
 
 	m_currFileNum++; // increment file counter
 
@@ -160,10 +161,10 @@ void Compiler::RemoveIntermediateFiles() {
 	}
 
 	if(m_currProj->IsRemote()) {
-//		m_network->StartRemoteCommand("rm " + files, this); //pehaps NULL (instead of this)
+		m_network->StartRemoteCommand("rm " + files, this); //pehaps NULL (instead of this)
 	}
 	else {
-//		m_network->StartLocalCommand("del " + files, this);
+		m_network->StartLocalCommand("del " + files, this);
 	}
 
 	m_intermediateFiles.Clear();
@@ -206,7 +207,6 @@ void Compiler::OnProcessTerm(ChameleonProcessEvent& e)
 			}
 			else {
 				//m_currFileNum is incremented at the end of StartNextFile()
-				//m_compilingStatus == CR_ERROR || m_compilingStatus == CR_OK
 				StartNextFile();
 			}
 		}

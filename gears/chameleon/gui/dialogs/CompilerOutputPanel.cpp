@@ -185,6 +185,11 @@ void CompilerOutputPanel::OnCompilerStart(CompilerEvent& event)
 	wxString filename = fn.GetFullPath(event.IsRemoteFile() ? wxPATH_UNIX : wxPATH_DOS);
 
 	wxString compileOutput = "Compiling: " + filename;
+	if(filename == "Linking") {
+		//special case for Linking
+		compileOutput = "Linking:";
+	}
+
 	if(m_isAdvanced)
 	{
 		int newRowNum = m_grid->GetNumberRows();
