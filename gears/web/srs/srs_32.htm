@@ -20,7 +20,8 @@
 
 <h4><a name="map">3.2.1.2 User Interface Map</a></h4>
 
-<p>The Graphical User Interface will consist of a main window with four sub-windows. These sub-windows would be for the Editor, Debugger, Compilation/Messages, and a Terminal window.</p>
+<p>The Graphical User Interface will consist of a main window with four sub-windows. These sub-windows would be for the Editor, Debugger/Compilation/Messages, Project/Files Management, and a Terminal window.</p>
+<p>Because of adaptability, these the only sub-window that will always exist is the editing window.  The others will appear as the complexity of the IDE increases.</p>
 
 <h4><a name="screen">3.2.1.3 Screen Designs</a></h4>
 
@@ -36,22 +37,35 @@
    
 
 <h4><a name="report">3.2.1.4 Report Formats</a></h4>
-
+7888
 <p>Report formats have not been determined yet.</p>
 
 <h3><a name="HI">3.2.2 Hardware Interfaces</a></h3>
 
+<<<<<<< srs_32.htm
+<p>There are no specific requirements regarding how the product interfaces with any particular hardware.  There will be Mouse interactions, because it is a graphical user interface.  There will be normal keyboard interactions for code entry.  And, there will be a screen for displaying the user interface.  Most other user hardware is irrelevant to the I.D.E..</p>
+=======
 <p>Chameleon will interface with generic hardware: monitor, mouse, keyboard, storage devices.  Special hardware such as network cards / modems will be interfaced through the operating system.  While communicating with the Linux server, it is expected that a network connection will be present before requests are sent to the host operating system.  Storage device I/O will also be generically performed through the host operating system.  Special hardware devices are not supported, such as pen mice, beyond what the operating system can emulate as a standard I/O device.</p>
 <!--<p>There are no specific requirements regarding how the product interfaces with any particular hardware.  There will be Mouse interactions, because it is a graphical user interface.  And, there will be normal keyboard interactions for code entry.  Most other user hardware is irrelevant to the I.D.E..</p>-->
+>>>>>>> 1.5
 
 <h3><a name="SI">3.2.3 Software Interfaces</a></h3>
 
+<<<<<<< srs_32.htm
+<p>The Operating System will need to be interfaced with for networking and graphical presentation.  Chameleon will also need to interface with a compiler, debugger, and SSH2 client.  Chameleon's direct interactions with these will be moslty command line based.</p>
+<p>Ideally, interfacing with the CS4310 Visual Debugger Program and Virtual Professor will be possible.  Interfacing with them has not been deined yet.</p>
+=======
 <p>The Operating System will need to be interfaced with for networking and graphical presentation.  Chameleon will also need to interface with a compiler and debugger.  The interactions will be mostly command line based.   There is also the possibility of the need to interface with SSH Client software, but this interaction has not been developed completely, yet.</p>
 <p>Once the development of a visual debugger is accomplished, it will be interfacing with Chameleon.</p>
+>>>>>>> 1.5
 
 <h3><a name="CI">3.2.4 Communication Interfaces</a></h3>
 
+<<<<<<< srs_32.htm
+<p>The objects that exist outside the scope of this project include the Linux server machine to which there will be communication.  This server machine will be interfaced with the Chameleon through an SSH2 Client because of the need to do secure command line operations and file transfer.</p> 
+=======
 <p>The objects that exist outside the locality of this project include the Linux server machine to which there will be communication.  This server machine will be interfaced with the Chameleon through the networking layer of the operating system.  It is likely that the openSSH 2.0 protocol will be used for this interfacing because of the need to do secure command line operations and file transfer.</p> 
+>>>>>>> 1.5
 
 <hr>
 <center>

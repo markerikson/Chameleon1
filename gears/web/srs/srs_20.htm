@@ -8,105 +8,62 @@
 
   <h2><a name="perspective">2.1 Product Perspective</a></h2>
 
-    Chameleon is to be, like the animal, adaptable.  The main functionality is that it is to interact as an IDE 
-	 with the user.  The IDE's adaptability is its ability to gradually introduce the user to the increasingly 
-	 complex features found in modern IDEs such as Microsoft's Visual Studio.  Interaction is accomplished through 
-	 use of the keyboard &amp; mouse, as well as the monitor &amp; printer, and may include some network interfacing.  
-	 Except for the possibility of expanding to external libraries or programs, this IDE will also interact with 
-	 the hard drive and floppy drive, but not with a video card beyond that which is necessary to display things 
-	 to the screen.  Interaction with the local network drivers, for example Internet or Ethernet, is required as 
-	 functionality will include the ability to communicate with remote servers.
-    <p>A summation of information flow can be listed as such:
-    </p><dl><dt><u>Bi-Directional</u></dt><dd><ul>
-        <li>External media (floppy drive, hard disk drive)</li>
-        <li>Network</li>
-      </ul></dd><dt><u>To-User Direction</u></dt><dd><ul>
-        <li>Monitor, video card</li>
-        <li>Printer</li>
-      </ul></dd><dt><u>From-User Direction</u></dt><dd><ul>
-        <li>Keyboard</li>
-        <li>Mouse</li>
-      </ul></dd></dl>
+    Chameleon is to be, like the animal, adaptable.  The main functionality is that it is to interact as an IDE with the user.  The IDE's adaptability is its ability to gradually introduce the user to the increasingly complex features found in modern IDEs such as Microsoft's Visual Studio.  Interaction is accomplished through use of the keyboard &amp; mouse, as well as the monitor &amp; printer, and some network interfacing.  Except for the possibility of expanding to external libraries or programs, this IDE will also interact with the hard drive and floppy drive, but not with a video card beyond that which is necessary to display things to the screen.  Interaction with the local network drivers, for example Internet or Ethernet, is required as functionality will include the ability to communicate with remote servers.
+    <p>A summation of information flow can be listed as such:</p>
+       <dl>
+         <dt><u>Bi-Directional</u></dt>
+           <dd> <ul>
+               <li>External media (floppy drive, hard disk drive)</li>
+               <li>Network</li>
+           </ul> </dd>
+         <dt><u>To-User Direction</u></dt>
+           <dd> <ul>
+             <li>Monitor, video card</li>
+             <li>Printer</li>
+           </ul> </dd>
+         <dt><u>From-User Direction</u></dt>
+           <dd> <ul>
+             <li>Keyboard</li>
+             <li>Mouse</li>
+           </ul> </dd>
+       </dl>
 
   <h2><a name="fig">Figure 1 - Context Diagram</a></h2>
+    <em>none</em>
 
     
 
   <h2><a name="functions">2.2 Product Functions and Features</a></h2>
-As mentioned in part 1 of this document, the product will present all
-of the functionality of a generic IDE, as well as certain abilities
-designed specifically for the project. These features include: <ul>
-        <li>A Master Control program from which the instructor can lock and unlock advanced IDE features such as 
-		  advanced debugging tools, class views or windows, terminal access, project access, etc.</li>
-        <li>A command-line terminal inside the program for communication with a remote server, most likely 
-		  Linux-based..</li>
+      As mentioned in part 1 of this document, the product will present all of the functionality of a generic IDE, as well as certain abilities designed specifically for the project. These features include:
+      <ul>
+        <li>A Master Control program from which the instructor can lock and unlock advanced IDE features such as advanced debugging tools, class views or windows, terminal access, project access, etc.</li>
+        <li>A command-line terminal inside the program for communication with a remote server.</li>
         <li>Debugging ability from base error detection to advanced step-by-step debugging ability.</li>
-        <li>Code syntax completion on-the-fly, completing class or common variable names while the user is typing 
-		  them (akin to Micosoft Word's ability to complete the date while typing it).</li>
+        <li>Code syntax completion on-the-fly, completing class or common variable names while the user is typing them (akin to Micosoft Word's ability to complete the date while typing it).</li>
         <li>Syntax highlighting</li>
         <li>Code block hiding: hide blocks of code down to one descriptive line.</li>
         <li>Project handling on a minor level</li>
+        <li>Generic Editor Behaviors</li>
       </ul><p></p>
 
   <h2><a name="users">2.3 User Characteristics</a></h2>
 
-<p>The expected entry level user (base level of experience) is that of a student with no experience with any IDE.  
-The teacher will have the master control switch to limit the functionality of the IDE so that a user new to an IDE 
-will not feel overwhelmed with the eyefulls of functionality that a full IDE can contain.  On the other side, power 
-users should feel right at home with the IDE being fully able to handle most major programming tasks.  Chameleon 
-is expected to cater to brand new users, novice users, moderate users, veteran users, and power users.</p>
-<p>Entry level users are just starting to program.  The editor will most likely appear as a simple textbox without 
-any coding assistance.  All compilation is done manually by the user using the terminal window.  The IDE allows 
-the user to open and save files, along with standard clipboard functions, but no further visual aids are provided.</p>
- <p>A novice user has learned the basics of programming.  Features such as syntax highlighting and debugging are 
- likely to become useful at this stage.  </p>
-<p>Moderate users are comfortable with the standard tasks involved in writing a program.  They will most likely be 
-ready to begin somewhat larger projects.  Chameleon's project management will allow multiple files and the 
-inclusion of outside libraries.  Since the user is now familiar with standard tasks such as compiling, they no 
-longer need to be done by hand and can be done with a standard toolbar button instead.</p>
-    <p>Advanced users are completely comfortable with most of the aspects of a programming project.  At this point,
-	  the user has access to all of Chameleon's available features, such as code folding in the editor.<br>
-</p>
-<p>Here's an example scenario in which the product is used:</p>
-<p>Jay R. Student is a freshman in CS1210.&nbsp; He's never done any
-programming before, but he considers himself a reasonably advanced
-Windows user.&nbsp; For his first programming assignment, he starts
-Chameleon and logs into John using the terminal.&nbsp; Jay decides to
-start with the "Hello World" example from class to make sure he knows
-what he's doing.&nbsp; He types it in, then goes to save it.&nbsp; When
-he hits save, the dialog shows the contents of his home folder, where
-Jay saves the file as "hello.cpp".&nbsp; Jay then clicks on the
-terminal window, and following his instructions types in "g++ hello.cpp
--o hello.exe".&nbsp; Fortunately, he entered the example correctly and
-it compiles fine.&nbsp; Again following instructions, he types in
-"./hello.exe" to run it and watches it print "Hello World" in his
-terminal.&nbsp; Now that he has some idea what he's doing, he goes on
-to write the rest of his program.<br>
-</p>
-Later in the semester, Jay is working on another assignment.&nbsp; By
-this time, more features have been enabled.&nbsp; As he types in his
-code, it's automatically highlighted and helps him with proper
-indentation.&nbsp; There's now a compile button available on the
-toolbar.&nbsp; When Jay clicks it, the command line is inserted into
-the terminal, but Jay has to hit enter in order to execute it.
+    <p>The expected entry level user (base level of experience) is that of a student with no experience with any IDE. The teacher will have the master control switch to limit the functionality of the IDE so that a user new to an IDE will not feel overwhelmed with the eyefulls of functionality that a full IDE can contain.  On the other side, power users should feel right at home with the IDE being fully able to handle most major programming tasks.  Chameleon is expected to cater to brand new users, novice users, moderate users, veteran users, and power users.</p>
+    <p>Entry level users are just starting to program.  The editor will most likely appear as a simple textbox without any coding assistance.  All compilation is done manually by the user using the terminal window.  The IDE allows the user to open and save files, along with standard clipboard functions, but no further visual aids are provided.</p>
+    <p>A novice user has learned the basics of programming.  Features such as syntax highlighting and debugging are likely to become useful at this stage.  </p>
+    <p>Moderate users are comfortable with the standard tasks involved in writing a program.  They will most likely be ready to begin somewhat larger projects.  Chameleon's project management will allow multiple files and the inclusion of outside libraries.  Since the user is now familiar with standard tasks such as compiling, they no longer need to be done by hand and can be done with a standard toolbar button instead.</p>
+    <p>Advanced users are completely comfortable with most of the aspects of a programming project.  At this point, the user has access to all of Chameleon's available features, such as code folding in the editor.<br></p>
+    <p>Here's an example scenario in which the product is used:</p>
+    <p>Jay R. Student is a freshman in CS1210.&nbsp; He's never done any programming before, but he considers himself a reasonably advanced Windows user.&nbsp; For his first programming assignment, he starts Chameleon and logs into John using the terminal.&nbsp; Jay decides to start with the "Hello World" example from class to make sure he knows what he's doing.&nbsp; He types it in, then goes to save it.&nbsp; When he hits save, the dialog shows the contents of his home folder, where Jay saves the file as "hello.cpp".&nbsp; Jay then clicks on the terminal window, and following his instructions types in "g++ hello.cpp -o hello.exe".&nbsp; Fortunately, he entered the example correctly and it compiles fine.&nbsp; Again following instructions, he types in "./hello.exe" to run it and watches it print "Hello World" in his terminal.&nbsp; Now that he has some idea what he's doing, he goes on to write the rest of his program.<br></p>
+       Later in the semester, Jay is working on another assignment.&nbsp; By this time, more features have been enabled.&nbsp; As he types in his code, it's automatically highlighted and helps him with proper indentation.&nbsp; There's now a compile button available on the toolbar.&nbsp; When Jay clicks it, the command line is inserted into the terminal, but Jay has to hit enter in order to execute it.
 
   <h2><a name="constraints">2.4 General Constraints</a></h2>
-
-<p>Chameleon's main target platform is Windows. The ability to run
-under Linux is desired, but as a secondary goal only. Exact
-specifications as to disk, RAM, Ethernet, operating system, and other
-general requirements are unknown. The best rule-of-thumb, as with all
-software, is to have the most up-to-date version of operating system
-possible. This will take care of minimum disk requirements and memory
-requirements.</p>
+    <p>Chameleon's main target platform is Windows. The ability to run under Linux is desired, but as a secondary goal only. Exact specifications as to disk, RAM, Ethernet, operating system, and other general requirements are unknown. The best rule-of-thumb, as with all software, is to have the most up-to-date version of operating system possible. This will take care of minimum disk requirements and memory requirements.</p>
 
   <h2><a name="assumptions">2.5 Assumptions and Dependencies</a></h2>
-This IDE is being provided as is, and it is assumed therefore that the
-actual ability to program has been communicated by some other means.
-The ability to correctly use our software when fully enabled can be
-inferred from accompanying documentation. This IDE is being presented
-under the assumption that it is going to be used in an education
-environment, though private use is being considered. <hr>
+    <p>This IDE is being provided as is, and it is assumed therefore that the actual ability to program has been communicated by some other means. The ability to correctly use our software when fully enabled can be inferred from accompanying documentation. This IDE is being presented under the assumption that it is going to be used in an education environment, though private use is being considered.
+
+  <hr>
 
 
 <center>
