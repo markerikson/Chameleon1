@@ -64,6 +64,7 @@ END_EVENT_TABLE()
 Debugger::Debugger(wxTextCtrl* outBox, Networking* networking, wxEvtHandler* pointer)
 {
 	flushPrivateVar();
+	varCount = 0;
 
 	myEvent = NULL;
 
@@ -241,8 +242,13 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 	}
 
 	case ID_DEBUG_STOP:
+	{
 		stop(false);
+		wxDebugEvent dbg;
+		dbg.SetStatus(ID_DEBUG_EXIT_NORMAL);
+		guiPointer->AddPendingEvent(dbg);
 		break;
+	}
 
 	case ID_DEBUG_STEPNEXT:
 		step();
@@ -1216,7 +1222,8 @@ void Debugger::sendPrint(wxString fromGDB)
 				}
 
 				//~~DEBUG~~
-				wxLogDebug("--sendPrint: ampIdx:"+ ampIdx +" // singleLine:" +singleLine);
+				//wxLogDebug("--sendPrint: ampIdx:"+ ampIdx +" // singleLine:" +singleLine);
+				wxLogDebug("--sendPrint: ampIdx: %d, singleLine: %s", ampIdx, singleLine);
 
 				fromWatch.Add(singleLine);
 				ampIdx = -2;
@@ -1233,7 +1240,7 @@ void Debugger::sendPrint(wxString fromGDB)
 			}
 
 			//fromGDB.Remove(0, 1);	//get rid of the \r we avoided before
-			fromGDB = fromGDB.AfterFirst('\n');
+			//fromGDB = fromGDB.AfterFirst('\n');
 		}
 	}while(fromGDB != PROMPT_CHAR);
 
@@ -1345,7 +1352,8 @@ void Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 				}
 				else if(m_varInfo[i].type.Find("[") == -1)
 				{
-					wxRegEx global = varRegExes[m_varInfo[i].type];
+					wxString regex = varRegExes[m_varInfo[i].type];
+					wxRegEx global = regex;
 					if(global.Matches(singleLine))
 					{
 						match = global.GetMatch(singleLine, 1);
@@ -1892,7 +1900,7 @@ void Debugger::flushPrivateVar()
 	//m_lastClassVisited.Clear();
 	//gdbVarIndex = 1;
 	//guiVarIndex = 0;
-	varCount = 0;
+	
 }
 
 //sendCommand(): handles sending a command to the stream.
