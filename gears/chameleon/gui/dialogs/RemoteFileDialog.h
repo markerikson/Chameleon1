@@ -33,6 +33,10 @@
 class wxListCtrl;
 ////@end forward declarations
 
+class ChameleonEditor;
+class ChameleonWindow;
+class Networking;
+
 /*!
  * Control identifiers
  */
@@ -42,7 +46,7 @@ class wxListCtrl;
 #define ID_COMBOBOX2 10006
 #define ID_BUTTON2 10007
 #define ID_LISTCTRL 10001
-#define ID_TEXTCTRL 10008
+#define ID_TXTFILENAME 10008
 #define ID_BUTTON 10003
 #define ID_COMBOBOX1 10004
 #define ID_BUTTON1 10005
@@ -60,7 +64,13 @@ class RemoteFileDialog: public wxDialog
 public:
     /// Constructors
     RemoteFileDialog( );
-    RemoteFileDialog( wxWindow* parent, wxWindowID id = -1, const wxString& caption = _("Open/Save"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU );
+    RemoteFileDialog( wxWindow* parent, 
+						wxWindowID id = -1, 
+						const wxString& caption = _("Open/Save"), 
+						const wxPoint& pos = wxDefaultPosition, 
+						const wxSize& size = wxDefaultSize, 
+						long style = wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU );
+
 
     /// Creation
     bool Create( wxWindow* parent, wxWindowID id = -1, const wxString& caption = _("Open/Save"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU );
@@ -88,7 +98,8 @@ public:
 
 ////@end RemoteFileDialog member function declarations
 
-	wxString GetFileName();
+	void SetNetworking(Networking* network);
+	wxString GetFileNameAndPath();
 
     /// Should we show tooltips?
     static bool ShowToolTips();
@@ -103,6 +114,9 @@ public:
     wxString m_currentPath;
     wxFileName m_fullPathName;
 ////@end RemoteFileDialog member variables
+
+	ChameleonWindow* m_parentFrame;
+	Networking* m_network;
 };
 
 #endif

@@ -27,6 +27,9 @@
 ////@end includes
 
 #include "RemoteFileDialog.h"
+#include "../ChameleonWindow.h"
+#include "../../network/networking.h"
+//#include "../../editor/editor.h"
 
 ////@begin XPM images
 ////@end XPM images
@@ -60,11 +63,14 @@ END_EVENT_TABLE()
 
 RemoteFileDialog::RemoteFileDialog( )
 {
+
 }
 
 RemoteFileDialog::RemoteFileDialog( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
 {
     Create(parent, id, caption, pos, size, style);
+
+	m_parentFrame = (ChameleonWindow*)parent;
 }
 
 /*!
@@ -129,7 +135,7 @@ void RemoteFileDialog::CreateControls()
     wxStaticText* item10 = new wxStaticText( item1, wxID_STATIC, _("File &name:"), wxDefaultPosition, wxSize(90, -1), 0 );
     item9->Add(item10, 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT, 5);
 
-    wxTextCtrl* item11 = new wxTextCtrl( item1, ID_TEXTCTRL, _(""), wxDefaultPosition, wxSize(246, -1), 0 );
+    wxTextCtrl* item11 = new wxTextCtrl( item1, ID_TXTFILENAME, _(""), wxDefaultPosition, wxSize(246, -1), 0 );
     m_txtFilename = item11;
     item9->Add(item11, 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT, 5);
 
@@ -169,17 +175,27 @@ void RemoteFileDialog::OnButtonOpenClick( wxCommandEvent& event )
 {
     // Insert custom code here
 
-	wxString filename = m_txtFilename->GetValue();
+	wxString remoteFilename = m_txtFilename->GetValue();
 
-	if(filename == wxEmptyString)
+	if(remoteFilename == wxEmptyString)
 	{
 		return;
 	}
 
-	m_fullPathName.SetName(filename);
+	m_fullPathName.SetName(remoteFilename);
 	m_fullPathName.SetPath(m_currentPath);
 
 	EndModal(wxOK);
+
+	wxString fileToOpen = m_network->GetFile(remoteFilename, m_currentPath);
+
+	wxArrayString fileNameList;
+
+	fileNameList.Add(fileToOpen);
+	m_parentFrame->OpenFile(fileNameList);
+
+	
+	
 }
 
 /*!
@@ -208,11 +224,22 @@ void RemoteFileDialog::OnButtonBackClick( wxCommandEvent& event )
 {
     // Insert custom code here
     event.Skip();
+
+	
+
+
 }
 
-wxString RemoteFileDialog::GetFileName()
+wxString RemoteFileDialog::GetFileNameAndPath()
 {
 	return m_fullPathName.GetFullPath();
 }
+
+
+void RemoteFileDialog::SetNetworking(Networking* network)
+{
+	m_network = network;
+}
+
 
 
