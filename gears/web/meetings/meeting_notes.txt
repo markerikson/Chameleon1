@@ -907,3 +907,31 @@ by: Ben
 		--Phase 3 - Projects
 		--Phase 4 - Debugger
 		--Phase 5 - Adv. Compiling
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Group Meeting 4/22/2004 9:00pm
+by: Ben
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+>>LAST MEETING!!!
+>>Final Turn in:
+	*T drive needs
+		-Documents
+		-ALL Source & data Files
+		-web content
+		-anything else (compress what files you have into a big document... summarize, etc)
+		-etc
+		-burned CD?
+		-installation CD
+>>What needs to be done before then:
+	*Documentation (source, and other)
+	*Commented code (if neccesary) delete (code cleanup-> Sat night)
+	*local process
+	*cancel compile
+>>Big discussion
+	*local compilation
+	*path situation with GDB
+	*library linkage
+	*GUI change
+>>Meet Sunday to Finalize
+	*local compiling working??
+	*compilation cancelation
+	*debugging after local compilation
