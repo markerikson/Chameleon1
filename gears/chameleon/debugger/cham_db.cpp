@@ -33,116 +33,24 @@
 
 //using namespace std;
 
-// Event Table Declaration
+//vent handling
 BEGIN_EVENT_TABLE(Debugger, wxEvtHandler)
 	EVT_PROCESS2_ENDED(Debugger::onProcessTermEvent)
 	EVT_PROCESS2_STDOUT(Debugger::onProcessOutputEvent)
 	EVT_PROCESS2_STDERR(Debugger::onProcessErrOutEvent)
+
+	EVT_DEBUG(Debugger::onDebugEvent)
 END_EVENT_TABLE()
 
 //straight up constructor
-Debugger::Debugger(bool mode, wxString fName, wxString execThis, wxTextCtrl* outBox)
+Debugger::Debugger(wxTextCtrl* outBox)
 {
-	//dave code
+	flushPrivateVar();
+
 	outputScreen = outBox;
-
-	//generic initialization
-	isRemote = mode;			//false = local
 	procLives = false;
-	classStatus = START;
-	
-	currFile = fName;
-	
-	histPointer = 0;
-	breakpointCount = 0;
-	deadBreakpoints = 0;
-	errorCount = 0;
-	currDebugLine = 0;
-	gdbVarIndex = 0;
-	
-
-	firstExecString = execThis;
-
-	if(isRemote)
-	{returnChar = "\r";}
-	else
-	{returnChar = "\n";}
-
-	if(fName != "")
-	{
-		status = DEBUG_STOPPED;
-		fileIsSet = true;
-	}
-	else
-	{
-		status = DEBUG_NEED_FILE;
-		fileIsSet = false;
-	}
-
-	varCount = 0;
-
-	//begin funky process stuff
-	debugProc = new wxProcess2(this);
-	
-	//initial commands to GDB
-	command = execThis;
-	updateHistory(command);
-	
-	//this is dave's \/ 
-	//pid = wxExecute("plink.exe -pw dayspring danroeber@163.11.160.218 gdb -q", wxEXEC_ASYNC, debugProc);
-
-	//this is me.
-	pid = wxExecute(execThis, wxEXEC_ASYNC, debugProc);
-
-	if (pid == 0)
-	{
-		//Debug started unsuccessfully
-		status = DEBUG_DEAD;
-		classStatus = STOP;
-		error = "Unable to launch.  Process ID not assigned.";
-		makeGenericError("Launch_fail");
-		delete debugProc;
-	}
-	else if(pid == -1)
-	{
-		status = DEBUG_DEAD;
-		classStatus = STOP;
-		error = "Unable to launch process.  -1 PID assigned";
-		makeGenericError("Get a real operating system!");
-		delete debugProc;
-	}
-	else
-	{
-		int currInit = 0;
-		wxArrayString initString;
-
-		//dave code
-		(*outputScreen) << "Started Process.  PID: " << pid << "\n";
-
-		procLives = true;
-
-		streamIn = debugProc->GetInputStream();		//GDB to me
-		streamError = debugProc->GetErrorStream();	//problems
-
-		//initialize GDB
-		initString.Add("set prompt " + PROMPT_CHAR + returnChar);
-		initString.Add("set print pretty on" + returnChar);
-		initString.Add("set print address off" + returnChar);
-		initString.Add("set confirm off" + returnChar);
-
-		//send all initlization commands to GDB
-		while(currInit < int(initString.GetCount()))
-		{
-			sendCommand(initString.Item(currInit));
-			currInit++;
-		}
-		
-		if(fileIsSet)
-		{
-			command = "file " + currFile + returnChar;
-			sendCommand(command);
-		}//end set-file conditional
-	}//end GDB execution failure-conditional
+	status = DEBUG_DEAD;
+	classStatus = STOP;
 }
 //end constructors
 
@@ -178,24 +86,7 @@ Debugger::~Debugger()
 	}
 
 	//attempt kill of the process
-	int success = debugProc->Kill(pid, wxSIGTERM);
-	switch(success)	//check success
-	{
-		case wxKILL_BAD_SIGNAL: 
-			makeGenericError("failure on soft kill: bad signal");
-			debugProc->Kill(pid, wxSIGKILL);	//slay the beast
-			break;
-		case wxKILL_ACCESS_DENIED:
-			makeGenericError("could not kill process: access denied");
-			break;
-		case wxKILL_NO_PROCESS:
-			makeGenericError("tried to kill non-existent process?!?");
-			break;
-		case wxKILL_ERROR: 
-			makeGenericError("failure on soft kill: unknown error");
-			debugProc->Kill(pid, wxSIGKILL);	//KILL KILL KILL!!
-			break;
-	};
+	stop(false);
 
 	//dump history & errors into debug file
 	wxFile dumpFile("dump.txt");
@@ -209,12 +100,17 @@ Debugger::~Debugger()
 	for(int o = 0; o < errorCount; o++)
 		dumpFile.Write(errorHist[o]);
 	dumpFile.Close();
-
-	//kill pointers
-	delete debugProc;
-	delete streamIn;
-	delete streamError;
 }//end ~Debugger
+
+//onDebugEvent(): catches when Mark sends me something...
+void Debugger::onDebugEvent(wxDebugEvent &event)
+{
+	int eventCommand = event.GetId();
+
+//	switch(eventCommand)
+//	{
+//	}
+}
 
 //PUBLIC FUNCTIONS:
 //-----------------
@@ -247,6 +143,16 @@ void Debugger::setMode(bool mode)
 bool Debugger::getMode()
 {
 	return(isRemote);
+}
+
+bool Debugger::isDebugging()
+{
+	return(status == DEBUG_RUNNING);
+}
+
+bool Debugger::isPaused()
+{
+	return(status == DEBUG_WAIT || status == DEBUG_BREAK);
 }
 
 //setFile(): set's the current file to be debugged.
@@ -307,18 +213,9 @@ bool Debugger::resetStatus()
 	if(status == DEBUG_RUNNING)
 	{
 		//if it's running, kill it...
-		bool success = stop(true);
+		stop(true);
 		
-		if(success)
-		{
-			status = DEBUG_STOPPED;
-		}
-		else	//this code should NEVER be done....
-		{
-			status = DEBUG_ERROR;
-			error = "failed to STOP() debug";
-			addErrorHist("resetStatus() <o.0>:");
-		}
+		status = DEBUG_STOPPED;
 	}
 
 	//i figure that if someone wants to reset the Debugger, then
@@ -328,6 +225,11 @@ bool Debugger::resetStatus()
 	if(status != DEBUG_DEAD)
 	{
 		wxArrayString debugReset;
+
+		if(numBreaks() > 0)
+		{
+			debugReset.Add("delete breakpoint" + returnChar);
+		}
 
 		//if the file was just loaded... no need to kill something not
 		//running.  ^_^  + it generates an error
@@ -343,11 +245,6 @@ bool Debugger::resetStatus()
 
 			//now change the status
 			status = DEBUG_STOPPED;
-		}
-
-		if(numBreaks() > 0)
-		{
-			debugReset.Add("delete breakpoint" + returnChar);
 		}
 
 		//end reset commands...
@@ -403,11 +300,7 @@ void Debugger::setProcess(wxString nExec)
 	status = DEBUG_RUNNING;
 		
 	resetStatus();
-	bool success = stop(false);
-
-	if(!success)
-	{debugProc->Kill(pid, wxSIGKILL);} //KILL KILL KILL!!
-
+	
 	delete debugProc;
 	delete streamIn;
 	delete streamError;
@@ -458,6 +351,7 @@ void Debugger::setProcess(wxString nExec)
 		//send all initlization commands to GDB
 		while(currInit < int(initString.GetCount()))
 		{
+			(*outputScreen)<<"INIT COMM: "<<initString.Item(currInit)<<"\n";
 			sendCommand(initString.Item(currInit));
 			currInit++;
 		}
@@ -472,6 +366,118 @@ void Debugger::setProcess(wxString nExec)
 			status = DEBUG_NEED_FILE;
 		}
 	}//end execution failure-conditional
+}
+
+
+void Debugger::startProcess(bool fullRestart, bool mode, wxString fName, wxString execThis, wxTextCtrl* outBox)
+{
+	if(fullRestart)
+	{
+		//dave code
+		outputScreen = outBox;
+
+		//generic initialization
+		isRemote = mode;			//false = local
+		currFile = fName;
+	
+		histPointer = 0;
+		breakpointCount = 0;
+		deadBreakpoints = 0;
+		errorCount = 0;
+		currDebugLine = 0;
+		gdbVarIndex = 0;
+		varCount = 0;
+	
+		firstExecString = execThis;
+	}
+
+	if(isRemote)
+	{returnChar = "\r";}
+	else
+	{returnChar = "\n";}
+
+	if(fName != "")
+	{
+		status = DEBUG_STOPPED;
+		fileIsSet = true;
+	}
+	else
+	{
+		status = DEBUG_NEED_FILE;
+		fileIsSet = false;
+	}
+	
+	if(debugProc == NULL)
+	{
+		//begin funky process stuff
+		debugProc = new wxProcess2(this);
+	}
+
+	procLives = false;
+	classStatus = NEW_PROC;
+	
+	//initial commands to GDB
+	command = execThis;
+	updateHistory(command);
+	
+	//this is dave's \/ 
+	//pid = wxExecute("plink.exe -pw dayspring danroeber@163.11.160.218 gdb -q", wxEXEC_ASYNC, debugProc);
+
+	//this is me.
+	pid = wxExecute(execThis, wxEXEC_ASYNC, debugProc);
+
+	if (pid == 0)
+	{
+		//Debug started unsuccessfully
+		status = DEBUG_DEAD;
+		classStatus = STOP;
+		error = "Unable to launch.  Process ID not assigned.";
+		makeGenericError("Launch_fail");
+		delete debugProc;
+	}
+	else if(pid == -1)
+	{
+		status = DEBUG_DEAD;
+		classStatus = STOP;
+		error = "Unable to launch process.  -1 PID assigned";
+		makeGenericError("Get a real operating system!");
+		delete debugProc;
+	}
+	else
+	{
+		//int currInit = 0;
+		wxArrayString initString;
+		wxString tmp;
+
+		//dave code
+		(*outputScreen) << "Started Process.  PID: " << pid << "\n";
+
+		procLives = true;
+		classStatus = START;
+
+		streamIn = debugProc->GetInputStream();		//GDB to me
+		streamError = debugProc->GetErrorStream();	//problems
+
+		//initialize GDB
+		tmp.Printf("set prompt %s%s", PROMPT_CHAR, returnChar);
+		initString.Add(tmp);
+		initString.Add("set print pretty on" + returnChar);
+		initString.Add("set print address off" + returnChar);
+		initString.Add("set confirm off" + returnChar);
+
+		//send all initlization commands to GDB
+		for(int currInit = 0; currInit < int(initString.GetCount()); currInit++)
+		{
+			(*outputScreen)<<"INIT COMM: "<<initString[currInit];
+			sendCommand(initString.Item(currInit));
+		}
+		
+		if(fileIsSet)
+		{
+			command = "file " + currFile + returnChar;
+			sendCommand(command);
+		}//end set-file conditional
+	}//end GDB execution failure-conditional
 }
 //END PROGRAM STATUS
 
@@ -498,7 +504,7 @@ void Debugger::setBreak(int lineNum)
 	
 		sendCommand(command);
 	
-		breakpointLoc.Add(lineNum);
+//		breakpointLoc.Add(lineNum);
 		breakpointCount++;
 	}
 }
@@ -516,12 +522,12 @@ void Debugger::enableBreak(int lineNum)
 		classStatus = E_BREAK;
 		//get the breakpoint number by locating it using wxArrayInt
 		//note: at this point [breakNum] is actually an INDEX
-		int breakNum = breakpointLoc.Index(lineNum, false);
+		int breakNum = 0; //breakpointLoc.Index(lineNum, false);
 
 		if(breakNum != wxNOT_FOUND)
 		{
 			//we found it!  
-			breakNum = breakpointLoc[breakNum];
+			//breakNum = breakpointLoc[breakNum];
 			command.Printf("enable %d%s", breakNum, returnChar.c_str());
 			sendCommand(command);
 		}
@@ -546,12 +552,12 @@ void Debugger::disableBreak(int lineNum)
 		classStatus = D_BREAK;
 		//get the breakpoint number by locating it using wxArrayInt
 		//note: at this point [breakNum] is actually an INDEX
-		int breakNum = breakpointLoc.Index(lineNum, false);
+		int breakNum = 0;//breakpointLoc.Index(lineNum, false);
 
 		if(breakNum != wxNOT_FOUND)
 		{
 			//we found it!  
-			breakNum = breakpointLoc[breakNum];
+			//breakNum = breakpointLoc[breakNum];
 			command.Printf("disable %d%s", breakNum, returnChar.c_str());
 			sendCommand(command);
 		}
@@ -573,12 +579,12 @@ void Debugger::killBreak(int lineNum)
 		status == DEBUG_BREAK)
 	{
 		//see [disableBreak()]
-		int breakNum = breakpointLoc.Index(lineNum, false);
+		int breakNum = 0;//breakpointLoc.Index(lineNum, false);
 
 		if(breakNum != wxNOT_FOUND)
 		{
 			classStatus = K_BREAK;
-			breakNum = breakpointLoc[breakNum];
+			//breakNum = breakpointLoc[breakNum];
 
 			command.Printf("delete %d%s", breakNum, returnChar.c_str());
 			sendCommand(command);
@@ -688,8 +694,11 @@ void Debugger::go()
 	}//end status check
 }//wow, tough
 
-bool Debugger::stop(bool pleaseRestart)
+void Debugger::stop(bool pleaseRestart)
 {
+	int statBackup = status;
+	int classStatB = classStatus;
+
 	if(status == DEBUG_RUNNING || status == DEBUG_ERROR)
 	{
 		debugProc->Kill(pid, wxSIGKILL);	//KILL KILL KILL!!
@@ -704,83 +713,31 @@ bool Debugger::stop(bool pleaseRestart)
 		sendCommand(command);
 	}
 
-	classStatus = STOP;
-	status = DEBUG_STOPPED;
-
-	if(pleaseRestart)
+	//is this appropriate for me???
+	if(isRemote)
 	{
-		delete debugProc;
-		delete streamIn;
-		delete streamError;
-	
-		debugProc = new wxProcess2(this);
-
-		updateHistory("new proc->" + firstExecString);
-
-		//begin fresh...
-		classStatus = START;
-		pid = wxExecute(firstExecString, wxEXEC_ASYNC, debugProc);
-		if (pid == 0)
+		if(statBackup != DEBUG_RUNNING &&
+			statBackup != DEBUG_ERROR &&
+			statBackup != DEBUG_DEAD)
 		{
-			//Debug started unsuccessfully
-			status = DEBUG_DEAD;
-			classStatus = STOP;
-			error = "Unable to execute " + firstExecString + ".  Process ID not assigned.";
-			makeGenericError("Launch_fail");
-			delete debugProc;
+			command = "exit" + returnChar;
+			sendCommand(command);
 		}
-		else if(pid == -1)
-		{
-			status = DEBUG_DEAD;
-			classStatus = STOP;
-			error = "Unable to launch process.  -1 PID assigned";
-			makeGenericError("Get a real operating system!");
-			delete debugProc;
-		}
-		else	//process started
-		{
-			int currInit = 0;
-			wxArrayString initString;
-
-			procLives = true;
-			classStatus = NEW_PROC;
-			status = DEBUG_STOPPED;
-
-			streamIn = debugProc->GetInputStream();		//GDB to me
-			streamError = debugProc->GetErrorStream();	//problems
-
-			//initialize GDB
-			initString.Add("set prompt " + PROMPT_CHAR + returnChar);
-			initString.Add("set print pretty on" + returnChar);
-			initString.Add("set print address off" + returnChar);
-			initString.Add("set confirm off" + returnChar);
-
-			//send all initlization commands to GDB
-			while(currInit < int(initString.GetCount()))
-			{
-				sendCommand(initString.Item(currInit));
-				currInit++;
-			}
-		
-			if(fileIsSet)
-			{
-				command = "file " + currFile + returnChar;
-				sendCommand(command);
-			}//end set-file conditional
-			else
-			{
-				status = DEBUG_NEED_FILE;
-			}
-		}//end execution failure-conditional
-	}//end pleaseRestart conditional
-	else
-	{
-		procLives = false;
-		status = DEBUG_ERROR;
-		classStatus = STOP;
 	}
 
-	return(true);
+	classStatus = STOP;
+	status = DEBUG_DEAD;
+
+	delete debugProc;
+	delete streamIn;
+	delete streamError;
+	
+	procLives = false;
+
+	if(pleaseRestart)
+	{	
+		startProcess(true, isRemote, currFile, firstExecString, outputScreen);
+	}//end pleaseRestart conditional
 }
 
 //kill(): questions?
@@ -789,7 +746,16 @@ void Debugger::kill()
 	classStatus = STOP;
 	status = DEBUG_STOPPED;
 
+	procLives = false;
+
 	debugProc->Kill(pid, wxSIGKILL);	//KILL KILL KILL!!
+
+	delete debugProc;
+	delete streamIn;
+	delete streamError;
+
+	flushBuffer();
+	flushPrivateVar();
 }
 
 //cont(): continues running a stopped program
@@ -858,7 +824,7 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 
 	//!!END variables!!//
 
-	//status = DEBUG_WAIT;
+	status = DEBUG_WAIT;
 
 	//data now has the output...
 	tempHold = e.GetOutput();
@@ -891,7 +857,7 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 	}
 
 	//check to see if something good was found.
-	if(classStatusBackup == 0)
+	if(classStatusBackup != 0)
 	{
 		classStatusBackup = classStatus;
 		classStatus = WAITING;
@@ -902,7 +868,6 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 	{
 		case START:			//program start
 			flushBuffer();
-			status = DEBUG_STOPPED;
 			break;
 
 		case E_BREAK:		//enable break
@@ -919,7 +884,6 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 
 		case NEW_PROC:		//change in process pointer
 			flushBuffer();
-			status = DEBUG_STOPPED;
 			break;
 
 		case VAR_ASSIGN:
@@ -1035,6 +999,7 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 			break;
 
 		case WAITING:		//i'm waiting...
+			classStatus = classStatusBackup;
 			break;
 
 		case STOP:
@@ -1052,8 +1017,6 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 			makeGenericError("failure on output parse:");
 			data.Empty();
 	}
-
-	classStatus = classStatusBackup;
 }
 
 void Debugger::onProcessErrOutEvent(wxProcess2StdErrEvent &e)
@@ -1064,8 +1027,7 @@ void Debugger::onProcessErrOutEvent(wxProcess2StdErrEvent &e)
 	error = e.GetError();
 	addErrorHist("Event-Generated error");
 
-	(*outputScreen)<<"Event Error: "<<error<<"\n";
-
+	(*outputScreen)<<"Generated Error: "<<error<<"\n";
 	//again, some event stuff here...
 }
 
@@ -1074,7 +1036,7 @@ void Debugger::onProcessTermEvent(wxProcess2EndedEvent &e)
 	//the process has been killed (aka GDB quit for some reason)
 	if(e.GetPid() == pid) 
 	{
-		(*outputScreen)<<"Process "<<pid<<" terminated\n";
+		(*outputScreen)<<"Process ("<<pid<<") Terminated\n";
 
 		status = DEBUG_DEAD;
 		classStatus = STOP;
@@ -1083,8 +1045,6 @@ void Debugger::onProcessTermEvent(wxProcess2EndedEvent &e)
 		pid = -2; // a nothing pid
 		procLives = false;
 		delete debugProc;
-		delete streamIn;
-		delete streamError;
 	}
 }
 
@@ -1092,6 +1052,38 @@ void Debugger::onProcessTermEvent(wxProcess2EndedEvent &e)
 void Debugger::flushBuffer()
 {
 	data.Empty();
+}
+
+//flushPrivateVar(): erases all private data members
+void Debugger::flushPrivateVar()
+{
+	isRemote = false;
+	procLives = false;
+	fileIsSet = false;
+	currFile = "";
+	pid = 0;
+	currDebugLine = 0;
+	breakpointCount = 0;
+	deadBreakpoints = 0;
+	//breakpointLoc.Empty();
+
+	for(int i = 0; i < MAX_HIST_ITEMS; i++)
+	{
+		commandHistory[i] = "";
+	}
+
+	histPointer = 0;
+	error = "";
+	errorHist.Empty();
+	errorCount = 0;
+	command = "";
+	returnChar = "";
+	data.Empty();
+	varNames.Empty();
+	varValue.Empty();
+	varDispIndex.Empty();
+	gdbVarIndex = 0;
+	varCount = 0;
 }
 
 //getResult(): handles getting the streamed output... i think...
@@ -1108,6 +1100,10 @@ void Debugger::sendCommand(wxString send)
 		wxTextOutputStream streamOut(*(debugProc->GetOutputStream()));//me to GDB
 		streamOut.WriteString(send);
 		send = send + "<- sent";
+	}
+	else
+	{
+		send = send + "<- NOT SENT: PROC DEAD";
 	}
 	updateHistory(send);
 }

@@ -21,6 +21,7 @@
 
 #include "../common/process2.h"
 #include "../common/process2events.h"
+#include "../common/debugevent.h"
 
 //dave code
 #include <wx/textctrl.h>
@@ -67,8 +68,10 @@ class Debugger : public wxEvtHandler
 {
 	public:
 		//defaults
-		Debugger(bool mode, wxString fName, wxString execThis, wxTextCtrl* outBox);
+		Debugger(wxTextCtrl* outBox);
 		~Debugger();					//destructor
+
+		void onDebugEvent(wxDebugEvent &event);
 
 		//status modifiers
 		void setMode(bool mode);		//switch between LOCAL and REMOTE mode
@@ -79,12 +82,13 @@ class Debugger : public wxEvtHandler
 
 		int genericStatus();			//returns current debug status
 		int programStatus();
+		bool isDebugging();				//returns whether i'm running or not
+		bool isPaused();				//returns status == DEBUG_WAIT more or less
 		wxString errorMsg();			//returns error message, if any
-		bool resetStatus();				//resets from error
+		bool resetStatus();				//hard reset * USE CAUTIOUSLY *
 		void clearError();				//just resets the status variable
 		
 		void setProcess(wxString nExec);//sets the current process pointer
-
 
 		//breakpoint management
 		void setBreak(int lineNum);		//set breakpoint
@@ -109,16 +113,19 @@ class Debugger : public wxEvtHandler
 		void removeVar(wxString varName);
 
 		//misc management
-		bool stop(bool pleaseRestart);	//kills process & reloads it (?)
+		void stop(bool pleaseRestart);	//kills process & reloads it (?)
 		void kill();					//simple?
 		int getCurrLine();				//returns current line number on debug
 		//use STEPI ^
 
 	private:
+		void startProcess(bool fullRestart, bool mode, wxString fName, wxString execThis, wxTextCtrl* outBox);
+
 		//misc functions i thought would be handy
 		void updateHistory(wxString addMe);	//so I don't have to do it manualy
 		wxString getHistoryItem(int offset);//ditto
 		void flushBuffer();					//flushes the input-data array
+		void flushPrivateVar();				//flushes all private variables
  
 		void sendCommand(wxString send);	//sends command & updates history
 		wxString getResult(int debugFlag);	//gets returned output
@@ -145,7 +152,8 @@ class Debugger : public wxEvtHandler
 		
 		int breakpointCount;		//counts breakpoints
 		int deadBreakpoints;		//counts deleted breakpoints
-		wxArrayInt breakpointLoc;	//hold breakpoint line #'s
+		//MARK IS NOW HANDLING IT//
+		//wxArrayInt breakpointLoc;	//hold breakpoint line #'s
 		
 		wxString commandHistory[MAX_HIST_ITEMS];	//stores command history
 		int histPointer;			//points to current command history
