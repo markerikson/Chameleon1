@@ -3,7 +3,7 @@
 #include "updateuihandler.h"
 #include "../editor/stc.h"
 
-//#include "../common/debug.h"
+#include "../common/debug.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

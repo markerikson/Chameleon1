@@ -149,9 +149,15 @@ void ChameleonNotebook::CreateBookMenus () {
 void ChameleonNotebook::OnSize(wxSizeEvent &event)
 {
 	event.Skip();
+}
 
-	wxString message;
-	wxSize size = event.GetSize();
-	message.Printf("X: %d, Y: %d", size.GetHeight(), size.GetWidth());
-	//wxLogDebug(message);
+// Find the position of the wxNotebookPage, -1 if not found.
+int ChameleonNotebook::FindPagePosition(wxNotebookPage* page)
+{
+	int nPageCount = GetPageCount();
+	int nPage;
+	for ( nPage = 0; nPage < nPageCount; nPage++ )
+		if (GetPage(nPage) == page)
+			return nPage;
+	return -1;
 }

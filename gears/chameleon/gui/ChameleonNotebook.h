@@ -20,6 +20,7 @@ public:
 
 	int HitTest(const wxPoint& pt, long& flags);
 	void TestMenu(wxCommandEvent& evt);
+	int FindPagePosition(wxNotebookPage* page);
 
 	void OnTabActivate (wxMouseEvent &event);
 

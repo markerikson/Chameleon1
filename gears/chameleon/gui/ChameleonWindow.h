@@ -179,6 +179,7 @@ private:
 	void UpdateMenuBar();
 	void UpdateToolbar();
 	void UpdatePermsList();
+	void UpdateTerminalNotebook();
 
 	int* TargetInt(int variableName);
 
@@ -198,7 +199,7 @@ private:
 	wxPanel* panelEd;
 	wxSplitterWindow*  m_splitEditorOutput;
 	wxSplitterWindow* m_splitProjectEditor;
-	wxTextCtrl* m_compilerOutput;
+	wxTextCtrl* m_compilerTextbox;
 	//UpdateUIHandler*  uih;
 	//wxTelnet*  m_telnet;
 	wxTermContainer* m_termContainer;
