@@ -35,10 +35,12 @@ class Networking {
 
 		// Methods
 		NetworkStatus GetStatus();
+		wxString GetStatusDetails();
 		wxString GetHomeDirPath(); // no trailing /
 		DirListing GetDirListing(wxString dirPath, bool forceRefresh = false, bool includeHidden = false);
 		wxString GetFileContents(wxString filename, wxString path);
 		void SendFileContents(wxString strng, wxString rfilename, wxString rpath);
+		void SSHCacheFingerprint();
 
 
 	private:
@@ -52,6 +54,7 @@ class Networking {
 		wxString plinkApp;
 		wxString downloadDir;
 		NetworkStatus status;
+		wxString statusDetails;
 };
 
 

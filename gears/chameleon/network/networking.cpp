@@ -23,6 +23,7 @@ Networking::Networking()
 	ssh_plink = new PlinkConnect(plinkApp, ssh_host, ssh_user, ssh_pass);
 }
 
+
 Networking::~Networking()
 {
 	delete ssh_plink;
@@ -42,6 +43,7 @@ DirListing Networking::GetDirListing(wxString dirPath, bool forceRefresh, bool i
 	// dirPath has no trailing "/"
 	return SSHGetDirListing(dirPath, includeHidden);
 }
+
 
 void Networking::SendFileContents(wxString strng, wxString rfile, wxString rpath)
 {
@@ -83,12 +85,6 @@ void Networking::SetPlinkProg(wxString path_name)
 	plinkApp = path_name;
 }
 
-// No longer needed
-//void Networking::SetPscpProg(wxString path_name)
-//{
-//	// This had better be accurate, because I don't handle an error in this well at all
-//	pscpApp = path_name;
-//}
 
 wxString Networking::GetHomeDirPath() {
 	// Does not return a trailing /
@@ -97,7 +93,6 @@ wxString Networking::GetHomeDirPath() {
 	r.Remove(r.Length()-1,1); // remove the "\n"
 	return r;
 }
-
 
 
 DirListing Networking::SSHGetDirListing(wxString dirPath, bool includeHidden)
@@ -183,31 +178,55 @@ wxString Networking::SSHSendCommand(wxString command) {
 		output.Truncate(output.Length()-21); // remove C_O_M_P_L_E_T_E_D_OK\n
 	}
 	else {
-		//figure out what went wrong
+		//enum NetworkStatus
+		//{
+		//	NET_GOOD = 0,
+		//	NET_UNKNOWN_HOST,  // host finger print not in cache
+		//	NET_ERROR_MESSAGE,
+		//	NET_AUTH_FAILED,   // user+pass did not work on host
+		//	NET_READ_ERROR,
+		//	NET_WRITE_ERROR
+		//};
+		// Means whatever command was sent
 		wxString errlog = ssh_plink->getErrors();
 		wxString message = ssh_plink->getMessage();
 
 		if(errlog.Contains("key is not cached") && errlog.Contains("Connection abandoned.") ) {
 			status = NET_UNKNOWN_HOST;
+			// StatusDetail will be the key
+			// Screen-scrape for the key:
+			statusDetails = errlog;
+			int len = 1+ statusDetails.Index("fingerprint is:\n")+16;
+			statusDetails.Remove(0,len);
+			len = 1+ statusDetails.Index("\n");
+			statusDetails.Truncate(len);
+		}
+		else if(errlog.Contains("Unable to authenticate")) {
+			status = NET_AUTH_FAILED;
+			statusDetails = errlog;
+			statusDetails.RemoveLast(); // "\n"
 		}
 		else {
 			status = NET_ERROR_MESSAGE;
+			statusDetails = errlog;
+			statusDetails.RemoveLast(); // "\n"
 		}
 	}
 
 	return output;
 }
 
+
 NetworkStatus Networking::GetStatus() {
 	return status;
 }
-/*
-enum NetworkStatus
-{
-	NET_GOOD = 0,
-	NET_UNKNOWN_HOST,  // host finger print not in cache
-	NET_ERROR_MESSAGE,
-	NET_READ_ERROR,
-	NET_WRITE_ERROR
-};
-*/
+
+
+wxString Networking::GetStatusDetails() {
+	return statusDetails;
+}
+
+
+void Networking::SSHCacheFingerprint() {
+	ssh_plink->acceptCacheFingerprint();
+}

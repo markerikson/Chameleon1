@@ -119,6 +119,7 @@ enum NetworkStatus
 	NET_GOOD = 0,
 	NET_UNKNOWN_HOST,  // host finger print not in cache
 	NET_ERROR_MESSAGE,
+	NET_AUTH_FAILED,   // user+pass did not work on host
 	NET_READ_ERROR,
 	NET_WRITE_ERROR
 };
