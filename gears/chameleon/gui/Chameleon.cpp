@@ -331,7 +331,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 	m_network = new Networking(m_options);
 	m_compiler = new Compiler(m_options, m_network);
-	m_debugger = new Debugger(NULL, m_network, this);
+	m_debugger = new Debugger(m_network, this);
 
 	m_optionsDialog = new OptionsDialog(this, m_options, ID_OPTIONSDIALOG, "Options");
 

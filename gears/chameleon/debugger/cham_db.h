@@ -3,10 +3,10 @@
 *
 *author: Ben Carhart
 *date started: 1/11/04
-*date finished:
+*date finished: 4/20/04
 *
 *description: Code for the implementation of a wrapper for GDB
-*revisions:
+*revisions: *see cham_db.cpp*
 *
 \*****************************************************************/
 
@@ -14,7 +14,6 @@
 #define CHAMELEON_DEBUGER_H
 
 #include <wx/string.h>
-//#include <wx/process.h>
 #include <wx/dynarray.h>
 #include <wx/event.h>
 #include <wx/txtstrm.h>
@@ -25,7 +24,7 @@
 #include "../common/datastructures.h"
 
 //dave code
-#include <wx/textctrl.h>
+//#include <wx/textctrl.h>
 
 class ProjectInfo;
 
@@ -76,16 +75,13 @@ class Debugger : public wxEvtHandler
 {
 	public:
 		//defaults
-		Debugger(wxTextCtrl* outBox, Networking* networking, wxEvtHandler* pointer);
+		Debugger(Networking* networking, wxEvtHandler* pointer);
 		~Debugger();					//destructor
 
 		void onDebugEvent(wxDebugEvent &event);
 
 		//status modifiers
-		void setMode(bool mode);		//switch between LOCAL and REMOTE mode
 		bool getMode();					//get current mode
-		
-		bool setFile(wxString fName);	//sets a file for debugging
 		wxString getFile();				//returns current file up for debugging
 
 		int genericStatus();			//returns current debug status
@@ -99,7 +95,7 @@ class Debugger : public wxEvtHandler
 		bool resetStatus();				//hard reset * USE CAUTIOUSLY *
 		void clearError();				//just resets the status variable
 		
-		void setProcess(bool newIsRemote, wxString newFname, wxString nExec);//sets the current process pointer
+		void setProcess(bool newIsRemote, wxString newFname, wxString nExec);
 
 		//breakpoint management
 		void setBreak(wxString srcFile, int lineNum);		//set breakpoint
@@ -128,7 +124,7 @@ class Debugger : public wxEvtHandler
 		wxString getProcOutput(int numEntries);	//get the process's output to X entries back
 
 	private:
-		void startProcess(bool fullRestart, bool mode, wxString fName, wxString execThis, wxTextCtrl* outBox);
+		void startProcess(bool fullRestart, bool mode, wxString fName, wxString execThis);
 
 		//misc functions i thought would be handy
 		void updateHistory(wxString addMe);	//so I don't have to do it manualy
@@ -140,7 +136,6 @@ class Debugger : public wxEvtHandler
 		void sendPrint(wxString fromGDB);	//for use with snoopVar as well
 		bool parsePrintOutput(wxString fromGDB, wxArrayString &varValue);
 		int findBreakpoint(wxString fName, int lineNum, bool andRemove = false);
-		//void sendWatchVariableCommand(wxString varName);
 		bool checkOutputStream(wxString stream);	//true = okay to parse further
  
 		void sendCommand(wxString send);	//sends command & updates history
@@ -163,12 +158,9 @@ class Debugger : public wxEvtHandler
 		int status;					//status of debugger
 		int classStatus;			//holds the last function called
 		long pid;					//process ID of GDB (if running)
-		//int currDebugLine;			//holds line number program is on
-		
+				
 		int gdbBreakpointNum;		//keeps track of GDB's #ing system
-		//int deadBreakpoints;		//counts deleted breakpoints
 		int numBreakpoints;			//keeps track of actual number of live ones
-		//wxArrayInt breakpointNum;	//hold breakpoint line #'s
 		DebugBreakHash lineToNum;
 		
 		wxArrayString commandHistory;	//stores command history
@@ -186,6 +178,23 @@ class Debugger : public wxEvtHandler
 		StringStringHashmap varRegExes;
 		wxString Filename, Linenumber, FuncName;	//globals for use in parse
 
+		int varCount;				//holds array position to insert next var
+
+		VariableInfoArray m_varInfo;//same as VariableInfoHash... only an array
+
+		wxString firstExecString;	//holds the first executed string
+		wxString currentSourceName;	//holds filename source
+
+		Networking *myConnection;	//the networking object for remote
+		wxTextOutputStream* streamOut;	//output to GDB
+		wxDebugEvent* myEvent;		//how i communicate
+
+		//GUI connectivity
+		wxEvtHandler* guiPointer;
+		ProjectInfo* projectBeingDebugged;
+
+		int m_numberOfDebugEvents;
+
 		//obsolete or unused code
 		//wxArrayString varNames;		//holds variables being watched
 		//wxArrayString varValue;		//holds variable values
@@ -196,9 +205,6 @@ class Debugger : public wxEvtHandler
 									//variables before a running process is available 
 									//for GDB numbers
 		//int gdbVarIndex;			//holds next GDB display #
-		int varCount;				//holds array position to insert next var
-
-		VariableInfoArray m_varInfo;//same as VariableInfoHash... only an array
 
 		//These two datastructures have been commented out until someone
 		//resurects them.
@@ -212,24 +218,7 @@ class Debugger : public wxEvtHandler
 									//takes a class/function key and holds:
 									//  -function has been visited [bool]
 									//  -variable is displayed [bool array]
-									//  -var names [arrayString]		
-
-		wxString firstExecString;	//holds the first executed string
-		wxString currentSourceName;	//holds filename source
-
-		Networking *myConnection;	//the networking object for remote
-		wxTextOutputStream* streamOut;	//output to GDB
-		wxDebugEvent* myEvent;		//how i communicate
-
-		//dave code
-		wxTextCtrl* outputScreen;
-
-		//GUI connectivity
-		wxEvtHandler* guiPointer;
-		ProjectInfo* projectBeingDebugged;
-
-		int m_numberOfDebugEvents;
-
+									//  -var names [arrayString]
 		DECLARE_EVENT_TABLE()
 };
 
