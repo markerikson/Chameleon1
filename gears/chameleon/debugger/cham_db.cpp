@@ -92,10 +92,10 @@ Debugger::Debugger(wxTextCtrl* outBox, Networking* networking, wxEvtHandler* poi
 	varRegExes["double"] = "([[:digit:]]+\\.[[:digit:]]+)";
 
 	// char[]-"$n = val 'char'"
-	varRegExes["char"] = "[[:digit:]]+ '([[:alnum:]]+)'";
+	varRegExes["char"] = "[[:digit:]]+ '(.*+)'";
 	
 	// char - "$n = "text""
-	varRegExes["char[]"] = "\"([[:alnum:]]+)\"";//"[[:digit:]]+ '([[:alnum:]]+)'";
+	varRegExes["char[]"] = "\"(.*)\"\\r";//"[[:digit:]]+ '([[:alnum:]]+)'";
 	
 	// array- "$n = {val, val...}"
 	varRegExes["array"] = "{(.+?)}";
@@ -104,7 +104,7 @@ Debugger::Debugger(wxTextCtrl* outBox, Networking* networking, wxEvtHandler* poi
 	varRegExes["rawstring"] = ".+_M_p = \"(.+?)\"\n},\nstatic";
 	
 	// str#2- "$n = "text"" (same as [char])
-	varRegExes["string"] = "\"([[:alnum:]]+)\"";
+	varRegExes["string"] = "\"(.*)\"";
 
 	// obj -  "$n = {varName = val, varName = val, ..} (varName can be of any listed type...)
 }
@@ -614,6 +614,7 @@ void Debugger::startProcess(bool fullRestart, bool mode, wxString fName, wxStrin
 		//initString.Add("set print pretty on" + returnChar);
 		initString.Add("set print address off" + returnChar);
 		initString.Add("set confirm off" + returnChar);
+		initString.Add("set print repeats 10000" + returnChar);
 		//initString.Add("set overload-resolution off" + returnChar);
 
 		//send all initlization commands to GDB
@@ -1170,11 +1171,11 @@ void Debugger::sendWhat()
 		command.Clear();
 		for(int i = 0; i < varCount; i++)
 		{
-			if(m_varInfo[i].type == "null")
-			{
+			//if(m_varInfo[i].type == "null")
+			//{
 				tmp.Printf("whatis %s%s", m_varInfo[i].name.c_str(), returnChar.c_str());
 				command.Append(tmp);
-			}
+			//}
 		}
 
 		sendCommand(command);
@@ -1204,6 +1205,7 @@ void Debugger::sendPrint(wxString fromGDB)
 		else
 		{
 			singleLine = fromGDB.Mid(0, lineBreak);
+			singleLine = singleLine.BeforeFirst('\r');
 			//fromGDB.Remove(0, lineBreak);
 
 			fromGDB = fromGDB.AfterFirst('\n');
@@ -1212,6 +1214,7 @@ void Debugger::sendPrint(wxString fromGDB)
 			{
 				lineBreak = 2 + singleLine.Find("= ");
 				singleLine = singleLine.Mid(lineBreak);
+
 
 				ampIdx = singleLine.Find(" &");
 				if(ampIdx != -1)
@@ -1257,24 +1260,13 @@ void Debugger::sendPrint(wxString fromGDB)
 			if(ignoreVars.Index(m_varInfo[i].name) == wxNOT_FOUND)
 			{
 				//current variable is not in the "ignoreVars" list...
-				if(m_varInfo[i].type == "null")
-				{
+				//if(m_varInfo[i].type == "null")
+				//{
 					if(fromWatchIndex < (int)fromWatch.GetCount())
 					{
 						m_varInfo[i].type = fromWatch[fromWatchIndex];
 					
-						//special cases:
-						// type==string: append "._M_dataplus._M_p" to format the string
-						// type==[xxx]*: pre-pend "*" to de-reference the pointer type
-						if(m_varInfo[i].type == "string")
-						{
-							m_varInfo[i].name = m_varInfo[i].name + "._M_dataplus._M_p";
-						}
-						if(m_varInfo[i].type.Find("*") != -1)
-						{	
-							singleLine = m_varInfo[i].name;
-							m_varInfo[i].name = "*" + singleLine;
-						}
+						
 
 						fromWatchIndex++;
 					}//testing "fromWatchIndex"
@@ -1285,7 +1277,7 @@ void Debugger::sendPrint(wxString fromGDB)
 						//next few "whatis" statements come through
 						watchStatus = true;
 					}
-				}
+				///}
 			}//end variable ignore existance check
 		}//end for
 	}
@@ -1296,7 +1288,22 @@ void Debugger::sendPrint(wxString fromGDB)
 		command.Clear();
 		for(int i = 0; i < varCount; i++)
 		{
-			tmp.Printf("print %s%s", m_varInfo[i].name.c_str(), returnChar.c_str());
+			wxString name = m_varInfo[i].name;
+
+			//special cases:
+			// type==string: append "._M_dataplus._M_p" to format the string
+			// type==[xxx]*: pre-pend "*" to de-reference the pointer type
+			
+			if(m_varInfo[i].type == "string")
+			{
+				name += "._M_dataplus._M_p";
+			}
+			if(m_varInfo[i].type.Find("*") != -1)
+			{	
+				name.Prepend("*");
+			}
+
+			tmp.Printf("print %s%s", name, returnChar);
 			command.Append(tmp);
 		}
 
@@ -1355,6 +1362,7 @@ bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 			{
 				lineBreak = fromGDB.Find("\n");
 				singleLine = fromGDB.Mid(0, lineBreak);
+				singleLine = singleLine.BeforeLast('\r');
 
 				//fromGDB.Remove(0, lineBreak);
 				fromGDB = fromGDB.AfterFirst('\n');
@@ -1378,7 +1386,9 @@ bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 					if( m_varInfo[i].type.Find("&") == -1 &&
 						m_varInfo[i].type.Find("*") == -1)
 					{
-						wxString regex = varRegExes[m_varInfo[i].type];
+						VariableInfo varInfo = m_varInfo[i];
+						wxString type = varInfo.type;
+						wxString regex = varRegExes[type];
 						wxRegEx global = regex;
 						if(global.Matches(singleLine))
 						{
@@ -1496,9 +1506,10 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 		 keepParsing = false;
 
 	//step parsing RegEx
-	// , ([[:alnum:]]) ()
 	wxRegEx reCase1 = " at (([[:alnum:]]|[[:blank:]]|\\.)+):([[:digit:]]+)";
-	wxRegEx reCase2 = "([[:digit:]]+)[[:blank:]]+";
+	// needs the wxRE_ADVANCED in order to work properly, so can't just
+	// assign this one as if it were a string
+	wxRegEx reCase2("(\\n|^)(\\d+)[ \\t]+", wxRE_ADVANCED);
 
 	//go parsing RegEx
 	wxRegEx reStart = " command: \"done\"";
@@ -1784,7 +1795,7 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 				}
 				else if(reCase2.Matches(tempHold))
 				{
-					Linenumber = reCase2.GetMatch(tempHold, 1);
+					Linenumber = reCase2.GetMatch(tempHold, 2);
 	
 					Linenumber.ToLong(&tmpLong);
 					
