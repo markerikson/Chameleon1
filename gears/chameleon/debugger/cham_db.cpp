@@ -94,7 +94,7 @@ Debugger::Debugger(wxTextCtrl* outBox, Networking* networking, wxEvtHandler* poi
 	varRegExes["double"] = "([[:digit:]]+\\.[[:digit:]]+)";
 
 	// char[]-"$n = val 'char'"
-	varRegExes["char"] = "[[:digit:]]+ '(.*+)'";
+	varRegExes["char"] = "[[:digit:]]+ '(.*?)'";
 	
 	// char - "$n = "text""
 	varRegExes["char[]"] = "\"(.*)\"";//"[[:digit:]]+ '([[:alnum:]]+)'";

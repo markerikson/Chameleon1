@@ -65,6 +65,7 @@ public:
 	~MyApp();
 	virtual bool OnInit();
 	virtual int OnRun();
+	virtual void OnUnhandledException(); 
 };
 
 //----------------------------------------------------------------------
@@ -110,11 +111,11 @@ private:
 	void OnClose(wxCloseEvent& event);
 	void Test(wxCommandEvent& event);
 
-	void OnUpdateSaveUI(wxUpdateUIEvent &event);
-	void OnUpdateDebugUI(wxUpdateUIEvent &event);
-	void OnUpdateConnectionUI(wxUpdateUIEvent &event);
-	void OnUpdateCompileUI(wxUpdateUIEvent &event);
-	void OnUpdatePrintPreviewUI(wxUpdateUIEvent &event);	
+	void OnUpdateSaveUI();//wxUpdateUIEvent &event);
+	void OnUpdateDebugUI();//wxUpdateUIEvent &event);
+	void OnUpdateConnectionUI();//wxUpdateUIEvent &event);
+	void OnUpdateCompileUI();//wxUpdateUIEvent &event);
+	void OnUpdatePrintPreviewUI();//wxUpdateUIEvent &event);	
 	void OnIdle(wxIdleEvent &event);
 	void UpdateStatusBar();
 	

@@ -101,7 +101,7 @@ BEGIN_EVENT_TABLE(ChameleonWindow, wxFrame)
 	//EVT_MENU						(ID_CLOSETAB, ChameleonWindow::CloseTab)
 	EVT_MENU						(ID_CLOSETAB, ChameleonWindow::OnMenuEvent)
 	EVT_MENU						(ID_CLOSEALL, ChameleonWindow::OnMenuEvent)
-	EVT_UPDATE_UI					(ID_SAVE, ChameleonWindow::OnUpdateSaveUI)
+	//EVT_UPDATE_UI					(ID_SAVE, ChameleonWindow::OnUpdateSaveUI)
 	EVT_MENU						(ID_STARTCONNECT, ChameleonWindow::OnMenuEvent)
 	EVT_MENU						(ID_DISCONNECT, ChameleonWindow::OnMenuEvent)
 	EVT_MENU						(ID_COMPILE, ChameleonWindow::OnMenuEvent)
@@ -143,9 +143,9 @@ BEGIN_EVENT_TABLE(ChameleonWindow, wxFrame)
 	EVT_MENU						(ID_DEBUG_STEPNEXT, ChameleonWindow::OnDebugCommand)
 	EVT_MENU						(ID_DEBUG_STEPOVER, ChameleonWindow::OnDebugCommand)
 	EVT_MENU						(ID_DEBUG_STEPOUT, ChameleonWindow::OnDebugCommand)
-	EVT_UPDATE_UI_RANGE				(ID_DEBUG_IDS_FIRST, ID_DEBUG_IDS_LAST - 1, ChameleonWindow::OnUpdateDebugUI)
-	EVT_UPDATE_UI_RANGE				(ID_STARTCONNECT, ID_DISCONNECT, ChameleonWindow::OnUpdateConnectionUI)
-	EVT_UPDATE_UI					(ID_COMPILE, ChameleonWindow::OnUpdateCompileUI)
+	//EVT_UPDATE_UI_RANGE				(ID_DEBUG_IDS_FIRST, ID_DEBUG_IDS_LAST - 1, ChameleonWindow::OnUpdateDebugUI)
+	//EVT_UPDATE_UI_RANGE				(ID_STARTCONNECT, ID_DISCONNECT, ChameleonWindow::OnUpdateConnectionUI)
+	//EVT_UPDATE_UI					(ID_COMPILE, ChameleonWindow::OnUpdateCompileUI)
 	EVT_DEBUG						(ChameleonWindow::OnDebugEvent)
 	EVT_IDLE						(ChameleonWindow::OnIdle)
 	EVT_TIMER						(ID_STATUSTIMER, ChameleonWindow::OnStatusTimer)
@@ -181,16 +181,11 @@ int MyApp::OnRun()
 	{
 		return wxApp::OnRun();
 	}
-	
-	catch (...) 
-	{
-		int q = 41;
-		q++;
-
-		return 1;
-	}
-	
 	/*
+	
+	
+	
+	
 	catch(se_translator::access_violation& ex)
 	{			
 		cerr	<< ex.name() << " at 0x" << std::hex << ex.address() 
@@ -208,6 +203,19 @@ int MyApp::OnRun()
 		return -1;
 	}
 	*/
+	catch (...) 
+	{
+		int q = 41;
+		q++;
+
+		return 1;
+	}
+	
+}
+
+void MyApp::OnUnhandledException()
+{
+
 }
 
 MyApp::~MyApp()
@@ -900,6 +908,11 @@ void ChameleonWindow::OnClose(wxCloseEvent &event)
 		CloseProjectFile();
 	}
 
+	if(m_updateTimer)
+	{
+		m_updateTimer->Stop();
+	}
+
 	if(m_terminal->IsConnected())
 	{
 		m_terminal->Disconnect();
@@ -1546,13 +1559,8 @@ void ChameleonWindow::CheckSize()
 
 // wxWindows calls this repeatedly during empty processing time.  This updates
 // the status of the save button/menu item, as well as the * on the active tab if modified
-void ChameleonWindow::OnUpdateSaveUI(wxUpdateUIEvent &event)
+void ChameleonWindow::OnUpdateSaveUI()//wxUpdateUIEvent &event)
 {
-	if (m_updateTimer && !m_updateTimer->IsRunning ()) 
-	{
-		m_updateTimer->Start (100, wxTIMER_ONE_SHOT);
-		return;
-	}
 	bool enable = m_currentEd->Modified();
 
 	int tabNum = m_book->GetSelection();
@@ -1579,7 +1587,9 @@ void ChameleonWindow::OnUpdateSaveUI(wxUpdateUIEvent &event)
 			m_book->Refresh();
 		}
 	}
-	event.Enable(enable);
+	//event.Enable(enable);
+	GetToolBar()->EnableTool(ID_SAVE, enable);
+	GetMenuBar()->FindItem(ID_SAVE)->Enable(enable);
 }
 
 bool ChameleonWindow::SaveFile(bool saveas, bool askLocalRemote, FileFilterType filterType)
@@ -2767,8 +2777,6 @@ void ChameleonWindow::LoadFilesIntoProjectTree(wxString configPath,  FileFilterT
 
 void ChameleonWindow::Compile()
 {
-	
-
 	bool doCompile = true;
 
 	if(!m_currentEd->HasBeenSaved())
@@ -3029,13 +3037,8 @@ void ChameleonWindow::OnDebugEvent(wxDebugEvent &event)
 	}
 }
 
-void ChameleonWindow::OnUpdateDebugUI(wxUpdateUIEvent &event)
+void ChameleonWindow::OnUpdateDebugUI()//wxUpdateUIEvent &event)
 {
-	if (m_updateTimer && !m_updateTimer->IsRunning ()) 
-	{
-		m_updateTimer->Start (100, wxTIMER_ONE_SHOT);
-		return;
-	}
 	bool isDebugging = m_debugger->isDebugging();
 	bool isPaused = m_debugger->isPaused();
 	
@@ -3068,18 +3071,8 @@ void ChameleonWindow::OnUpdateDebugUI(wxUpdateUIEvent &event)
 	}
 }
 
-void ChameleonWindow::OnUpdateConnectionUI(wxUpdateUIEvent &event)
+void ChameleonWindow::OnUpdateConnectionUI()//wxUpdateUIEvent &event)
 {
-	if (m_updateTimer && !m_updateTimer->IsRunning ()) 
-	{
-		m_updateTimer->Start (100, wxTIMER_ONE_SHOT);
-		return;
-	}
-	if (m_updateTimer && !m_updateTimer->IsRunning ()) 
-	{
-		m_updateTimer->Start (100, wxTIMER_ONE_SHOT);
-		return;
-	}
 	bool termConnected = m_terminal->IsConnected();
 
 	wxToolBar* tb = GetToolBar();
@@ -3090,24 +3083,16 @@ void ChameleonWindow::OnUpdateConnectionUI(wxUpdateUIEvent &event)
 	wxMenu* toolsMenu = mb->GetMenu(mb->FindMenu("Tools"));
 
 	toolsMenu->Enable(ID_STARTCONNECT, !termConnected);
-	toolsMenu->Enable(ID_DISCONNECT, termConnected);
-	
+	toolsMenu->Enable(ID_DISCONNECT, termConnected);	
 }
 
-void ChameleonWindow::OnUpdateCompileUI(wxUpdateUIEvent &event)
+void ChameleonWindow::OnUpdateCompileUI()//wxUpdateUIEvent &event)
 {
-	if (m_updateTimer && !m_updateTimer->IsRunning ()) 
-	{
-		m_updateTimer->Start (100, wxTIMER_ONE_SHOT);
-		return;
-	}
-
 	bool canCompile = false;
 	ProjectInfo* edProj = m_currentEd->GetProject();
-
 	
 	wxToolBar* tb = GetToolBar();
-	/*
+	
 	wxToolBarToolBase* compileButton = tb->FindById(ID_COMPILE);
 	
 	bool isCompiling = m_compiler->IsCompiling();
@@ -3129,10 +3114,10 @@ void ChameleonWindow::OnUpdateCompileUI(wxUpdateUIEvent &event)
 	}
 
 	bool enableButton = currentProjCompiling || !isCompiling;
-	*/
+	
 
-	//tb->EnableTool(ID_COMPILE, enableButton);
-	tb->EnableTool(ID_COMPILE, !edProj->IsCompiled() && !edProj->IsBeingCompiled());
+	tb->EnableTool(ID_COMPILE, enableButton);
+	//tb->EnableTool(ID_COMPILE, !edProj->IsCompiled() && !edProj->IsBeingCompiled());
 }
 
 void ChameleonWindow::OnStatusTimer(wxTimerEvent &WXUNUSED(event)) 
@@ -3140,6 +3125,12 @@ void ChameleonWindow::OnStatusTimer(wxTimerEvent &WXUNUSED(event))
 	if (m_updateTimer)
 	{
 		m_updateTimer->Stop();
+		UpdateStatusBar();
+		OnUpdateSaveUI();
+		OnUpdateDebugUI();
+		OnUpdateConnectionUI();
+		OnUpdateCompileUI();
+		OnUpdatePrintPreviewUI();
 	}
 }
 
@@ -3147,8 +3138,8 @@ void ChameleonWindow::OnIdle(wxIdleEvent &event)
 {
 	if (m_updateTimer && !m_updateTimer->IsRunning ()) 
 	{
-		m_updateTimer->Start (100, wxTIMER_ONE_SHOT);
-		UpdateStatusBar();
+		m_updateTimer->Start (250, wxTIMER_ONE_SHOT);
+
 	}
 	event.Skip();
 	
@@ -3264,15 +3255,14 @@ bool ChameleonWindow::IsDebuggerPaused()
 	return m_debugger->isPaused();
 }
 
-void ChameleonWindow::OnUpdatePrintPreviewUI (wxUpdateUIEvent &event) 
+void ChameleonWindow::OnUpdatePrintPreviewUI ()//wxUpdateUIEvent &event) 
 {
-	if (m_updateTimer && !m_updateTimer->IsRunning ()) 
-	{
-		m_updateTimer->Start (100, wxTIMER_ONE_SHOT);
-		return;
-	}
-	event.Enable ((m_book->GetPageCount() > 1) ||
-		(m_currentEd && (m_currentEd->GetLength() > 0)));
+	//event.Enable ((m_book->GetPageCount() > 1) ||
+	//	(m_currentEd && (m_currentEd->GetLength() > 0)));
+	bool enable = (m_book->GetPageCount() > 1) ||
+					(m_currentEd && (m_currentEd->GetLength() > 0));
+
+	GetMenuBar()->FindItem(ID_PRINT_PREVIEW)->Enable(enable);
 }
 
 wxRect ChameleonWindow::DeterminePrintSize () 
