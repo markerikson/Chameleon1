@@ -82,6 +82,8 @@ public:
 
 ////@end wxTermContainer event handler declarations
 
+	void OnSize(wxSizeEvent &event);
+
 ////@begin wxTermContainer member function declarations
 ////@end wxTermContainer member function declarations
 

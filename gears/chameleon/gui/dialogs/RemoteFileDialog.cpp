@@ -519,16 +519,7 @@ bool RemoteFileDialog::Prepare(bool open, wxString filterString)//FileDisplayTyp
 {
 	m_openMode = open;
 
-	if(m_openMode)
-	{
-		SetTitle("Open File");
-		m_buttonOpen->SetLabel("Open");
-	}
-	else
-	{
-		SetTitle("Save File As");
-		m_buttonOpen->SetLabel("Save");
-	}
+	
 	m_comboFiletypes->Clear();
 
 
@@ -542,6 +533,8 @@ bool RemoteFileDialog::Prepare(bool open, wxString filterString)//FileDisplayTyp
 	wxFileName extGrabber;
 
 	m_fileExtensionList.Clear();
+
+	m_currentFilterIndex = 0;
 
 	while(filterTokenizer.HasMoreTokens())
 	{
@@ -569,6 +562,24 @@ bool RemoteFileDialog::Prepare(bool open, wxString filterString)//FileDisplayTyp
 
 		m_fileExtensionList.Add(as);
 		as.Clear();
+	}
+
+	if(m_openMode)
+	{
+		SetTitle("Open File");
+		m_buttonOpen->SetLabel("Open");
+	}
+	else
+	{
+		wxString title = "Save File As";
+
+		if(filterString.Find("*.cpj") != wxNOT_FOUND)
+		{
+			title = "Save New Project";
+		}
+
+		SetTitle(title);
+		m_buttonOpen->SetLabel("Save");
 	}
 
 

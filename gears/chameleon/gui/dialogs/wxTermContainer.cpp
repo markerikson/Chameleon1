@@ -53,6 +53,8 @@ BEGIN_EVENT_TABLE( wxTermContainer, wxPanel )
 
 ////@end wxTermContainer event table entries
 
+  EVT_SIZE						(wxTermContainer::OnSize)
+
 END_EVENT_TABLE()
 
 /*!
@@ -64,8 +66,10 @@ wxTermContainer::wxTermContainer( )
 }
 
 wxTermContainer::wxTermContainer( wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style )
+: m_terminal(NULL)
 {
     Create(parent, id, pos, size, style);
+	
 }
 
 /*!
@@ -112,7 +116,7 @@ void wxTermContainer::CreateControls()
 
     wxScrollBar* item4 = new wxScrollBar( item1, ID_SCROLLBAR, wxPoint(this->GetSize().GetX() - 18, 0), wxSize(18, -1), wxSB_VERTICAL );
     m_scrollbar = item4;
-    item4->SetScrollbar(100, 10, 100, 10);
+    item4->SetScrollbar(90, 10, 100, 10);
     item2->Add(item4, 0, wxGROW, 5);
 
 ////@end wxTermContainer content construction
@@ -190,5 +194,20 @@ void wxTermContainer::SetTerminal(wxTerm* terminal)
 	m_terminal = terminal;
 
 	m_sizer->Prepend(m_terminal, 1, wxGROW, 0);
+
+	int termHeight = m_terminal->Height();
+	m_scrollbar->SetScrollbar(100 - termHeight, termHeight, 100, 10);
 }
 
+void wxTermContainer::OnSize(wxSizeEvent &event)
+{
+	int newHeight = 0;
+	int numLinesReceived = 0;
+
+	if(m_terminal != NULL)
+	{
+		m_terminal->UpdateSize(newHeight, numLinesReceived);
+	}
+	
+
+}
