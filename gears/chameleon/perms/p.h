@@ -4,7 +4,7 @@
 //Header file for the permissions manager for Chameleon Flex IDE
 //Author: Ben Carhart
 //Date started: 11/22/03
-//Date officially completed: --/--/--
+//Date officially completed: 04/23/04
 //Description: code prototyping for the permissions class
 //Revisions:
 
@@ -20,14 +20,12 @@
 using namespace std;
 
 const int NUM_MODULES = 15;
-//give each module a number
-
+//modules are actually an enum type contained in "datastructurs.h"
 
 //class declaration
 class Permission
 {
 	public:
-		//Permission();
 		Permission(wxString loadAuthCode = "0", wxString loadPermCode = "0");
 		~Permission();
 

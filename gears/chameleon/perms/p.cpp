@@ -27,11 +27,17 @@
 //                  compilation is disabled.  I didn't touch authorizations.
 //                  *note- this disabling only occurs of "disable(id)" is called.
 //  ~BSC--03/22/04--Adjused for Mark: a blank constructor
+//  ~BSC--04/23/04--blank constructor removed!!  why?  oh we changed things  ^_^
+//                  but this class is essentially done.  I think it can be ignored
+//                  if other items are added later, but i'm not fully sure.  Mark
+//                  and Dave are responsible for adding items, so I never saw what
+//                  Mark had to do per-item-added.
 
 //includes
 #include "p.h"
 #include "../common/Crc16.h"
 #include "../common/debug.h"
+
 //global variables
 using namespace std;
 
@@ -55,21 +61,11 @@ wxString GlobalPermStrings[] = {"Syntax highlighting",
 
 //Constructor(s)
 
-//blank one: blank slate init.
-//Permission::Permission()
-//{
-	//this is a valid "everything unauthorized" code
-	//setGlobalAuthorized("10A80000000");
-	//setGlobalEnabled("0");
-	//Permission("10A80000000", "0");
-//}
-
 //////////////////////////////////////////////////////////////////////////////
 ///  public constructor Permission
-///  <TODO: insert text here>
 ///
-///  @param  loadAuthCode wxString  [="0"] <TODO: insert text here>
-///  @param  loadPermCode wxString  [="0"] <TODO: insert text here>
+///  @param  loadAuthCode wxString  [="0"] <initial authorization code>
+///  @param  loadPermCode wxString  [="0"] <initial "things active" code>
 ///
 ///  @return void
 ///
@@ -82,8 +78,6 @@ Permission::Permission(wxString loadAuthCode, wxString loadPermCode)
 	loadPermCode.ToLong(&tPCode);
 	loadAuthCode.ToLong(&tACode);
 	
-	//permNames = new wxArrayString();
-
 	for(int i = 0; i < PERM_LAST; i++)
 	{
 		permNames.Add(GlobalPermStrings[i]);
@@ -109,7 +103,6 @@ Permission::Permission(wxString loadAuthCode, wxString loadPermCode)
 //Kills everything.
 //////////////////////////////////////////////////////////////////////////////
 ///  public destructor ~Permission
-///  <TODO: insert text here>
 ///
 ///  @return void
 ///
@@ -121,20 +114,15 @@ Permission::~Permission()
 	auth.reset();
 	permCode = 0;
 	authCode = 0;
-
-	//delete permNames;
 }
 
-//isEnabled
-//Input: a valid module ID
-//Output: a boolean TRUE if the [status] bit is set, FALSE otherwise
 //////////////////////////////////////////////////////////////////////////////
 ///  public isEnabled
-///  <TODO: insert text here>
+///  <answers the question "is this item ACTIVE and AUTHORIZED?">
 ///
-///  @param  id   int  <TODO: insert text here>
+///  @param  id   int  <one of the enums in "datastructures.h">
 ///
-///  @return bool <TODO: insert text here>
+///  @return bool <the answer>
 ///
 ///  @author Ben Carhart @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -143,16 +131,13 @@ bool Permission::isEnabled(int id)
 	return(status.test(id) && auth.test(id));
 }
 
-//isAuthorized
-//Input: a valid module ID
-//Output: a boolean TRUE if the [auth] bit is set, FALSE otherwise
 //////////////////////////////////////////////////////////////////////////////
 ///  public isAuthorized
-///  <TODO: insert text here>
+///  <answers the question "is this item AUTHORIZED?">
 ///
-///  @param  id   int  <TODO: insert text here>
+///  @param  id   int  <a module ID from the enum in "datastructures.h">
 ///
-///  @return bool <TODO: insert text here>
+///  @return bool <the answer>
 ///
 ///  @author Ben Carhart @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -161,14 +146,11 @@ bool Permission::isAuthorized(int id)
 	return(auth.test(id));
 }
 
-//enable
-//Input: a valid module ID
-//Output: nothing.  [status] and [permCode] are updated.
 //////////////////////////////////////////////////////////////////////////////
 ///  public enable
-///  <TODO: insert text here>
+///  <enables a given module ID if authorized as well>
 ///
-///  @param  id   int  <TODO: insert text here>
+///  @param  id   int  <module ID>
 ///
 ///  @return void
 ///
@@ -189,14 +171,11 @@ void Permission::enable(int id)
 
 }
 
-//disable
-//input: a valid module ID
-//output: nothing.  [status] and [permCode] are updated
 //////////////////////////////////////////////////////////////////////////////
 ///  public disable
-///  <TODO: insert text here>
+///  <disbles a given module ID (authorization not required)>
 ///
-///  @param  id   int  <TODO: insert text here>
+///  @param  id   int  <module ID>
 ///
 ///  @return void
 ///
@@ -214,18 +193,13 @@ void Permission::disable(int id)
 	}
 }
 
-//setGlobal
-//input: a valid authorization code, defined as a string containing an integer
-//		 with the CRC16 code for that integer's characters prepended to it
-//output: TRUE if the code parsed correctly, FALSE otherwise.  [auth] and
-//        [authCode] are updated.
 //////////////////////////////////////////////////////////////////////////////
 ///  public setGlobalAuthorized
-///  <TODO: insert text here>
+///  <sets a global authorization code>
 ///
-///  @param  newAuthCode wxString  <TODO: insert text here>
+///  @param  newAuthCode wxString  <a valid CRC string>
 ///
-///  @return bool        <TODO: insert text here>
+///  @return bool        <successful authorization>
 ///
 ///  @author Ben Carhart @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -269,9 +243,9 @@ bool Permission::setGlobalAuthorized(wxString newAuthCode)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public setGlobalEnabled
-///  <TODO: insert text here>
+///  <sets a global "this item is active" code>
 ///
-///  @param  newEnableCode wxString  <TODO: insert text here>
+///  @param  newEnableCode wxString  <a valid enable code>
 ///
 ///  @return void
 ///
@@ -290,14 +264,11 @@ void Permission::setGlobalEnabled(wxString newEnableCode)
 	savedPermCode << getGlobalEnabled();
 }
 
-//getGlobal
-//input: nothing
-//output: current permissions code stored; this is what is visible
 //////////////////////////////////////////////////////////////////////////////
 ///  public getGlobalEnabled
-///  <TODO: insert text here>
+///  <returns the current bit-for-bit enabled items>
 ///
-///  @return long <TODO: insert text here>
+///  @return long <the integer "this item is active" code>
 ///
 ///  @author Ben Carhart @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -306,14 +277,11 @@ long Permission::getGlobalEnabled()
 	return(permCode);
 }
 
-//getGlobal 2
-//input: nothing
-//output: the authorization code.  This is what can be turned on/off.
 //////////////////////////////////////////////////////////////////////////////
 ///  public getGlobalAuthorized
-///  <TODO: insert text here>
+///  <returns the bit-for-bit authorized items>
 ///
-///  @return long <TODO: insert text here>
+///  @return long <the integer authorization code>
 ///
 ///  @author Ben Carhart @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -325,11 +293,11 @@ long Permission::getGlobalAuthorized()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public getPermName
-///  <TODO: insert text here>
+///  <a function mark uses to enumerate the permissions items in the GUI>
 ///
-///  @param  permEnum int  <TODO: insert text here>
+///  @param  permEnum int  <the particular "name" to get>
 ///
-///  @return wxString <TODO: insert text here>
+///  @return wxString <the "name" gotten>
 ///
 ///  @author Ben Carhart @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
