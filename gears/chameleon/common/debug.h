@@ -1,6 +1,7 @@
 #ifndef DEBUG__H
 #define DEBUG__H
 
+#include <wx/wx.h>
 #include <wx/log.h>
 
 #ifdef _DEBUG

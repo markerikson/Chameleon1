@@ -5,6 +5,7 @@
 #pragma hdrstop
 #endif
 
+#define __WXMSW__
 // For all others, include the necessary headers (this file is usually all you
 // need because it includes almost all "standard" wxWindows headers
 #ifndef WX_PRECOMP
