@@ -107,7 +107,9 @@ wxString GlobalPermStrings[] = {"Syntax highlighting",
 								"Terminal",
 								"Local mode",
 								"Telnet testing",
-								"Projects"};
+								"Projects",
+								"Compilation",
+								"Test permission"};
 
 #endif
 
