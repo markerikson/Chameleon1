@@ -1,6 +1,8 @@
 #ifndef PRECOMPILEDHEADER_H
 #define PRECOMPILEDHEADER_H
 
+
+
 #include <wx/wx.h>
 #include <wx/string.h>
 #include <wx/wxprec.h>
@@ -33,7 +35,7 @@
 #include <wx/mstream.h>
 
 
-#include "debug.h"
+//#include "debug.h"
 
 #ifdef MSVC6
 #include "../common/fixvsbug.h"

@@ -35,7 +35,7 @@ class wxDebugEvent : public wxEvent
 		//wxArrayString GetSourceFilenames() { return m_sourceFilenames; }
 		wxString GetSourceFilename() { return m_filename; }
 		wxString GetErrorMessage() {return m_errorMessage; }
-		bool IsRemote() { return m_project->isRemote; }
+		bool IsRemote() { return m_project->IsRemote(); }
 		FileBreakpointHash GetFileBreakpoints() { return m_filebreakpoints; }
 		ProjectInfo* GetProject() { return m_project; }
 

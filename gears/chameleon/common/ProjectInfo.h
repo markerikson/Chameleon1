@@ -6,6 +6,8 @@
 #include <wx/dynarray.h>
 #include "datastructures.h"
 
+class ChameleonEditor;
+
 class ProjectInfo
 {
 
@@ -15,27 +17,51 @@ public:
 	void AddFileToProject(wxString filename, FileFilterType fileType);
 	void RemoveFileFromProject(wxString filename, FileFilterType fileType);
 
-	wxString GetExecutableFileName() { return executableName.GetFullPath(wxPATH_UNIX); }
+	void AddEditor(ChameleonEditor* edit);
+	void RemoveEditor(ChameleonEditor* edit);
 
-	//void SetHeaderFiles(wxArrayString headers);
-	//void Set
-//private:
-	wxArrayString headerFiles;
-	wxArrayString sourceFiles;
-	wxArrayString libraryFiles;
+	void MakeReadOnly(bool makeReadOnly);
 
-	EditorPointerArray edPointers;
+	wxArrayString GetHeaders() { return m_headerFiles; }
+	wxArrayString GetSources() { return m_sourceFiles; }
+	wxArrayString GetLibraries() { return m_libraryFiles; }
+	EditorPointerArray GetEditors() { return m_edPointers; }
+	bool IsRemote() { return m_isRemote; }
+	bool IsSingleFile() { return m_isSingleFile; }
+	bool IsCompiled() { return m_isCompiled; }
+	bool IsBeingCompiled() { return m_isBeingCompiled; }
+	bool IsReadOnly() { return m_isReadOnly; }
+	wxString GetExecutableFileName() { return m_executableName.GetFullPath(wxPATH_UNIX); }
+	wxString GetProjectName() { return m_projectName; }
+	wxString GetProjectBasePath() { return m_projectBasePath; }
 
-	bool relativePaths;
-	bool isRemote;
-	bool isSingleFile;
-	bool isCompiled;
-	bool isBeingCompiled;
-	bool isReadOnly;
+	void SetHeaders(wxArrayString headers) {m_headerFiles = headers; }
+	void SetSources(wxArrayString sources) {m_sourceFiles = sources; }
+	void SetLibraries(wxArrayString libraries) {m_libraryFiles = libraries; }
+	void SetRemote(bool remote) {m_isRemote = remote; }
+	void SetSingleFile(bool singleFile) { m_isSingleFile = singleFile; }
+	void SetCompiled(bool compiled) { m_isCompiled = compiled; }
+	void SetBeingCompiled(bool compiling) {m_isBeingCompiled = compiling; }
+	void SetProjectPath(wxString path) {m_projectBasePath = path; }
+	void SetProjectName(wxString projname) {m_projectName = projname; }
+	void SetExecutableName(wxFileName filename) {m_executableName = filename; }
+private:
+	wxArrayString m_headerFiles;
+	wxArrayString m_sourceFiles;
+	wxArrayString m_libraryFiles;
 
-	wxString projectBasePath;
-	wxString projectName;
-	wxFileName executableName;
+	EditorPointerArray m_edPointers;
+
+	//bool m_relativePaths;
+	bool m_isRemote;
+	bool m_isSingleFile;
+	bool m_isCompiled;
+	bool m_isBeingCompiled;
+	bool m_isReadOnly;
+
+	wxString m_projectBasePath;
+	wxString m_projectName;
+	wxFileName m_executableName;
 
 	
 };
