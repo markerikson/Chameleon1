@@ -289,8 +289,8 @@ bool ChameleonEditor::Modified ()
 	
 	
 
-	bool returnModify = modified && readonly && canundo;
-    return returnModify; 
+	bool isModified = modified && readonly && canundo;
+    return isModified; 
 }
 
 // called every time a character is entered.  currently not actually doing much.
@@ -476,10 +476,14 @@ wxString ChameleonEditor::GetFilePath()
 void ChameleonEditor::ResetEditor()
 {
 	ClearAll();
-	SetSavePoint();
-	EmptyUndoBuffer();
+	
 	m_fileNameAndPath.Clear();
 	m_breakpoints.Clear();
+
+	SetReadOnly(false);
+	SetText(wxEmptyString);
+	SetSavePoint();
+	EmptyUndoBuffer();
 	
 	MarkerDeleteAll(MARKER_BREAKPOINT);
 	MarkerDeleteAll(MARKER_FOCUSEDLINE);
