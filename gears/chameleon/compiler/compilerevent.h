@@ -3,18 +3,12 @@
 
 #include <wx/event.h>
 #include <wx/filename.h>
+#include "../common/datastructures.h"
 #include "../common/debug.h"
 
 DECLARE_EVENT_TYPE(chEVT_COMPILER_START, wxID_ANY)
 DECLARE_EVENT_TYPE(chEVT_COMPILER_PROBLEM, wxID_ANY)
 DECLARE_EVENT_TYPE(chEVT_COMPILER_END, wxID_ANY)
-
-enum CompileResult {
-	CR_ERROR = -1,
-	CR_OK = 0,
-	CR_TERMINATED = 1,
-};
-
 
 class CompilerEvent : public wxEvent
 {
@@ -24,14 +18,16 @@ class CompilerEvent : public wxEvent
 		wxFileName GetFile() { return m_file; }
 		int GetInt() { return m_num; }
 		CompileResult GetResult() { return m_tri; }
-		wxString GetString() { return m_strng; }
-		wxString GetString2() { return m_strng2; }
+		wxString GetMessage() { return m_message; }
+		wxString GetGCCOutput() { return m_output; }
+		bool IsRemoteFile() { return m_isRemoteFile; }
 
 		void SetFile(wxFileName file) { m_file = file; }
 		void SetInt(int i) { m_num = i; }
 		void SetResult(CompileResult t) { m_tri = t; }
-		void SetString(wxString s) { m_strng = s; }
-		void SetString2(wxString s) { m_strng2 = s; }
+		void SetMessage(wxString s) { m_message = s; }
+		void SetGCCOutput(wxString s) { m_output = s; }
+		void SetRemoteFile(bool remoteFile) { m_isRemoteFile = remoteFile; }
 
 		virtual wxEvent *Clone() const { return new CompilerEvent(*this); }
 
@@ -40,8 +36,9 @@ class CompilerEvent : public wxEvent
 		wxFileName m_file;
 		CompileResult m_tri;
 		int m_num;
-		wxString m_strng;
-		wxString m_strng2;
+		wxString m_message;
+		wxString m_output;
+		bool m_isRemoteFile;
 
 };
 
