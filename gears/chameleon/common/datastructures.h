@@ -2,6 +2,8 @@
 #ifndef DATASTRUCTURES__H
 #define DATASTRUCTURES__H
 
+#define CHAMELEON_VERSION_NUM " 0.1beta2 "
+
 #include <wx/hashmap.h>
 #include <wx/string.h>
 

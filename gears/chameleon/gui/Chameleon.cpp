@@ -7,6 +7,7 @@
 #include <wx/regex.h>
 #include <wx/splash.h>
 #include "../common/debug.h"
+#include "../common/datastructures.h"
 
 #ifdef MSVC6
 #include "../common/fixvsbug.h"
@@ -877,6 +878,7 @@ void ChameleonWindow::OnAbout(wxCommandEvent& WXUNUSED(event))
 {
     wxString msg;
 	msg.Printf( _T("Chameleon: The Adaptive IDE"));
+	msg += CHAMELEON_VERSION_NUM;
 
     wxMessageBox(msg, "About Chameleon", wxOK | wxICON_INFORMATION, this);
 }
@@ -1336,7 +1338,7 @@ NetworkCallResult ChameleonWindow::CheckNetworkStatus()
 			wxString message = "An unknown network error has occurred.";
 			message += "\nPlease save the information in the debug window to a file (Log menu -> Save)";
 			message += "\n and email it to Ben Carhart at p1164514@cedarville.edu.";
-			message += "\nA description of what led to the problem would also help us."
+			message += "\nA description of what led to the problem would also help us.";
 			wxString statusDetails = m_network->GetStatusDetails();;
 			message += "\nError details: " + statusDetails;
 			wxLogDebug("NET_ERROR_MESSAGE: %s", statusDetails);
