@@ -1,0 +1,220 @@
+	**************
+* TEAM NOTES *
+**************
+
+Meeting 9/11/03 9:35pm
+by: Ben
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+>>Team Roles:
+	*Team Leader / Design Lead
+	*Requirements Lead
+	*Configuration Manager / Quality Assurance
+	~error: assign tasks after config. mgr. defined
+>>CVS Clients
+	*WinCVS?  TkCVS?
+>>Monday Schedule:
+	Shomper: Meet at 3pm to discuss FlexIDE
+	Bulk is on Requirements Lead & Client Interview
+
+Weekly Meeting Schedule:
+	>>Thursdays, 8pm
+
+>>Project Info:
+	*Cross Platform: Win, Linux
+	*2 Languages (assuming no Java): C++, Python
+		--Got Mark's vote
+		--Dave leans for C++
+		--Taking Advantage of the Language?
+		--Scintilla Editor?
+	*2 Toolkit: QT or WxWindows
+		--QT: Get Shomper to go for an educational liscence
+		--Developers Liscense?  Restrictions?  Dorm-only?
+		--WxWindows: don't like model (MFC!!)
+		--Documentation Sux
+	*Paradigm: FDD, variation thereof
+		--Documentation keeping track of features
+		--Management Software
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Phone Meeting 9/15/2003 12:20am
+by: Ben
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+>>Team Roles
+	*Contact Person: Mark?
+	*Design Lead (how classes interact, functions, how things work): --WOW--
+	*Requirements Lead: Mark?
+	*Config Mngr: Dave?
+	*Quality Assurance: Ben?
+	*Testing: Ben?
+>>Interview:
+	*requirements?
+	*list of features, go into detail from there
+		-eg: handling restrictions (student/teacher)
+	*Teacher / Student decides features.
+	*Automation?
+	*target age group of ultimate users?
+	*Handling of Projects?
+		--Describe to extent which we can handle
+	*DON'T TOUCH GUI design... aka our IDE making GUI's.
+	*What an IDE is?
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Interview 9/15/2003 3:20pm
+by: Ben
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+>>What he wants
+	*syntax highlighting
+	*code completion
+	*www.parinya.ca
+	*www.scintilla.org
+	*our ability to port in code from off-the-counter freeware
+	*other teams interaction (animated debugger, auto-grader) with us?
+
+>>Requirements
+    *The FLEX part of the IDE should provide a basic text-editor.  As time & complexity increase, the editor will provide nearly identical functionality to that of Visual C++, including a command-prompt window and syntax highlighting.
+    *Control is to be implemented at our discretion.  Ultimate control for features should be given to the teacher, though students should be allowed to explore on their own.  The idea is of a master switch that makes them AVAILABLE, but not neccesarily open unless the student activates them.
+    *The IDE is to include a debugger (import the animated debugger project?) and a terminal window that can connect to the linux servers.
+    *Linux is the primary environment to run in.  Then Windows.
+    *No preferences with development tools, nor problems with "off the shelf" code.
+
+>>Features
+    *debugger (with step functionality)
+    *terminal window
+    *syntax highlighting
+    *code completion (typing class name auto-finishes)
+    *%%code hiding%%  (if we can...)
+    *master-control to the teacher
+    *hidden complexity for simple/beginner students
+    *full functionality for advanced students
+    *some project handling
+    *communication with the Linux servers
+    *local / server based runtime for program
+
+>>Documentation notes:
+    *loosely follow templates, edit as we see fit
+
+>>Process notes:
+    *organize & operate as we see fit
+    *suggested: give prog. hours to team leader
+    *present deliverables to keep an external order
+    *no real restriction to straight-process
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Group Meeting 9/18/2003 8:02pm
+by: Ben
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+>>Review:
+	*IDE is run locally
+	*2 options for compiling: server or client
+	*-therefore, the CLI is very simple.  Still need the SSH session...
+	*minimilistic commands?  simple command-line
+	*some frustration with Gallagher & his Linux  :)
+	
+	*2 CLI: the terminal session, the command line thingy
+
+	*IDE is completely GUI.  And there was much rejoicing.  YAY!
+	*User is able to have files on local box, server box
+	***solution: the save dialogue has 2-pane window.  Pane 1: local.  Pane 2: server
+	***solution: two seperate save dialogues.  "Save on Server..." / "Save..."
+	***note: compile local, compile server: make the current status obvious
+	***solution: switch between remote & local
+>>Discussion of issues:
+	~the terminal is gonna be one of the most significant
+	~SSH library
+	~GUI Issues:
+		*main function: transfer info from user to "managers"
+		*keeps track of windows / frames / boxes / etc
+		*doesn't send stuff to user persay, more or less passing from user
+		*manager sends own messages
+		*manager has to know what isn't allowed?
+	~enable / disable issues:
+		*showing / hiding of things, so GUI must communicate with PM
+		*PM will pass messages, but not much else
+	~editing management
+		*editor window
+		*everything that happens here.  Oui
+		*communicates with debugger
+		*communicates a little with compiler manager (compiler lets editor know what lines have problems)
+	~compiler management
+		*deals with terminal management
+		*communicates with editor
+		*communicates a little with network
+		*communicates with debugger?
+	~network management
+	~CVS issue: e-mail whenever something is committed
+>>"Managers": Design
+	~GUI		@Mark
+	~Permission	@Ben
+	~Compiler	@Dave
+	~Editor		@Mark
+	~Network	@Dave
+	~Debugger	@Ben
+>>Roles:
+	*Team Lead	@Mark
+	*Project Lead	@Mark
+	*Req. Lead	@Ben
+	*Design Lead	@Dave
+	*Config Mng 	@Dave
+	*QA		@Ben
+	*Testing	@Ben
+	*Scribe Guru	@Ben
+
+	*TEAM NAME:
+	*Project Management: Tasks, due dates, etc.
+
+>>Next Step:
+	*break up managers, divy them into research, submodel them
+	*create a full "stub" interface with no functionality
+	*Submodel notes:
+		~little worry about breaking submodel up
+		~NEEDS TO KNOW about MESSAGES
+		~who you NEED to talk to
+		~how you talk to ME
+		~how you can RECEIVE messages
+	~DUE: 9/25/03
+	~Need to establish communication guidelines
+	~Possibility of 2nd meeting?  Sunday nite?  Quick 15 min thing.
+	~Mark: take care of proj. mng. thing
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Group Meeting 9/25/2003 8:06pm
+by: Ben
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+>>Review:
+	-Mark's got the proj. management
+		~CVS monitor, Perl, etc.
+	-no one has sub-modeling.  NEED that for next week.
+>>Next Week:
+	-Documentation
+	-Submodels
+	-Knowing who talks to who or how
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Group Meeting 10/07/2003 8:35pm
+by: Ben
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+>>Debugger Manager things
+	*write a go-between for the GUI & the animated / internal debugger
+	*creating a front
+	*have to get Oreily GDB (or any other GDB)
+>>CVS stuff...
+	*nearly done
+	*beast server nearly online; use SSH
+>>Directory Structure
+	*folder for each module? +comment?  YUP
+>>OS Refocus
+	*Linux not big?
+>>Dues
+	*Requirements 2nd draft due: 10/16 (next Thurs)
+	*Set up meeting to double-check
+	*re-vamp SRS
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Group Meeting 10/12/2003 11:35pm
+by: Ben
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+>>Status check:
+	*Mark: got the Cintilla editor working with keywords highlighted
+		~saving to the server?
+	*Dave: CVS working
+		~list of dir's he has yet to create.  WxWindows to add?
+		~compiling WxWin--> files on their system
+	*Ben: what?
+
+>>Comming up!!
+	*Meeting with Shomper: 8am Wed.; presenting the SRS (2nd revision... who has that?)
