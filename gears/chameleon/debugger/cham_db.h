@@ -14,7 +14,6 @@
 #define CHAMELEON_DEBUGER_H
 
 #include <wx/string.h>
-//#include <wx/process.h>
 #include <wx/dynarray.h>
 #include <wx/event.h>
 #include <wx/txtstrm.h>
@@ -30,7 +29,6 @@
 class ProjectInfo;
 
 //global declarations
-//const int MAX_HIST_ITEMS = 50;
 const wxString PROMPT_CHAR = "%";
 
 //keywords for parsing output
@@ -80,7 +78,6 @@ class Debugger : public wxEvtHandler
 		void onDebugEvent(wxDebugEvent &event);
 
 		//status modifiers
-		void setMode(bool mode);		//switch between LOCAL and REMOTE mode
 		bool getMode();					//get current mode
 		
 		bool setFile(wxString fName);	//sets a file for debugging
@@ -116,7 +113,7 @@ class Debugger : public wxEvtHandler
 
 		//variable management
 		void snoopVar(wxString varName, wxString funcName, wxString className, bool oneShot = true);
-		void setVar(wxString varName, wxString newValue, wxString funcName, wxString className);
+		//void setVar(wxString varName, wxString newValue, wxString funcName, wxString className);
 		void removeVar(wxString varName, wxString funcName, wxString className);
 
 		//misc management
