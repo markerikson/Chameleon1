@@ -26,6 +26,8 @@ public:
 	void RemoveEditor(ChameleonEditor* edit);
 
 	void MakeReadOnly(bool makeReadOnly);
+	
+	wxArrayString GetSourcesToBuild();
 
 	wxArrayString GetHeaders() { return m_headerFiles; }
 	wxArrayString GetSources() { return m_sourceFiles; }

@@ -111,6 +111,21 @@ void ProjectInfo::SetFileBuildInclusion(wxString filename, FileFilterType filter
 	(*enablelist)[index] = enable;
 }
 
+wxArrayString ProjectInfo::GetSourcesToBuild()
+{
+	wxArrayString sourcesToBuild;
+	
+	for(int i = 0; i < (int)m_sourcesEnabled.GetCount(); i++)
+	{
+		if(m_sourcesEnabled[i])
+		{
+			sourcesToBuild.Add(m_sourceFiles[i]);
+		}
+	}
+	
+	return sourcesToBuild;
+}
+
 
 void ProjectInfo::AddEditor(ChameleonEditor* edit)
 {
