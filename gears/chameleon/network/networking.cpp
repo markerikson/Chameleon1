@@ -1,17 +1,25 @@
+////////////////////////////////////////////////////
+//
+//
+// ToDo: prevent anything from being used before SetPlinkProg is called
+//
+//
+////////////////////////////////////////////////////
+
 #include "networking.h"
 //#include "../common/datastructure.h"
 #include <wx/utils.h>
 
+
 Networking::Networking()
 {
-	//PscpConnect* scp_pscp;
 	ssh_host = "localhost";
 	ssh_user = "user";
 	ssh_pass = "password";
 	downloadDir = ""; // should cause the working directory to be used
 	plinkApp = "plink.exe"; // will use the working directory
-	pscpApp = "pscp.exe"; // will use the working directory
-	isConnected = false;
+	//isConnected = false; // no longer needed
+	status = NET_GOOD;
 	ssh_plink = new PlinkConnect(plinkApp, ssh_host, ssh_user, ssh_pass);
 }
 
@@ -29,39 +37,33 @@ wxString Networking::GetFileContents(wxString file, wxString path)
 
 
 // internally could also manage dirListing caches to increase speed
-DirListing Networking::GetDirListing(wxString dirPath, bool includeHidden)
+DirListing Networking::GetDirListing(wxString dirPath, bool forceRefresh, bool includeHidden)
 {
 	// dirPath has no trailing "/"
 	return SSHGetDirListing(dirPath, includeHidden);
 }
 
-int Networking::SendFileContents(wxString strng, wxString rfile, wxString rpath)
+void Networking::SendFileContents(wxString strng, wxString rfile, wxString rpath)
 {
-	// !!!!INCOMPLETE!!!!
-	return 0;
+	wxString cmd = "cd " + rpath + " && echo \"" + strng + "\" > " + rfile + " ";
+	SSHSendCommand(cmd);
+
+	return;
 }
 
-//no longer passing files to and fro
-//void Networking::SetDefaultDownloadDir(wxString path)
-//{
-//	if(path.Right(1) != "/") { // precautionary check
-//		path += "/";
-//	}
-//	downloadDir = path;
-//}
 
 // if any of these are "" those will be unchanged
 void Networking::SetDetails(wxString hostname, wxString username, wxString passphrase)
 {
-	if(hostname != "") {
+	if(!hostname.IsEmpty()) {
 		ssh_host = hostname;
 		ssh_plink->setHostname(hostname);
 	}
-	if(username != "") {
+	if(!username.IsEmpty()) {
 		ssh_user = username;
 		ssh_plink->setUsername(username);
 	}
-	if(passphrase != "") {
+	if(!passphrase.IsEmpty()) {
 		ssh_pass = passphrase;
 		ssh_plink->setPassphrase(passphrase);
 	}
@@ -69,6 +71,9 @@ void Networking::SetDetails(wxString hostname, wxString username, wxString passp
 	//if(hostname != "" || username != "") {
 	//	//will need to empty directory cache
 	//}
+
+	// Set the status
+	SSHSendCommand("");
 }
 
 
@@ -78,17 +83,19 @@ void Networking::SetPlinkProg(wxString path_name)
 	plinkApp = path_name;
 }
 
-void Networking::SetPscpProg(wxString path_name)
-{
-	// This had better be accurate, because I don't handle an error in this well at all
-	pscpApp = path_name;
-}
+// No longer needed
+//void Networking::SetPscpProg(wxString path_name)
+//{
+//	// This had better be accurate, because I don't handle an error in this well at all
+//	pscpApp = path_name;
+//}
 
 wxString Networking::GetHomeDirPath() {
 	// !!!! I don't know if this has a trailing /
 	wxString cmd = "cd ~ && pwd ";
 	return SSHSendCommand(cmd);
 }
+
 
 
 DirListing Networking::SSHGetDirListing(wxString dirPath, bool includeHidden)
@@ -164,24 +171,40 @@ wxArrayString Networking::ParseLS(wxString strng, bool includeHidden){
 
 
 wxString Networking::SSHSendCommand(wxString command) {
+	//command += " && echo \"C_O_M_P_E_T_E_D_OK\"";
 	ssh_plink->sendCommand(command);
-	return ssh_plink->getOutput();
+	wxString output = ssh_plink->getOutput();
 
-#if 0
-/*
-	// special case:
-	if(errlog.Contains("key is not cached") && errlog.Contains("Connection abandoned.") ) {
-		isConnected = false;
-		delete proc;
-		// If plink is run as -batch it will terminate
-		//  when "Store key in cache? (y/n) " is asked
-		//  so, I need to rerun the process not in batch,
-		//  and send the appropriate "n"
-		sendCommand(lastcmd, false);
-		send("n\n");
+	// Confirm that all went according to plan
+	if(output.Right(19) == "C_O_M_P_E_T_E_D_OK\n") {
+		status = NET_GOOD;
 	}
-*/
-#endif
+	else {
+		//figure out what went wrong
+		wxString errlog = ssh_plink->getErrors();
+		wxString message = ssh_plink->getMessage();
+
+		if(errlog.Contains("key is not cached") && errlog.Contains("Connection abandoned.") ) {
+			status = NET_UNKNOWN_HOST;
+		}
+		else {
+			status = NET_ERROR_MESSAGE;
+		}
+	}
+
+	return output;
 }
 
-
+NetworkStatus Networking::GetStatus() {
+	return status;
+}
+/*
+enum NetworkStatus
+{
+	NET_GOOD = 0,
+	NET_UNKNOWN_HOST,  // host finger print not in cache
+	NET_ERROR_MESSAGE,
+	NET_READ_ERROR,
+	NET_WRITE_ERROR
+};
+*/

@@ -1,13 +1,20 @@
+#ifndef __CHAMELEON__NETWORKING__H__
+#define __CHAMELEON__NETWORKING__H__
+
 /***********************
- *
- * Consideration needs to be made for (perceived) overwriting of files
  *
  * Internally, I will keep the trailing / on directories, but...
  * Externally, I will receive pathes without trailing /
  *
  * When I have path_name that means path+name (ie. "c:/windows/plink.exe")
+ * 
+ * Caution: sendFileContents will overwrite anything in it's way.
  *
  * 1/18/04 - No longer passing files to/fro, instead passing the contents of the files
+ *
+ * Todo: I'm not following CS StyleGuide for method naming.  I don't know why I did
+ *       this.  I'll change it at somepoint.  (Which means I'll be responsible for
+ *       changing it in everyone else's code.)
  *
  ***************************/
 
@@ -24,20 +31,15 @@ class Networking {
 
 		//Setup
 		void SetPlinkProg(wxString path_name);
-		void SetPscpProg(wxString path_name);
+		//void SetPscpProg(wxString path_name);  // No longer using
 		void SetDetails(wxString hostname, wxString username, wxString passphrase);
-		//void SetDefaultDownloadDir(wxString path);
 
 		// Methods
-		//bool IsConnected(); No longer maintaining a live connection
+		NetworkStatus GetStatus();
 		wxString GetHomeDirPath();
-		DirListing GetDirListing(wxString dirPath, bool includeHidden = false);
-		// Pass strings back and forth:
-		wxString GetFileContents(wxString file, wxString path);
-		int SendFileContents(wxString strng, wxString rfile, wxString rpath);
-		// As opposed to:
-		//wxString GetFile(wxString file, wxString path); // returns path+name of file locally
-		//int SendFile(wxString lfile, wxString lpath, wxString rfile, wxString rpath);
+		DirListing GetDirListing(wxString dirPath, bool forceRefresh = false, bool includeHidden = false);
+		wxString GetFileContents(wxString filename, wxString path);
+		void SendFileContents(wxString strng, wxString rfilename, wxString rpath);
 
 
 	private:
@@ -46,10 +48,13 @@ class Networking {
 		wxString SSHSendCommand(wxString command);
 		wxArrayString ParseLS(wxString strng, bool includeHidden);
 		// Data:
-		bool isConnected;
+		//bool isConnected;
 		PlinkConnect* ssh_plink;
-		//PscpConnect* scp_pscp;
 		wxString ssh_host, ssh_user, ssh_pass;
-		wxString plinkApp, pscpApp;
+		wxString plinkApp;// pscpApp;
 		wxString downloadDir;
+		NetworkStatus status;
 };
+
+
+#endif // __CHAMELEON__NETWORKING__H__

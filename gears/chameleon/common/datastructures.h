@@ -113,5 +113,13 @@ typedef struct
 	wxArrayString fileNames;
 } DirListing;
 
+enum NetworkStatus
+{
+	NET_GOOD = 0,
+	NET_UNKNOWN_HOST,  // host finger print not in cache
+	NET_ERROR_MESSAGE,
+	NET_READ_ERROR,
+	NET_WRITE_ERROR
+};
 
 #endif
