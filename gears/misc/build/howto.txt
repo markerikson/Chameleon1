@@ -22,3 +22,7 @@ batch build wxWindows
 =======================================
 build STC
 =======================================
+
+
+To create the setup program:
+We used Inno Setup 4 (http://www.jrsoftware.org/isinfo.htm) combined with ISTool (http://www.istool.org/).  The setup script is in the misc/build, and is pretty simple.  All it does is copy the files to the install directory and put the icons on the desktop and in the start menu.
