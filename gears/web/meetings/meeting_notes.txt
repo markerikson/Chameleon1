@@ -680,3 +680,62 @@ by: Ben
 >Thoughts on permissions:
 	-add a label with current authorization code in CHAMELEON
 	-add a reverse-authorize ability in PROFESSOR PROGRAM
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Group Meeting 3/15/2004 11:17pm
+by: Ben
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+>>Status Report:
+	*Where we are...
+	*Mark's got some terminal history running... ALMOST done... 85% or better.
+	*Proj. Mng: 90% done
+	*Debugger interface?  um... we can display breakpoints!  ^_^
+	*Dave: wxProcess2!!  woo!!  It's a BEAST.  hee hee.
+>>Feature freeze? Wed. Night.
+	>want compiling
+	>want text colors in
+	>Options class
+>>Next Beta:
+	*scrolling
+	*compiling
+>>After the beta??
+	*finish up the major peices... by Final Presentation
+	*3/23?????!!!!!!
+	*Presentation
+>>Stuff to keep Debugger on task?
+	*evening e-mails... for starters... just how much code I did.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Group Meeting 3/18/2004 8:32pm
+by: Ben
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+>>Status:
+	*Mark's got the Terminal going "pretty sexy" (quote from Dave).
+	*Ben's coded Step parsing, just hasn't tested it...
+	*Dave's worked with Compiler
+>>Optios Dialogue:
+	*restructuring?  hasn't gone anywhere yet
+	*more options for Dave (compiling file remotely... etc)
+	*Remove misc. permissions items: just remove datastructures.h: 
+		telnet testing, test perm, name completion
+	*Add "Adv. Compiler Output" permission
+
+>>Design issues:
+	*Should we add a "View" menu?
+	*Removing "terminal" from permissions?
+	*Make the terminal default?
+
+>>Items to deliver / talk
+	*Deliver Prof. Prog. for Shomper
+	*Label in Options Dialogue
+	*Reverse Engineer code
+
+>>Before we can deliver Beta
+	*Remove CRC
+	*Options label (auth code)
+	*Scrollbar play
+	*Dynamic Compiler Window?
+	
+	*NEXT WEEK!  FEATURE RELEASE with DEbuGGER!!  w00+!  we hope?!?
+
+>>Next Meeting:
+	*Tuesday night: meeting for presentation!!
+	*Debugger had BETTER be connected & running...
