@@ -12,8 +12,7 @@
 //-------------------------------------------------------------------
 // wxProcess2EndedEvent
 //-------------------------------------------------------------------
-DEFINE_EVENT_TYPE(wxEVT_PROCESS2_ENDED);
-
+DEFINE_EVENT_TYPE(wxEVT_PROCESS2_ENDED)
 wxProcess2EndedEvent::wxProcess2EndedEvent(long pid)
 {
 	wxEvent::m_eventType = wxEVT_PROCESS2_ENDED;
@@ -29,7 +28,7 @@ long wxProcess2EndedEvent::GetPid()
 //-------------------------------------------------------------------
 // wxProcess2StdOutEvent
 //-------------------------------------------------------------------
-DEFINE_EVENT_TYPE(wxEVT_PROCESS2_STDOUT);
+DEFINE_EVENT_TYPE(wxEVT_PROCESS2_STDOUT)
 
 wxProcess2StdOutEvent::wxProcess2StdOutEvent(long pid, wxString out)
 {
@@ -54,8 +53,7 @@ wxString wxProcess2StdOutEvent::GetOutput()
 //-------------------------------------------------------------------
 // wxProcess2StdErrEvent
 //-------------------------------------------------------------------
-DEFINE_EVENT_TYPE(wxEVT_PROCESS2_STDERR);
-
+DEFINE_EVENT_TYPE(wxEVT_PROCESS2_STDERR)
 wxProcess2StdErrEvent::wxProcess2StdErrEvent(long pid, wxString err)
 {
 	wxEvent::m_eventType = wxEVT_PROCESS2_STDERR;

@@ -1,7 +1,7 @@
 #include "process2.h"
 
 // Event Table Declaration
-BEGIN_EVENT_TABLE(wxProcess2, wxEvtHandler)
+BEGIN_EVENT_TABLE(wxProcess2, wxProcess)
 	EVT_TIMER(-1, wxProcess2::OnTimerEvent)
 END_EVENT_TABLE()
 

@@ -22,6 +22,7 @@
 // -------------------------------------------------------------------
 DECLARE_EVENT_TYPE(wxEVT_PROCESS2_ENDED, wxID_ANY)
 
+
 class wxProcess2EndedEvent : public wxEvent
 {
 	public:
@@ -34,11 +35,12 @@ class wxProcess2EndedEvent : public wxEvent
 
 };
 
+typedef void (wxEvtHandler::*wxProcess2EndedEventFunction)(wxProcess2EndedEvent&);
 #define EVT_PROCESS2_ENDED(fn) \
 	DECLARE_EVENT_TABLE_ENTRY( \
 			wxEVT_PROCESS2_ENDED, wxID_ANY, wxID_ANY, \
 			(wxObjectEventFunction)(wxEventFunction)&fn, \
-			(wxObject *) NULL  ),
+			(wxObject *) NULL),
 
 
 
@@ -46,6 +48,7 @@ class wxProcess2EndedEvent : public wxEvent
 // wxProcess2StdOutEvent
 // -------------------------------------------------------------------
 DECLARE_EVENT_TYPE(wxEVT_PROCESS2_STDOUT, wxID_ANY)
+
 
 class wxProcess2StdOutEvent : public wxEvent
 {
@@ -60,12 +63,14 @@ class wxProcess2StdOutEvent : public wxEvent
 		long m_long_pid;
 
 };
+//typedef void (wxEvtHandler::*wxStyledTextEventFunction)(wxStyledTextEvent&);
+typedef void (wxEvtHandler::*wxProcess2StdOutEventFunction)(wxProcess2StdOutEvent&);
 
 #define EVT_PROCESS2_STDOUT(fn) \
 	DECLARE_EVENT_TABLE_ENTRY( \
 			wxEVT_PROCESS2_STDOUT, wxID_ANY, wxID_ANY, \
-			(wxObjectEventFunction)(wxEventFunction)&fn, \
-			(wxObject *) NULL ), \
+			(wxObjectEventFunction)(wxEventFunction)(wxProcess2StdOutEventFunction)&fn, \
+			(wxObject *) NULL),
 
 
 
@@ -74,6 +79,7 @@ class wxProcess2StdOutEvent : public wxEvent
 // wxProcess2StdErrEvent
 // -------------------------------------------------------------------
 DECLARE_EVENT_TYPE(wxEVT_PROCESS2_STDERR, wxID_ANY)
+
 
 class wxProcess2StdErrEvent : public wxEvent
 {
@@ -89,11 +95,12 @@ class wxProcess2StdErrEvent : public wxEvent
 
 };
 
+typedef void (wxEvtHandler::*wxProcess2StdErrEventFunction)(wxProcess2StdErrEvent&);
 #define EVT_PROCESS2_STDERR(fn) \
 	DECLARE_EVENT_TABLE_ENTRY( \
 			wxEVT_PROCESS2_STDERR, wxID_ANY, wxID_ANY, \
 			(wxObjectEventFunction)(wxEventFunction)&fn, \
-			(wxObject *) NULL ), \
+			(wxObject *) NULL),
 
 
 
