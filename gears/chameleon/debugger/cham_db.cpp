@@ -31,6 +31,7 @@
 *              updated networking and added run-to-cursor ability.
 *              Also user I/O is in here (sorta).  Hopefully this
 *              version will run...
+*BSC-04/23/04->Doxygen Update.
 \*****************************************************************/
 
 
@@ -60,13 +61,11 @@ BEGIN_EVENT_TABLE(Debugger, wxEvtHandler)
 	EVT_DEBUG(Debugger::onDebugEvent)
 END_EVENT_TABLE()
 
-//straight up constructor
 //////////////////////////////////////////////////////////////////////////////
 ///  public constructor Debugger
-///  <TODO: insert text here>
 ///
-///  @param  networking Networking *   <TODO: insert text here>
-///  @param  pointer    wxEvtHandler * <TODO: insert text here>
+///  @param  networking Networking *   <contains connection to GDB>
+///  @param  pointer    wxEvtHandler * <how i react to GDB (events)>
 ///
 ///  @return void
 ///
@@ -120,10 +119,8 @@ Debugger::Debugger(Networking* networking, wxEvtHandler* pointer)
 }
 //end constructors
 
-//destructor
 //////////////////////////////////////////////////////////////////////////////
 ///  public destructor ~Debugger
-///  <TODO: insert text here>
 ///
 ///  @return void
 ///
@@ -143,12 +140,11 @@ Debugger::~Debugger()
 	m_varInfo.Clear();
 }//end ~Debugger
 
-//onDebugEvent(): catches when Mark sends me something...
 //////////////////////////////////////////////////////////////////////////////
 ///  public onDebugEvent
-///  <TODO: insert text here>
+///  <Parses an event raised from the GUI (button push or other)>
 ///
-///  @param  event wxDebugEvent & <TODO: insert text here>
+///  @param  event wxDebugEvent & <the event information from the GUI>
 ///
 ///  @return void
 ///
@@ -340,12 +336,11 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 //This is just general running information I thought would be
 //useful to know while using the class.
 
-//currMode(): returns current mode
 //////////////////////////////////////////////////////////////////////////////
 ///  public getMode
-///  <TODO: insert text here>
+///  <returns current mode (local = false)>
 ///
-///  @return bool <TODO: insert text here>
+///  @return bool <current mode>
 ///
 ///  @author Ben Carhart @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -354,12 +349,11 @@ bool Debugger::getMode()
 	return(isRemote);
 }
 
-//for Mark...
 //////////////////////////////////////////////////////////////////////////////
 ///  public isDebugging
-///  <TODO: insert text here>
+///  <returns an answer to the generic question, is this class active>
 ///
-///  @return bool <TODO: insert text here>
+///  @return bool <true if process is active & is running or waiting>
 ///
 ///  @author Ben Carhart @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -370,9 +364,9 @@ bool Debugger::isDebugging()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public isPaused
-///  <TODO: insert text here>
+///  <returns an answer to the generic question, can i tell this class something>
 ///
-///  @return bool <TODO: insert text here>
+///  @return bool <true if process is waiting>
 ///
 ///  @author Ben Carhart @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -383,9 +377,9 @@ bool Debugger::isPaused()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public getCurrentProject
-///  <TODO: insert text here>
+///  <for the GUI>
 ///
-///  @return ProjectInfo * <TODO: insert text here>
+///  @return ProjectInfo * <current C++ project being run>
 ///
 ///  @author Ben Carhart @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -395,12 +389,11 @@ ProjectInfo* Debugger::getCurrentProject()
 }
 //--//
 
-//currFile(): returns the currently loaded file
 //////////////////////////////////////////////////////////////////////////////
 ///  public getFile
-///  <TODO: insert text here>
+///  <not sure if it's ever used>
 ///
-///  @return wxString <TODO: insert text here>
+///  @return wxString <current file assigned to this class>
 ///
 ///  @author Ben Carhart @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -409,12 +402,11 @@ wxString Debugger::getFile()
 	return(currFile);
 }
 
-//progStatus(): returns current debug status
 //////////////////////////////////////////////////////////////////////////////
 ///  public programStatus
-///  <TODO: insert text here>
+///  <the specific function-by-function class status>
 ///
-///  @return int <TODO: insert text here>
+///  @return int <the enum declared in the header file>
 ///
 ///  @author Ben Carhart @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -426,9 +418,9 @@ int Debugger::programStatus()
 //genericStatus(): returns the generic debugger status
 //////////////////////////////////////////////////////////////////////////////
 ///  public genericStatus
-///  <TODO: insert text here>
+///  <the generic class status>
 ///
-///  @return int <TODO: insert text here>
+///  @return int <the enum declared in the header file>
 ///
 ///  @author Ben Carhart @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -437,12 +429,11 @@ int Debugger::genericStatus()
 	return(status);
 }
 
-//errorMsg(): returns the most recent error message string
 //////////////////////////////////////////////////////////////////////////////
 ///  public errorMsg
-///  <TODO: insert text here>
+///  <a generic way of seeing the last error; also prob. never used>
 ///
-///  @return wxString <TODO: insert text here>
+///  @return wxString <contents of the last error>
 ///
 ///  @author Ben Carhart @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -451,12 +442,11 @@ wxString Debugger::errorMsg()
 	return(error);
 }
 
-//resetStatus(): resets this class's status and the child process's
 //////////////////////////////////////////////////////////////////////////////
 ///  public resetStatus
-///  <TODO: insert text here>
+///  <an attempt to reset everything as best this class can>
 ///
-///  @return bool <TODO: insert text here>
+///  @return bool <false if there is no process to reset>
 ///
 ///  @author Ben Carhart @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -521,12 +511,9 @@ bool Debugger::resetStatus()
 	return(false);
 }
 
-//clearError(): does a "soft" reset by just changing the status variable.
-//  I included this because I thought just having a hard-reset was a little
-//  extreme considering the soft errors generated by bad breakpoints
 //////////////////////////////////////////////////////////////////////////////
 ///  public clearError
-///  <TODO: insert text here>
+///  <a softer version of [resetStatus()]; just re-sets the status vars>
 ///
 ///  @return void
 ///
@@ -553,14 +540,13 @@ void Debugger::clearError()
 	classStatus = SOFT_RESET;
 }
 
-//setProcess(): re-directs or changes the process pointer.
 //////////////////////////////////////////////////////////////////////////////
 ///  public setProcess
-///  <TODO: insert text here>
+///  <changes / redirects the process pointer; probably never used>
 ///
-///  @param  newIsRemote bool      <TODO: insert text here>
-///  @param  newFname    wxString  <TODO: insert text here>
-///  @param  nExec       wxString  <TODO: insert text here>
+///  @param  newIsRemote bool      <mode of the new process>
+///  @param  newFname    wxString  <new file name>
+///  @param  nExec       wxString  <new executable command>
 ///
 ///  @return void
 ///
@@ -582,12 +568,13 @@ void Debugger::setProcess(bool newIsRemote, wxString newFname, wxString nExec)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  private startProcess
-///  <TODO: insert text here>
+///  <begins the process; status=DEBUG_DEAD till this point>
 ///
-///  @param  fullRestart bool      <TODO: insert text here>
-///  @param  mode        bool      <TODO: insert text here>
-///  @param  fName       wxString  <TODO: insert text here>
-///  @param  execThis    wxString  <TODO: insert text here>
+///  @param  fullRestart bool      <if we just want to start the process
+///                                 again, don't reset all the internal vars>
+///  @param  mode        bool      <process mode>
+///  @param  fName       wxString  <filename to load>
+///  @param  execThis    wxString  <the command to execute>
 ///
 ///  @return void
 ///
@@ -712,13 +699,13 @@ void Debugger::startProcess(bool fullRestart, bool mode, wxString fName, wxStrin
 //i used to have 3 variables to use for breakpoints.
 //Now I don't know.  ^_^  We re-designed things.
 
-//setBreak(): accepts a line number with which to break on
 //////////////////////////////////////////////////////////////////////////////
 ///  public setBreak
-///  <TODO: insert text here>
+///  <sets a breakpoint [GDB SPECIFIC]>
 ///
-///  @param  srcFile wxString  <TODO: insert text here>
-///  @param  lineNum int       <TODO: insert text here>
+///  @param  srcFile wxString  <the file to set the breakpoint in>
+///  @param  lineNum int       <the linenumber.  This and the above item are
+///                             parsed into ["file:linenum"]>
 ///
 ///  @return void
 ///
@@ -752,13 +739,12 @@ void Debugger::setBreak(wxString srcFile, int lineNum)
 	}
 }
 
-//enableBreak(): enables a breakpoint at a given line number.
 //////////////////////////////////////////////////////////////////////////////
 ///  public enableBreak
-///  <TODO: insert text here>
+///  <enables a disabled breakpoint (or not) [GDB SPECIFIC]>
 ///
-///  @param  srcFile wxString  <TODO: insert text here>
-///  @param  lineNum int       <TODO: insert text here>
+///  @param  srcFile wxString  <file with the breakpoint>
+///  @param  lineNum int       <complementary line number>
 ///
 ///  @return void
 ///
@@ -788,13 +774,12 @@ void Debugger::enableBreak(wxString srcFile, int lineNum)
 	}
 }
 
-//disableBreak(): disables a breakpoint at a given line number
 //////////////////////////////////////////////////////////////////////////////
 ///  public disableBreak
-///  <TODO: insert text here>
+///  <disables a breakpoint in a given file at a given line>
 ///
-///  @param  srcFile wxString  <TODO: insert text here>
-///  @param  lineNum int       <TODO: insert text here>
+///  @param  srcFile wxString  <the file>
+///  @param  lineNum int       <the complementary line #>
 ///
 ///  @return void
 ///
@@ -824,13 +809,12 @@ void Debugger::disableBreak(wxString srcFile, int lineNum)
 	}
 }
 
-//killBreak(): deletes a breakpoint at line X
 //////////////////////////////////////////////////////////////////////////////
 ///  public killBreak
-///  <TODO: insert text here>
+///  <deletes a breakpoint>
 ///
-///  @param  srcFile wxString  <TODO: insert text here>
-///  @param  lineNum int       <TODO: insert text here>
+///  @param  srcFile wxString  <file>
+///  @param  lineNum int       <linenumber to kill>
 ///
 ///  @return void
 ///
@@ -854,16 +838,16 @@ void Debugger::killBreak(wxString srcFile, int lineNum)
 	classStatus = K_BREAK;
 }
 
-//findBreakpoint(): finds a breakpoint within the hash & returns the GDB #
 //////////////////////////////////////////////////////////////////////////////
 ///  private findBreakpoint
-///  <TODO: insert text here>
+///  <a private function to automate the above 3 functions>
 ///
-///  @param  fName     wxString  <TODO: insert text here>
-///  @param  lineNum   int       <TODO: insert text here>
-///  @param  andRemove bool      [=false] <TODO: insert text here>
+///  @param  fName     wxString  <filename to look for>
+///  @param  lineNum   int       <line-num to test against the file>
+///  @param  andRemove bool      [=false] <facilitates [killBreak()]>
 ///
-///  @return int       <TODO: insert text here>
+///  @return int       <returns a [GDB SPECIFIC] number associated with every
+///                     breakpoint created>
 ///
 ///  @author Ben Carhart @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -903,12 +887,11 @@ int Debugger::findBreakpoint(wxString fName, int lineNum, bool andRemove)
 	return(-1);
 }
 
-//numBreaks(): returns the # of breakpoints
 //////////////////////////////////////////////////////////////////////////////
 ///  public numBreak
-///  <TODO: insert text here>
+///  <accessor function for the # of current breakpoints set>
 ///
-///  @return int <TODO: insert text here>
+///  @return int <# of current breakpoints set>
 ///
 ///  @author Ben Carhart @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -924,11 +907,9 @@ int Debugger::numBreak()
 //like that.  The "go" function is also here.  It will get private var's
 //as neccesary.
 
-//step(): steps a single line (where code is being executed), or into
-//  a function if that's the line.
 //////////////////////////////////////////////////////////////////////////////
 ///  public step
-///  <TODO: insert text here>
+///  <will step the program a literal one line [GDB SPECIFIC]>
 ///
 ///  @return void
 ///
@@ -956,10 +937,10 @@ void Debugger::step()
 	//if not stopped or waiting, then program status = error
 }
 
-//stepOver(): step a line, execute over functions. Nearly identical to [step()]
 //////////////////////////////////////////////////////////////////////////////
 ///  public stepOver
-///  <TODO: insert text here>
+///  <nearly identical to step, only steps one line in present function; aka
+///   skips over function calls [GDB SPECIFIC]>
 ///
 ///  @return void
 ///
@@ -978,11 +959,10 @@ void Debugger::stepOver()
 	//if not waiting, then program status is not good for a step-over
 }
 
-//stepOut(): finishes executing a function and stop on next line
-//the command = finish
 //////////////////////////////////////////////////////////////////////////////
 ///  public stepOut
-///  <TODO: insert text here>
+///  <finishes the current function & stops when stack is reached 1 level up
+///   [GDB SPECIFIC]>
 ///
 ///  @return void
 ///
@@ -1002,14 +982,13 @@ void Debugger::stepOut()
 	//if not stopped or waiting, then program status is not good for stepOut
 }
 
-//runToCursor(): it runs to the cursor.  GDB has a nice one-shot breakpoint
-//  called "tbreak" so i set that, and send a "cont()" command.  :)
 //////////////////////////////////////////////////////////////////////////////
 ///  public runToCursor
-///  <TODO: insert text here>
+///  <runs from current place in debugged program to where the cursor is [GDB
+///   SPECIFIC]; related to breakpoints>
 ///
-///  @param  srcFile wxString  <TODO: insert text here>
-///  @param  lineNum int       <TODO: insert text here>
+///  @param  srcFile wxString  <file to run-to in>
+///  @param  lineNum int       <line to run-to>
 ///
 ///  @return void
 ///
@@ -1033,10 +1012,9 @@ void Debugger::runToCursor(wxString srcFile, int lineNum)
 	//if not stopped or waiting, then program status is not good for stepOut
 }
 
-// go(): run the program using GDB.
 //////////////////////////////////////////////////////////////////////////////
 ///  public go
-///  <TODO: insert text here>
+///  <sends a [GDB SPECIFIC] "go" command>
 ///
 ///  @return void
 ///
@@ -1060,9 +1038,9 @@ void Debugger::go()
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public stop
-///  <TODO: insert text here>
+///  <attempts a clean cease-and-decist of the process [GDB SPECIFIC]>
 ///
-///  @param  pleaseRestart bool  <TODO: insert text here>
+///  @param  pleaseRestart bool  <use this if you want absolute full-restart>
 ///
 ///  @return void
 ///
@@ -1135,10 +1113,9 @@ void Debugger::stop(bool pleaseRestart)
 	}//end pleaseRestart conditional
 }
 
-//kill(): questions?
 //////////////////////////////////////////////////////////////////////////////
 ///  public kill
-///  <TODO: insert text here>
+///  <questions?  e-mail lyrisriver@hotmail.com so i can laugh at you>
 ///
 ///  @return void
 ///
@@ -1157,10 +1134,9 @@ void Debugger::kill()
 	flushPrivateVar();
 }
 
-//cont(): continues running a stopped program
 //////////////////////////////////////////////////////////////////////////////
 ///  public cont
-///  <TODO: insert text here>
+///  <tells a stopped or waiting program to "go" again [GDB SPECIFIC]>
 ///
 ///  @return void
 ///
@@ -1182,16 +1158,14 @@ void Debugger::cont()
 //VARIABLE FUNCTIONALITY
 //----------------------
 
-//snoopVar(): adds, if not in the array, the given variable.  Actual snooping
-//  is done in [onOutputEvent]
 //////////////////////////////////////////////////////////////////////////////
 ///  public snoopVar
-///  <TODO: insert text here>
+///  <the "watchAVariable" function>
 ///
-///  @param  varName   wxString  <TODO: insert text here>
-///  @param  funcName  wxString  <TODO: insert text here>
-///  @param  className wxString  <TODO: insert text here>
-///  @param  oneShot   bool      [=true] <TODO: insert text here>
+///  @param  varName   wxString  <the variable name to watch>
+///  @param  funcName  wxString  <-not used- where in the current prog it is>
+///  @param  className wxString  <-not used- a specific class?>
+///  @param  oneShot   bool      [=true] <relic code not used at all>
 ///
 ///  @return void
 ///
@@ -1246,10 +1220,10 @@ void Debugger::snoopVar(wxString varName, wxString funcName, wxString className,
 	if( notFound &&
 		(status == DEBUG_BREAK || status == DEBUG_WAIT))
 	{
-		/*
-		command.Printf("whatis %s%s", varName.c_str(), returnChar.c_str());
-		sendCommand(command);
-		*/
+		
+		//command.Printf("whatis %s%s", varName.c_str(), returnChar.c_str());
+		//sendCommand(command);
+		
 		sendWhat();
 
 		classStatus = GET_WHAT;
@@ -1258,12 +1232,12 @@ void Debugger::snoopVar(wxString varName, wxString funcName, wxString className,
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public setVar
-///  <TODO: insert text here>
+///  <-not implemented->
 ///
-///  @param  varName   wxString  <TODO: insert text here>
-///  @param  newValue  wxString  <TODO: insert text here>
-///  @param  funcName  wxString  <TODO: insert text here>
-///  @param  className wxString  <TODO: insert text here>
+///  @param  varName   wxString  <>
+///  @param  newValue  wxString  <>
+///  @param  funcName  wxString  <>
+///  @param  className wxString  <>
 ///
 ///  @return void
 ///
@@ -1273,11 +1247,10 @@ void Debugger::setVar(wxString varName, wxString newValue, wxString funcName, wx
 {
 }
 
-//sendWhat(): sends "whatis name" for every variable that doesn't have a 
-//  type set.
 //////////////////////////////////////////////////////////////////////////////
 ///  private sendWhat
-///  <TODO: insert text here>
+///  <part 1 of a 3 step internal process for watching variables.
+///   -sends a [GDB SPECIFIC] command to get each stored variable's type>
 ///
 ///  @return void
 ///
@@ -1301,14 +1274,14 @@ void Debugger::sendWhat()
 	}
 }
 
-//sendPrint(): sends "print name" for every variable that has a type
-//  Also captures the types send from [sendWhat]
-//  NOTE: i'm not sure how this function handles "dirty" input
 //////////////////////////////////////////////////////////////////////////////
 ///  private sendPrint
-///  <TODO: insert text here>
+///  <Part 2 of a 3 step process.  Part 3 is in [onProcessOutput()].
+///   -attempts to parse the [sendWhat()] commands and assigns them.  Then it
+///    sends a "print varName" for each internal variable, paying attention
+///    to special cases [GDB SPECIFIC]>
 ///
-///  @param  fromGDB wxString  <TODO: insert text here>
+///  @param  fromGDB wxString  <full GDB output>
 ///
 ///  @return void
 ///
@@ -1434,14 +1407,13 @@ void Debugger::sendPrint(wxString fromGDB)
 	}
 }
 
-//removeVar(): removes a variable from the array list.
 //////////////////////////////////////////////////////////////////////////////
 ///  public removeVar
-///  <TODO: insert text here>
+///  <removes a variable being watched from my internal storage structure>
 ///
-///  @param  varName   wxString  <TODO: insert text here>
-///  @param  funcName  wxString  <TODO: insert text here>
-///  @param  className wxString  <TODO: insert text here>
+///  @param  varName   wxString  <the var name to remove>
+///  @param  funcName  wxString  <-not used- specifics about the var>
+///  @param  className wxString  <-not used- specifics about the var>
 ///
 ///  @return void
 ///
@@ -1472,15 +1444,16 @@ void Debugger::removeVar(wxString varName, wxString funcName, wxString className
 	}//end varCount if
 }
 
-//parseOutput(): takes GDB output & parses it for the "print %s" string
 //////////////////////////////////////////////////////////////////////////////
 ///  private parsePrintOutput
-///  <TODO: insert text here>
+///  <part of the part 3 of a 3 step process for watching variables
+///   -attempts to parse full GDB output for the results of "sendPrint()"
+///   author's note: it's a big friggin function with a 7 - 8 scope depth>
 ///
-///  @param  fromGDB  wxString        <TODO: insert text here>
-///  @param  varValue wxArrayString & <TODO: insert text here>
+///  @param  fromGDB  wxString        <FULL GDB output>
+///  @param  varValue wxArrayString & <parsed values to send back to the GUI>
 ///
-///  @return bool     <TODO: insert text here>
+///  @return bool     <returns wether a successful parse has occured>
 ///
 ///  @author Ben Carhart @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -1670,13 +1643,12 @@ bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 //heading.  "stop()" and "kill()" are listed as "misc" but i include those in
 //step functionality since those affect the running of this class.
 
-//sendCustomCommand(): sends the passed string straight to the process.  Can be
-//  used for user input or custom commands.
 //////////////////////////////////////////////////////////////////////////////
 ///  public sendCustomCommand
-///  <TODO: insert text here>
+///  <for the user to send a special custom command to GDB 
+///   -may not be hooked up->
 ///
-///  @param  cust wxString  <TODO: insert text here>
+///  @param  cust wxString  <the command to send>
 ///
 ///  @return void
 ///
@@ -1691,15 +1663,13 @@ void Debugger::sendCustomCommand(wxString cust)
 	}
 }
 
-//getProcOutput(): gets back X number of output entries.
-//                 -1 for numEntries means get them ALL back.
 //////////////////////////////////////////////////////////////////////////////
 ///  public getProcOutput
-///  <TODO: insert text here>
+///  <gets X # of output entries from GDB.  -may not be hooked up->
 ///
-///  @param  numEntries int  <TODO: insert text here>
+///  @param  numEntries int  <return this many items from the output dump>
 ///
-///  @return wxString   <TODO: insert text here>
+///  @return wxString   <all the items assembled in a SINGLE string>
 ///
 ///  @author Ben Carhart @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -1728,9 +1698,9 @@ wxString Debugger::getProcOutput(int numEntries = -1)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  private onProcessOutputEvent
-///  <TODO: insert text here>
+///  <the main "something happened in GDB... do something about it" function>
 ///
-///  @param  e    ChameleonProcessEvent & <TODO: insert text here>
+///  @param  e    ChameleonProcessEvent & <the process event>
 ///
 ///  @return void
 ///
@@ -1779,7 +1749,8 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 	wxLogDebug("DB output: %s", tempHold);
 
 	//I don't think this code is effectual anymore... -B
-	
+	//REVISED: This code here is VITAL: DO NOT REMOVE unless you improve it -B
+	//--//
 	//1) See if the captured string has a [$] all by itself at the end
 	//2) If so, begin parsing.
 	//3) If not, wait for another output
@@ -1812,7 +1783,7 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 		classStatusBackup = classStatus;
 		classStatus = WAITING;
 	}
-	
+	//--//
 	
 	switch(classStatus)
 	{
@@ -2136,15 +2107,15 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 	}
 }
 
-//checkOutputStream(): function for onOutputEvent, checks stream for common
-//  stream features... like "Program received" or "Breakpoint..."
 //////////////////////////////////////////////////////////////////////////////
 ///  private checkOutputStream
-///  <TODO: insert text here>
+///  <checks the process output for special tags that indicate a fatal / nice
+///   program exit.  If neither, return's true with an UNEDITED [classStatus]>
 ///
-///  @param  stream wxString  <TODO: insert text here>
+///  @param  stream wxString  <the full process output>
 ///
-///  @return bool   <TODO: insert text here>
+///  @return bool   <[classStatus] is also modded if a successful quit has
+///                  occurred.  Returns wether it's safe to continue parsing>
 ///
 ///  @author Ben Carhart @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
@@ -2208,9 +2179,9 @@ bool Debugger::checkOutputStream(wxString stream)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  private onProcessErrOutEvent
-///  <TODO: insert text here>
+///  <something related to an error has occured with the process>
 ///
-///  @param  e    ChameleonProcessEvent & <TODO: insert text here>
+///  @param  e    ChameleonProcessEvent & <the process raising the error>
 ///
 ///  @return void
 ///
@@ -2230,9 +2201,9 @@ void Debugger::onProcessErrOutEvent(ChameleonProcessEvent &e)
 
 //////////////////////////////////////////////////////////////////////////////
 ///  private onProcessTermEvent
-///  <TODO: insert text here>
+///  <process has terminated>
 ///
-///  @param  e    ChameleonProcessEvent & <TODO: insert text here>
+///  @param  e    ChameleonProcessEvent & <event from the process>
 ///
 ///  @return void
 ///
@@ -2249,10 +2220,10 @@ void Debugger::onProcessTermEvent(ChameleonProcessEvent &e)
 	flushPrivateVar();
 }
 
-//flushBuffer(): it simply erases the data array.
 //////////////////////////////////////////////////////////////////////////////
 ///  private flushBuffer
-///  <TODO: insert text here>
+///  <a formal method of erasing the private but global array that holds proc
+///   output>
 ///
 ///  @return void
 ///
@@ -2263,10 +2234,9 @@ void Debugger::flushBuffer()
 	data.Clear();
 }
 
-//flushPrivateVar(): erases all private data members
 //////////////////////////////////////////////////////////////////////////////
 ///  private flushPrivateVar
-///  <TODO: insert text here>
+///  <erases all private data members (assuming i remembered them all!)>
 ///
 ///  @return void
 ///
@@ -2293,12 +2263,12 @@ void Debugger::flushPrivateVar()
 	data.Empty();
 }
 
-//sendCommand(): handles sending a command to the stream.
 //////////////////////////////////////////////////////////////////////////////
 ///  private sendCommand
-///  <TODO: insert text here>
+///  <sends a text block to the process (which essentially sends commands).
+///   ALL COMMANDS ARE LOGGED>
 ///
-///  @param  send wxString  <TODO: insert text here>
+///  @param  send wxString  <the text to send>
 ///
 ///  @return void
 ///
@@ -2322,13 +2292,12 @@ void Debugger::sendCommand(wxString send)
 	updateHistory(send);
 }
 
-//makeGenericError(): grabs error stream and input stream and combines them
-//  into one very long error.  Possibly redundant.
 //////////////////////////////////////////////////////////////////////////////
 ///  private makeGenericError
-///  <TODO: insert text here>
+///  <a private method to set the class in an error state while adding an
+///   error message from a given comment into the error history>
 ///
-///  @param  comment wxString  <TODO: insert text here>
+///  @param  comment wxString  <the comment to send to [addErrorHist()]>
 ///
 ///  @return void
 ///
@@ -2343,9 +2312,11 @@ void Debugger::makeGenericError(wxString comment)
 //addErrorHist(): updates the error history
 //////////////////////////////////////////////////////////////////////////////
 ///  private addErrorHist
-///  <TODO: insert text here>
+///  <associated with [makeGenericError()] or can be called alone: adds a
+///   given comment + error to the internal history dump.
+///   NOTE: This does NOT set the error message!!>
 ///
-///  @param  comment wxString  <TODO: insert text here>
+///  @param  comment wxString  <the comment to append the error>
 ///
 ///  @return void
 ///
@@ -2360,9 +2331,10 @@ void Debugger::addErrorHist(wxString comment)
 //updateHistory: updates the history storage and pointer
 //////////////////////////////////////////////////////////////////////////////
 ///  private updateHistory
-///  <TODO: insert text here>
+///  <called automatically after every [sendCommand()] call; appends the sent
+///   command to the command dump>
 ///
-///  @param  addMe wxString  <TODO: insert text here>
+///  @param  addMe wxString  <item to add>
 ///
 ///  @return void
 ///
@@ -2374,14 +2346,13 @@ void Debugger::updateHistory(wxString addMe)
 	histCount++;
 }
 
-//getHistoryItem: returns the last history item offset by [offset].
 //////////////////////////////////////////////////////////////////////////////
 ///  private getHistoryItem
-///  <TODO: insert text here>
+///  <a private method for getting X number of history items>
 ///
-///  @param  offset   int  <TODO: insert text here>
+///  @param  offset   int  <how many elements back in the history to grab>
 ///
-///  @return wxString <TODO: insert text here>
+///  @return wxString <returns the SINGLE element grabbed from the offset>
 ///
 ///  @author Ben Carhart @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////

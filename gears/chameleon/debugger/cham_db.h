@@ -23,13 +23,9 @@
 #include "../network/networking.h"
 #include "../common/datastructures.h"
 
-//dave code
-//#include <wx/textctrl.h>
-
 class ProjectInfo;
 
 //global declarations
-//const int MAX_HIST_ITEMS = 50;
 const wxString PROMPT_CHAR = "%";
 
 //keywords for parsing output
@@ -146,7 +142,6 @@ class Debugger : public wxEvtHandler
 		//ASYNC Event Triggered Functions
 		void onProcessOutputEvent(ChameleonProcessEvent &e);
 		void onProcessErrOutEvent(ChameleonProcessEvent &e);
-		//void onProcessTermEvent(wxProcessEvent &e);
 		void onProcessTermEvent(ChameleonProcessEvent &e);
 
 		//private elements [grouped according to function]
@@ -195,30 +190,6 @@ class Debugger : public wxEvtHandler
 
 		int m_numberOfDebugEvents;
 
-		//obsolete or unused code
-		//wxArrayString varNames;		//holds variables being watched
-		//wxArrayString varValue;		//holds variable values
-		//wxArrayInt varDispIndex;	//holds variable "display#" assigned by GDB
-		//wxString m_lastFuncVisited;	//the last function stepped into
-		//wxString m_lastClassVisited;//the last class stepped into
-		//int guiVarIndex;			//holds the # that the gui uses to display 
-									//variables before a running process is available 
-									//for GDB numbers
-		//int gdbVarIndex;			//holds next GDB display #
-
-		//These two datastructures have been commented out until someone
-		//resurects them.
-		//VariableInfoHash m_varInfo;	//takes a GDB number and holds [string]:
-									//  -type
-									//  -var name
-									//  -function name
-									//  -value
-									//  -regEx for type
-		//FunctionVariableHash m_varFuncInfo;
-									//takes a class/function key and holds:
-									//  -function has been visited [bool]
-									//  -variable is displayed [bool array]
-									//  -var names [arrayString]
 		DECLARE_EVENT_TABLE()
 };
 
