@@ -1,51 +1,41 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<meta name="Template_Author" content="John Cox">
-<title>SRS: 2.0 General Description</title>
-</head>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head>
+<meta content="text/html; charset=ISO-8859-1" http-equiv="Content-Type">
+<meta content="John Cox" name="Template_Author"><title>SRS: 2.0 General Description</title></head>
+
 <body>
 
 <h1>2.0 General Description</h1>
 
   <h2><a name="perspective">2.1 Product Perspective</a></h2>
 
-    Chameleon is to be, like the animal: adaptable.  The main functionality is that it is to interact as an IDE 
+    Chameleon is to be, like the animal, adaptable.  The main functionality is that it is to interact as an IDE 
 	 with the user.  The IDE's adaptability is its ability to gradually introduce the user to the increasingly 
 	 complex features found in modern IDEs such as Microsoft's Visual Studio.  Interaction is accomplished through 
-	 use of the keyboard & mouse, as well as the monitor & printer, and may include some network interfacing.  
+	 use of the keyboard &amp; mouse, as well as the monitor &amp; printer, and may include some network interfacing.  
 	 Except for the possibility of expanding to external libraries or programs, this IDE will also interact with 
 	 the hard drive and floppy drive, but not with a video card beyond that which is necessary to display things 
 	 to the screen.  Interaction with the local network drivers, for example Internet or Ethernet, is required as 
 	 functionality will include the ability to communicate with remote servers.
     <p>A summation of information flow can be listed as such:
-    <dl>
-      <dt><u>Bi-Directional</u></dt>
-      <dd><ul>
+    </p><dl><dt><u>Bi-Directional</u></dt><dd><ul>
         <li>External media (floppy drive, hard disk drive)</li>
         <li>Network</li>
-      </ul></dd>
-      <dt><u>To-User Direction</u></dt>
-      <dd><ul>
+      </ul></dd><dt><u>To-User Direction</u></dt><dd><ul>
         <li>Monitor, video card</li>
         <li>Printer</li>
-      </ul></dd>
-      <dt><u>From-User Direction</u></dt>
-      <dd><ul>
+      </ul></dd><dt><u>From-User Direction</u></dt><dd><ul>
         <li>Keyboard</li>
         <li>Mouse</li>
-      </ul></dd>
-    </dl>
+      </ul></dd></dl>
 
   <h2><a name="fig">Figure 1 - Context Diagram</a></h2>
 
     
 
   <h2><a name="functions">2.2 Product Functions and Features</a></h2>
-
-    As mentioned in part 1 of this document, the product will present all of the functionality of a generic IDE, as well as certain abilities designed specifically for the project.  These features include:
-      <ul>
+As mentioned in part 1 of this document, the product will present all
+of the functionality of a generic IDE, as well as certain abilities
+designed specifically for the project. These features include: <ul>
         <li>A Master Control program from which the instructor can lock and unlock advanced IDE features such as 
 		  advanced debugging tools, class views or windows, terminal access, project access, etc.</li>
         <li>A command-line terminal inside the program for communication with a remote server, most likely 
@@ -56,7 +46,7 @@
         <li>Syntax highlighting</li>
         <li>Code block hiding: hide blocks of code down to one descriptive line.</li>
         <li>Project handling on a minor level</li>
-      </ul></p>
+      </ul><p></p>
 
   <h2><a name="users">2.3 User Characteristics</a></h2>
 
@@ -75,45 +65,69 @@ ready to begin somewhat larger projects.  Chameleon's project management will al
 inclusion of outside libraries.  Since the user is now familiar with standard tasks such as compiling, they no 
 longer need to be done by hand and can be done with a standard toolbar button instead.</p>
     <p>Advanced users are completely comfortable with most of the aspects of a programming project.  At this point,
-	  the user has access to all of Chameleon's available features, such as code folding in the editor.</p>
+	  the user has access to all of Chameleon's available features, such as code folding in the editor.<br>
+</p>
+<p>Here's an example scenario in which the product is used:</p>
+<p>Jay R. Student is a freshman in CS1210.&nbsp; He's never done any
+programming before, but he considers himself a reasonably advanced
+Windows user.&nbsp; For his first programming assignment, he starts
+Chameleon and logs into John using the terminal.&nbsp; Jay decides to
+start with the "Hello World" example from class to make sure he knows
+what he's doing.&nbsp; He types it in, then goes to save it.&nbsp; When
+he hits save, the dialog shows the contents of his home folder, where
+Jay saves the file as "hello.cpp".&nbsp; Jay then clicks on the
+terminal window, and following his instructions types in "g++ hello.cpp
+-o hello.exe".&nbsp; Fortunately, he entered the example correctly and
+it compiles fine.&nbsp; Again following instructions, he types in
+"./hello.exe" to run it and watches it print "Hello World" in his
+terminal.&nbsp; Now that he has some idea what he's doing, he goes on
+to write the rest of his program.<br>
+</p>
+Later in the semester, Jay is working on another assignment.&nbsp; By
+this time, more features have been enabled.&nbsp; As he types in his
+code, it's automatically highlighted and helps him with proper
+indentation.&nbsp; There's now a compile button available on the
+toolbar.&nbsp; When Jay clicks it, the command line is inserted into
+the terminal, but Jay has to hit enter in order to execute it.
 
   <h2><a name="constraints">2.4 General Constraints</a></h2>
 
-<p>Chameleon's main target platform is Windows.  The ability to run under Linux is desired, but as a secondary goal only.  Exact specifications as to disk, RAM, Ethernet, operating system, and other general requirements are unknown.  The best rule-of-thumb, as with all software, is to have the most up-to-date version of operating system possible.  This will take care of minimum disk requirements and memory requirements.</p>
+<p>Chameleon's main target platform is Windows. The ability to run
+under Linux is desired, but as a secondary goal only. Exact
+specifications as to disk, RAM, Ethernet, operating system, and other
+general requirements are unknown. The best rule-of-thumb, as with all
+software, is to have the most up-to-date version of operating system
+possible. This will take care of minimum disk requirements and memory
+requirements.</p>
 
   <h2><a name="assumptions">2.5 Assumptions and Dependencies</a></h2>
-
-This IDE is being provided as is, and it is assumed therefore that the actual ability to program has been communicated by some other means.  The ability to correctly use our software when fully enabled can be inferred from accompanying documentation.  This IDE is being presented under the assumption that it is going to be used in an education environment, though private use is being considered.
-
-
-  <hr>
+This IDE is being provided as is, and it is assumed therefore that the
+actual ability to program has been communicated by some other means.
+The ability to correctly use our software when fully enabled can be
+inferred from accompanying documentation. This IDE is being presented
+under the assumption that it is going to be used in an education
+environment, though private use is being considered. <hr>
 
 
 <center>
 <table summary="navigation">
-<tr>
-<td height="100" width="60"><a href="../index.html"><img src=
-"../images/home.gif" align="BOTTOM" alt="Home" border="0">
+<tbody><tr>
+<td width="60" height="100"><a href="../index.html"><img border="0" alt="Home" align="bottom" src="../images/home.gif">
 </a></td>
-<td height="100" width="60"><a href="srs.htm"><img src=
-"../images/toc.gif" align="BOTTOM" alt="TOC" border="0"></a></td>
-<td height="100" width="60"><a href="srs_10.htm"><img src=
-"../images/prev.gif" align="BOTTOM" alt="Prev" border="0">
+<td width="60" height="100"><a href="srs.htm"><img border="0" alt="TOC" align="bottom" src="../images/toc.gif"></a></td>
+<td width="60" height="100"><a href="srs_10.htm"><img border="0" alt="Prev" align="bottom" src="../images/prev.gif">
 </a></td>
-<td height="100" width="60"><a href="srs_31.htm"><img src=
-"../images/next.gif" align="BOTTOM" alt="Next" border="0">
+<td width="60" height="100"><a href="srs_31.htm"><img border="0" alt="Next" align="bottom" src="../images/next.gif">
 </a></td>
 </tr>
-</table>
+</tbody></table>
 </center>
 
 Document modified on 
 
-<script type="text/javascript" language="JavaScript">
+<script language="JavaScript" type="text/javascript">
 <!--
         document.write(document.lastModified + " GMT")
 // -->
 </script>
-</body>
-</html>
-
+</body></html>
