@@ -1,4 +1,4 @@
-	**************
+**************
 * TEAM NOTES *
 **************
 
@@ -247,3 +247,25 @@ Quickie Update
 	Dave: getting Plink to run, WXWindows
 	Mark: GUI! GUI! GUI!
 	Ben: begin code>> permissions manager (experiment with bitmatching)
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Group Meeting 10/27/2003 10:05pm
+by: Ben
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+>>review of presentation
+	~things to add
+	~things missed
+	~good points
+>>discussion of open file dialogue & problems
+	~network mapping
+	~firewall the linux server?
+	~re-creation of the open-file dialogue
+	~communication NECCESARY for networks manager
+	~elimination of the "up one level" directory nav. button
+	~new folder button a possibility?
+>>Accomplishments
+	~Dave is getting comfy with Eclipse
+	~Mark played for hours with the compiler & making a standalone
+	~Ben ... wasn't here & dealing with 3 year olds & dizziness
+>>needs for next meeting (Thursday)?
+	*Design Document (Dave assigns to us)
+	*Meeting with animated debugger team (Thursday?)
