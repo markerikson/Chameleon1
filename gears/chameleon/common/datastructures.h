@@ -173,9 +173,14 @@ enum IconIndex
 // IMPORTANT!!! Any changes to this enum need to be reflected in the 
 //				PermStrings array in p.cpp.
 
+#pragma warning(push)
+#pragma warning(disable : 4284)
+
 WX_DEFINE_ARRAY(wxWindow*, WindowPointerArray);
 WX_DEFINE_ARRAY(ChameleonEditor*, EditorPointerArray);
 WX_DEFINE_ARRAY(bool, BoolArray);
+
+#pragma warning(pop)
 
 
 typedef struct 
@@ -250,14 +255,15 @@ WX_DECLARE_OBJARRAY(VariableInfo, VariableInfoArray);
 
 enum NetworkStatus
 {
+	NET_STARTING = -1, // NEVER used externally
 	NET_GOOD = 0,
 	NET_UNKNOWN_HOST,  // host finger print not in cache
-	NET_CONN_REFUSED,  // host exists, but wouldn't allow a connection
+	NET_CONN_REFUSED,  // host wouldn't allow a connection
 	NET_AUTH_FAILED,   // user+pass did not work on host
-	NET_READ_ERROR,
-	NET_WRITE_ERROR,
-	NET_BAD_PLINK_PROG,
-	NET_BAD_PSCP_PROG,
+//	NET_READ_ERROR,
+//	NET_WRITE_ERROR,
+//	NET_BAD_PLINK_PROG,
+//	NET_BAD_PSCP_PROG,
 	NET_ERROR_MESSAGE, // default/catch-all
 };
 
