@@ -911,7 +911,7 @@ by: Ben
 Group Meeting 4/22/2004 9:00pm
 by: Ben
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
->>LAST MEETING!!!
+>>LAST MEETING!!! (not)
 >>Final Turn in:
 	*T drive needs
 		-Documents
@@ -935,3 +935,14 @@ by: Ben
 	*local compiling working??
 	*compilation cancelation
 	*debugging after local compilation
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Group Meeting 4/25/2004 11:30pm
+by: Ben
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+>>Last meeting!!  For Real!!
+>>Bug issues
+>>Mark is busy
+>>Turn-In tuesday or a day late?  Mostly documentation & personal notes.  That's all FOLKS!!
+
+Thanks for hangin'!
+-B- :The Editor
