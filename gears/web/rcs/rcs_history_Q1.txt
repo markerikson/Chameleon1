@@ -1,2 +1,0 @@
-; file: "rcs_history_Q1.txt" 
-; purpose: Archive from CS524, the first quarter (Q1), of the rcs_history.txt file

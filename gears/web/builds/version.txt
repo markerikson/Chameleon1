@@ -1,9 +1,0 @@
-; This file is used by the Internet-Update feature.
-; Filename: version.txt
-; Developers may tailor this file as needed
-
-CurrentVersion=0.1.0
-
-
-; Add other stuff in here if you want.
-
