@@ -115,7 +115,7 @@ public:
 
 	void EvaluateOptions();
 
-	void CheckNetworkStatus();
+	NetworkCallResult CheckNetworkStatus();
 
 	void OpenFile(wxArrayString fnames);
 
@@ -167,7 +167,7 @@ private:
 	void OnCopy(wxCommandEvent &event);
 	void OnPaste(wxCommandEvent &event);
 
-	bool GetFileContents(wxString filename, wxString &fileContents);
+	bool GetFileContents(wxString fileToLoad, wxString &fileContents, wxString &fileName);
 
 	
 	void CloseFile(int pageNr = -1);

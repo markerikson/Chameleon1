@@ -90,7 +90,7 @@ ChameleonEditor::~ChameleonEditor() {
 
 bool ChameleonEditor::SaveFileAs()
 {
-
+/*
     // return if no change
     if( !Modified() )
         return true;
@@ -109,6 +109,9 @@ bool ChameleonEditor::SaveFileAs()
 
     // save file
     return SaveFile(m_filename);
+	*/
+	wxMessageBox("ChameleonEditor::SaveFileAs - deprecated, shouldn't be here");
+	return false;
 }
 
 bool ChameleonEditor::SaveFile()
@@ -127,7 +130,7 @@ bool ChameleonEditor::SaveFile( const wxString & filename )
     // save edit in file and clear undo
     if(!filename.IsEmpty()) 
 	{ 
-		m_filename = fn.GetFullName(); 
+		m_simpleFileName = fn.GetFullName(); 
 	}
 
     wxFile file (filename, wxFile::write);
@@ -154,7 +157,7 @@ bool ChameleonEditor::SaveFile( const wxString & filename )
 
 	int currentTab = m_parentNotebook->GetSelection();
 	
-	m_parentNotebook->SetPageText(currentTab, fn.GetFullName());
+	m_parentNotebook->SetPageText(currentTab, m_simpleFileName);
 	m_parentNotebook->Refresh();
 
     return true;
@@ -187,6 +190,7 @@ bool ChameleonEditor::LoadFile ()
 
 bool ChameleonEditor::LoadLocalFile( const wxString & filename )
 {
+	/*
     wxString buf;
 
     // load file in edit and clear undo
@@ -222,6 +226,9 @@ bool ChameleonEditor::LoadLocalFile( const wxString & filename )
 	file.Close();
 
 	return LoadFileText(buf);
+	*/ 
+	wxMessageBox("ChameleonEditor::LoadLocalFile - deprecated, shouldn't be here");
+	return false;
 }
 
 bool ChameleonEditor::LoadFileText(wxString fileContents)
@@ -355,11 +362,12 @@ void ChameleonEditor::OnSetTabModified(wxStyledTextEvent &event)
 
 void ChameleonEditor::SetTabUnmodified()
 {
+	/*
 	int tabNum = m_parentNotebook->GetSelection();
 
 	wxFileName fn(m_filename);
 	m_parentNotebook->SetPageText(tabNum, fn.GetFullName());
-
+	*/
 
 }
 
@@ -435,21 +443,31 @@ void ChameleonEditor::OnChar( wxStyledTextEvent &event )
 
 bool ChameleonEditor::HasBeenSaved()
 {
+	/*
 	if(m_mainFrame->InRemoteMode())
 	{
 		wxString remote = m_remoteFileName.GetFullPath();
-		return remote != wxEmptyString;
+		bool result = remote != wxEmptyString;
+		return result;
 	}
 	else
 	{
 		wxString local = m_localFileName.GetFullPath();
 		return local != wxEmptyString;
 	}
+	*/
+	bool result = m_simpleFileName != wxEmptyString;
+	return result;
 }
 
 void ChameleonEditor::SetRemoteFileNameAndPath(wxString path, wxString name)
 {
 	m_remoteFileName.Assign(path, name, wxPATH_UNIX);
+}
+
+void ChameleonEditor::SetLocalFileNameAndPath(wxString path, wxString name)
+{
+	m_localFileName.Assign(path, name, wxPATH_DOS);
 }
 
 void ChameleonEditor::UpdateSyntaxHighlighting()

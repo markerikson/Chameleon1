@@ -4,6 +4,8 @@
 #include <wx/config.h>
 #include <wx/msw/iniconf.h>
 #include <wx/timer.h>
+#include <wx/regex.h>
+#include <wx/splash.h>
 #include "../common/debug.h"
 
 #ifdef MSVC6
@@ -64,14 +66,9 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
        : wxFrame((wxFrame *)NULL, -1, title, pos, size)
 {
 	wxStopWatch stopwatch;
-#ifdef __WXMAC__
-    // we need this in order to allow the about menu relocation, since ABOUT is
-    // not the default id of the about menu
-    wxApp::s_macAboutMenuItemId = ID_About;
-#endif
-
 	this->SetClientSize(640, 480);
 
+	// Show a log window for all debug messages
 #ifdef DEBUG
 	logWindow = new wxLogWindow(this, "Debug messages");
 	wxLog::SetActiveTarget(logWindow);
@@ -86,9 +83,11 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 	long time1 = stopwatch.Time();
 	stopwatch.Start();
+
+
 	m_perms = new Permission();
 
-	// enable only PERM_AUTOINDENT.  Eventually, will rely only on the provided code.
+	// enable only PERM_AUTOINDENT and PERM_REMOTELOCAL.  Eventually, will rely only on the provided value.
 
 	int permBitmask = 0;
 
@@ -117,36 +116,33 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	wxString username = m_config->Read("Network/username");
 
 	m_network = new Networking();
-	//m_network->SetPlinkProg(wxGetCwd());
 	wxFileName plinkPath(wxGetCwd(), "plink.exe");
-
 	m_network->SetPlinkProg(plinkPath.GetFullPath());
 	//CheckNetworkStatus();
 
 	//wxString password = wxGetPasswordFromUser("Password for the current server:", "Password");
-	//m_network->SetDetails(hostname, username, "");
+	m_network->SetDetailsNoStatus(hostname, username, "");
 	//CheckNetworkStatus();
 
 
 	long time3 = stopwatch.Time();
 	stopwatch.Start();
+	
 	m_optionsDialog = new OptionsDialog(this, ID_OPTIONSDIALOG, "Options");
-
 	InitializeOptionsDialog();
 
 	m_optionsDialog->SetServerAddress(hostname);
 	m_optionsDialog->SetUsername(username);
-
+	m_optionsDialog->SetPassword1(wxEmptyString);
+	m_optionsDialog->SetPassword2(wxEmptyString);
 
 
 	long time4 = stopwatch.Time();
 	stopwatch.Start();
 	 
 
-	 //m_openFiles = new wxArrayString();
 
-
-    // create a menu bar
+    // Menu creation
     wxMenu* menuFile = new wxMenu();
 
 	menuFile->Append(ID_NEW, "&New\tCtrl-N", "Create a new file");
@@ -174,27 +170,20 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	menuEdit->Append(ID_PASTE, "&Paste\tCtrl-V");
 	
 
-
-    // the "About" item should be in the help menu
     wxMenu *helpMenu = new wxMenu;
     helpMenu->Append(ID_ABOUT, "&About...\tCtrl-A", "Show about dialog");
 
-
-    // now append the freshly created menu to the menu bar...
     wxMenuBar *menuBar = new wxMenuBar();
     menuBar->Append(menuFile, "&File");
 	menuBar->Append(menuEdit, "&Edit");
 	menuBar->Append(menuTools, "&Tools");
     menuBar->Append(helpMenu, "&Help");
 
-
 	
 	wxToolBar* toolBar = CreateToolBar(wxTB_FLAT | wxTB_TEXT);
 
-
 	wxBitmap bmNew(new_xpm);
-	toolBar->AddTool(ID_NEW, "New File", bmNew);
-	
+	toolBar->AddTool(ID_NEW, "New File", bmNew);	
 		
 	wxBitmap bmOpen(open_xpm);
 	toolBar->AddTool(ID_OPEN, "Open File", bmOpen);
@@ -204,9 +193,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 	
 	toolBar->InsertSeparator(3);
-
-	// TODO Mess with these later
-	/*
+	
 	wxBitmap bmBuild(build_xpm);
 	toolBar->AddTool(ID_COMPILE, "Compile", bmBuild);
 
@@ -216,14 +203,13 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	toolBar->AddTool(ID_TEST, "Test", bmTest);
 
 	toolBar->InsertSeparator(7);
-	*/
+	
 
 	/*
 	toolBar->AddTool(ID_OPEN_REMOTE, "Remote Open", bmOpen);
 	toolBar->AddTool(ID_SAVE_REMOTE, "Remote Save", bmSave);
 	*/
 	
-
 
 	if(m_perms->isEnabled(PERM_DEBUG))
 	{
@@ -252,11 +238,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	long time8 = stopwatch.Time();
 	stopwatch.Start();
 
-	 m_split = new wxSplitterWindow(this, ID_SPLITTER);
-
-
-    //----------------------------------------
-    // Set up the editor
+	m_split = new wxSplitterWindow(this, ID_SPLITTER);
 
 	m_book = new ChameleonNotebook(m_split, ID_NOTEBOOK_ED);
 
@@ -269,16 +251,13 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	m_appClosing = false;
 	m_setSelection = false;
 
+	// create the initial blank open file
 	wxCommandEvent ev;
 	OnFileNew(ev);
-
 	PageHasChanged(m_currentPage);
 
 	m_noteTerm = new ChameleonNotebook(m_split, ID_NOTEBOOK_TERM);
-
 	m_telnet = new wxTelnet( m_noteTerm, ID_TELNET, wxPoint(-1, -1), 80, 24);
-
-
 	m_noteTerm->AddPage(m_telnet, "Terminal");
 	
 	if(m_perms->isEnabled(PERM_TERMINAL))
@@ -486,6 +465,10 @@ void ChameleonWindow::CloseFile (int pageNr)
 			wxString noname = "<untitled> " + wxString::Format ("%d", m_fileNum);
 			m_book->SetPageText (pageNr, noname);
 			m_book->Refresh();
+
+			m_currentEd->SetFilename(wxEmptyString);
+			m_currentEd->SetRemoteFileNameAndPath(wxEmptyString, wxEmptyString);
+			m_currentEd->SetLocalFileNameAndPath(wxEmptyString, wxEmptyString);
 			//m_currentEd->SetFilename (wxEmptyString);
 
 			
@@ -520,23 +503,32 @@ void ChameleonWindow::OpenFile()
 	}
 	else
 	{
-		m_remoteFileDialog->Prepare(true);
-		int result = m_remoteFileDialog->ShowModal();
+		wxBeginBusyCursor();
+		if(m_remoteFileDialog->Prepare(true))
+		{
+			int result = m_remoteFileDialog->ShowModal();
 
-		if(result != wxOK)
+			if(result != wxOK)
+			{
+				return;
+			}
+
+			//wxString remotePath = m_remoteFileDialog->GetRemotePath();
+			///wxString remoteFile = m_remoteFileDialog->GetRemoteFileName();
+
+			//wxString fileContents = m_network->GetFileContents(remoteFile, remotePath);
+
+			// Need to revise this - assumes old networking API
+			// Actually... I think I can keep this as is for now
+			wxString remoteFileName = m_remoteFileDialog->GetRemoteFileNameAndPath();
+			fnames.Add(remoteFileName);
+		}
+		else
 		{
 			return;
 		}
 
-		//wxString remotePath = m_remoteFileDialog->GetRemotePath();
-		///wxString remoteFile = m_remoteFileDialog->GetRemoteFileName();
-
-		//wxString fileContents = m_network->GetFileContents(remoteFile, remotePath);
-
-		// Need to revise this - assumes old networking API
-		// Actually... I think I can keep this as is for now
-		wxString remoteFileName = m_remoteFileDialog->GetRemoteFileNameAndPath();
-		fnames.Add(remoteFileName);
+		wxEndBusyCursor();
 	}
 
 
@@ -549,14 +541,16 @@ void ChameleonWindow::OpenFile (wxArrayString fnames)
 {
 	int firstPageNr = -1;
 	wxString fileContents = wxEmptyString;
+	wxString fileNameNoPath;
 
 
 	for (size_t n = 0; n < fnames.GetCount(); n++) 
 	{
+		fileNameNoPath = wxEmptyString;
 		//wxFileName w(fnames[n]); 
 		//w.Normalize(); 
 		//fnames[n] = w.GetFullPath();
-		wxString filename = wxFileName (fnames[n]).GetFullName();
+		//wxString filename = wxFileName (fnames[n]).GetFullName();
 		int pageNr = GetPageNum(fnames[n]);
 
 		// filename is already open
@@ -568,7 +562,7 @@ void ChameleonWindow::OpenFile (wxArrayString fnames)
 			m_currentPage = pageNr;
 			
 			
-			if(GetFileContents(fnames[n], fileContents))
+			if(GetFileContents(fnames[n], fileContents, fileNameNoPath))
 			{
 				if(fileContents != wxEmptyString)
 				{
@@ -576,16 +570,31 @@ void ChameleonWindow::OpenFile (wxArrayString fnames)
 				}
 			}
 		}
+		// current buffer is empty and untouched, so load the file into it
 		else if (m_currentEd && (!m_currentEd->Modified() && !m_currentEd->HasBeenSaved() && m_currentEd->GetText().IsEmpty())) 
 		{
 			//m_currentEd->LoadFile(fnames[n]);
 
-			if(GetFileContents(fnames[n], fileContents))
+			if(GetFileContents(fnames[n], fileContents, fileNameNoPath))
 			{
 				if(fileContents != wxEmptyString)
 				{
 					m_currentEd->LoadFileText(fileContents);
-					m_book->SetPageText(m_currentPage, filename);
+					m_currentEd->SetFilename(fileNameNoPath);
+					if(m_remoteMode)
+					{
+						wxString remotePath = m_remoteFileDialog->GetRemotePath();
+						wxString remoteFilename = m_remoteFileDialog->GetRemoteFileName();
+						m_currentEd->SetRemoteFileNameAndPath(remotePath, remoteFilename);
+					}
+					else
+					{
+						wxFileName localFN(fnames[n]);
+						wxString localFileName = localFN.GetFullName();
+						wxString localPath = localFN.GetPath(false, wxPATH_DOS);
+						m_currentEd->SetLocalFileNameAndPath(localPath, localFileName);
+					}
+					m_book->SetPageText(m_currentPage, fileNameNoPath);
 				}
 			}
 
@@ -598,19 +607,35 @@ void ChameleonWindow::OpenFile (wxArrayString fnames)
 			*/
 			
 		}
+		// need to create a new buffer for the file
 		else
 		{
 			ChameleonEditor *edit = new ChameleonEditor (this, m_book, -1);
 
-			if(GetFileContents(fnames[n], fileContents))
+			if(GetFileContents(fnames[n], fileContents, fileNameNoPath))
 			{
 				if(fileContents != wxEmptyString)
 				{
 					edit->LoadFileText(fileContents);
+					edit->SetFilename(fileNameNoPath);
+
+					if(m_remoteMode)
+					{
+						wxString remotePath = m_remoteFileDialog->GetRemotePath();
+						wxString remoteFilename = m_remoteFileDialog->GetRemoteFileName();
+						m_currentEd->SetRemoteFileNameAndPath(remotePath, remoteFilename);
+					}
+					else
+					{
+						wxFileName localFN(fnames[n]);
+						wxString localFileName = localFN.GetFullName();
+						wxString localPath = localFN.GetPath(false, wxPATH_DOS);
+						m_currentEd->SetLocalFileNameAndPath(localPath, localFileName);
+					}
 					m_currentEd = edit;
 					//m_currentEd->SetDropTarget (new DropFiles (this));
 					m_currentPage = m_book->GetPageCount();
-					m_book->AddPage (m_currentEd, filename, true);
+					m_book->AddPage (m_currentEd, fileNameNoPath, true);
 				}
 			}
 			/*
@@ -643,12 +668,14 @@ void ChameleonWindow::OpenFile (wxArrayString fnames)
 	}
 }
 
-bool ChameleonWindow::GetFileContents(wxString filename, wxString &fileContents)
+// abstracts out retrieving a file's contents
+bool ChameleonWindow::GetFileContents(wxString fileToLoad, wxString &fileContents, wxString &fileName)
 {
+	wxFileName fn(fileToLoad);
 	//wxString fileContents;
 	if(m_remoteMode)
 	{
-		wxFileName fn(filename);
+		//wxFileName fn(fileToLoad);
 
 		wxString remotePath = fn.GetPath(false, wxPATH_UNIX);
 		wxString remoteFile = fn.GetFullName();
@@ -656,15 +683,24 @@ bool ChameleonWindow::GetFileContents(wxString filename, wxString &fileContents)
 		wxBeginBusyCursor();
 		fileContents = m_network->GetFileContents(remoteFile, remotePath);
 		wxEndBusyCursor();
-		CheckNetworkStatus();
-
-		return true;
+		
+		NetworkCallResult netStatus = CheckNetworkStatus();
+		if(netStatus == NETCALL_REDO)
+		{
+			wxBeginBusyCursor();
+			fileContents = m_network->GetFileContents(remoteFile, remotePath);
+			wxEndBusyCursor();
+		}
+		else if(netStatus == NETCALL_FAILED)
+		{
+			return false;
+		}
 	}
 	else
 	{
 		//wxString buf;
 
-		wxFile file (filename);
+		wxFile file (fileToLoad);
 
 		if( !file.IsOpened() )
 		{
@@ -685,8 +721,10 @@ bool ChameleonWindow::GetFileContents(wxString filename, wxString &fileContents)
 			//InsertText(0, buf);
 		}
 
-		return true;
 	}
+
+	fileName = fn.GetFullName();
+	return true;
 }
 
 int ChameleonWindow::GetPageNum (const wxString &fname) 
@@ -747,6 +785,27 @@ void ChameleonWindow::OnConnect(wxCommandEvent& WXUNUSED(event))
 // event handlers
 void ChameleonWindow::Test(wxCommandEvent& WXUNUSED(event))
 {
+
+	wxString fingerprint = "blah blah 1024 37:d3:00:80:6d:69:8d:ff:cd:81:20:a2:8a:93:39:ba blah blah";
+	wxRegEx reFingerprint = "[[:digit:]]+[[:blank:]]+([[:xdigit:]]{2}:){15}[[:xdigit:]]{2}";
+
+	if(reFingerprint.IsValid())
+	{
+		if(reFingerprint.Matches(fingerprint))
+		{
+			wxString match = reFingerprint.GetMatch(fingerprint);
+			wxLogDebug("Matched: \"%s\"", match);
+		}
+		else
+		{
+			wxLogDebug("Failed match");
+		}
+	}
+	else
+	{
+		wxLogDebug("Invalid regex");
+	}
+	
 	//m_remoteFileDialog->LoadTestData();
 	//OpenFile();
 
@@ -910,6 +969,7 @@ void ChameleonWindow::SaveFile(bool saveas)
 			}
 
 			filename = dlg.GetPath();
+			m_currentEd->SetFilename(wxFileName(filename).GetFullName());
 			m_currentEd->SaveFile(filename);
 		}
 		else
@@ -924,16 +984,23 @@ void ChameleonWindow::SaveFile(bool saveas)
 		fileContents = m_currentEd->GetText();
 		if(doSaveAs)
 		{
-			m_remoteFileDialog->Prepare(false);
-			int result = m_remoteFileDialog->ShowModal();
+			if(m_remoteFileDialog->Prepare(false))
+			{
+				int result = m_remoteFileDialog->ShowModal();
 
-			if(result != wxOK)
+				if(result != wxOK)
+				{
+					return;
+				}
+
+				remotePath = m_remoteFileDialog->GetRemotePath();
+				remoteFile = m_remoteFileDialog->GetRemoteFileName();
+			}
+			else
 			{
 				return;
 			}
-
-			remotePath = m_remoteFileDialog->GetRemotePath();
-			remoteFile = m_remoteFileDialog->GetRemoteFileName();
+			
 
 			//m_network->SendFile("est.txt", "c:\\temp", remoteFile, remotePath);
 			
@@ -947,12 +1014,25 @@ void ChameleonWindow::SaveFile(bool saveas)
 		wxBeginBusyCursor();
 		m_network->SendFileContents(fileContents, remoteFile, remotePath);
 		wxEndBusyCursor();
+		
+		NetworkCallResult netStatus = CheckNetworkStatus();
+		if(netStatus == NETCALL_REDO)
+		{
+			wxBeginBusyCursor();
+			m_network->SendFileContents(fileContents, remoteFile, remotePath);
+			wxEndBusyCursor();
+		}
+		else if(netStatus == NETCALL_FAILED)
+		{
+			return;
+		}
 
+		m_currentEd->SetFilename(remoteFile);
 		m_currentEd->SetRemoteFileNameAndPath(remotePath, remoteFile);
 
 		m_currentEd->EmptyUndoBuffer();
 		m_currentEd->SetSavePoint();
-		m_currentEd->SetTabUnmodified();
+		//m_currentEd->SetTabUnmodified();
 		m_book->Refresh();
 	}
 }
@@ -1218,7 +1298,7 @@ void ChameleonWindow::EvaluateOptions()
 	m_config->Write("Network/username", username);
 }
 
-void ChameleonWindow::CheckNetworkStatus()
+NetworkCallResult ChameleonWindow::CheckNetworkStatus()
 {
 	NetworkStatus result = m_network->GetStatus();
 
@@ -1231,13 +1311,14 @@ void ChameleonWindow::CheckNetworkStatus()
 			wxString fingerprint = m_network->GetStatusDetails();
 
 			wxString message = "The SSH fingerprint for the server " + hostname + " was not recognized.";
-			message += "The fingerprint was " + fingerprint + ".  Do you want to cache it?";
+			message += "\nThe fingerprint was " + fingerprint + ".  \nDo you want to cache it?";
 			int result = wxMessageBox(message, "Unknown SSH Fingerprint", wxYES_NO | wxICON_QUESTION);
 
 			if(result == wxYES)
 			{
 				m_network->SSHCacheFingerprint();
 			}
+			return NETCALL_REDO;
 			break;
 		}
 		case NET_READ_ERROR:
@@ -1245,6 +1326,7 @@ void ChameleonWindow::CheckNetworkStatus()
 			wxString message = "The remote file could not be read properly.  The error was: ";
 			message += m_network->GetStatusDetails();
 			wxMessageBox(message, "Remote read error", wxOK  | wxICON_EXCLAMATION);
+			return NETCALL_FAILED;
 			break;
 		}
 		case NET_WRITE_ERROR:
@@ -1252,6 +1334,7 @@ void ChameleonWindow::CheckNetworkStatus()
 			wxString message = "The remote file could not be written properly.  The error was: ";
 			message += m_network->GetStatusDetails();
 			wxMessageBox(message, "Remote write error", wxOK  | wxICON_EXCLAMATION);
+			return NETCALL_FAILED;
 			break;
 		}
 		case NET_ERROR_MESSAGE:
@@ -1259,6 +1342,7 @@ void ChameleonWindow::CheckNetworkStatus()
 			wxString message = "An unknown network error has occurred.  \nPlease contact mark.erikson@cedarville.edu";
 			message += "\nError details: " + m_network->GetStatusDetails();
 			wxMessageBox(message, "Unknown network error", wxOK | wxICON_EXCLAMATION);
+			return NETCALL_FAILED;
 			break;
 		}
 		case NET_AUTH_FAILED:
@@ -1266,8 +1350,11 @@ void ChameleonWindow::CheckNetworkStatus()
 			wxString message = "Chameleon was unable to log you in using the current username and password.";
 			message += "\nPlease check them in the Options menu and try again.";
 			wxMessageBox(message, "Login failed", wxOK | wxICON_EXCLAMATION);
+			return NETCALL_FAILED;
+			break;
 		}
 		default:
+			return NETCALL_WORKED;
 			break;
 	}
 }

@@ -39,14 +39,15 @@ public:
 	void UpdateSyntaxHighlighting();
 
 	wxString GetRemoteFileName() { return m_remoteFileName.GetFullName();}
-	wxString GetRemotePath() { return m_remoteFileName.GetPath(wxPATH_UNIX);}
+	wxString GetRemotePath() { return m_remoteFileName.GetPath(false, wxPATH_UNIX);}
 	wxString GetRemoteFileNameAndPath() { return m_remoteFileName.GetFullPath(wxPATH_UNIX);}
 	void SetRemoteFileNameAndPath(wxString path, wxString name);
+	void SetLocalFileNameAndPath(wxString path, wxString name);
 
 
 
-	wxString GetFilename () {return m_filename;};
-	void SetFilename (const wxString &filename) {m_filename;};
+	wxString GetFilename () {return m_simpleFileName;};
+	void SetFilename (const wxString &filename) {m_simpleFileName =  filename;};
 	bool HasBeenSaved();
 
 private:
@@ -60,7 +61,7 @@ private:
 
 	wxFileName m_remoteFileName;
 	wxFileName m_localFileName;
-	wxString m_filename;
+	wxString m_simpleFileName;
 	wxDateTime m_filetime;
 
 	bool m_bLoadingFile;

@@ -121,7 +121,15 @@ enum NetworkStatus
 	NET_ERROR_MESSAGE,
 	NET_AUTH_FAILED,   // user+pass did not work on host
 	NET_READ_ERROR,
-	NET_WRITE_ERROR
+	NET_WRITE_ERROR,
+	NET_CACHED_FINGERPRINT,
+};
+
+enum NetworkCallResult
+{
+	NETCALL_WORKED,
+	NETCALL_FAILED,
+	NETCALL_REDO,
 };
 
 #endif

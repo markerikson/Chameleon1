@@ -111,9 +111,9 @@ public:
 
 	void OpenRemoteFile();
 	void SaveRemoteFile();
-	void Prepare(bool open);
+	bool Prepare(bool open);
 
-	void ShowDirectory(wxString dirname);
+	bool ShowDirectory(wxString dirname);
 	void LoadTestData();
 
     /// Should we show tooltips?

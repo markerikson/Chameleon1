@@ -283,9 +283,9 @@ void RemoteFileDialog::SetNetworking(Networking* network)
 	m_currentPath.AssignDir("~");
 }
 
-void RemoteFileDialog::ShowDirectory(wxString dirname)
+bool RemoteFileDialog::ShowDirectory(wxString dirname)
 {
-	wxBeginBusyCursor();
+	//wxBeginBusyCursor();
 // disables VS's 4018 warning: "signed/unsigned mismatch" relating to the GetCount() comparison
 #pragma warning( disable : 4018)
 
@@ -316,8 +316,19 @@ void RemoteFileDialog::ShowDirectory(wxString dirname)
 
 	m_list->ClearAll();
 
-	DirListing dl = m_network->GetDirListing(dirname);
-	m_parentFrame->CheckNetworkStatus();
+	DirListing dl;	
+	dl= m_network->GetDirListing(dirname);
+
+	NetworkCallResult netStatus = m_parentFrame->CheckNetworkStatus();
+	if(netStatus == NETCALL_REDO)
+	{
+		dl = m_network->GetDirListing(dirname);
+	}
+	else if(netStatus == NETCALL_FAILED)
+	{
+		return false;
+	}
+
 
 	wxSortedArrayString sortedDirs(dl.dirNames);
 	wxSortedArrayString sortedFiles(dl.fileNames);
@@ -426,8 +437,8 @@ void RemoteFileDialog::ShowDirectory(wxString dirname)
 
 #pragma warning( default : 4018 )
 
-	wxEndBusyCursor();
-	return;
+	//wxEndBusyCursor();
+	return true;
 }
 
 void RemoteFileDialog::LoadTestData()
@@ -511,7 +522,7 @@ wxPathFormat RemoteFileDialog::GetCurrentPathFormat()
 	return pathFormat;
 }
 
-void RemoteFileDialog::Prepare(bool open)
+bool RemoteFileDialog::Prepare(bool open)
 {
 	m_openMode = open;
 
@@ -529,7 +540,7 @@ void RemoteFileDialog::Prepare(bool open)
 	wxPathFormat format = GetCurrentPathFormat();
 
 	wxString path = m_currentPath.GetPath(false, wxPATH_UNIX);
-	ShowDirectory(path);
+	return ShowDirectory(path);
 }
 /*!
  * wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTONOPEN
