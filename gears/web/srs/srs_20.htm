@@ -11,7 +11,14 @@
 
   <h2><a name="perspective">2.1 Product Perspective</a></h2>
 
-    Chameleon is to be, like the animal: adaptable.  The main functionality is that it is to interact as an IDE with the user.  The adaptability of the IDE is its ability to hide the extraneous or even frightening clutter of advanced IDE features, similar to Microsoft Visual C++.  Interaction is accomplished through use of the keyboard & mouse, as well as the monitor & printer, and may include some network interfacing.  Except for the possibility of expanding to external libraries or programs, this IDE will also interact with the hard drive and floppy drive, but not with a video card beyond that which is necessary to display things to the screen.  Interaction with the local network drivers, for example Internet or Ethernet, is required as functionality will include the ability to communicate with remote servers.
+    Chameleon is to be, like the animal: adaptable.  The main functionality is that it is to interact as an IDE 
+	 with the user.  The IDE's adaptability is its ability to gradually introduce the user to the increasingly 
+	 complex features found in modern IDEs such as Microsoft's Visual Studio.  Interaction is accomplished through 
+	 use of the keyboard & mouse, as well as the monitor & printer, and may include some network interfacing.  
+	 Except for the possibility of expanding to external libraries or programs, this IDE will also interact with 
+	 the hard drive and floppy drive, but not with a video card beyond that which is necessary to display things 
+	 to the screen.  Interaction with the local network drivers, for example Internet or Ethernet, is required as 
+	 functionality will include the ability to communicate with remote servers.
     <p>A summation of information flow can be listed as such:
     <dl>
       <dt><u>Bi-Directional</u></dt>
@@ -37,12 +44,15 @@
 
   <h2><a name="functions">2.2 Product Functions and Features</a></h2>
 
-    As mentioned in the introduction: scope, this product will present all of the functionality of a generic IDE.  This includes in its most basic scope an editor, compiler, and debugger.  From here Chameleon will add the following functionality:
+    As mentioned in part 1 of this document, the product will present all of the functionality of a generic IDE, as well as certain abilities designed specifically for the project.  These features include:
       <ul>
-        <li>Master Control Switch from which the instructor can lock and unlock advanced IDE features such as advanced debugging tools, class views or windows, terminal access, project access, etc.</li>
-        <li>Terminal window for communication with the remote servers of the teacher.s choice (currently Linux . based).</li>
+        <li>A Master Control program from which the instructor can lock and unlock advanced IDE features such as 
+		  advanced debugging tools, class views or windows, terminal access, project access, etc.</li>
+        <li>A command-line terminal inside the program for communication with a remote server, most likely 
+		  Linux-based..</li>
         <li>Debugging ability from base error detection to advanced step-by-step debugging ability.</li>
-        <li>Code syntax completion on-the-fly, completing class or common variable names while the user is typing them (akin to Micosoft Word's ability to complete the date while typing it).</li>
+        <li>Code syntax completion on-the-fly, completing class or common variable names while the user is typing 
+		  them (akin to Micosoft Word's ability to complete the date while typing it).</li>
         <li>Syntax highlighting</li>
         <li>Code block hiding: hide blocks of code down to one descriptive line.</li>
         <li>Project handling on a minor level</li>
@@ -50,15 +60,26 @@
 
   <h2><a name="users">2.3 User Characteristics</a></h2>
 
-The expected entry level user (base level of experience) is that of a student with no experience with any IDE.  The teacher will have the master control switch to limit the functionality of the IDE so that a user new to an IDE will not feel overwhelmed with the eyefulls of functionality that a full IDE can contain.  On the other side, power users should feel right at home with the IDE being fully able to handle most major programming tasks.  Chameleon is expected to cater to brand new users, novice users, moderate users, veteran users, and power users.
-    <p>The beginner knows how to program, and won't know the difference between a plain text editor and an IDE.  His expectations should be no more than just a text editor.  No debugging functionality is available.
-    <p>The novice user will benefit from some code completion, syntax highlighting,  and a debugger.  The full-fledged debugger may be usable, but probably won't be.
-    <p>The moderate user wants to be able to begin to explore the multiple file projects.  Chameleon will have some minimal project management, so he will not be disappointed.  Functionality in the debugger is expanded, the ability to hide code is added.
-    <p>The power user is a veteran user who demands performance.  Full functionality of the IDE is unleashed to this user.</p>
+<p>The expected entry level user (base level of experience) is that of a student with no experience with any IDE.  
+The teacher will have the master control switch to limit the functionality of the IDE so that a user new to an IDE 
+will not feel overwhelmed with the eyefulls of functionality that a full IDE can contain.  On the other side, power 
+users should feel right at home with the IDE being fully able to handle most major programming tasks.  Chameleon 
+is expected to cater to brand new users, novice users, moderate users, veteran users, and power users.</p>
+<p>Entry level users are just starting to program.  The editor will most likely appear as a simple textbox without 
+any coding assistance.  All compilation is done manually by the user using the terminal window.  The IDE allows 
+the user to open and save files, along with standard clipboard functions, but no further visual aids are provided.</p>
+ <p>A novice user has learned the basics of programming.  Features such as syntax highlighting and debugging are 
+ likely to become useful at this stage.  </p>
+<p>Moderate users are comfortable with the standard tasks involved in writing a program.  They will most likely be 
+ready to begin somewhat larger projects.  Chameleon's project management will allow multiple files and the 
+inclusion of outside libraries.  Since the user is now familiar with standard tasks such as compiling, they no 
+longer need to be done by hand and can be done with a standard toolbar button instead.</p>
+    <p>Advanced users are completely comfortable with most of the aspects of a programming project.  At this point,
+	  the user has access to all of Chameleon's available features, such as code folding in the editor.</p>
 
   <h2><a name="constraints">2.4 General Constraints</a></h2>
 
-So far Chameleon will only be supported on Windows and Linux-based computers.  Exact specifications as to disk, RAM, Ethernet, operating system, and other general requirements are unknown.  The best rule-of-thumb, as with all software, is to have the most up-to-date version of operating system possible.  This will take care of minimum disk requirements and memory requirements.
+<p>Chameleon's main target platform is Windows.  The ability to run under Linux is desired, but as a secondary goal only.  Exact specifications as to disk, RAM, Ethernet, operating system, and other general requirements are unknown.  The best rule-of-thumb, as with all software, is to have the most up-to-date version of operating system possible.  This will take care of minimum disk requirements and memory requirements.</p>
 
   <h2><a name="assumptions">2.5 Assumptions and Dependencies</a></h2>
 
