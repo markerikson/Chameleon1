@@ -1,0 +1,91 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<meta name="Template_Author" content="John Cox">
+<title>Submit a New PPR</title>
+</head>
+<body>
+<center><img src="../images/logo.gif" alt="Logo"> 
+
+<h1>Project Title</h1>
+
+<h2>Create A New Project Problem Report</h2>
+</center>
+
+<hr>
+<form name="PPR_Submition" method="post" action=
+"mailto:someuser@somedomain.com" enctype="text/plain">
+<h3>Enter Your Name:</h3>
+
+<input name="PPR_Submitter"> 
+
+<h3>Give the Problem a Title:</h3>
+
+<input name="PPR_Title" style="HEIGHT: 22px; WIDTH: 342px"> 
+
+<h3>Area:</h3>
+
+Select the option that you feel best describes where the bug was
+found:<br>
+ <input type="radio" name="PPR_Location" value="Documentation">
+Documentation <input type="radio" name="PPR_Location" value=
+"Application" checked> Application <input type="radio" name=
+"PPR_Location" value="Website"> Web site 
+
+<h3>What is the Severity of this problem?</h3>
+
+<select name="PPR_Severity">
+<option value="A">A - Critical</option>
+<option value="B">B - Serious</option>
+<option value="C" selected>C - Normal</option>
+<option value="D">D - Low</option>
+</select> 
+
+<h3>What is the Software Release Version?</h3>
+
+<input name="PPR_SoftwareVersion" value="N/A"> 
+
+<h3>Please Describe the problem, including the steps needed to
+reproduce the problem:</h3>
+
+<textarea cols="60" name="PPR_Description" rows="10" style=
+"HEIGHT: 166px; WIDTH: 636px"></textarea><br>
+<input type="submit" value="Submit PPR"></form>
+
+Clicking the "Submit PPR" button will collect all this
+information into an e-mail message and send it to the team PPR
+coordinator. The type of e-mail service that works most
+effectively for this is Microsoft Outlook or Outlook Express. If
+you use AOL, or other services that do not support 3rd party
+e-mail utilities like Outlook, then this "Submit PPR" action may
+not work properly. Instead, you'll have to collect all the
+required information into a hand-written e-mail message and send
+it using your normal manual e-mail process. 
+
+<hr>
+<center>
+<table summary="navigation">
+<tr>
+<td height="100" width="60"><a href="../index.html"><img align=
+"bottom" alt="Home" border="0" src="../images/home.gif"></a></td>
+<td height="100" width="60"><a href="ppr.htm"><img align="bottom"
+alt="TOC" border="0" src="../images/toc.gif"></a></td>
+<td height="100" width="60">
+<!-- "Prev" not needed for this page --></td>
+<td height="100" width="60">
+<!-- "Next" not needed for this page --></td>
+</tr>
+</table>
+</center>
+
+Document modified on 
+
+<script type="text/javascript" language="JavaScript">
+<!--
+        document.write(document.lastModified + " GMT")
+// -->
+</script>
+</body>
+</html>
+

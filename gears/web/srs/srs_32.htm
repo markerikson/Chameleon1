@@ -1,0 +1,74 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<meta name="Template_Author" content="John Cox">
+<title>SRS: 3.0 Software Requirements</title>
+</head>
+<body>
+<h2>3.2 External Interfaces</h2>
+
+<p>This section describes the external interfaces, including the keyboard, mouse, printer, and monitor.  Specifically, on the monitor, the Graphical User Interface requirements are discussed.</p>
+
+<h3><a name="UI">3.2.1 User Interfaces</a></h3>
+
+<p>The User Interface is modeled after a generic I.D.E. and generic text editor.  For the purpose of having  a range of functionality, the Visual Interface will be capable of growing more complex as the functionality increases.</p>
+
+<h4><a name="intro">3.2.1.1 Introduction</a></h4>
+
+<p>As stated above, the user interface is required to adapt.  As the I.D.E. can be used to do more, the user interface will need to grow more complex to allow for use of the increasing number of available features.  In it's simplest form, the user interface will resemble that of a generic text editor.  In the most complex form, it will resemble a generic I.D.E.</p>
+
+<h4><a name="map">3.2.1.2 User Interface Map</a></h4>
+
+<p>The Graphical User Interface will consist of a main window with four sub-windows. These sub-windows would be for the Editor, Debugger, Compilation/Messages, and a Terminal window.</p>
+
+<h4><a name="screen">3.2.1.3 Screen Designs</a></h4>
+
+<p>There are no screenshots from Chameleon available yet.  Included are three screenshots from general I.D.E.'s for reference.</p>
+
+<h4><a name="report">3.2.1.4 Report Formats</a></h4>
+
+<p>Report formats have not been determined yet.</p>
+
+<h3><a name="HI">3.2.2 Hardware Interfaces</a></h3>
+
+<p>There are no specific requirements regarding how the product interfaces with any particular hardware.  There will be Mouse interactions, because it is a graphical user interface.  And, there will be normal keyboard interactions for code entry.  Most other user hardware is irrelevant to the I.D.E..</p>
+
+<h3><a name="SI">3.2.3 Software Interfaces</a></h3>
+
+<p>The Operating System will need to be interfaced with for networking and graphical presentation.  FlexIDE will also need to interface with a compiler and debugger.  The interactions will be moslty command line based.   There is also the possibility of the need to interface with SSH Client software, but this interaction has not been developed completely, yet.</p>
+<p>If the development of a visual debugger is accomplished, interfacing with it will have to be considered then.</p>
+
+<h3><a name="CI">3.2.4 Communication Interfaces</a></h3>
+
+<p>The objects that exist outside the scope of this project include the Linux server machine to which there will be communication.  This server machine will be interfaced with the Chameleon through the Networking Layer of the Operating System.  It is likely that the openSSH 2.0 protocal will be used for this interfacing because of the need to do secure command line operations and file transfer.</p> 
+
+<hr>
+<center>
+<table summary="navigation">
+<tr>
+<td height="100" width="60"><a href="../index.html"><img src=
+"../images/home.gif" align="BOTTOM" alt="Home" border="0">
+</a></td>
+<td height="100" width="60"><a href="srs.htm"><img src=
+"../images/toc.gif" align="BOTTOM" alt="TOC" border="0"></a></td>
+<td height="100" width="60"><a href="srs_31.htm"><img src=
+"../images/prev.gif" align="BOTTOM" alt="Prev" border="0">
+</a></td>
+<td height="100" width="60"><a href="srs_33.htm"><img src=
+"../images/next.gif" align="BOTTOM" alt="Next" border="0">
+</a></td>
+</tr>
+</table>
+</center>
+
+Document modified on 
+
+<script type="text/javascript" language="JavaScript">
+<!--
+        document.write(document.lastModified + " GMT")
+// -->
+</script>
+</body>
+</html>
+

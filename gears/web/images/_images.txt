@@ -1,0 +1,103 @@
+This directory contains all image files for this project documentation.
+The following list of figures is to be maintained by the team as each 
+image file gets updated.  
+======================================================================
+
+	LIST OF FIGURES
+
+logo.gif:	team/project logo
+
+home.gif:	image for navigation hyperlink to home page
+next.gif:	image for navigation hyperlink to next page
+prev.gif:	image for navigation hyperlink to previous page
+toc.gif:	image for navigation hyperlink to Table of Contents page
+
+teampic.jpg:	group picture of the whole team
+member01.jpg:	Mike Jones's picture
+member02.jpg:	Mike Jones's picture
+member03.jpg:	Mike Jones's picture
+member04.jpg:	Mike Jones's picture
+member05.jpg:	Mike Jones's picture
+member06.jpg:	Mike Jones's picture
+member07.jpg:	Mike Jones's picture
+member08.jpg:	Mike Jones's picture
+member09.jpg:	Mike Jones's picture
+member10.jpg:	Mike Jones's picture
+
+// GIF images:  
+// Note that the GIF format is best for line art, like used in data flow
+// diagrams in the SDD and simple screen captures of message boxes.
+img01.gif:	(TBD)
+img02.gif:	(TBD)
+img03.gif:	(TBD)
+img04.gif:	(TBD)
+img05.gif:	(TBD)
+img06.gif:	(TBD)
+img07.gif:	(TBD)
+img08.gif:	(TBD)
+img09.gif:	(TBD)
+img10.gif:	(TBD)
+img11.gif:	(TBD)
+img12.gif:	(TBD)
+img13.gif:	(TBD)
+img14.gif:	(TBD)
+img15.gif:	(TBD)
+img16.gif:	(TBD)
+img17.gif:	(TBD)
+img18.gif:	(TBD)
+img19.gif:	(TBD)
+img20.gif:	(TBD)
+img21.gif:	(TBD)
+img22.gif:	(TBD)
+img23.gif:	(TBD)
+img24.gif:	(TBD)
+img25.gif:	(TBD)
+img26.gif:	(TBD)
+img27.gif:	(TBD)
+img28.gif:	(TBD)
+img29.gif:	(TBD)
+img30.gif:	(TBD)
+img31.gif:	(TBD)
+img32.gif:	(TBD)
+img33.gif:	(TBD)
+img34.gif:	(TBD)
+img35.gif:	(TBD)
+img36.gif:	(TBD)
+img37.gif:	(TBD)
+img38.gif:	(TBD)
+img39.gif:	(TBD)
+
+// JPG images:
+// Note that the JPEG format is best for full color pictures and photographs,
+// like used for a color portrait of a person, etc.
+img40.jpg:	(TBD)
+img41.jpg:	(TBD)
+img42.jpg:	(TBD)
+img43.jpg:	(TBD)
+img44.jpg:	(TBD)
+img45.jpg:	(TBD)
+img46.jpg:	(TBD)
+img47.jpg:	(TBD)
+img48.jpg:	(TBD)
+img49.jpg:	(TBD)
+img50.jpg:	temporary figure used by the SDD template.  replace if needed.
+img51.jpg:	(TBD)
+img52.jpg:	(TBD)
+img53.jpg:	(TBD)
+img54.jpg:	(TBD)
+img55.jpg:	(TBD)
+img56.jpg:	(TBD)
+img57.jpg:	(TBD)
+img58.jpg:	(TBD)
+img59.jpg:	(TBD)
+img60.jpg:	(TBD)
+img61.jpg:	(TBD)
+img62.jpg:	(TBD)
+img63.jpg:	(TBD)
+img64.jpg:	(TBD)
+img65.jpg:	(TBD)
+img66.jpg:	(TBD)
+img67.jpg:	(TBD)
+img68.jpg:	(TBD)
+img69.jpg:	(TBD)
+img70.jpg:	(TBD)

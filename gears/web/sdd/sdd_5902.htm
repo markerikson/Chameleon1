@@ -1,0 +1,223 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<meta name="Template_Author" content="John Cox">
+<title>SDD: 5.0 Software Design</title>
+</head>
+<body>
+<h1>5.0 Software Design (Continued)</h1>
+
+<h2>5.9 Module Descriptions (Continued)</h2>
+
+<h3><a name="5.9.2">5.9.2</a> SumDiv Graphical User
+Interface</h3>
+
+The purpose of the "SumDiv Graphical User Interface" is to
+provide the graphical interface for the user. The GUI simply
+collects inputs from the user, and depending on the action
+selected by the user, calls the processing engine to calculate
+the result. The output from the processing engine is then
+reflected by the GUI. If the processing engine encounters an
+error, then the GUI displays the error information. This AC is to
+be implemented as a single form, part of a VB-based Win32 EXE. 
+
+<p>This AC is based on this screen image, as provided by the
+Rapid Prototype:<br>
+<img src="../images/img50.gif" alt="RPsample"></p>
+
+<p>This AC contains the following modules:</p>
+
+<ol>
+<li>Initialization class</li>
+
+<li>LHS Value</li>
+
+<li>RHS Value</li>
+
+<li>Addition Command</li>
+
+<li>Division Command</li>
+
+<li>Results Value</li>
+</ol>
+
+The design for each of these modules is specified in the
+subsections below. 
+
+<hr>
+<h4><a name="5.9.2.1">5.9.2.1</a> Initialization class</h4>
+
+<h5>Introduction</h5>
+
+VB provides a mechanism when a form loads to do certain
+initialization processing. The LHS text box is initialized to
+5000. The RHS text box is initialized to 1234. The Results text
+box is initialized to blank. 
+
+<h5>Interface</h5>
+
+<pre>
+Sub Form_Load()
+</pre>
+
+<h5>Program Design Language (PDL)</h5>
+
+<pre>
+   The Text attribute of the LHS object is set to 5000.
+   The Text attribute of the RHS object is set to 1234.
+   The Text attribute of the Results object is set to blank.
+</pre>
+
+<hr>
+<h4><a name="5.9.2.2">5.9.2.2</a> LHS Value</h4>
+
+<h5>Introduction</h5>
+
+The LHS Value is a text box class object provided by VB. The
+value stored in this text box is typed in by the user and
+represents the Left Hand Side of the equation. For example, in
+the case of A + B, the LHS of the + sign is A. In the case of A /
+B, the LHS of the / sign is A. This text box stores the value of
+A. 
+
+<h5>Interface</h5>
+
+The text box is blanked out. Its name is LHSValue. In the figure
+shown above, this is the top text box. 
+
+<h5>Program Design Language (PDL)</h5>
+
+N/A. 
+
+<hr>
+<h4><a name="5.9.2.3">5.9.2.3</a> RHS Value</h4>
+
+<h5>Introduction</h5>
+
+The RHS Value is a text box class object provided by VB. The
+value stored in this text box is typed in by the user and
+represents the Right Hand Side of the equation. For example, in
+the case of A + B, the RHS of the + sign is B. In the case of A /
+B, the RHS of the / sign is B. This text box stores the value of
+B. 
+
+<h5>Interface</h5>
+
+The text box is blanked out. Its name is RHSValue. In the figure
+shown above, this is the middle text box. 
+
+<h5>Program Design Language (PDL)</h5>
+
+N/A. 
+
+<hr>
+<h4><a name="5.9.2.4">5.9.2.4</a> Addition Command</h4>
+
+<h5>Introduction</h5>
+
+The Addition Command is a command button class object provided by
+VB. When the user clicks this command button, the values stored
+in the text fields of the LHS Value and the RHS Value are passed
+as arguments to the Addition module in the "SumDiv Calculator
+Engine" AC. 
+
+<h5>Interface</h5>
+
+The caption on the button says "+". Its name is AddCmd. In the
+figure shown above, this is the left command button. 
+
+<h5>Program Design Language (PDL)</h5>
+
+<pre>
+    Save as A the value of the Text attribute of the LHSValue.
+    Save as B the value of the Text attribute of the RHSValue.
+
+    Call the SumOf fuction in the DLL, passing A and B and
+        saving the return value as C.
+
+    Write to the Text attribute of the ResultValue the
+  string of C.
+</pre>
+
+<hr>
+<h4><a name="5.9.2.5">5.9.2.5</a> Division Command</h4>
+
+The Division Command is a command button class object provided by
+VB. When the user clicks this command button, the values stored
+in the text fields of the LHS Value and the RHS Value are passed
+as arguments to the Division module in the "SumDiv Calculator
+Engine" AC. 
+
+<h5>Interface</h5>
+
+The caption on the button says "/". Its name is DivCmd. In the
+figure shown above, this is the right command button. 
+
+<h5>Program Design Language (PDL)</h5>
+
+<pre>
+    Save as A the value of the Text attribute of the LHSValue.
+    Save as B the value of the Text attribute of the RHSValue.
+
+    Call the DivBy fuction in the DLL, passing A, B, C, and a text
+        array named ErrorMsg that can hold 255 characters.
+        Save the return value as a boolean called ReturnStatus.
+
+    If the ReturnStatus from DivBy is true, then
+        Write to the Text attribute of the ResultValue the string of C.
+
+    Else the ReturnStatus from DivBy is false, so
+        display an exclamation message box, 
+        trimming the ErrorMsg string.
+</pre>
+
+<hr>
+<h4><a name="5.9.2.6">5.9.2.6</a> Results Value</h4>
+
+<h5>Introduction</h5>
+
+The Results Value is a text box class object provided by VB. The
+value stored in this text box is read-only, meaning that the user
+cannot type something in. This value represents the results of
+the calculation. For example, in the case of C = A + B, this box
+shows the value of C. 
+
+<h5>Interface</h5>
+
+The text box is blanked out. Its name is ResultValue. In the
+figure shown above, this is the bottom text box. 
+
+<h5>Program Design Language (PDL)</h5>
+
+N/A. 
+
+<hr>
+<center>
+<table summary="navigation">
+<tr>
+<td height="100" width="60"><a href="../index.html"><img src=
+"../images/home.gif" align="BOTTOM" alt="Home" border="0">
+</a></td>
+<td height="100" width="60"><a href="sdd.htm"><img src=
+"../images/toc.gif" align="BOTTOM" alt="TOC" border="0"></a></td>
+<td height="100" width="60"><a href="sdd_501.htm"><img src=
+"../images/prev.gif" align="BOTTOM" alt="Prev" border="0">
+</a></td>
+<td height="100" width="60"><a href="sdd_5903.htm"><img src=
+"../images/next.gif" align="BOTTOM" alt="Next" border="0">
+</a></td>
+</tr>
+</table>
+</center>
+
+Document modified on 
+
+<script type="text/javascript" language="JavaScript">
+<!--
+        document.write(document.lastModified + " GMT")
+// -->
+</script>
+</body>
+</html>
+

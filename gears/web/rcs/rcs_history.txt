@@ -1,0 +1,2 @@
+; file: "rcs_history.txt" 
+; purpose: Records history of library changes.
