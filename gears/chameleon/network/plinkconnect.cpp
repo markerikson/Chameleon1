@@ -174,11 +174,21 @@ void PlinkConnect::scrubLogs() {
 //Public:
 void PlinkConnect::acceptCacheFingerprint() {
 	//start the program asynchonously
-	wxString cmd = plinkApp + " -batch -pw password nobody@" + host + " exit";
+
+	// MPE: For some rason, running with this command line doesn't seem to 
+	//		get Plink to properly save the key.  The simple command line does.
+	//wxString cmd = plinkApp + " -batch -pw password nobody@" + host + " exit";
+
+	// This simple command line does work right
+	wxString cmd = plinkApp + " " + host;
+
+
 	proc = new wxProcess(NULL);
 	proc->Redirect();
 	long pid = wxExecute(cmd, wxEXEC_ASYNC, proc);
 
+	// MPE: leaving this in here in case David needs it in the future
+	/*
 #ifdef _DEBUG
 	wxString tempOutput = "";
 	wxString tempErrlog = "";
@@ -192,12 +202,15 @@ void PlinkConnect::acceptCacheFingerprint() {
 		tempErrlog += rerr->GetC();
 	}
 #endif
+	*/
 
 	sendToStream("y\n");
+
 	// Sending wxSIGTERM to the process is all that's needed to close it out gracefully.
 	// It also takes care of deleting the process, so we don't have to do that manually.
 	proc->Kill(pid, wxSIGTERM);
 
+	/*
 #ifdef _DEBUG
 	while(!rin->Eof()) {
 		tempOutput += rin->GetC();
@@ -208,7 +221,7 @@ void PlinkConnect::acceptCacheFingerprint() {
 	rin = NULL;
 	rerr = NULL;
 #endif
-
+*/
 }
 
 //Private:
