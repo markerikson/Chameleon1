@@ -64,6 +64,7 @@ bool Networking::GetHomeDirPath(wxString &path)
 		else {
 			// pull for 'cache'
 			path = m_userHomeDir;
+			success = true;
 		}
 	}
 
