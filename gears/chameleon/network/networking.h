@@ -21,17 +21,19 @@
 #include <wx/string.h>
 #include "../common/datastructures.h"
 #include "plinkconnect.h"
+#include "../common/Options.h"
 
 
 class Networking {
 	public:
 		// ..strcutors
-		Networking();
+		Networking(Options* options);
 		~Networking();
 
 		//Setup
-		void SetPlinkProg(wxString path_name);
-		void SetPscpProg(wxString path_name);
+		//void SetPlinkProg(wxString path_name);
+		//wxString GetPlinkProg();
+		//void SetPscpProg(wxString path_name);
 		void SetDetails(wxString hostname, wxString username, wxString passphrase); // Preffered
 		void SetDetailsNoStatus(wxString hostname, wxString username, wxString passphrase);
 
@@ -56,9 +58,10 @@ class Networking {
 		void DetermineStatusError(wxString errlog, wxString output);
 		// Data:
 		PlinkConnect* ssh_plink;
-		wxString ssh_host, ssh_user, ssh_pass;
-		wxString plinkApp;
-		wxString pscpApp;
+		Options* m_options;
+		//wxString ssh_host, ssh_user, ssh_pass;
+		//wxString plinkApp;
+		//wxString pscpApp;
 		//wxString downloadDir;
 		NetworkStatus status;
 		wxString statusDetails;

@@ -15,6 +15,7 @@
 #include "../perms/p.h"
 #include "../common/ProjectInfo.h"
 #include "../network/networking.h"
+#include "../common/Options.h"
 //#include "wxtelnet.h"
 #include "wxssh.h"
 
@@ -23,6 +24,9 @@
 #include "save.xpm"
 #include "build.xpm"
 #include "button.xpm"
+
+#include "connect.xpm"
+#include "disconnect.xpm"
 
 #include "start.xpm"
 #include "stop.xpm"
@@ -105,7 +109,8 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 {
 	//m_appStarting = true;
 	wxStopWatch stopwatch;
-	this->SetClientSize(640, 480);
+	
+	this->SetSize(660, 736);
 
 	// Show a log window for all debug messages
 #ifdef _DEBUG
@@ -129,8 +134,8 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 	// Open up the configuration file, assumed to be in the user's home directory
 
-	wxString hostname = wxEmptyString; 
-	wxString username = wxEmptyString;
+	//wxString hostname = wxEmptyString; 
+	//wxString username = wxEmptyString;
 	wxString authorizedCode = "0";
 	wxString enabledCode = "0";
 
@@ -138,6 +143,9 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	wxString defaultAuthorizedCode = "0";
 	wxString defaultEnableCode = "0";
 
+	m_options = new Options;
+	m_options->hostname = wxEmptyString;
+	m_options->username = wxEmptyString;
 	m_perms = new Permission(defaultAuthorizedCode, defaultEnableCode);
 
 	wxFileName configName(wxGetHomeDir(), "chameleon.ini");
@@ -146,8 +154,8 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 	if(configName.FileExists())
 	{
-		hostname = m_config->Read("Network/hostname");
-		username = m_config->Read("Network/username");
+		m_options->hostname = m_config->Read("Network/hostname");
+		m_options->username = m_config->Read("Network/username");
 		
 		authorizedCode = m_config->Read("Permissions/authorized", defaultAuthorizedCode);
 		enabledCode = m_config->Read("Permissions/enabled", defaultEnableCode);
@@ -166,12 +174,11 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 		m_config->Write("Permissions/enabled", defaultEnableCode);
 	}
 
-	m_network = new Networking();
-
 	wxFileName plinkPath(wxGetCwd(), "plink.exe");
 	if(wxFileName::FileExists(plinkPath.GetFullPath()))
 	{
-		m_network->SetPlinkProg(plinkPath.GetFullPath());
+		//m_network->SetPlinkProg(plinkPath.GetFullPath());
+		m_options->plinkPath = plinkPath.GetFullPath();
 	}
 	else
 	{
@@ -182,14 +189,16 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	wxFileName pscpPath(wxGetCwd(), "pscp.exe");
 	if(wxFileName::FileExists(pscpPath.GetFullPath()))
 	{
-		m_network->SetPscpProg(pscpPath.GetFullPath());
+		//m_network->SetPscpProg(pscpPath.GetFullPath());
+		m_options->pscpPath = pscpPath.GetFullPath();
 	}
 	else
 	{
 		wxLogDebug("Pscp does not exist in the working directory!");
 	}
 
-	m_network->SetDetailsNoStatus(hostname, username, "");
+	m_network = new Networking(m_options);
+	//m_network->SetDetailsNoStatus(hostname, username, "");
 
 
 	long time3 = stopwatch.Time();
@@ -198,8 +207,8 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	m_optionsDialog = new OptionsDialog(this, ID_OPTIONSDIALOG, "Options");
 	UpdatePermsList();
 
-	m_optionsDialog->SetServerAddress(hostname);
-	m_optionsDialog->SetUsername(username);
+	m_optionsDialog->SetServerAddress(m_options->hostname);
+	m_optionsDialog->SetUsername(m_options->username);
 	m_optionsDialog->SetPassword1(wxEmptyString);
 	m_optionsDialog->SetPassword2(wxEmptyString);
 
@@ -280,13 +289,16 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 	m_noteTerm = new ChameleonNotebook(m_splitEditorOutput, ID_NOTEBOOK_TERM);
 	//m_telnet = new wxTelnet( m_noteTerm, ID_TELNET, wxPoint(-1, -1), 80, 24);
-	m_telnet = new wxSSH(m_noteTerm, ID_TELNET);
+	m_telnet = new wxSSH(m_noteTerm, ID_TELNET, m_options);
 	
+	m_telnet->set_mode_flag(GTerm::CURSORINVISIBLE);
+	//m_telnet->SetNetworking(m_network);
 	
 	if(m_perms->isEnabled(PERM_TERMINAL))
 	{
-		m_splitEditorOutput->SplitHorizontally(m_splitProjectEditor, m_noteTerm, -160);	
+		m_splitEditorOutput->SplitHorizontally(m_splitProjectEditor, m_noteTerm, 0);	
 		m_splitEditorOutput->SetMinimumPaneSize(20);
+		
 
 
 		m_noteTerm->AddPage(m_telnet, "Terminal");
@@ -372,8 +384,9 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	m_appStarting = false;
 	m_bProjectOpen = false;
 
-
-
+	//m_telnet->SetClientSize(661, 289);
+	//m_splitEditorOutput->SetSashPosition(-300);
+	
 }
 
 ChameleonWindow::~ChameleonWindow()
@@ -385,6 +398,7 @@ ChameleonWindow::~ChameleonWindow()
 	delete m_optionsDialog;
 	delete m_network;
 	delete m_config;
+	delete m_options;
 
 
 
@@ -1018,6 +1032,13 @@ void ChameleonWindow::OnConnect(wxCommandEvent& WXUNUSED(event))
 // my "I need to try something out, I'll stick it in here" function
 void ChameleonWindow::Test(wxCommandEvent& WXUNUSED(event))
 {
+	TextManager tm = m_telnet->GetTM();
+
+	//tm.PrintViewport();
+
+	//tm.PrintContents();
+
+	tm.PrintToBitmap();
 	/*
 	wxString homepath = m_network->GetHomeDirPath();
 	wxString filename = "~/java/numeric/GCD.java";
@@ -1027,7 +1048,8 @@ void ChameleonWindow::Test(wxCommandEvent& WXUNUSED(event))
 	wxLogDebug("Home: %s, relative path: %s", homepath.c_str(), newpath.GetFullPath(wxPATH_UNIX).c_str());
 */
 
-	
+
+	/*
 	if(!m_bProjectOpen)
 	{
 		return;
@@ -1046,8 +1068,8 @@ void ChameleonWindow::Test(wxCommandEvent& WXUNUSED(event))
 	for(size_t i = 0; i < m_currentProjectInfo->libraryFiles.Count(); i++)
 	{
 		wxLogDebug("Library %d: %s", i, m_currentProjectInfo->libraryFiles[i].c_str());
-	}
-	
+	}	
+	*/
 	
 	/*
 	wxArrayString choices;
@@ -1310,13 +1332,13 @@ bool ChameleonWindow::SaveFile(bool saveas, FileFilterType filterType)
 	{
 		if(m_remoteMode)
 		{
-			m_currentEd->SetEOLMode(wxSTC_EOL_LF);
+			//m_currentEd->SetEOLMode(wxSTC_EOL_LF);
 		}		
 		fileContents = m_currentEd->GetText();
 
 		if(m_remoteMode)
 		{
-			m_currentEd->SetEOLMode(wxSTC_EOL_CRLF);
+			//m_currentEd->SetEOLMode(wxSTC_EOL_CRLF);
 		}
 	}
 	// we must be saving a new project
@@ -1508,6 +1530,15 @@ void ChameleonWindow::ResizeSplitter()
 void ChameleonWindow::OnToolsOptions(wxCommandEvent &event)
 {		
 	//UpdatePermsList();
+
+	if(m_telnet->IsConnected())
+	{
+		m_optionsDialog->DisableServerSettings();
+	}
+	else
+	{
+		m_optionsDialog->EnableServerSettings();
+	}
 	int result = m_optionsDialog->ShowModal();
 	m_currentEd->SetFocus();
 
@@ -1716,8 +1747,9 @@ void ChameleonWindow::UpdateMenuBar()
 	if(m_perms->isEnabled(PERM_TELNETTEST))
 	{
 		menuTools->AppendSeparator();
+
 		menuTools->Append(ID_STARTCONNECT, "&Connect to server");
-		menuTools->Append(ID_DISCONNECT, "&Disconnect rom server");
+		menuTools->Append(ID_DISCONNECT, "&Disconnect from server");
 	}
 
 	menuBar->Append(menuTools, "&Tools");
@@ -1782,6 +1814,18 @@ void ChameleonWindow::UpdateToolbar()
 
 	wxBitmap bmSave(save_xpm);
 	t->AddTool(ID_SAVE, "Save", bmSave);
+
+	if(m_perms->isEnabled(PERM_TERMINAL))
+	{
+		t->AddSeparator();
+
+		wxBitmap bmConnect(connect_xpm);
+		t->AddTool(ID_STARTCONNECT, "Connect", bmConnect);
+
+		wxBitmap bmDisconnect(disconnect_xpm);
+		t->AddTool(ID_DISCONNECT, "Disconnect", bmDisconnect);
+		
+	}
 
 
 	if(m_perms->isEnabled(PERM_TEST))
@@ -1989,14 +2033,14 @@ void ChameleonWindow::EvaluateOptions()
 		edit->UpdateSyntaxHighlighting();
 	}
 
-	wxString hostname = m_optionsDialog->GetServerAddress();
-	wxString username = m_optionsDialog->GetUsername();
-	wxString password1 = m_optionsDialog->GetPassword1();
+	m_options->hostname = m_optionsDialog->GetServerAddress();
+	m_options->username = m_optionsDialog->GetUsername();
+	m_options->password = m_optionsDialog->GetPassword1();
 	
-	m_network->SetDetailsNoStatus(hostname, username, password1);
+	//m_network->SetDetailsNoStatus(m_options->hostname, username, password1);
 
-	m_config->Write("Network/hostname", hostname);
-	m_config->Write("Network/username", username);
+	m_config->Write("Network/hostname", m_options->hostname);
+	m_config->Write("Network/username", m_options->username);
 
 }
 

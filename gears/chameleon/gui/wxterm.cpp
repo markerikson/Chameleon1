@@ -379,17 +379,19 @@ static unsigned char
   };
 
 BEGIN_EVENT_TABLE(wxTerm, wxWindow)
-  EVT_PAINT(wxTerm::OnPaint)
-  EVT_CHAR(wxTerm::OnChar)
-  EVT_LEFT_DOWN(wxTerm::OnLeftDown)
-  EVT_LEFT_UP(wxTerm::OnLeftUp)
-  EVT_MOTION(wxTerm::OnMouseMove)
-  EVT_TIMER(-1, wxTerm::OnTimer)
+  EVT_PAINT						(wxTerm::OnPaint)
+  EVT_CHAR						(wxTerm::OnChar)
+  EVT_LEFT_DOWN					(wxTerm::OnLeftDown)
+  EVT_LEFT_UP					(wxTerm::OnLeftUp)
+  EVT_MOTION					(wxTerm::OnMouseMove)
+  EVT_TIMER						(-1, wxTerm::OnTimer)
 #if 0
   EVT_KEY_DOWN(wxTerm::OnKeyDown)
 #endif
 
-  EVT_SIZE(wxTerm::UpdateSize)
+  EVT_SIZE						(wxTerm::UpdateSize)
+  EVT_SET_FOCUS					(wxTerm::OnGainFocus)
+  EVT_KILL_FOCUS				(wxTerm::OnLoseFocus)
 END_EVENT_TABLE()
 
 wxTerm::wxTerm(wxWindow* parent, wxWindowID id,
@@ -1191,8 +1193,11 @@ wxTerm::OnTimer(wxTimerEvent& WXUNUSED(event))
     return;
     
   if(GetMode() & CURSORINVISIBLE)
+  {
+	  //wxLogDebug("Skipping cursor");
     return;
-
+  }
+  //wxLogDebug("Drawing cursor");
   if(!m_curDC)
   {
     dc = new wxClientDC(this);
@@ -1509,4 +1514,18 @@ wxTerm::PrintChars(int len, unsigned char *data)
 void wxTerm::OnActivate(wxActivateEvent &event)
 {
 	m_isActive = event.GetActive();
+}
+
+void wxTerm::OnGainFocus(wxFocusEvent &event)
+{
+	this->clear_mode_flag(CURSORINVISIBLE);
+	//wxLogDebug("Gained focus");
+	GTerm::Update();
+}
+
+void wxTerm::OnLoseFocus(wxFocusEvent &event)
+{
+	this->set_mode_flag(CURSORINVISIBLE);
+	//wxLogDebug("Lost focus");
+	GTerm::Update();
 }

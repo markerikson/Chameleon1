@@ -200,6 +200,9 @@ private:
   void OnTimer(wxTimerEvent& event);
   void OnActivate(wxActivateEvent &event);
 
+  void OnGainFocus(wxFocusEvent &event);
+  void OnLoseFocus(wxFocusEvent &event);
+
   DECLARE_EVENT_TABLE()
 };
 

@@ -14,18 +14,20 @@
 #include <wx/filename.h>
 #include <wx/process.h>
 #include "../common/debug.h"
+#include "../common/Options.h"
 
 
-Networking::Networking()
+Networking::Networking(Options* options)
 {
-	ssh_host = "localhost";
-	ssh_user = "user";
-	ssh_pass = "password";
+	m_options = options;
+	//ssh_host = "localhost";
+	//ssh_user = "user";
+	//ssh_pass = "password";
 	//downloadDir = ""; // should cause the working directory to be used
-	plinkApp = "plink.exe"; // will use the working directory
-	pscpApp = "pscp.exe";
+	//plinkApp = "plink.exe"; // will use the working directory
+	//pscpApp = "pscp.exe";
 	status = NET_GOOD;
-	ssh_plink = new PlinkConnect(plinkApp, ssh_host, ssh_user, ssh_pass);
+	ssh_plink = new PlinkConnect(m_options->plinkPath, m_options->hostname, m_options->username, m_options->password);
 }
 
 
@@ -87,6 +89,7 @@ void Networking::SendFileContents(wxString strng, wxString rfile, wxString rpath
 
 void Networking::SetDetailsNoStatus(wxString hostname, wxString username, wxString passphrase) 
 {
+	/*
 	if(!hostname.IsEmpty()) {
 		ssh_host = hostname;
 		ssh_plink->setHostname(hostname);
@@ -99,6 +102,7 @@ void Networking::SetDetailsNoStatus(wxString hostname, wxString username, wxStri
 		ssh_pass = passphrase;
 		ssh_plink->setPassphrase(passphrase);
 	}
+	*/
 
 	userHomeDir = wxEmptyString;
 
@@ -120,19 +124,23 @@ void Networking::SetDetails(wxString hostname, wxString username, wxString passp
 }
 
 
+/*
 void Networking::SetPlinkProg(wxString path_name)
 {
 	// bool wxFileExists(const wxString& filename)
 	plinkApp = path_name;
 	ssh_plink->setPlinkApp(plinkApp);
 }
+*/
 
 
+/*
 void Networking::SetPscpProg(wxString path_name)
 {
 	// bool wxFileExists(const wxString& filename)
 	pscpApp = path_name;
 }
+*/
 
 
 wxString Networking::GetHomeDirPath()
@@ -339,10 +347,20 @@ void Networking::SSHCacheFingerprint()
 void Networking::SCPDoTransfer(wxString from_path_name, wxString to_path_name)
 {
 	// right now this only does local -> remote transfers
+	
+	/*
 	wxString cmd = pscpApp // + " -l " + ssh_user 
 					+ " -pw " + ssh_pass + " -batch "
 					+ from_path_name + " " 
 					+ ssh_user + "@" + ssh_host + ":" + to_path_name;
+	*/
+
+	wxString cmd = m_options->pscpPath 
+					+ " -pw " + m_options->password 
+					+ " - batch "
+					+ from_path_name + " "
+					+ m_options->username + "@" + m_options->hostname + ":" + to_path_name;
+					
 	wxProcess* proc = new wxProcess();
 	proc->Redirect();
 	int pid = wxExecute(cmd, wxEXEC_SYNC, proc);
@@ -382,3 +400,10 @@ void Networking::SCPDoTransfer(wxString from_path_name, wxString to_path_name)
 
 	return;
 }
+
+/*
+wxString Networking::GetPlinkProg()
+{
+	return plinkApp;
+}
+*/

@@ -369,3 +369,28 @@ void OptionsDialog::OnUpdateAuthCode( wxCommandEvent& event )
 }
 
 
+void OptionsDialog::EnableServerSettings()
+{
+	wxColour white("white");
+	m_serverAddress->SetEditable(true);
+	m_serverAddress->SetBackgroundColour(white);
+	m_username->SetEditable(true);
+	m_username->SetBackgroundColour(white);
+	m_password1->SetEditable(true);
+	m_password1->SetBackgroundColour(white);
+	m_password2->SetEditable(true);
+	m_password2->SetBackgroundColour(white);
+}
+
+void OptionsDialog::DisableServerSettings()
+{
+	wxColour grey("light grey");
+	m_serverAddress->SetEditable(false);
+	m_serverAddress->SetBackgroundColour(grey);
+	m_username->SetEditable(false);
+	m_username->SetBackgroundColour(grey);
+	m_password1->SetEditable(false);
+	m_password1->SetBackgroundColour(grey);
+	m_password2->SetEditable(false);
+	m_password2->SetBackgroundColour(grey);
+}

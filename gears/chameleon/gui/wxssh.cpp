@@ -29,6 +29,14 @@
 
 #include "wxssh.h"
 #include "../network/networking.h"
+#include "../common/debug.h"
+#include "../common/Options.h"
+
+#ifdef _DEBUG
+
+#define new DEBUG_NEW
+
+#endif
 
 BEGIN_EVENT_TABLE(wxSSH, wxTerm)
 	EVT_PROCESS2_STDOUT(wxSSH::OnPlinkOut)
@@ -36,13 +44,14 @@ BEGIN_EVENT_TABLE(wxSSH, wxTerm)
 	EVT_PROCESS2_ENDED(wxSSH::OnPlinkTerm)
 END_EVENT_TABLE()
 
-wxSSH::wxSSH(wxWindow* parent, wxWindowID id, const wxPoint& pos, int width, int height, const wxString& name)
+wxSSH::wxSSH(wxWindow* parent, wxWindowID id, Options* options, const wxPoint& pos, int width, int height, const wxString& name)
 	: wxTerm(parent, id, pos, width, height, name)
 {
   m_connected = false;
+  m_options = options;
   m_plink = NULL;
-  m_host = "";
-  m_user = "";
+  //m_host = "";
+  //m_user = "";
   m_plinkPid = -2;
 }
 
@@ -82,16 +91,17 @@ void wxSSH::Connect(wxString hostname, wxString username, wxString passphrase)
 	Refresh();
 
 	// Start the new Process
-	wxString cmd = m_networking->GetPlinkProg();
+	//wxString cmd = m_networking->GetPlinkProg();
+	wxString cmd = m_options->plinkPath;
 	if(passphrase != "") {
-		cmd += " -pw "+passphrase;
+		cmd += " -pw " + m_options->password;
 	}
 	if(username != "") {
-		cmd += " " + username + "@" + hostname;
+		cmd += " " + m_options->username + "@" + m_options->hostname;
 	}
 	else
 	{
-		cmd += " " + hostname;
+		cmd += " " + m_options->hostname;
 	}
 	
 	m_plink = new wxProcess2(this);
@@ -109,8 +119,8 @@ void wxSSH::Connect(wxString hostname, wxString username, wxString passphrase)
 		delete m_plink;
 	}
 	else { // Process is Live!
-		m_host = hostname;
-		m_user = username;
+		//m_host = hostname;
+		//m_user = username;
 		m_connected = true;
 		m_plink->SetPID(m_plinkPid); // Temporary solution
 		wxLogDebug("Process started successfully!");
@@ -167,7 +177,9 @@ void wxSSH::OnPlinkTerm(wxProcess2EndedEvent &e)
 	//delete m_plink; <--- wxProcess2 self-destructs
 }
 
+/*
 void wxSSH::SetNetworking(Networking* networking)
 {
 	m_networking = networking;
 }
+*/

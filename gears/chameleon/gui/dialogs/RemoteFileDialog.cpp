@@ -667,6 +667,7 @@ void RemoteFileDialog::ItemActivated()
 
 		ShowDirectory(m_currentPath.GetPath(false, wxPATH_UNIX));
 	}
+	m_txtFilename->Clear();
 }/*!
  * wxEVT_COMMAND_COMBOBOX_SELECTED event handler for ID_COMBOBOX1
  */

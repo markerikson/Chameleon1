@@ -122,6 +122,9 @@ public:
     void SetPassword1(wxString pwd);
     void SetPassword2(wxString pwd);
 
+	void EnableServerSettings();
+	void DisableServerSettings();
+
     /// Should we show tooltips?
     static bool ShowToolTips();
 

@@ -40,6 +40,7 @@
 #include "../common/debug.h"
 #include "../common/process2.h"
 #include "../common/process2events.h"
+#include "../common/Options.h"
 #include "wxterm.h"
 #include "wxssh.h"
 
@@ -50,12 +51,13 @@ class wxSSH : public wxTerm
 {
 	public:
 		wxSSH(wxWindow* parent, wxWindowID id,
+				Options* options,
 				const wxPoint& pos = wxDefaultPosition,
 				int width = 80, int height = 25,
 				const wxString& name = "wxSSH");
 		virtual ~wxSSH();
 
-		void SetNetworking(Networking* networking);
+		//void SetNetworking(Networking* networking);
 
 		void OnPlinkEvent(wxProcess2StdOutEvent& event);
 		void OnPlinkOut(wxProcess2StdOutEvent& event);
@@ -71,9 +73,10 @@ class wxSSH : public wxTerm
 	private:
 		bool m_connected;
 		wxProcess2* m_plink;
-		Networking* m_networking;
-		wxString m_host;
-		wxString m_user;
+		//Networking* m_networking;
+		//wxString m_host;
+		//wxString m_user;
+		Options* m_options;
 		long m_plinkPid;
 
 	

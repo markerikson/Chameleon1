@@ -62,6 +62,7 @@ class wxTreeEvent;
 class wxStatusBar;
 class ProjectInfo;
 class wxSSH;
+class Options;
 
 //----------------------------------------------------------------------
 
@@ -222,6 +223,7 @@ private:
 
 	Permission*  m_perms;
 	Networking* m_network;
+	Options* m_options;
 	ProjectInfo* m_currentProjectInfo;
 
 	//wxArrayPtrVoid* docArray; 
