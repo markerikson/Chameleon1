@@ -282,9 +282,19 @@ void Networking::DetermineStatusError(wxString errlog, wxString output)
 		status = NET_AUTH_FAILED;
 		statusDetails.RemoveLast(); // "\n"
 	}
-	//else if() {
-	//	NET_READ_ERROR,
-	//}
+	else if(errlog.Contains("Permission denied")) {
+		status = NET_WRITE_ERROR;
+		while(errlog.Right(1) == "\n") {
+			errlog.RemoveLast(); // Remove any trailing new-lines for aesthetic purposes
+		}
+		statusDetails = "Could not write to destination file or directory. (Check permissions)";
+	}
+	else if(false) {
+		status = NET_READ_ERROR;
+		statusDetails = "blah blah blah blah";
+	}
+	//else -- defaults
+
 	
 	return;
 }
