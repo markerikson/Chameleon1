@@ -1,212 +1,135 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<meta name="Template_Author" content="John Cox">
-<title>SDD: 5.0 Software Design</title>
-</head>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head>
+
+  
+  <meta content="text/html; charset=ISO-8859-1" http-equiv="Content-Type">
+
+
+
+  
+  <meta content="John Cox" name="Template_Author">
+  <title>SDD: 5.0 Software Design</title>
+
+  </head>
+
+
+
 <body>
+
 <h1>5.0 Software Design (Continued)</h1>
+
+
+
+
 
 <h2>5.9 Module Descriptions (Continued)</h2>
 
-<h3><a name="5.9.1">5.9.1</a> SumDiv Calculator Engine</h3>
+
+
+
+
+<h3><a name="5.9.1">5.9.1</a> GUI description<br>
+</h3>
+
+
+
+
 
 <p>The title of this section is the name of the Architectural
+
 Component (AC). Provide a description and purpose of this AC in
+
 this paragraph. This description should also list the lower level
+
 modules that make up this AC. Here's an example:<br>
- --JC.</p> 
 
-<p>The purpose of the "SumDiv Calculator Engine" is to provide
-the processing required to perform the addition and division
-operations. This AC is to be implemented as a C-based Win32 DLL.
-This AC contains the following modules:</p>
+ --JC.</p>
 
-<ol>
-<li>Initialization module</li>
 
-<li>Addition module</li>
 
-<li>Division module</li>
-</ol>
+Receives<br>
+&nbsp;&nbsp;&nbsp; Permissions information<br>
+&nbsp;&nbsp;&nbsp; Terminal output<br>
+&nbsp;&nbsp;&nbsp; Remote file listing information<br>
 
-The design for each of these modules is specified below. 
 
-<hr>
-<h4><a name="5.9.1.1">5.9.1.1</a> Initialization module</h4>
+Emits:<br>
 
-<p>The title of this section is the name of the module.<br>
- --JC.</p> 
 
-<h5>Introduction</h5>
+&nbsp;&nbsp;&nbsp; Instantiates editor<br>
 
-<p>Provide a description and purpose of this module. If this
-module is a whole C++ class, then talk about the important
-behavior (member functions) and state/attributes (member data).
-Alternatively, if this module is just a single C function for
-instance, then talk about each parameter (or argument) to the
-function, as well as its return value. If this module is a VB
-class, then talk about only the useful functions and attributes
-that you intend to use. Here's an example:<br>
- --JC.</p> 
 
-<p>The Initialization module is named "DllMain" and is a single C
-function. This function is called by the Windows operating system
-for one of four possible reasons. These reasons are as follows:
-(1) when there is a process that attaches to this DLL, (2) when
-there is a thread that attaches to this DLL, (3) when there is a
-process that detaches from this DLL, and (4) when there is a
-thread that detaches from this DLL.</p>
+&nbsp;&nbsp;&nbsp; New / Open / Save / Save All files<br>
+&nbsp;&nbsp;&nbsp; Run program<br>
+&nbsp;&nbsp;&nbsp; Terminal input<br>
 
-<h5>Interface</h5>
 
-<p>If this module is a Graphical User Interface window, then
-display the image here. Alternatively, if this is a function or
-class that you must implement, then show the function prototype
-or class specification here. This should be EXACTLY how it will
-appear in a header file when it comes time for implementation. If
-the class or function is provided by a third party (e.g. MFC, VB,
-Win32 API, etc.), then simply tell the reader to refer to the
-published documentation. Here's an example:<br>
- --JC.</p> 
+GUI Features<br>
 
-<p>Here's the interface for this function:</p>
 
-<pre>
-BOOL APIENTRY DllMain( HANDLE hModule, 
-                       DWORD  ul_reason_for_call, 
-                       LPVOID lpReserved
-                     );
-</pre>
+&nbsp;&nbsp;&nbsp; Project file list<br>
 
-<h5>Program Design Language (PDL)</h5>
 
-<p>Describe the detailed design of this routine by writing the
-complete Program Design Language (PDL). (Refer to the McConnell
-text for helpful information about writing effective PDL.) Again,
-PDL is English statements, formatted and indented to show logic
-and control, that describes precisely WHAT to do. When we enter
-the implementation phase, you will copy all this PDL, paste it
-into your source code files, and then convert it to comments.
-This will provide a functional outline for you to implement. Be
-sure that your PDL does not contain technical programming
-language or notation. PDL should be generic enough to be
-implemented in any programming language. Here's an example:<br>
- --JC.</p> 
+&nbsp;&nbsp;&nbsp; Debugger display<br>
 
-<p>The PDL for this module is below. Note that nothing is done,
-based on the reason for the call. This framework may look useless
-for now, but could provide useful structure for later development
-and maintenance. It is good style anyway to implement DllMain,
-even if the developer has no specific plans to use this
-function.</p>
 
-<pre>
-{
-   Switch on the reason for the call.
-   If the reason was for Process-Attach, then do nothing.
-   If the reason was for Thread-Attach, then do nothing.
-   If the reason was for Process-Detach, then do nothing.
-   If the reason was for Thread-Detach, then do nothing.
-   Return TRUE to the caller (which is the Operating System).
-}
-</pre>
+&nbsp;&nbsp;&nbsp; File editor interface<br>
+&nbsp;&nbsp;&nbsp; Toolbars, menus, Debugger controls (pause,stop,continue,step,breakpoints)<br>
+
+
+
+
+
+
+<pre><br></pre>
+
+
+
+
 
 <hr>
-<h4><a name="5.9.1.2">5.9.1.2</a> Addition module</h4>
 
-<h5>Introduction</h5>
-
-This module is a single C long function named "SumOf". It takes
-in two long integers and returns their sum as a long integer. 
-
-<h5>Interface</h5>
-
-<pre>
-CALCFUNC_API long _stdcall SumOf(
-    IN const long X,   // input param X (constant)
-    IN const long Y    // input param Y (constant)
-    )
-</pre>
-
-<h5>Program Design Language (PDL)</h5>
-
-<pre>
-{
-   Return (X+Y) to the caller as the function return value.
-}
-</pre>
-
-<hr>
-<h4><a name="5.9.1.3">5.9.1.3</a> Division module</h4>
-
-<h5>Introduction</h5>
-
-This module is a single C boolean function named "DivBy". This
-function takes in two longs X and Y and returns X/Y as a long in
-Z. If DivBy() returns TRUE, then it was successful and Z has good
-data. If DivBy() returns FALSE, then it was not successful and
-the Msg parameter contains a string explaining the reason. 
-
-<h5>Interface</h5>
-
-<pre>
-// this is how VB see's a Boolean variable type.
-typedef  short  VB_Boolean;  
-
-// max length of a returned Msg[] array.
-#define  MAX_MSG_LEN  255    
-
-CALCFUNC_API VB_Boolean _stdcall DivBy(
-    IN const long   X,      // input  X (constant)
-    IN const long   Y,      // input  Y (constant)
-    OUT      long *pZ,      // output ptr to Z
-    OUT char Msg[MAX_MSG_LEN] // output message string
-    )
-</pre>
-
-<h5>Program Design Language (PDL)</h5>
-
-<pre>
-{
-    If the denominator is zero, then write to the Msg
-       the string "Division by zero error caught." and
-       return FALSE to the caller.
-       
-    Else if the denominator is not zero, then calculate
-       Z = X / Y
-       and update the Z input parameter accordingly.
-       Return TRUE to the caller.
-}
-</pre>
-
-<hr>
 <center>
+
 <table summary="navigation">
-<tr>
-<td height="100" width="60"><a href="../index.html"><img src=
-"../images/home.gif" align="BOTTOM" alt="Home" border="0"></a>
+
+<tbody><tr>
+
+<td width="60" height="100"><a href="../index.html"><img border="0" alt="Home" align="bottom" src="../images/home.gif"></a>
+
 </td>
-<td height="100" width="60"><a href="sdd.htm"><img src=
-"../images/toc.gif" align="BOTTOM" alt="TOC" border="0"></a></td>
-<td height="100" width="60"><a href="sdd_5900.htm"><img src=
-"../images/prev.gif" align="BOTTOM" alt="Prev" border="0"></a>
+
+<td width="60" height="100"><a href="sdd.htm"><img border="0" alt="TOC" align="bottom" src="../images/toc.gif"></a></td>
+
+<td width="60" height="100"><a href="sdd_5900.htm"><img border="0" alt="Prev" align="bottom" src="../images/prev.gif"></a>
+
 </td>
-<td height="100" width="60"><a href="sdd_5902.htm"><img src=
-"../images/next.gif" align="BOTTOM" alt="Next" border="0"></a>
+
+<td width="60" height="100"><a href="sdd_5902.htm"><img border="0" alt="Next" align="bottom" src="../images/next.gif"></a>
+
 </td>
+
 </tr>
-</table>
+
+</tbody></table>
+
 </center>
+
+
+
+
 
 Document modified on 
 
-<script type="text/javascript" language="JavaScript">
-<!--
-        document.write(document.lastModified + " GMT")
-// -->
-</script>
-</body>
-</html>
 
+
+<script language="JavaScript" type="text/javascript">
+
+<!--
+
+        document.write(document.lastModified + " GMT")
+
+// -->
+
+</script>
+
+</body></html>
