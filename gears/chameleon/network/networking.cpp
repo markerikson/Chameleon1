@@ -49,9 +49,23 @@ DirListing Networking::GetDirListing(wxString dirPath, bool forceRefresh, bool i
 
 void Networking::SendFileContents(wxString strng, wxString rfile, wxString rpath)
 {
-	strng.Replace("\"", "\\\"");
-	wxString cmd = "cd " + rpath + " && echo \"" + strng + "\" > " + rfile + " ";
+	
+
+	//wxString cmd = "cd " + rpath + " && echo \"" + strng + "\" > " + rfile + " ";
+
+	// The "<<ENDOFFILE" says that all input on stdin will be piped to cat until
+	// it reaches the characters ENDOFFILE
+	wxString cmd = "cd " + rpath + " && cat > " + rfile + " <<ENDOFFILE";
+
+	// tack the markers onto the file contents
+	strng += "\nENDOFFILE";
+
+	// send an enter to finish the command, send the file contents, send an
+	// enter to finish the command
+	cmd += "\n" + strng + "\n";
 	SSHSendCommand(cmd);
+
+
 
 	return;
 }
@@ -172,9 +186,9 @@ wxArrayString Networking::ParseLS(wxString strng, bool includeHidden){
 	return r;
 }
 
-
 wxString Networking::SSHSendCommand(wxString command) {
 	command += " && echo \"C_O_M_P_L_E_T_E_D_OK\"";
+
 	ssh_plink->sendCommand(command);
 	wxString output = ssh_plink->getOutput();
 
