@@ -4,6 +4,9 @@
 
 #include "../common/debug.h"
 
+#ifdef MSVC6
+#include "../common/fixvsbug.h"
+#endif
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
