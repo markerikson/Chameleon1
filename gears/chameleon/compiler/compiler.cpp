@@ -185,12 +185,12 @@ void Compiler::OnProcessTerm(ChameleonProcessEvent& e)
 			CompilerEvent e(chEVT_COMPILER_END);
 			e.SetResult(CR_TERMINATED);
 			AddPendingEvent(e);
-			// End
-			SetNextHandler(NULL);
+			m_currProj->SetBeingCompiled(false);
 		}
 		else {
 			// have I compiled all the files?
 			if( m_currFileNum >= m_currProj->GetSourcesToBuild().GetCount() ) {
+				// Yes, so determine if I should link:
 				if(m_compilingStatus == CR_OK) {
 					m_isCompiling = false;
 					m_isLinking = true;
@@ -201,8 +201,7 @@ void Compiler::OnProcessTerm(ChameleonProcessEvent& e)
 					CompilerEvent e(chEVT_COMPILER_END);
 					e.SetResult(CR_ERROR);
 					AddPendingEvent(e);
-					// End
-					SetNextHandler(NULL);
+					m_currProj->SetBeingCompiled(false);
 				}
 			}
 			else {
