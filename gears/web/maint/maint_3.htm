@@ -8,25 +8,35 @@
 
   <body>
 
-    <h1>3.0 - Quirks, Tips, and Tricks</h1>
+  <h1>3.0 - Quirks, Tips, and Tricks</h1>
 
-    <h2>3.1 - Debugger</h2>
+  <h2>3.1 - GUI</h2>
 
-    <h3>Tricks</h3>
+  <h3>Main program</h3>
+  <p>The ChameleonWindow class is basically the application itself.  All the user interaction happens there, and all the program logic starts there.  Most of the user interaction (menu items, toolbar clicks, etc) is handled in the OnMenuEvent function.  The only major exception is debug-related toolbar buttons, which are handled in OnDebugEvent.  </p>
+  <p>Chameleon's ability to change what's visible is handled in pretty much the most naive way possible: everything is wiped out, deleted, hidden, or removed, and then items are conditionally added back in based on the current permissions.  It's ugly, but it really simplifies things.  Trying to track, say, which buttons are active and where they're located would be a lot more complicated than just deleting the toolbar.  Hiding and showing the project tree and the terminal notebook is accomplished with splitter windows.</p>
+
+   <h3>Terminal</h3>
+   <p>90% of the terminal code was not written by our team.  Anyone needing to work with the terminal should really only have to deal with TextManager, wxTerm, and wxSSH.</p>
+   <p>Here's a brief overview of how the terminal works.  At the core is the abstract GTerm class, which was written by someone named Timothy Miller.  It's responsible for handling the VT100 codes from the server and reacting appropriately, storing the text received from the server, and "drawing" the text and cursor.  The DrawText and DrawCursor functions are virtual, since GTerm is designed to have someone inherit a class from it and concretely implement the relevant functions.  See GTerm.doc in the misc/mark directory for more details.</p>
+   <p>wxTerm is a concrete implementation of GTerm.  It's pretty much as we got it.  The only major modifications we made were adding UpdateSize(), setting the default font, logic for hiding the cursor if scrolled up, and a couple other minor tweaks.</p>
+   <p>wxSSH is a fairly straightforward descendant of wxTerm, specialized for communicating over SSH using our PlinkConnect class.</p>
+   <p>The TextManager class was custom-written by us to give GTerm the ability to scroll.  GTerm, in its original form, doesn't store any more text than is currently being displayed on the screen, so it can't scroll at all.  TextManager can store an arbitrary number of lines of text.  It tracks how many lines are currently being displayed (a "viewport"), as well as how far scrolled up it is.  The key to how it works is that GTerm will only try to access lines 0 to number displayed - 1, so TextManager is responsible for translating those relative numbers into the actual indices within its stored array of text.  We replaced all references in GTerm to the original text array with references to TextManager functions such as GetCharAdjusted().  Most of those are in utils.cpp, with a couple in actions.cpp.</p>
+
+   <h3>RemoteFileDialog</h3>
+   <p>We had to write a file dialog from scratch because the Windows common dialog is only capable of viewing the local computer and files shared on the network, and we needed to list directories on a Linux box.  The RFD's appearance is modeled after the standard Windows dialog.  It uses the Networking module to list directories.  When the user selects a file, it saves the filename, which is then retrieved by whoever needs it (in our case, ChameleonWindow).</p>
+
+
+   <h2>3.2 - Debugger</h2>
+
+   <p>The debugger is basically a state machine.  Ideally, at any given time we know what we've sent to GDB, and so we know what should be coming back.  The most important functions are onDebugEvent, which is where actions are initiated, and onProcessOutputEvent, which is called whenever text is received from GDB.  Pretty much everything else goes off from there.</p>
+    <p>There are many accessor methods within the class.  Most of them go unused within Chameleon, but when developing your own code and using this class, use them liberally to see what's going on inside.</p>
     <p>We used some of GDB's built in formating functionality to make it easier to parse the output.  In particular is "set confirm off" which enables one to kill a running (but stopped) program without GDB asking for confirmation.  This also turns off a potentially useful function in the "display" command; when "display" is set with confirmation <u>on</u>, GDB returns a formated output string containing the information you wish to automatically display with each step (or an error message).  With confirmation <u>off</u>, "display" returns no output until the next step.</p>
     <p>Another useful trick is the "set prompt %" command we use.  When sending commands to GDB, the last character returned on the output stream (when it's all been collected) will be a "%" (with some important exceptions... like a run-away program) because of that command.</p>
 
-    <h3>Tips</h3>
-    <p>The Debugger class has many accessor methods.  Most of them go unused within Chameleon, but when developing your own code and using this class, use them liberally to see what's going on inside.</p>
 
-    <br>
+    <h2>3.3 - Networking / Processes</h2>
 
-    <h2>3.2 - Networking / Processes</h2>
-
-    <h3>Quirks</h3>
-    <p>Most quirks have been explained within the code.</p>
-
-    <h3>Tricks</h3>
     <p>Heavy use of start and end tokens are used during remote server execution.  Basically, they're just oddly-capitalized pieces of text that we can effectively guarantee would not be generated by the server, so we know they signify the start or end of our command.</p>
 
 
@@ -36,7 +46,7 @@
         <td height="100" width="60"><a href="../index.html"><img src="../images/home.gif" align="bottom" alt="Home" border="0"></a></td>
         <td height="100" width="60"><a href="maint.htm"><img src="../images/toc.gif" align="bottom" alt="TOC" border="0"></a></td>
         <td height="100" width="60"><a href="maint_2.htm"><img src="../images/prev.gif" align="bottom" alt="Previous" border="0"></a></td>
-        <td height="100" width="60"><a href="maint_4.htm"><img src="../images/next.gif" align="bottom" alt="Next" border="0"></a></td>
+        <td height="100" width="60"><a href="maint_4.htm"><img src="../images/next.gif" align="bottom" alt="Previous" border="0"></a></td>
       </tr></table>
     </center>
     Document modified on
