@@ -637,3 +637,23 @@ by: Ben
 		Mark does project, gui, editor
 		Tutorial?
 		**OUTLINE DUE SUNDAY**
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Group Meeting 02/29/2004 11:30pm
+by: Ben
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+>>Status!  What have we done?
+	-Mark?  uh... he had a hectic weekend.  Issues with terminal resize.
+	-Ben?  State machine for GDB.  More code, adjusting code, etc.
+	-Dave?  Terminal code friday.  Playing around with it since then... issues with Gterm eating text... event issues...
+>>New Beta?
+	-include: TERMINAL
+	-back from Spring Break?  Week from monday we get back: 3/22/04
+	-FEATURE FREEZE MONDAY we get back (3/15)
+	-3/15 - Meeting as well
+>>Outlook!
+	-TUESDAY: meeting.  Topics?
+		1) Feature rollback
+		2) Demo progress
+		3) Default mode
+	-this week is bad.  :(  Midterms & projects & whatnot.
+	-Spring break here we come!
