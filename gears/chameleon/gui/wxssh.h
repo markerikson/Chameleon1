@@ -37,6 +37,7 @@ class wxSSH : public wxTerm
 		virtual void SendBack(int len, char *data);
 
 		virtual void Connect();
+		wxString ConnectForDebug();
 		virtual void Disconnect(void);
 		virtual bool IsConnected(void);
 
@@ -44,8 +45,9 @@ class wxSSH : public wxTerm
 		bool m_connected;
 		wxTextOutputStream* m_plinkStdIn;
 		Networking* m_networking;
-		wxString m_inputBuffer;
+		wxString m_inputBuffer; // used for ESCSequencing & StartingDebugConnections
 		bool m_isInESCsequence;
+		bool m_startingDebugConnection;
 
 	
 	DECLARE_EVENT_TABLE()

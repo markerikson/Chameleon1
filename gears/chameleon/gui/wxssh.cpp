@@ -25,6 +25,7 @@ wxSSH::wxSSH(wxWindow* parent, wxWindowID id, Networking* network, const wxPoint
 	m_plinkStdIn = NULL;
 	m_inputBuffer = "";
 	m_isInESCsequence = false;
+	m_startingDebugConnection = false;
 }
 
 wxSSH::~wxSSH()
@@ -52,6 +53,8 @@ void wxSSH::SendBack(int len, char *data)
 
 void wxSSH::Connect()
 {
+	m_startingDebugConnection = false;
+
 	if(m_connected) {
 		Disconnect(); // might this be a problem because it's Asynchronous?
 	}
@@ -67,6 +70,42 @@ void wxSSH::Connect()
 		m_inputBuffer = "";
 		m_isInESCsequence = false;
 	}
+}
+
+
+wxString wxSSH::ConnectForDebug()
+{
+	m_startingDebugConnection = true;
+
+	if(m_connected) {
+		wxLogDebug("Bad, Bad.  Tried starting as a debug terminal while already connected.");
+		Disconnect();
+	}
+
+	Reset();
+	set_mode_flag(CURSORINVISIBLE);
+	Refresh();
+
+	// Start the new Process
+	m_plinkStdIn = m_networking->StartRemoteCommand("who am i && sleep 1000000 || echo \"CHdEBUGGER-CONNECT\"", this);
+	if(m_plinkStdIn != NULL) {
+		m_connected = true;
+		m_inputBuffer = "";
+		m_isInESCsequence = false;
+	}
+
+	// Synchronous:
+	wxRegEx reParseTTY(".+?\\s+(.+?)\\s+\\w{3}\\s+\\d+\\s+\\d+:\\d+\\s", wxRE_ADVANCED);
+	while(!reParseTTY.Matches(m_inputBuffer) && m_inputBuffer.Contains("CHdEBUGGER-CONNECT")) {
+		wxSafeYield(); // yes, mark probably won't like this, but darn it's simple, and works
+	}
+
+	wxString tty = reParseTTY.GetMatch(m_inputBuffer, 1); // empty string is return if it fails
+
+	m_inputBuffer = "";
+	m_startingDebugConnection = false;
+
+	return tty;
 }
 
 
@@ -106,10 +145,13 @@ void wxSSH::OnPlinkOut(ChameleonProcessEvent &e)
 	wxString s = e.GetString();
 	int len = s.Length();
 
-	if(!m_isInESCsequence && !s.Contains((char)27)) {
+	if(!m_isInESCsequence && !m_startingDebugConnection && !s.Contains((char)27)) {
 		// This test is provided to 'short-circuit' the logic below
 		ProcessInput(len, (unsigned char*)s.c_str());
 		return; // multiple return statements are confusing (sorry)
+	}
+	else {
+		m_inputBuffer += s;
 	}
 
 
