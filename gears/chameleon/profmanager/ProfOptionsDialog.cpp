@@ -170,7 +170,7 @@ void ProfOptionsDialog::OnGenerateClick( wxCommandEvent& event )
 
 	if(m_chkRandomize->IsChecked())
 	{
-		int bitcounter = 31;
+		int bitcounter = 30;
 		for(bitcounter; bitcounter >= PERM_LAST; bitcounter--)
 		{
 			if(rand() % 2 == 0)
