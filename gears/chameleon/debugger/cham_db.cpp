@@ -98,15 +98,13 @@ Debugger::Debugger(wxTextCtrl* outBox, Networking* networking, wxEvtHandler* poi
 	varRegExes["char[]"] = "\"(.*)\"\\r";//"[[:digit:]]+ '([[:alnum:]]+)'";
 	
 	// array- "$n = {val, val...}"
-	varRegExes["array"] = "{(.+?)}";
-	
-	// string-"$n = {static bleh bleh...", re-format to:
-	varRegExes["rawstring"] = ".+_M_p = \"(.+?)\"\n},\nstatic";
+	varRegExes["array"] = "{(.*)}";
 	
 	// str#2- "$n = "text"" (same as [char])
 	varRegExes["string"] = "\"(.*)\"";
 
 	// obj -  "$n = {varName = val, varName = val, ..} (varName can be of any listed type...)
+	varRegExes["class"] = "{(.*)}";
 }
 //end constructors
 
@@ -248,7 +246,7 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 	{
 		stop(false);
 		wxDebugEvent dbg;
-		dbg.SetStatus(ID_DEBUG_EXIT_NORMAL);
+		dbg.SetId(ID_DEBUG_EXIT_NORMAL);
 		guiPointer->AddPendingEvent(dbg);
 		break;
 	}
@@ -1358,8 +1356,9 @@ bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 		{
 			stayIn = true;
 
-			do
+			while(stayIn)
 			{
+				// fromGDB should contain Windows-based line endings, ie, CRLF (\r\n).  
 				lineBreak = fromGDB.Find("\n");
 				singleLine = fromGDB.Mid(0, lineBreak);
 				singleLine = singleLine.BeforeLast('\r');
@@ -1373,7 +1372,7 @@ bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 				{stayIn = false;}
 
 				//fromGDB.Remove(0, 1);	//get rid of the \r
-			}while(stayIn);
+			}
 
 			if(!singleLine.IsEmpty())
 			{
@@ -1388,7 +1387,11 @@ bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 					{
 						VariableInfo varInfo = m_varInfo[i];
 						wxString type = varInfo.type;
-						wxString regex = varRegExes[type];
+						wxString regex;
+						if(varRegExes.find(type) == varRegExes.end())
+						{
+							regex = varRegExes["class"];
+						}
 						wxRegEx global = regex;
 						if(global.Matches(singleLine))
 						{
@@ -1397,7 +1400,9 @@ bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 						}
 						else
 						{
-							varValue.Add("Error Parsing Value ["+singleLine+"]: RegEx miss-match for "+m_varInfo[i].type);
+							// couldn't match it, we'll just send them the whole thing
+							m_varInfo[i].type = "Unknown";
+							varValue.Add(singleLine);
 						}
 					}
 					else
@@ -1617,7 +1622,7 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 					makeGenericError("Set_Break parse: ");
 
 					
-					outputEvent.SetStatus(ID_DEBUG_EXIT_ERROR);
+					outputEvent.SetId(ID_DEBUG_EXIT_ERROR);
 					guiPointer->AddPendingEvent(outputEvent);
 					stop(false);
 				}
@@ -1634,7 +1639,7 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 				if(classStatus == STOP)
 				{
 					
-					outputEvent.SetStatus(ID_DEBUG_EXIT_NORMAL);
+					outputEvent.SetId(ID_DEBUG_EXIT_NORMAL);
 					guiPointer->AddPendingEvent(outputEvent);
 					stop(false);
 					break;
@@ -1657,7 +1662,7 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 	
 						outputEvent.SetLineNumber((int)tmpLong);
 						outputEvent.SetSourceFilename(Filename);
-						outputEvent.SetStatus(ID_DEBUG_BREAKPOINT);
+						outputEvent.SetId(ID_DEBUG_BREAKPOINT);
 						guiPointer->AddPendingEvent(outputEvent);
 
 						data.Empty();
@@ -1675,7 +1680,7 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 					makeGenericError("go parse: ");
 
 					
-					outputEvent.SetStatus(ID_DEBUG_EXIT_ERROR);
+					outputEvent.SetId(ID_DEBUG_EXIT_ERROR);
 					guiPointer->AddPendingEvent(outputEvent);
 					stop(false);
 					break;
@@ -1732,7 +1737,7 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 					outputEvent.SetVariableNames(varNames);
 					outputEvent.SetVariableTypes(varType);
 					outputEvent.SetVariableValues(varValue);
-					outputEvent.SetStatus(ID_DEBUG_VARINFO);
+					outputEvent.SetId(ID_DEBUG_VARINFO);
 					guiPointer->AddPendingEvent(outputEvent);
 				}
 			}
@@ -1769,7 +1774,7 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 				if(classStatus == STOP)
 				{
 
-					outputEvent.SetStatus(ID_DEBUG_EXIT_NORMAL);
+					outputEvent.SetId(ID_DEBUG_EXIT_NORMAL);
 					guiPointer->AddPendingEvent(outputEvent);
 					stop(false);
 					break;
@@ -1784,7 +1789,7 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 					
 					outputEvent.SetLineNumber((int)tmpLong);
 					outputEvent.SetSourceFilename(Filename);
-					outputEvent.SetStatus(ID_DEBUG_BREAKPOINT);
+					outputEvent.SetId(ID_DEBUG_BREAKPOINT);
 					guiPointer->AddPendingEvent(outputEvent);
 
 					data.Empty();
@@ -1801,7 +1806,7 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 					
 					outputEvent.SetLineNumber((int)tmpLong);
 					outputEvent.SetSourceFilename(Filename);
-					outputEvent.SetStatus(ID_DEBUG_BREAKPOINT);
+					outputEvent.SetId(ID_DEBUG_BREAKPOINT);
 					guiPointer->AddPendingEvent(outputEvent);
 				}
 				else
@@ -1809,14 +1814,14 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 					error = "Failed to match STEP output";
 					makeGenericError("step parse:");
 					
-					outputEvent.SetStatus(ID_DEBUG_EXIT_ERROR);
+					outputEvent.SetId(ID_DEBUG_EXIT_ERROR);
 					guiPointer->AddPendingEvent(outputEvent);
 					stop(false);
 				}
 			}
 			else
 			{
-				outputEvent.SetStatus(ID_DEBUG_EXIT_ERROR);
+				outputEvent.SetId(ID_DEBUG_EXIT_ERROR);
 				guiPointer->AddPendingEvent(outputEvent);
 				stop(false);
 			}
@@ -1840,7 +1845,7 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 			makeGenericError("See previous error messages (if any)");
 
 			
-			outputEvent.SetStatus(ID_DEBUG_EXIT_ERROR);
+			outputEvent.SetId(ID_DEBUG_EXIT_ERROR);
 			guiPointer->AddPendingEvent(outputEvent);
 			stop(false);
 
@@ -1853,7 +1858,7 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 			error = "[classStatus] value not recognized";
 			makeGenericError("failure on output parse:");
 
-			outputEvent.SetStatus(ID_DEBUG_EXIT_ERROR);
+			outputEvent.SetId(ID_DEBUG_EXIT_ERROR);
 			guiPointer->AddPendingEvent(outputEvent);
 			stop(false);
 
