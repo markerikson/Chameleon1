@@ -69,6 +69,30 @@ Debugger::Debugger(wxTextCtrl* outBox, Networking* networking, wxEvtHandler* poi
 	status = DEBUG_DEAD;
 	classStatus = STOP;
 	myConnection = networking;
+
+
+	// ints - "$n = val"
+	varRegExes["int"] = "([[:digit:]]+)";
+	
+	// double-"$n = val.val"
+	varRegExes["double"] = "$([[:digit:]]+\\.[[:digit:]]+)";
+
+	// char[]-"$n = val 'char'"
+	varRegExes["char"] = "[[:digit:]]+ '([[:alnum:]]+)'";
+	
+	// char - "$n = "text""
+	varRegExes["char[]"] = "$[[:digit:]]+ '([[:alnum:]]+)'";
+	
+	// array- "$n = {val, val...}"
+	varRegExes["array"] = "{(.+?)}";
+	
+	// string-"$n = {static bleh bleh...", re-format to:
+	varRegExes["rawstring"] = ".+_M_p = \"(.+?)\"\n},\nstatic";
+	
+	// str#2- "$n = "text"" (same as [char])
+	varRegExes["string"] = "\"([[:alnum:]]+)\"";
+
+	// obj -  "$n = {varName = val, varName = val, ..} (varName can be of any listed type...)
 }
 //end constructors
 
@@ -121,12 +145,9 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 	//all the variables i need here:
 	int eventCommand = event.GetId();
 	int eventLineNum;
-	bool mode = event.IsRemote();
+	
 
-	ProjectInfo* proj = event.GetProject();
-
-	wxArrayString srcFiles = proj->sourceFiles;//event.GetSourceFilenames();
-
+	
 	wxArrayString gui_var_names;
 	wxString varName;
 	
@@ -138,7 +159,7 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 	wxString firstFile;
 	wxString sendAllBreakpoints;
 	
-	wxString execFile = proj->GetExecutableFileName();//event.GetExecutableFilename();
+	
 	
 	/*
 	if(eventCommand == ID_DEBUG_START)
@@ -163,8 +184,8 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 		breakpointList = event.GetFileBreakpoints();
 	}
 
-	if( eventCommand == ID_DEBUG_WATCHVAR ||
-		eventCommand == ID_DEBUG_REMOVE_VAR)
+	if( eventCommand == ID_DEBUG_ADD_WATCH ||
+		eventCommand == ID_DEBUG_REMOVE_WATCH)
 	{
 		gui_var_names = event.GetVariableNames();
 		varName = gui_var_names[0];
@@ -176,8 +197,15 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 	switch(eventCommand)
 	{
 	case ID_DEBUG_START:
+	{
+	
 		//start process
-		startProcess(true, mode, execFile, "gdb -q", outputScreen);
+		ProjectInfo* proj = event.GetProject();
+
+		wxArrayString srcFiles = proj->GetSources();//event.GetSourceFilenames();
+		wxString execFile = proj->GetExecutableFileName();//event.GetExecutableFilename();
+		projectBeingDebugged = proj;
+		startProcess(true, event.IsRemote(), execFile, "gdb -q", outputScreen);
 
 		//set breakpoints
 		for(i = 0; i < (int)srcFiles.GetCount(); i++)
@@ -210,6 +238,7 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 		sendCommand("something"+returnChar);
 		sendCommand("done"+returnChar);	//tag... not really a command
 		break;
+	}
 
 	case ID_DEBUG_STOP:
 		stop(false);
@@ -238,11 +267,11 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 		killBreak(firstFile, eventLineNum);
 		break;
 
-	case ID_DEBUG_WATCHVAR:
+	case ID_DEBUG_ADD_WATCH:
 		snoopVar(varName, false);
 		break;
 
-	case ID_DEBUG_REMOVE_VAR:
+	case ID_DEBUG_REMOVE_WATCH:
 		removeVar(varName);
 		break;
 
@@ -300,6 +329,11 @@ bool Debugger::isDebugging()
 bool Debugger::isPaused()
 {
 	return(status == DEBUG_WAIT || status == DEBUG_BREAK);
+}
+
+ProjectInfo* Debugger::getCurrentProject()
+{
+	return projectBeingDebugged;
 }
 //--//
 
@@ -986,7 +1020,7 @@ void Debugger::snoopVar(wxString varName, bool oneShot)
 			{
 				error = "Variable name array mismatched with # of displayed variables\n";
 				makeGenericError("snoopVar: ");
-				error.Printf("Variable count=%d, array count=%d", varCount, (int)varNames.GetCount()));
+				error.Printf("Variable count=%d, array count=%d", varCount, (int)varNames.GetCount());
 				makeGenericError("snoopVar: ");
 
 				outputEvent.SetStatus(ID_DEBUG_EXIT_ERROR);
@@ -1232,28 +1266,10 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 			//(gdb) command "whatis" returns variable type
 			//in this situation we are looking for:
 
-			// ints - "$n = val"
-			wxRegEx watch_int = "$[[:digit:]]+ = ([[:digit:]]+)";
+			wxString regexStart = "$[[:digit:]]+ = ";
 
-			// double-"$n = val.val"
-			wxRegEx watch_dbl = "$[[:digit:]]+ = ([[:digit:]]+\\.[[:digit:]]+)";
+//			wxString 
 
-			// char[]-"$n = val 'char'"
-			wxRegEx watch_1char = "$[[:digit:]]+ = [[:digit:]]+ '([[:alnum:]]+)'";
-
-			// char - "$n = "text""
-			wxRegEx watch_char = "$[[:digit:]]+ = \"([[:alnum:]]+)\"";
-
-			// array- "$n = {val, val...}"
-			wxRegEx watch_array = "$[[:digit:]]+ = {(.+?)}";
-
-			// string-"$n = {static bleh bleh...", re-format to:
-			wxRegEx watch_rawString = "$[[:digit:]]+ = .+_M_p = \"(.+?)\"\n},\nstatic";
-
-			// str#2- "$n = "text"" (same as [char])
-			wxRegEx watch_string = "$[[:digit:]]+ = \"([[:alnum:]]+)\"";
-
-			// obj -  "$n = {varName = val, varName = val, ..} (varName can be of any listed type...)
 			
 			//once this is parsed, send off the event with the varName / value
 			// pair in the [topVarIndex] position.  BUT DO NOT CHANGE

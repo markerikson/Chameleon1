@@ -23,9 +23,12 @@
 #include "../common/process2events.h"
 #include "../common/debugevent.h"
 #include "../network/networking.h"
+#include "../common/datastructures.h"
 
 //dave code
 #include <wx/textctrl.h>
+
+class ProjectInfo;
 
 //global declarations
 //const int MAX_HIST_ITEMS = 50;
@@ -87,6 +90,7 @@ class Debugger : public wxEvtHandler
 
 		bool isDebugging();				//returns whether i'm running or not
 		bool isPaused();				//returns status == DEBUG_WAIT more or less
+		ProjectInfo* getCurrentProject(); // returns the project being debugged
 
 		wxString errorMsg();			//returns error message, if any
 		bool resetStatus();				//hard reset * USE CAUTIOUSLY *
@@ -173,6 +177,7 @@ class Debugger : public wxEvtHandler
 		wxString returnChar;		//contains the \n or \r for each command
 		wxArrayString data;			//holds data from GDB
 
+		StringStringHashmap varRegExes;
 		wxArrayString varNames;		//holds variables being watched
 		wxArrayString varValue;		//holds variable values
 		wxArrayInt varDispIndex;	//holds variable "display#" assigned by GDB
@@ -192,6 +197,7 @@ class Debugger : public wxEvtHandler
 
 		//GUI connectivity
 		wxEvtHandler* guiPointer;
+		ProjectInfo* projectBeingDebugged;
 
 		DECLARE_EVENT_TABLE()
 };
