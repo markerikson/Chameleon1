@@ -6,9 +6,18 @@
 #endif
 
 
-bool ProjectInfo::FileExistsInProject(wxString filename)
+bool ProjectInfo::FileExistsInProject(wxString filename, bool isRelative)
 {
 	bool fileInProject = false;
+
+	if(!isRelative)
+	{
+		wxFileName absolute(filename);
+
+		absolute.MakeAbsolute(projectBasePath);
+
+		filename = absolute.GetFullPath((isRemote ? wxPATH_UNIX : wxPATH_DOS));
+	}
 
 	if(headerFiles.Index(filename) != -1)
 	{

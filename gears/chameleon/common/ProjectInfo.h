@@ -2,6 +2,7 @@
 #define PROJECTINFO_H
 
 #include <wx/string.h>
+#include <wx/filename.h>
 #include <wx/dynarray.h>
 #include "datastructures.h"
 
@@ -15,12 +16,10 @@ public:
 	bool isRemote;
 	wxString projectBasePath;
 	wxString projectName;
+	wxFileName executableName;
 
-	bool FileExistsInProject(wxString filename);
+	bool FileExistsInProject(wxString filename, bool isRelative);
 	void AddFileToProject(wxString filename, FileFilterType fileType);
 	void RemoveFileFromProject(wxString filename, FileFilterType fileType);
 };
-
-
-
 #endif
