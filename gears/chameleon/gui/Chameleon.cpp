@@ -1075,7 +1075,9 @@ void ChameleonWindow::SaveFile(bool saveas)
 			return;
 		}
 
-		if(m_currentEd->GetFileNameAndPath() == wxEmptyString)
+		wxString currentFilenameAndPath = m_currentEd->GetFileNameAndPath();
+		if((currentFilenameAndPath == wxEmptyString) ||
+			(currentFilenameAndPath != wxFileName(remotePath, remoteFile, wxPATH_UNIX).GetFullPath()))
 		{
 			int currentTab = m_book->GetSelection();
 			m_book->SetPageText(currentTab, remoteFile);
