@@ -8,6 +8,12 @@
 
 #endif
 
+
+BEGIN_EVENT_TABLE(ChameleonEditor, wxStyledTextCtrl)
+	EVT_STC_CHARADDED(-1, ChameleonEditor::OnChar)
+	EVT_STC_CHANGE(-1, ChameleonEditor::OnSetTabModified)
+END_EVENT_TABLE()
+
 ChameleonEditor::ChameleonEditor( ChameleonWindow *mframe,
                                   wxWindow *parent,     wxWindowID id, const
                                       wxPoint & pos /* = wxDefaultPosition */,
@@ -17,10 +23,11 @@ ChameleonEditor::ChameleonEditor( ChameleonWindow *mframe,
     wxStyledTextCtrl(parent, id, pos, size, style, name)
 {
     m_mainFrame = mframe;
+	m_parentNotebook = (ChameleonNotebook*)parent;
 
     this->SetTabWidth(4);
 
-    this->SetMarginWidth(0, 20);
+    this->SetMarginWidth(0, 40);
 
     this->SetMarginType(0, 1);
 
@@ -33,7 +40,7 @@ ChameleonEditor::ChameleonEditor( ChameleonWindow *mframe,
     // Editor style setup
 
     // whitespace
-    this->StyleSetForeground(0, wxColour(0x80, 0x80, 0x80));
+    //this->StyleSetForeground(0, wxColour(0x80, 0x80, 0x80));
 
     // comment
     this->StyleSetForeground(1, wxColour(0x00, 0x7f, 0x00));
@@ -65,6 +72,9 @@ ChameleonEditor::ChameleonEditor( ChameleonWindow *mframe,
 
     this->StyleSetBold(10, TRUE);
 
+	this->SetSelBackground(true, wxColour(49, 106, 197));
+	this->SetSelForeground(true, wxColour("white"));
+
     this->EmptyUndoBuffer();
 
     if( m_mainFrame->IsEnabled(PERM_SYNTAXHIGHLIGHT) )
@@ -81,13 +91,17 @@ ChameleonEditor::ChameleonEditor( ChameleonWindow *mframe,
             "throw true try typedef typeid typename union unsigned "
             "using virtual void volatile wchar_t while");
     }
+	else
+	{
+		this->SetLexer(wxSTC_LEX_CONTAINER);
+	}
 }
 
 ChameleonEditor::~ChameleonEditor() {
     //this->PopEventHandler(true);
     }
 
-bool ChameleonEditor::SaveFile ()
+bool ChameleonEditor::SaveFileAs()
 {
 
     // return if no change
@@ -134,7 +148,17 @@ bool ChameleonEditor::SaveFile( const wxString & filename )
     EmptyUndoBuffer();
     SetSavePoint();
 
-    m_filetime = wxFileName(m_filename).GetModificationTime();
+
+
+	wxFileName fn;
+	fn.Assign(m_filename);
+
+    m_filetime = fn.GetModificationTime();
+
+	int currentTab = m_parentNotebook->GetSelection();
+	
+	m_parentNotebook->SetPageText(currentTab, fn.GetFullName());
+	m_parentNotebook->Refresh();
 
     return true;
 }
@@ -254,6 +278,13 @@ bool ChameleonEditor::LoadFile( const wxString & filename )
 
     //InitializePrefs(DeterminePrefs(fname.GetFullName()));
 
+	//int currentTab = m_parentNotebook->GetSelection();
+
+	//m_parentNotebook->SetPageText(currentTab, wxFileName(m_filename).GetFullName());
+	//m_parentNotebook->Refresh();
+
+
+
     return true;
 }
 
@@ -263,11 +294,45 @@ bool ChameleonEditor::Modified ()
     return (GetModify() && !GetReadOnly()); 
 }
 
-void ChameleonEditor::OnChar( wxKeyEvent & evt )
+void ChameleonEditor::OnSetTabModified(wxStyledTextEvent &event)
 {
-    if( evt.GetKeyCode() == WXK_TAB )
+	
+	bool isModified = this->Modified();
+
+	if(isModified)
+	{
+		int tabNum = m_parentNotebook->GetSelection();
+		wxString title = m_parentNotebook->GetPageText(tabNum);
+		
+		if(!title.Contains("*"))
+		{
+			title += "*";
+			m_parentNotebook->SetPageText(tabNum, title);
+			//this->Refresh();
+			m_parentNotebook->Refresh();
+		}
+
+	}
+	
+	
+
+	//wxMessageBox("Modified");
+
+
+}
+
+void ChameleonEditor::OnChar( wxStyledTextEvent &event )
+{
+
+	const wxChar chr = event.GetKey();
+	const int currentLine = GetCurrentLine();
+	const int tabWidth = GetTabWidth();
+	const int eolMode = GetEOLMode();
+
+
+    if( chr == WXK_TAB )
     {
-        evt.Skip(true);
+        event.Skip(true);
 
         int startLine = LineFromPosition(GetSelectionStart());
 
@@ -279,7 +344,7 @@ void ChameleonEditor::OnChar( wxKeyEvent & evt )
 
         this->SetSelection(newStartPos, newEndPos);
 
-        bool doIndent = evt.ShiftDown();
+        bool doIndent = event.GetShift();
 
         int indentWidth = this->GetIndent();
 
@@ -295,4 +360,33 @@ void ChameleonEditor::OnChar( wxKeyEvent & evt )
             }
         }
     }
+
+	//if (((eolMode == CRLF || eolMode == LF) && chr == '\n')
+	//	|| (eolMode == CR && chr == '\r'))
+	if(chr == '\n' && m_mainFrame->IsEnabled(PERM_AUTOINDENT))
+	{
+		int previousLineInd = 0;
+
+		if (currentLine > 0)
+		{
+			previousLineInd = GetLineIndentation(currentLine - 1);
+		}
+
+		if (previousLineInd == 0)
+		{
+			return;
+		}
+
+		SetLineIndentation(currentLine, previousLineInd);
+
+		// If tabs are being used then change previousLineInd to tab sizes
+		if (GetUseTabs())
+		{
+			previousLineInd /= GetTabWidth();
+		}
+
+		GotoPos(PositionFromLine(currentLine) + previousLineInd);
+	}
+
+	return;
 }

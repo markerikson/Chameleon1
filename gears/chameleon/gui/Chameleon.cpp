@@ -18,6 +18,7 @@ BEGIN_EVENT_TABLE(ChameleonWindow, wxFrame)
 	EVT_MENU						(ID_TEST, ChameleonWindow::Test)
 	EVT_MENU						(ID_SAVE, ChameleonWindow::OnSave)
 	EVT_MENU						(ID_PAGECLOSE, ChameleonWindow::OnFileClose)
+	EVT_MENU						(ID_CLOSETAB, ChameleonWindow::CloseTab)
 	EVT_UPDATE_UI					(ID_SAVE, ChameleonWindow::OnUpdateSave)
 	EVT_MENU						(ID_STARTCONNECT, ChameleonWindow::OnConnect)
 	EVT_MENU						(ID_UNDO, ChameleonWindow::OnUndo)
@@ -74,12 +75,15 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 	 m_perms = new Permission();
 
-	 m_perms->setGlobal(0xFF);
+	 m_perms->setGlobal(0x4);
 
+	 /*
 	 for(int i = PERM_FIRST; i < PERM_LAST; i++)
 	 {
 		 m_perms->enable(i);
 	 }
+	 */
+	 m_perms->enable(PERM_AUTOINDENT);
 	 
 
 	 m_openFiles = new wxArrayString();
@@ -98,8 +102,9 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	wxMenu* menuTools = new wxMenu();
 
 	menuTools->Append(ID_OPTIONS, "&Options");
-	menuTools->Append(ID_STARTCONNECT, "&Connect");
-	menuTools->InsertSeparator(2);
+
+	//menuTools->Append(ID_STARTCONNECT, "&Connect");
+	//menuTools->InsertSeparator(2);
 
 	wxMenu* menuEdit = new wxMenu();
 
@@ -139,6 +144,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	wxBitmap bmSave(save_xpm);
 	toolBar->AddTool(ID_SAVE, "Save File", bmSave);
 
+	/*
 	toolBar->InsertSeparator(3);
 
 	wxBitmap bmBuild(build_xpm);
@@ -150,6 +156,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	toolBar->AddTool(ID_TEST, "Test", bmTest);
 
 	toolBar->InsertSeparator(7);
+	*/
 
 
 	if(m_perms->isEnabled(PERM_DEBUG))
@@ -169,7 +176,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 #if wxUSE_STATUSBAR
     CreateStatusBar(2);
-    SetStatusText("Statusbar text");
+    //SetStatusText("Statusbar text");
 #endif // wxUSE_STATUSBAR
 
 
@@ -237,10 +244,20 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	m_noteTerm = new ChameleonNotebook(m_split, ID_NOTEBOOK_TERM);
 
 	m_telnet = new wxTelnet( m_noteTerm, ID_TELNET, wxPoint(-1, -1), 80, 24);
+
+
 	m_noteTerm->AddPage(m_telnet, "Terminal");
 	
-	m_split->SplitHorizontally(m_book, m_noteTerm, -200);	
-	m_split->SetMinimumPaneSize(200);
+	if(m_perms->isEnabled(PERM_TERMINAL))
+	{
+		m_split->SplitHorizontally(m_book, m_noteTerm, -200);		
+		m_split->SetMinimumPaneSize(200);
+	}
+	else
+	{
+		m_split->Initialize(m_book);
+	}
+	
 
 }
 
@@ -300,6 +317,7 @@ void ChameleonWindow::PageHasChanged (int pageNr)
 		m_currentEd = NULL;
 		//m_files->SetSelection (0);
 	}
+	m_book->Refresh();
 }
 
 void ChameleonWindow::OnClose(wxCloseEvent &event) 
@@ -348,6 +366,12 @@ void ChameleonWindow::OnClose(wxCloseEvent &event)
 	Destroy();
 }
 
+void ChameleonWindow::CloseTab()
+{
+	int tab = GetIntVar(VN_CLICKEDTAB);
+	CloseFile(tab);
+}
+
 void ChameleonWindow::CloseFile (int pageNr) 
 {
 	if (pageNr == -1)
@@ -367,7 +391,7 @@ void ChameleonWindow::CloseFile (int pageNr)
 		if (wxMessageBox (_("Text is not saved, save before closing?"), _("Close"),
 			wxYES_NO | wxICON_QUESTION) == wxYES) 
 		{
-			edit->SaveFile();
+			edit->SaveFileAs();
 			//SaveFileLocal(true);
 
 			if (edit->Modified()) 
@@ -394,6 +418,8 @@ void ChameleonWindow::CloseFile (int pageNr)
 			//m_currentEd->SetFilename (wxEmptyString);
 			m_currentEd->ClearAll();
 			m_currentEd->SetSavePoint();
+			m_currentEd->EmptyUndoBuffer();
+			
 			//m_files->Add (noname);
 		}
 	}
@@ -673,7 +699,8 @@ void ChameleonWindow::CheckSize()
 
 void ChameleonWindow::OnUpdateSave(wxUpdateUIEvent &event)
 {
-	event.Enable(true);
+	bool enable = m_currentEd->Modified();
+	event.Enable(enable);
 	//TODO multiple buffer
 	//ed->GetModify());
 }
@@ -681,14 +708,16 @@ void ChameleonWindow::OnUpdateSave(wxUpdateUIEvent &event)
 
 void ChameleonWindow::OnSave(wxCommandEvent& WXUNUSED(event))
 {
-	::wxMessageBox("OnSave");
-	SaveFileLocal(false);
+	//::wxMessageBox("OnSave");
+	//SaveFileLocal(false);
+	m_currentEd->SaveFileAs();
 }
 
 void ChameleonWindow::OnSaveAs(wxCommandEvent& WXUNUSED(event))
 {
-	::wxMessageBox("OnSaveAs");
-	SaveFileLocal(true);
+	//::wxMessageBox("OnSaveAs");
+	//SaveFileLocal(true);
+	m_currentEd->SaveFileAs();
 }
 
 
@@ -696,17 +725,20 @@ void ChameleonWindow::SaveFileLocal(bool saveas)
 {
 
 	::wxMessageBox("SaveFileLocal: obsolete function!");
+
+
 /*
+
 	wxString name = wxEmptyString;
 
 	
-	if( (saveFileName == wxEmptyString) ||
+	if( (m_currentEd->GetFilename() == wxEmptyString) ||
 		(saveas) )
 	{
 
-		SaveFileDialog sfd = new SaveFileDialog();
-		sfd.Filter = "HTML files (*.html)|*.html|All files (*.*)|*.*";
-		DialogResult dr = sfd.ShowDialog();
+		///SaveFileDialog sfd = new SaveFileDialog();
+		///sfd.Filter = "HTML files (*.html)|*.html|All files (*.*)|*.*";
+		///DialogResult dr = sfd.ShowDialog();
 
 		wxString filetext;
 		wxString filetypes = "C++ files (*.cpp)|*.cpp|Header files (*.h)|*.h|All files (*.*)|*.*";
@@ -723,6 +755,7 @@ void ChameleonWindow::SaveFileLocal(bool saveas)
 			wxString filename = fd.GetFilename();
 			int filteridx = fd.GetFilterIndex();
 
+			
 			wxString message = "Filter index: ";
 			message << filteridx;
 			
@@ -737,6 +770,7 @@ void ChameleonWindow::SaveFileLocal(bool saveas)
 				case 1:
 					::wxMessageBox()
 			}
+			
 			
 		
 
@@ -864,8 +898,9 @@ void ChameleonWindow::OnToolsOptions(wxCommandEvent &event)
 
 void ChameleonWindow::SetIntVar(int variableName, int value)
 {
-	int* target;
+	int* target = TargetInt(variableName);
 
+	/*
 	switch(variableName)
 	{
 	case VN_NUMPAGES:
@@ -881,14 +916,21 @@ void ChameleonWindow::SetIntVar(int variableName, int value)
 		DEBUGLOG("Failed to properly set variable")
 		return;
 	}
-	*target = value;
+	*/
+	//*target = value;
+
+	if(target != NULL)
+	{
+		*target = value;
+	}
 
 }
 
 int ChameleonWindow::GetIntVar(int variableName)
 {
-	int* target;
+	int* target = TargetInt(variableName);
 
+	/*
 	switch(variableName)
 	{
 	case VN_NUMPAGES:
@@ -901,10 +943,40 @@ int ChameleonWindow::GetIntVar(int variableName)
 		::wxLogDebug("Failed to properly retrieve variable");
 		return 0;
 	}
+	*/
 
-	return *target;
+	if(target != NULL)
+	{
+		return *target;
+	}
+	else
+	{
+		return 0;
+	}
+	//return (target != null ? *target : 0);
 	
 }
+
+int* ChameleonWindow::TargetInt(int variableName)
+{
+	switch(variableName)
+	{
+	case VN_NUMPAGES:
+		return &m_numPages;
+		break;
+	case VN_CURRENTPAGE:
+		return &m_currentPage;
+		break;
+	case VN_CLICKEDTAB:
+		return &m_clickedTabNum;
+		break;
+	default:
+		DEBUGLOG("Failed to properly set variable")
+			return NULL;
+	}
+}
+
+
 
 bool ChameleonWindow::IsEnabled(int permission)
 {

@@ -8,6 +8,6 @@
 #define DEBUG_NEW new
 #endif
 
-#define DEBUGLOG(x) wxString logstring; logstring << __FILE__ << ":" << __LINE__ << ": " << x; ::wxLogDebug(logstring);
-
+//#define DEBUGLOG(x) wxString logstring; logstring << __FILE__ << ":" << __LINE__ << ": " << x; ::wxLogDebug(logstring);
+#define DEBUGLOG(x) wxLogDebug(wxT("%s(%d): %s"),__TFILE__, __LINE__, x);
 #endif

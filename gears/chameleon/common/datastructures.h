@@ -2,7 +2,7 @@
 #ifndef DATASTRUCTURES__H
 #define DATASTRUCTURES__H
 
-
+#include <wx/hashmap.h>
 
 
 enum VariableNames
@@ -24,6 +24,7 @@ enum WindowID
 	ID_OPEN,
 	ID_SAVE,
 	ID_PAGECLOSE,
+	ID_CLOSETAB,
 
 
 	// major widgets
@@ -59,12 +60,23 @@ enum WindowID
 	ID_TEST,
 
 	// debugging IDs
-	ID_START,
+	ID_DEBUG_IDS_FIRST,
+	ID_START = ID_DEBUG_IDS_FIRST,
 	ID_STOP,
 	ID_PAUSE,
 	ID_STEPNEXT,
 	ID_STEPOVER,
 	ID_STEPOUT,
+	ID_DEBUG_IDS_LAST,
+
+	ID_OPTIONS_GRID = 10005,
 };
+
+WX_DECLARE_HASH_MAP( int,
+					int,
+					wxIntegerHash,
+					wxIntegerEqual,
+					IntIntHashmap );
+
 
 #endif

@@ -13,6 +13,7 @@
 
 //includes
 #include<bitset>
+#include <wx/wx.h>
 
 //globals
 using namespace std;
@@ -21,11 +22,12 @@ const int NUM_MODULES = 15;
 //give each module a number
 enum modules
 {
-	PERM_FIRST = -1,
-	PERM_SYNTAXHIGHLIGHT,
+	PERM_FIRST = 0,
+	PERM_SYNTAXHIGHLIGHT = PERM_FIRST,
 	PERM_AUTOCOMPLETE,
 	PERM_AUTOINDENT,
 	PERM_DEBUG,
+	PERM_TERMINAL,
 	PERM_LAST
 };
 
@@ -44,12 +46,15 @@ class Permission
 		long getGlobal(int);	//status of everything modular return
 		bool fileSuccess();		//returns TRUE if file I/O was successful
 
+		wxString getPermName(int permEnum);  // returns the string the matches the enumeration
+
 	private:
 		bitset <NUM_MODULES> status;//array for holding module status
 		bitset <NUM_MODULES> auth;	//array for holding what's allowed
 		long permCode;				//int for holding permissions code #
 		long authCode;				//int for holding authorized code #
 		bool io;					//holds status for the I/O operations
+		wxArrayString* permNames;    //matches the enumerated perms with a name 
 };
 
 #endif

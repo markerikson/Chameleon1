@@ -2,10 +2,13 @@
 #include "../common/datastructures.h"
 #include "../common/debug.h"
 
+
+
 #include <wx/datetime.h>
 
 
 class ChameleonWindow;
+class ChameleonNotebook;
 
 class ChameleonEditor : public wxStyledTextCtrl
 {
@@ -19,24 +22,29 @@ public:
 
 	bool LoadFile ();
 	bool LoadFile (const wxString &filename);
-	bool SaveFile();
+	bool SaveFileAs();
 	bool SaveFile(const wxString& filename);
 
 	bool Modified();
+	void OnSetTabModified(wxStyledTextEvent &event);
 
-	void OnChar(wxKeyEvent& evt);
+	void OnChar(wxStyledTextEvent &event);
+
+
 
 	wxString GetFilename () {return m_filename;};
-	void SetFilename (const wxString &filename) {m_filename = filename;};
+	void SetFilename (const wxString &filename) {m_filename;};
 
 private:
 
 	ChameleonWindow* m_mainFrame;
-	
+	ChameleonNotebook* m_parentNotebook;	
 
 	wxString m_filename;
 	wxDateTime m_filetime;
-	//DECLARE_EVENT_TABLE()
+	
+	
+	DECLARE_EVENT_TABLE()
 };
 
 

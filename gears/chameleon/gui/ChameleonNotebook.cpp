@@ -26,8 +26,10 @@ ChameleonNotebook::ChameleonNotebook(wxWindow* parent, wxWindowID id,
 	m_parent = (ChameleonWindow*)wxTheApp->GetTopWindow();
 
 	// create menu
-	m_nonActiveMenu = new wxMenu;
-	m_activeMenu = new wxMenu;
+	m_nonActiveMenu = new wxMenu();
+	m_activeMenu = new wxMenu();
+
+	CreateBookMenus();
 
 }
 
@@ -75,6 +77,7 @@ void ChameleonNotebook::OnTabActivate (wxMouseEvent &event)
 	if (pageNum < 0) return;
 	//m_frame->m_hitNr = pageNr;
 	m_parent->SetIntVar(VN_CLICKEDTAB, pageNum);
+	/*
 	if (pageNum == m_parent->GetIntVar(VN_CURRENTPAGE)) 
 	{
 		PopupMenu (m_activeMenu, pt);
@@ -83,6 +86,8 @@ void ChameleonNotebook::OnTabActivate (wxMouseEvent &event)
 	{
 		PopupMenu (m_nonActiveMenu, pt);
 	}
+	*/
+	PopupMenu(m_activeMenu, pt);
 	//#endif
 }
 
@@ -98,7 +103,9 @@ void ChameleonNotebook::CreateBookMenus () {
 
 
 	m_nonActiveMenu->Append(-1, "Non-active menu");
-	m_activeMenu->Append(-1, "Active menu");
+	m_activeMenu->Append(ID_CLOSETAB, "Close");
+	//m_activeMenu->Append(9997, "Active menu");
+	//m_activeMenu->Append(9998, "Active menu - 2");
 
 	// create menu 1
 	/*

@@ -36,6 +36,16 @@ const int NOISE = 42;
 //        codes and arrays.
 Permission::Permission()
 {
+	
+	permNames = new wxArrayString();
+	permNames->Add("Syntax Highlighting");
+	permNames->Add("Name completion");
+	permNames->Add("Auto-indentation");
+	permNames->Add("Debugging");
+	permNames->Add("Terminal");
+
+
+
 	int fuzz, topaz;
 
 	//load the perm level
@@ -141,6 +151,8 @@ Permission::~Permission()
 	auth.reset();
 	permCode = 0;
 	authCode = 0;
+
+	delete permNames;
 }
 
 //fileSuccess
@@ -156,7 +168,7 @@ bool Permission::fileSuccess()
 //Output: a boolean TRUE if the [status] bit is set, FALSE otherwise
 bool Permission::isEnabled(int id)
 {
-	return(status.test(id));
+	return(status.test(id) && auth.test(id));
 }
 
 //isAuthorized
@@ -224,6 +236,17 @@ long Permission::getGlobal(int mode = 0)
 		return(auth.to_ulong());
 
 	return(authCode);
+}
+
+
+wxString Permission::getPermName(int permEnum)
+{
+	
+	if((int)permNames->Count() > permEnum)
+	{
+		return permNames->Item(permEnum);
+	}
+	return wxEmptyString;
 }
 //@@@@@@@
 //@ END @

@@ -23,12 +23,12 @@
 ////@begin includes
 ////@end includes
 
+
 /*!
  * Forward declarations
  */
 
 ////@begin forward declarations
-class wxGrid;
 ////@end forward declarations
 
 /*!
@@ -38,10 +38,11 @@ class wxGrid;
 ////@begin control identifiers
 #define ID_DIALOG 10000
 #define ID_NOTEBOOK 10001
-#define ID_PANEL 10004
-#define ID_GRID 10005
-#define ID_BUTTON 10002
-#define ID_BUTTON1 10003
+#define ID_PANEL1 10006
+#define ID_CHECKLISTBOX 10007
+#define ID_TEXTCTRL 10004
+#define ID_BUTTON_OK 10002
+#define ID_BUTTON_CANCEL 10003
 ////@end control identifiers
 
 /*!
@@ -66,19 +67,26 @@ public:
 
 ////@begin OptionsDialog event handler declarations
 
+    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_OK
+    void OnButtonOkClick( wxCommandEvent& event );
+
+    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_CANCEL
+    void OnButtonCancelClick( wxCommandEvent& event );
+
 ////@end OptionsDialog event handler declarations
 
 ////@begin OptionsDialog member function declarations
 
 ////@end OptionsDialog member function declarations
 
-    wxGrid* GetGrid();
+    
+    wxCheckListBox* GetListBox();
 
     /// Should we show tooltips?
     static bool ShowToolTips();
 
 ////@begin OptionsDialog member variables
-    wxGrid* m_grid;
+    wxCheckListBox* m_checkList;
 ////@end OptionsDialog member variables
 };
 

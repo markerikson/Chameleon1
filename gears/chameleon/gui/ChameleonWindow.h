@@ -160,10 +160,13 @@ private:
 
 	void OpenFile(wxArrayString fnames);
 	void CloseFile(int pageNr = -1);
+	void CloseTab();
 	void PageHasChanged (int pageNr = -1);
 	int GetPageNum(const wxString& fname);
 
 	void AddDebugButtons();
+
+	int* TargetInt(int variableName);
 
 
 	//wxStyledTextCtrl* ed;
