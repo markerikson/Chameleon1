@@ -160,10 +160,10 @@ void Compiler::OnProcessOut(ChameleonProcessEvent& e)
 				// Signal Chameleon
 				CompilerEvent e(chEVT_COMPILER_END);
 				if(success) {
-					e.SetTrinary(TRI_OK);
+					e.SetResult(CR_OK);
 				}
 				else {
-					e.SetTrinary(TRI_ERROR);
+					e.SetResult(CR_ERROR);
 				}
 				e.SetFile(wxFileName(m_currOutfile));
 				ProcessEvent(e); // synchronous because I detach in the very next line

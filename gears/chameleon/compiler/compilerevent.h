@@ -9,10 +9,10 @@ DECLARE_EVENT_TYPE(chEVT_COMPILER_START, wxID_ANY)
 DECLARE_EVENT_TYPE(chEVT_COMPILER_PROBLEM, wxID_ANY)
 DECLARE_EVENT_TYPE(chEVT_COMPILER_END, wxID_ANY)
 
-enum Trinary {
-	TRI_ERROR = -1,
-	TRI_OK = 0,
-	TRI_TERMINATED = 1,
+enum CompileResult {
+	CR_ERROR = -1,
+	CR_OK = 0,
+	CR_TERMINATED = 1,
 };
 
 
@@ -23,13 +23,13 @@ class CompilerEvent : public wxEvent
 
 		wxFileName GetFile() { return m_file; }
 		int GetInt() { return m_num; }
-		Trinary GetTrinary() { return m_tri; }
+		CompileResult GetResult() { return m_tri; }
 		wxString GetString() { return m_strng; }
 		wxString GetString2() { return m_strng2; }
 
 		void SetFile(wxFileName file) { m_file = file; }
 		void SetInt(int i) { m_num = i; }
-		void SetTrinary(Trinary t) { m_tri = t; }
+		void SetResult(CompileResult t) { m_tri = t; }
 		void SetString(wxString s) { m_strng = s; }
 		void SetString2(wxString s) { m_strng2 = s; }
 
@@ -38,7 +38,7 @@ class CompilerEvent : public wxEvent
 
 	public:
 		wxFileName m_file;
-		Trinary m_tri;
+		CompileResult m_tri;
 		int m_num;
 		wxString m_strng;
 		wxString m_strng2;
