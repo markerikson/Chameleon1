@@ -1597,6 +1597,8 @@ void ChameleonWindow::UpdateToolbar()
 bool ChameleonWindow::UpdateAuthCode()
 {
 	wxString newAuthCode = m_optionsDialog->GetAuthCode();
+
+	newAuthCode.MakeUpper();
 	if(m_perms->setGlobalAuthorized(newAuthCode))
 	{
 		m_config->Write("Permissions/authorized", newAuthCode);
