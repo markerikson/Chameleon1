@@ -1,7 +1,8 @@
 #include "ChameleonWindow.h"
 #include <wx/fdrepdlg.h>
 
-
+#include <wx/config.h>
+#include <wx/msw/iniconf.h>
 #include "../common/debug.h"
 
 #ifdef MSVC6
@@ -77,6 +78,27 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	wxIcon icon(moz_xpm);
 	SetIcon(icon);
 
+	m_config = new wxIniConfig("Chameleon", wxEmptyString, wxGetCwd() + "\\chameleon.ini");
+
+	// Configuration code... I'll get back to it
+
+	/*
+	int value = 0;
+	wxString tempString;
+	m_config->SetPath("Testing");
+	//m_config->Write("test3", "testing blah blah");
+	//m_config->Flush();
+	//tempString = m_config->Read("test2");
+
+	m_config->SetPath("Testing");
+	tempString = m_config->Read("test1");
+	wxString testMessage = "Test1: ";
+	testMessage << value;
+	wxMessageBox(testMessage, "Testing");
+	*/
+	
+
+
 	m_remoteMode = true;
 
 	m_network = new Networking();
@@ -84,9 +106,11 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	wxFileName plinkPath(wxGetCwd(), "plink.exe");
 
 	m_network->SetPlinkProg(plinkPath.GetFullPath());
+	CheckNetworkStatus();
 
 	wxString password = wxGetPasswordFromUser("Password for the current server:", "Password");
 	m_network->SetDetails("james.cedarville.edu", "s1278644", password);
+	CheckNetworkStatus();
 
 	m_perms = new Permission();
 
@@ -255,6 +279,7 @@ ChameleonWindow::~ChameleonWindow()
 	//delete m_openFiles;
 	delete m_optionsDialog;
 	delete m_network;
+	delete m_config;
 
 
 }
@@ -579,6 +604,7 @@ bool ChameleonWindow::GetFileContents(wxString filename, wxString &fileContents)
 		wxString remoteFile = fn.GetFullName();
 
 		fileContents = m_network->GetFileContents(remoteFile, remotePath);
+		CheckNetworkStatus();
 
 		return true;
 	}
@@ -1129,9 +1155,58 @@ void ChameleonWindow::EvaluateOptions()
 		ChameleonEditor* edit = (ChameleonEditor*)m_book->GetPage(i);
 		edit->UpdateSyntaxHighlighting();
 	}
-
-
-
-
 }
 
+void ChameleonWindow::CheckNetworkStatus()
+{
+	NetworkStatus result = m_network->GetStatus();
+
+	switch((int)result)
+	{
+		case NET_UNKNOWN_HOST:
+		{
+			
+			wxString hostname = m_optionsDialog->GetServerAddress();
+			wxString fingerprint = m_network->GetStatusDetails();
+
+			wxString message = "The SSH fingerprint for the server " + hostname + " was not recognized.";
+			message += "The fingerprint was " + fingerprint + ".  Do you want to cache it?";
+			int result = wxMessageBox(message, "Unknown SSH Fingerprint", wxYES_NO | wxICON_QUESTION);
+
+			if(result == wxYES)
+			{
+				m_network->SSHCacheFingerprint();
+			}
+			break;
+		}
+		case NET_READ_ERROR:
+		{
+			wxString message = "The remote file could not be read properly.  The error was: ";
+			message += m_network->GetStatusDetails();
+			wxMessageBox(message, "Remote read error", wxOK);
+			break;
+		}
+		case NET_WRITE_ERROR:
+		{		
+			wxString message = "The remote file could not be written properly.  The error was: ";
+			message += m_network->GetStatusDetails();
+			wxMessageBox(message, "Remote write error", wxOK);
+			break;
+		}
+		case NET_ERROR_MESSAGE:
+		{		
+			wxString message = "An unknown network error has occurred.  \nPlease contact mark.erikson@cedarville.edu";
+			message += "\nError details: " + m_network->GetStatusDetails();
+			wxMessageBox(message, "Unknown network error", wxOK);
+			break;
+		}
+		case NET_AUTH_FAILED:
+		{
+			wxString message = "Chameleon was unable to log you in using the current username and password.";
+			message += "\nPlease check them in the Options menu and try again.";
+			wxMessageBox(message, "Login failed", wxOK | wxICON_EXCLAMATION);
+		}
+		default:
+			break;
+	}
+}

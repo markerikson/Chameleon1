@@ -274,6 +274,7 @@ void RemoteFileDialog::SetNetworking(Networking* network)
 	m_network = network;
 
 	wxString userHome = m_network->GetHomeDirPath();
+	m_parentFrame->CheckNetworkStatus();
 	m_currentPath.AssignDir("~");
 }
 
@@ -309,6 +310,7 @@ void RemoteFileDialog::ShowDirectory(wxString dirname)
 	m_list->ClearAll();
 
 	DirListing dl = m_network->GetDirListing(dirname);
+	m_parentFrame->CheckNetworkStatus();
 
 	wxSortedArrayString sortedDirs(dl.dirNames);
 	wxSortedArrayString sortedFiles(dl.fileNames);

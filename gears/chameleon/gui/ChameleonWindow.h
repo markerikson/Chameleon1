@@ -82,6 +82,8 @@
 
 #include "ChameleonNotebook.h"
 
+class wxIniConfig;
+
 //----------------------------------------------------------------------
 
 class MyApp : public wxApp
@@ -112,6 +114,8 @@ public:
 	bool InRemoteMode();
 
 	void EvaluateOptions();
+
+	void CheckNetworkStatus();
 
 	void OpenFile(wxArrayString fnames);
 
@@ -195,6 +199,7 @@ private:
 	OptionsDialog*  m_optionsDialog;
 	RemoteFileDialog* m_remoteFileDialog;
 	wxGrid* m_optGrid;
+	wxIniConfig* m_config;
 
 
 	IntIntHashmap m_permNumMap;
@@ -222,9 +227,6 @@ private:
 	//ChameleonEditor* m_edit;
 
 	wxArrayString* m_openFiles;
-
-
-	wxString saveFileName;
 
 	DECLARE_EVENT_TABLE()
 };
