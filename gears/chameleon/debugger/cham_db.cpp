@@ -1265,7 +1265,7 @@ bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 
 					//continue;
 					m_varInfo[i].type = "Unknown";
-					varValue.Add(singleLine);
+					varValue.Add(singleLine); 
 				}
 				else
 				{
@@ -1415,7 +1415,7 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 	wxLogDebug("DB output: %s", tempHold);
 
 	//I don't think this code is effectual anymore... -B
-	/*
+	
 	//1) See if the captured string has a [$] all by itself at the end
 	//2) If so, begin parsing.
 	//3) If not, wait for another output
@@ -1448,7 +1448,7 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 		classStatusBackup = classStatus;
 		classStatus = WAITING;
 	}
-	*/
+	
 	
 	switch(classStatus)
 	{
