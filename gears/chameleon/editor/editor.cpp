@@ -1,6 +1,14 @@
-#include "../gui/ChameleonWindow.h"
+#include "../common/CommonHeaders.h"
 
+#include "stc.h"
+#include "editor.h"
+#include "../gui/ChameleonWindow.h"
+#include "../gui/ChameleonNotebook.h"
+#include "../common/datastructures.h"
 #include "../common/debug.h"
+
+
+#include <wx/datetime.h>
 
 #ifdef _DEBUG
 
@@ -128,11 +136,6 @@ bool ChameleonEditor::SaveFile( const wxString & filename )
     SetSavePoint();
 
     m_filetime = fn.GetModificationTime();
-
-	int currentTab = m_parentNotebook->GetSelection();
-	
-	m_parentNotebook->SetPageText(currentTab, m_simpleFileName);
-	m_parentNotebook->Refresh();
 
     return true;
 }

@@ -1,17 +1,13 @@
 #ifndef EDITOR__H
 #define EDITOR_H
 
+
 #include "stc.h"
-#include "../common/datastructures.h"
-#include "../common/debug.h"
-
-
-
-#include <wx/datetime.h>
-
+//#include <wx/wx.h>
 
 class ChameleonWindow;
 class ChameleonNotebook;
+
 
 class ChameleonEditor : public wxStyledTextCtrl
 {
