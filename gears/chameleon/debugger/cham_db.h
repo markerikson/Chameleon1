@@ -214,10 +214,9 @@ class Debugger : public wxEvtHandler
 
 		wxString firstExecString;	//holds the first executed string
 		wxString currentSourceName;	//holds filename source
+
 		Networking *myConnection;	//the networking object for remote
-		wxProcess2 *debugProc;		//holds pointer to process pipe
-		wxInputStream *streamIn;		//GDB to me
-		wxInputStream *streamError;		//problems
+		wxTextOutputStream* streamOut;	//output to GDB
 		wxDebugEvent* myEvent;		//how i communicate
 
 		//dave code

@@ -514,11 +514,6 @@ void Debugger::startProcess(bool fullRestart, bool mode, wxString fName, wxStrin
 		gdbBreakpointNum = 1;
 	
 		errorCount = 0;
-
-		//currDebugLine = 0;
-		
-		//gdbVarIndex = 1;
-		//varCount = 0;
 	
 		firstExecString = execThis;
 	}
@@ -542,9 +537,13 @@ void Debugger::startProcess(bool fullRestart, bool mode, wxString fName, wxStrin
 	procLives = false;
 	classStatus = NEW_PROC;
 	
+
+	streamOut = myConnection->StartCommand(isRemote, this);
+
 	//begin funky process stuff
-	if(isRemote)
+/*	if(isRemote)
 	{
+
 		debugProc = myConnection->GetPlinkProcess(this);
 
 		pid = debugProc->GetPID();
@@ -563,6 +562,7 @@ void Debugger::startProcess(bool fullRestart, bool mode, wxString fName, wxStrin
 			command = command + "<- NOT SENT: PROC DEAD";
 		}
 		updateHistory(command);
+
 	}
 	else
 	{
@@ -572,62 +572,39 @@ void Debugger::startProcess(bool fullRestart, bool mode, wxString fName, wxStrin
 		command = execThis;
 		updateHistory(command);
 	}
+*/
+
+	command = execThis + returnChar;
+	sendCommand(command);
 
 	//initial commands to GDB
-	if (pid == 0)
+	
+	wxArrayString initString;
+	wxString tmp;
+
+	procLives = true;
+	classStatus = START;
+
+	//initialize GDB
+	tmp.Printf("set prompt %s%s", PROMPT_CHAR.c_str(), returnChar.c_str());
+	initString.Add(tmp);
+	//initString.Add("set print pretty on" + returnChar);
+	initString.Add("set print address off" + returnChar);
+	initString.Add("set confirm off" + returnChar);
+	initString.Add("set print repeats 10000" + returnChar);
+	//initString.Add("set overload-resolution off" + returnChar);
+
+	//send all initlization commands to GDB
+	for(int currInit = 0; currInit < int(initString.GetCount()); currInit++)
 	{
-		//Debug started unsuccessfully
-		status = DEBUG_DEAD;
-		classStatus = STOP;
-		error = "Unable to launch.  Process ID not assigned.";
-		makeGenericError("Launch_fail");
-		//delete debugProc;
+		sendCommand(initString.Item(currInit));
 	}
-	else if(pid == -1)
-	{
-		status = DEBUG_DEAD;
-		classStatus = STOP;
-		error = "Unable to launch process.  -1 PID assigned";
-		makeGenericError("Get a real operating system!");
-		//delete debugProc;
-	}
-	else
-	{
-		//int currInit = 0;
-		wxArrayString initString;
-		wxString tmp;
-
-		//dave code
-		//(*outputScreen) << "Started Process.  PID: " << pid << "\n";
-
-		procLives = true;
-		classStatus = START;
-
-		//streamIn = debugProc->GetInputStream();		//GDB to me
-		//streamError = debugProc->GetErrorStream();	//problems
-
-		//initialize GDB
-		tmp.Printf("set prompt %s%s", PROMPT_CHAR.c_str(), returnChar.c_str());
-		initString.Add(tmp);
-		//initString.Add("set print pretty on" + returnChar);
-		initString.Add("set print address off" + returnChar);
-		initString.Add("set confirm off" + returnChar);
-		initString.Add("set print repeats 10000" + returnChar);
-		//initString.Add("set overload-resolution off" + returnChar);
-
-		//send all initlization commands to GDB
-		for(int currInit = 0; currInit < int(initString.GetCount()); currInit++)
-		{
-			//(*outputScreen)<<"INIT COMM: "<<initString[currInit];
-			sendCommand(initString.Item(currInit));
-		}
 		
-		if(fileIsSet)
-		{
-			command = "file " + currFile + returnChar;
-			sendCommand(command);
-		}//end set-file conditional
-	}//end GDB execution failure-conditional
+	if(fileIsSet)
+	{
+		command = "file " + currFile + returnChar;
+		sendCommand(command);
+	}//end set-file conditional
 }
 //END PROGRAM STATUS
 
@@ -887,7 +864,8 @@ void Debugger::stop(bool pleaseRestart)
 
 	if(status == DEBUG_RUNNING || status == DEBUG_ERROR)
 	{
-		debugProc->Kill(pid, wxSIGKILL);	//KILL KILL KILL!!
+		//debugProc->Kill(pid, wxSIGKILL);	//KILL KILL KILL!!
+		myConnection->ForceKillProcess(streamOut);
 	} 
 	else if(status == DEBUG_DEAD)
 	{
@@ -957,7 +935,8 @@ void Debugger::kill()
 
 	procLives = false;
 
-	debugProc->Kill(pid, wxSIGKILL);	//KILL KILL KILL!!
+	//debugProc->Kill(pid, wxSIGKILL);	//KILL KILL KILL!!
+	myConnection->ForceKillProcess(streamOut);
 
 	flushBuffer();
 	flushPrivateVar();
@@ -1316,7 +1295,7 @@ void Debugger::removeVar(wxString varName, wxString funcName, wxString className
 {
 	//some added verbosity
 	bool notFound = true,
-		 found = false;;
+		 found = false;
 
 	if(varCount != 0)
 	{
@@ -1942,32 +1921,25 @@ void Debugger::onProcessErrOutEvent(wxProcess2StdErrEvent &e)
 	error = e.GetError();
 	addErrorHist("Event-Generated error");
 
-	//(*outputScreen)<<"Generated Error: "<<error<<"\n";
+	//DEBUG CODE//
 	wxLogDebug("DB error event: %s", error);
-	//again, some event stuff here...
 }
 
 void Debugger::onProcessTermEvent(wxProcess2EndedEvent &e) 
 {
 	//the process has been killed (aka GDB quit for some reason)
-	if(e.GetPid() == pid) 
-	{
-		//(*outputScreen)<<"Process ("<<pid<<") Terminated\n";
+	status = DEBUG_DEAD;
+	classStatus = STOP;
+	procLives = false;
 
-		status = DEBUG_DEAD;
-		classStatus = STOP;
-		streamError = NULL;
-		streamIn = NULL;
-		pid = -2; // a nothing pid
-		procLives = false;
-		//if(debugProc != NULL){delete debugProc;}
-	}
+	flushBuffer();
+	flushPrivateVar();
 }
 
 //flushBuffer(): it simply erases the data array.
 void Debugger::flushBuffer()
 {
-	data.Empty();
+	data.Clear();
 }
 
 //flushPrivateVar(): erases all private data members
@@ -2004,10 +1976,11 @@ void Debugger::sendCommand(wxString send)
 {
 	if(procLives)
 	{
-		wxTextOutputStream streamOut(*(debugProc->GetOutputStream()));//me to GDB
-		streamOut.WriteString(send);
+		//wxTextOutputStream streamOut(*(debugProc->GetOutputStream()));//me to GDB
+		streamOut->WriteString(send);
 		send = send + "<- sent";
-		//(*outputScreen)<<send<<"\n";
+		
+		//DEBUG CODE//
 		wxLogDebug("DB send command: %s", send);
 	}
 	else
