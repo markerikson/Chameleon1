@@ -55,6 +55,7 @@ class wxProcess2 : public wxProcess
 	//I think the following should be moved into wxProcess:
 	public:
 		void SetPID(long pid);
+		long GetPID() { return m_pid; }
 	private:
 		long m_pid;
 
