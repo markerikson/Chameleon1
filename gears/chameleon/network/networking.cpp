@@ -372,27 +372,43 @@ bool Networking::MaintainSettings() {
 // I might recommend OptionsDialog call this after a change
 NetworkStatus Networking::GetStatus()
 {
-	if(MaintainSettings()) {
+	if(MaintainSettings() || m_status == NET_STARTING) {
 		// Update the status
 		if(m_plinks->getIsConnected()) {
 			m_status = NET_GOOD;
 		}
 		else {
-			m_status = NET_ERROR_MESSAGE; //default
-
 			wxString message = m_plinks->getMessage();
-			if(message.Contains("")) {
+
+			m_status = NET_ERROR_MESSAGE; //default
+			m_statusDetails = message;
+
+			if(message.Contains("key is not cached")) {
 				// host finger print not in cache
 				m_status = NET_UNKNOWN_HOST;
-				m_statusDetails = "";
+
+				// Grab the Fingerprint:
+				wxRegEx reFingerprint = "[[:digit:]]+[[:blank:]]+([[:xdigit:]]{2}:)+[[:xdigit:]]{2}";
+
+				if(reFingerprint.Matches(message))
+				{
+					//wxString match = reFingerprint.GetMatch(message);
+					//wxLogDebug("Matched fingerprint: \"%s\"", match);
+					m_statusDetails = reFingerprint.GetMatch(message);
+				}
+				else
+				{
+					//wxLogDebug("Failed to match the fingerprint in: %s", errlog);
+					m_statusDetails = "*unknown* - could not parse fingerprint";
+				}
 			}
-			else if(message.Contains("")) {
-				// host wouldn't allow a connection
-				m_status = NET_CONN_REFUSED;
-			}
-			else if(message.Contains("")) {
+			else if(message.Contains("Unable to authenticate")) {
 				// user+pass did not work on host
 				m_status = NET_AUTH_FAILED;
+			}
+			else if(message.Contains("Connection refused")) {
+				// host wouldn't allow a connection
+				m_status = NET_CONN_REFUSED;
 			}
 		}
 	}
@@ -424,13 +440,17 @@ void Networking::SSHCacheFingerprint()
 	wxTextOutputStream pout(*proc->GetOutputStream(), wxEOL_UNIX);
 	pout << "y\n";
 
-	// Sending wxSIGTERM to the process is all that's needed to close it out gracefully.
+	// Sending wxSIGTERM should close it out gracefully, but it doesn't terminate (ODD)
+	// And, sending SIGKILL too soon ends the process before it caches the fingerprint
+	// So, pause for 1/4 a second, then send SIGKILL
+	wxUsleep(250);
+	wxKill(pid, wxSIGKILL);
+
+	m_plinks->setLogin("","",""); // terminate all connections, and do a spawn
+	m_status = NET_STARTING;
+
 	// It also takes care of deleting the process, so we don't have to do that manually.
-	wxKill(pid, wxSIGTERM);
-
-	m_plinks->setLogin("","",""); // reset the status
-
-	delete proc;
+	//delete proc; // self-destructs
 }
 
 
