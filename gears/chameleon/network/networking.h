@@ -10,32 +10,30 @@
  * 
  * Caution: sendFileContents will overwrite anything in it's way.
  *
- * 1/18/04 - No longer passing files to/fro, instead passing the contents of the files
- *
- * Todo: I'm not following CS StyleGuide for method naming.  I don't know why I did
- *       this.  I'll change it at somepoint.  (Which means I'll be responsible for
- *       changing it in everyone else's code.)
- *
  ***************************/
 
 #include <wx/string.h>
 #include "../common/datastructures.h"
 #include "plinkconnect.h"
 #include "../common/Options.h"
+#include "../common/process2.h"
+#include <wx/utils.h>
+#include <wx/regex.h> // for finding the host fingerprint
+#include <wx/file.h>
+#include <wx/filename.h>
+#include <wx/process.h>
+#include "../common/debug.h"
 
 
 class Networking {
 	public:
-		// ..strcutors
+		// ..strcutors:
 		Networking(Options* options);
 		~Networking();
 
-		//Setup
-		//void SetPlinkProg(wxString path_name);
-		//wxString GetPlinkProg();
-		//void SetPscpProg(wxString path_name);
-		void SetDetails(wxString hostname, wxString username, wxString passphrase); // Preffered
-		void SetDetailsNoStatus(wxString hostname, wxString username, wxString passphrase);
+		// Setup -- This info is now known thru Options
+		//void SetDetails(wxString hostname, wxString username, wxString passphrase); // Preferred
+		//void SetDetailsNoStatus(wxString hostname, wxString username, wxString passphrase);
 
 		// Methods
 		NetworkStatus GetStatus();
@@ -46,6 +44,10 @@ class Networking {
 		wxString GetFileContents(wxString filename, wxString path);
 		void SendFileContents(wxString strng, wxString rfilename, wxString rpath);
 		void SSHCacheFingerprint();
+
+		// Processes:
+		wxProcess2* GetPlinkProcess(wxEvtHandler* owner);
+		wxProcess2* GetLocalProcess(wxEvtHandler* owner);
 
 
 	private:
@@ -59,10 +61,7 @@ class Networking {
 		// Data:
 		PlinkConnect* ssh_plink;
 		Options* m_options;
-		//wxString ssh_host, ssh_user, ssh_pass;
-		//wxString plinkApp;
-		//wxString pscpApp;
-		//wxString downloadDir;
+		wxString m_currHost, m_currUser, m_currPass;
 		NetworkStatus status;
 		wxString statusDetails;
 		wxString userHomeDir;

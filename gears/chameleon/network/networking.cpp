@@ -1,33 +1,23 @@
 ////////////////////////////////////////////////////
 //
 //
-// ToDo: prevent anything from being used before SetPlinkProg is called
+// ToDo: prevent anything external from being used if status == not good
+//       (if I use my own GetStatus(), it will make sure m_curr$ are always accurate)
 //
 //
 ////////////////////////////////////////////////////
 
 #include "networking.h"
-//#include "../common/datastructure.h"
-#include <wx/utils.h>
-#include <wx/regex.h> // for finding the host fingerprint
-#include <wx/file.h>
-#include <wx/filename.h>
-#include <wx/process.h>
-#include "../common/debug.h"
-#include "../common/Options.h"
 
 
 Networking::Networking(Options* options)
 {
 	m_options = options;
-	//ssh_host = "localhost";
-	//ssh_user = "user";
-	//ssh_pass = "password";
-	//downloadDir = ""; // should cause the working directory to be used
-	//plinkApp = "plink.exe"; // will use the working directory
-	//pscpApp = "pscp.exe";
-	status = NET_GOOD;
-	ssh_plink = new PlinkConnect(m_options->plinkPath, m_options->hostname, m_options->username, m_options->password);
+	m_currHost = m_options->GetHostname();
+	m_currUser = m_options->GetUsername();
+	m_currPass = m_options->GetPassphrase();
+	status = NET_GOOD; // assumption??!!
+	ssh_plink = new PlinkConnect(m_options->GetPlinkApp(), m_currHost, m_currUser, m_currPass);
 }
 
 
@@ -87,62 +77,6 @@ void Networking::SendFileContents(wxString strng, wxString rfile, wxString rpath
 }
 
 
-void Networking::SetDetailsNoStatus(wxString hostname, wxString username, wxString passphrase) 
-{
-	/*
-	if(!hostname.IsEmpty()) {
-		ssh_host = hostname;
-		ssh_plink->setHostname(hostname);
-	}
-	if(!username.IsEmpty()) {
-		ssh_user = username;
-		ssh_plink->setUsername(username);
-	}
-	if(!passphrase.IsEmpty()) {
-		ssh_pass = passphrase;
-		ssh_plink->setPassphrase(passphrase);
-	}
-	*/
-
-	userHomeDir = wxEmptyString;
-
-	//if(hostname != "" || username != "") {
-	//	//will need to empty directory cache
-	//}
-}
-
-
-//Maybe this should be requirements for the constructor -- or maybe not, because (in theory)
-//  Networking doesn't have to be SSH
-//If any of these are "" those will be unchanged
-void Networking::SetDetails(wxString hostname, wxString username, wxString passphrase)
-{
-	SetDetailsNoStatus(hostname, username, passphrase);
-
-	// Set the status
-	SSHSendCommand("");
-}
-
-
-/*
-void Networking::SetPlinkProg(wxString path_name)
-{
-	// bool wxFileExists(const wxString& filename)
-	plinkApp = path_name;
-	ssh_plink->setPlinkApp(plinkApp);
-}
-*/
-
-
-/*
-void Networking::SetPscpProg(wxString path_name)
-{
-	// bool wxFileExists(const wxString& filename)
-	pscpApp = path_name;
-}
-*/
-
-
 wxString Networking::GetHomeDirPath()
 {
 	if(userHomeDir == wxEmptyString)
@@ -157,6 +91,7 @@ wxString Networking::GetHomeDirPath()
 }
 
 
+//Private:
 DirListing Networking::SSHGetDirListing(wxString dirPath, bool includeHidden)
 {
 	DirListing r;
@@ -188,7 +123,7 @@ DirListing Networking::SSHGetDirListing(wxString dirPath, bool includeHidden)
 
 
 // This parsing can easily be broken!  But, I am pretty confident
-//   in the integrity of the strng I'm parsing, because I know
+//   in the integrity of the string I'm parsing, because I know
 //   what's coming in.
 // Private:
 wxArrayString Networking::ParseLS(wxString strng, bool includeHidden)
@@ -232,6 +167,8 @@ wxArrayString Networking::ParseLS(wxString strng, bool includeHidden)
 	return r;
 }
 
+
+//Private:
 wxString Networking::SSHSendCommand(wxString command)
 {
 	command += " && echo \"C_O_M_P_L_E_T_E_D_OK\"";
@@ -322,9 +259,29 @@ void Networking::DetermineStatusError(wxString errlog, wxString output)
 }
 
 
-
+// I recommend OptionsDialog call this after a change
 NetworkStatus Networking::GetStatus()
 {
+	wxString newH = m_options->GetHostname();
+	wxString newU = m_options->GetUsername();
+	wxString newP = m_options->GetPassphrase();
+
+	if(newH != m_currHost || newU != m_currUser || newP != m_currPass ) {
+		// I don't check for plinkApp changes because I don't keep track of those
+		// Something has changed
+		m_currHost = newH;
+		m_currUser = newU;
+		m_currPass = newP;
+
+		// Update all the PlinkProcess's
+		ssh_plink->setHostname(newH);
+		ssh_plink->setUsername(newU);
+		ssh_plink->setPassphrase(newP);
+
+		// Update the status
+		SSHSendCommand("true"); // "" doesn't work ??
+	}
+
 	return status;
 }
 
@@ -339,28 +296,17 @@ void Networking::SSHCacheFingerprint()
 {
 	ssh_plink->acceptCacheFingerprint();
 	// Set the status:
-	SSHSendCommand("");
+	SSHSendCommand("true"); // "" doesn't work ??
 }
 
 
-// I have decided, because SCP is always a 1 shot thing that 
 void Networking::SCPDoTransfer(wxString from_path_name, wxString to_path_name)
 {
 	// right now this only does local -> remote transfers
-	
-	/*
-	wxString cmd = pscpApp // + " -l " + ssh_user 
-					+ " -pw " + ssh_pass + " -batch "
+	wxString cmd = m_options->GetPscpApp() // + " -l " + ssh_user 
+					+ " -pw " + m_currPass + " -batch "
 					+ from_path_name + " " 
-					+ ssh_user + "@" + ssh_host + ":" + to_path_name;
-	*/
-
-	wxString cmd = m_options->pscpPath 
-					+ " -pw " + m_options->password 
-					+ " - batch "
-					+ from_path_name + " "
-					+ m_options->username + "@" + m_options->hostname + ":" + to_path_name;
-					
+					+ m_currUser + "@" + m_currHost + ":" + to_path_name;
 	wxProcess* proc = new wxProcess();
 	proc->Redirect();
 	int pid = wxExecute(cmd, wxEXEC_SYNC, proc);
@@ -401,9 +347,43 @@ void Networking::SCPDoTransfer(wxString from_path_name, wxString to_path_name)
 	return;
 }
 
-/*
-wxString Networking::GetPlinkProg()
-{
-	return plinkApp;
+
+wxProcess2* Networking::GetPlinkProcess(wxEvtHandler* owner) {
+
+	// Start the new Process
+	wxString cmd = m_options->GetPlinkApp();
+	if(m_currPass != "") { // Why am I checking for an empty pass?
+		cmd += " -pw " + m_currPass;
+	}
+	if(m_currUser != "") { // Why am I checking for an empty user?
+		cmd += " " + m_currUser + "@" + m_currHost;
+	}
+	else
+	{
+		cmd += " " + m_currHost;
+	}
+	
+	wxProcess2* proc = new wxProcess2(owner);
+	long pid = wxExecute(cmd, wxEXEC_ASYNC, proc);
+
+	if(pid == 0) {
+		//Command could not be executed
+		wxLogDebug("Could not start a plink process.");
+		delete proc; //proc = NULL;
+	}
+	else if (pid == -1) {
+		// BAD ERROR!  User ought to upgrade their operating system
+		// User has DDE running under windows (OLE deprecated this)
+		wxLogDebug("Could not start a plink process(DDE).");
+		delete proc; // proc = NULL;
+	}
+	else { // Process is Live
+		proc->SetPID(pid); // Temporary Solution?
+		wxLogDebug("Started a Process successfully.");
+	}
+
+	// Add this process to an internal list?
+
+	return proc;
 }
-*/
+

@@ -28,15 +28,6 @@
 */
 
 #include "wxssh.h"
-#include "../network/networking.h"
-#include "../common/debug.h"
-#include "../common/Options.h"
-
-#ifdef _DEBUG
-
-#define new DEBUG_NEW
-
-#endif
 
 BEGIN_EVENT_TABLE(wxSSH, wxTerm)
 	EVT_PROCESS2_STDOUT(wxSSH::OnPlinkOut)
@@ -44,15 +35,15 @@ BEGIN_EVENT_TABLE(wxSSH, wxTerm)
 	EVT_PROCESS2_ENDED(wxSSH::OnPlinkTerm)
 END_EVENT_TABLE()
 
-wxSSH::wxSSH(wxWindow* parent, wxWindowID id, Options* options, const wxPoint& pos, int width, int height, const wxString& name)
+wxSSH::wxSSH(wxWindow* parent, wxWindowID id, Networking* network, const wxPoint& pos, int width, int height, const wxString& name)
 	: wxTerm(parent, id, pos, width, height, name)
 {
-  m_connected = false;
-  m_options = options;
-  m_plink = NULL;
-  //m_host = "";
-  //m_user = "";
-  m_plinkPid = -2;
+	m_connected = false;
+	m_networking = network;
+	m_plink = NULL;
+	m_plinkPid = -2;
+	m_inputBuffer = "";
+	m_isInESCsequence = false;
 }
 
 wxSSH::~wxSSH()
@@ -91,39 +82,11 @@ void wxSSH::Connect(wxString hostname, wxString username, wxString passphrase)
 	Refresh();
 
 	// Start the new Process
-	//wxString cmd = m_networking->GetPlinkProg();
-	wxString cmd = m_options->plinkPath;
-	if(passphrase != "") {
-		cmd += " -pw " + m_options->password;
-	}
-	if(username != "") {
-		cmd += " " + m_options->username + "@" + m_options->hostname;
-	}
-	else
-	{
-		cmd += " " + m_options->hostname;
-	}
-	
-	m_plink = new wxProcess2(this);
-	m_plinkPid = wxExecute(cmd, wxEXEC_ASYNC, m_plink);
-
-	if(m_plinkPid == 0) {
-		//Command could not be executed
-		wxLogDebug("Could not start process.");
-		delete m_plink;
-	}
-	else if (m_plinkPid == -1) {
-		// BAD ERROR!  User ought to upgrade their operating system
-		// User has DDE running under windows (OLE deprecated this)
-		wxLogDebug("Could not start process.");
-		delete m_plink;
-	}
-	else { // Process is Live!
-		//m_host = hostname;
-		//m_user = username;
+	m_plink = m_networking->GetPlinkProcess(this);
+	if(m_plink != NULL) {
 		m_connected = true;
-		m_plink->SetPID(m_plinkPid); // Temporary solution
-		wxLogDebug("Process started successfully!");
+		m_inputBuffer = "";
+		m_isInESCsequence = false;
 	}
 }
 
@@ -152,12 +115,50 @@ bool wxSSH::IsConnected(void)
 	return m_connected;
 }
 
-
+// wxSSH will catch XTerm specific escape sequences (coming from the server)
+// The following sequences are useful in this respect:
+//    * ESC]0;stringBEL -- Set icon name and window title to string
+//    * ESC]1;stringBEL -- Set icon name to string
+//    * ESC]2;stringBEL -- Set window title to string
+//
+//(where ESC is the escape character (\033), and BEL is the bell character (\007).)
+//
+// Currently the plan is just to surpress them because they aren't relevant to Chameleon
+//wxSSH should override the input mechanism, and when any of the xterm escape sequences are issued it should eat them(into a buffer).  If a max STRING length is reached with out getting BEL the buffer can be 're-issued'.
+//**Note: if a vt52 printscreen is sent, the screen will be blank until MAX characters are sent
 void wxSSH::OnPlinkOut(wxProcess2StdOutEvent &e)
 {
 	wxString s = e.GetOutput();
 	int len = s.Length();
+
+	if(!m_isInESCsequence && !s.Contains((char)27)) {
+		// This test is provided to 'short-circuit' the logic below
+		ProcessInput(len, (unsigned char*)s.c_str());
+		return; // multiple return statements are confusing (sorry)
+	}
+
+
 	ProcessInput(len, (unsigned char*)s.c_str());
+	return;
+/*
+	int escPos = s.Find((char)27);
+	if(escPos != -1) {	//if contains ESC
+		if(m_isInESCsequence) {
+			m_inputBuffer += s.Remove(0,escPos);
+
+			// determine the fate of the buffer
+
+			ProcessInput(s.Length(), (unsigned char*)s.c_str());
+		}
+		else { // begining
+			ProcessInput(escPos, (unsigned char*)s.Remove(0,escPos).c_str());
+		}
+
+	}
+	else {
+		//continue adding to the buffer
+	}
+*/
 }
 
 void wxSSH::OnPlinkErr(wxProcess2StdErrEvent &e)
@@ -176,10 +177,3 @@ void wxSSH::OnPlinkTerm(wxProcess2EndedEvent &e)
 	m_plinkPid = -2;
 	//delete m_plink; <--- wxProcess2 self-destructs
 }
-
-/*
-void wxSSH::SetNetworking(Networking* networking)
-{
-	m_networking = networking;
-}
-*/

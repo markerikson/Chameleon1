@@ -144,8 +144,8 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	wxString defaultEnableCode = "0";
 
 	m_options = new Options;
-	m_options->hostname = wxEmptyString;
-	m_options->username = wxEmptyString;
+	//m_options->SetHostname(wxEmptyString);
+	//m_options->SetUsername(wxEmptyString);
 	m_perms = new Permission(defaultAuthorizedCode, defaultEnableCode);
 
 	wxFileName configName(wxGetHomeDir(), "chameleon.ini");
@@ -154,8 +154,8 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 	if(configName.FileExists())
 	{
-		m_options->hostname = m_config->Read("Network/hostname");
-		m_options->username = m_config->Read("Network/username");
+		m_options->SetHostname(m_config->Read("Network/hostname"));
+		m_options->SetUsername(m_config->Read("Network/username"));
 		
 		authorizedCode = m_config->Read("Permissions/authorized", defaultAuthorizedCode);
 		enabledCode = m_config->Read("Permissions/enabled", defaultEnableCode);
@@ -174,28 +174,26 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 		m_config->Write("Permissions/enabled", defaultEnableCode);
 	}
 
-	wxFileName plinkPath(wxGetCwd(), "plink.exe");
-	if(wxFileName::FileExists(plinkPath.GetFullPath()))
-	{
-		//m_network->SetPlinkProg(plinkPath.GetFullPath());
-		m_options->plinkPath = plinkPath.GetFullPath();
-	}
-	else
-	{
-		wxLogDebug("Plink does not exist in the working directory!");
-	}
+	wxFileName plinkPath(wxGetCwd(), "plink.exe");  // <-- Mark, look at Options.cpp
+//	if(wxFileName::FileExists(plinkPath.GetFullPath())) <----- now in Options.cpp (DJC)
+//	{
+		m_options->SetPlinkApp(plinkPath.GetFullPath());
+//	}
+//	else
+//	{
+//		wxLogDebug("Plink does not exist in the working directory!");
+//	}
 
 
-	wxFileName pscpPath(wxGetCwd(), "pscp.exe");
-	if(wxFileName::FileExists(pscpPath.GetFullPath()))
-	{
-		//m_network->SetPscpProg(pscpPath.GetFullPath());
-		m_options->pscpPath = pscpPath.GetFullPath();
-	}
-	else
-	{
-		wxLogDebug("Pscp does not exist in the working directory!");
-	}
+	wxFileName pscpPath(wxGetCwd(), "pscp.exe");  // <-- Mark, look at Options.cpp
+//	if(wxFileName::FileExists(pscpPath.GetFullPath())) <------ now in Options.cpp (DJC)
+//	{
+		m_options->SetPscpApp(pscpPath.GetFullPath());
+//	}
+//	else
+//	{
+//		wxLogDebug("Pscp does not exist in the working directory!");
+//	}
 
 	m_network = new Networking(m_options);
 	//m_network->SetDetailsNoStatus(hostname, username, "");
@@ -207,8 +205,8 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	m_optionsDialog = new OptionsDialog(this, ID_OPTIONSDIALOG, "Options");
 	UpdatePermsList();
 
-	m_optionsDialog->SetServerAddress(m_options->hostname);
-	m_optionsDialog->SetUsername(m_options->username);
+	m_optionsDialog->SetServerAddress(m_options->GetHostname());
+	m_optionsDialog->SetUsername(m_options->GetUsername());
 	m_optionsDialog->SetPassword1(wxEmptyString);
 	m_optionsDialog->SetPassword2(wxEmptyString);
 
@@ -289,7 +287,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 	m_noteTerm = new ChameleonNotebook(m_splitEditorOutput, ID_NOTEBOOK_TERM);
 	//m_telnet = new wxTelnet( m_noteTerm, ID_TELNET, wxPoint(-1, -1), 80, 24);
-	m_telnet = new wxSSH(m_noteTerm, ID_TELNET, m_options);
+	m_telnet = new wxSSH(m_noteTerm, ID_TELNET, m_network);
 	
 	m_telnet->set_mode_flag(GTerm::CURSORINVISIBLE);
 	//m_telnet->SetNetworking(m_network);
@@ -1032,13 +1030,13 @@ void ChameleonWindow::OnConnect(wxCommandEvent& WXUNUSED(event))
 // my "I need to try something out, I'll stick it in here" function
 void ChameleonWindow::Test(wxCommandEvent& WXUNUSED(event))
 {
-	TextManager tm = m_telnet->GetTM();
+//	TextManager tm = m_telnet->GetTM();
 
 	//tm.PrintViewport();
 
 	//tm.PrintContents();
 
-	tm.PrintToBitmap();
+//	tm.PrintToBitmap();
 	/*
 	wxString homepath = m_network->GetHomeDirPath();
 	wxString filename = "~/java/numeric/GCD.java";
@@ -2033,14 +2031,16 @@ void ChameleonWindow::EvaluateOptions()
 		edit->UpdateSyntaxHighlighting();
 	}
 
-	m_options->hostname = m_optionsDialog->GetServerAddress();
-	m_options->username = m_optionsDialog->GetUsername();
-	m_options->password = m_optionsDialog->GetPassword1();
+	m_options->SetHostname(m_optionsDialog->GetServerAddress());
+	m_options->SetUsername(m_optionsDialog->GetUsername());
+	if(! m_options->SetPassphrase(m_optionsDialog->GetPassword1()) ) {
+		// Password has a " in it
+		// Mark, use this as you feel fit.
+	}
 	
-	//m_network->SetDetailsNoStatus(m_options->hostname, username, password1);
 
-	m_config->Write("Network/hostname", m_options->hostname);
-	m_config->Write("Network/username", m_options->username);
+	m_config->Write("Network/hostname", m_options->GetHostname());
+	m_config->Write("Network/username", m_options->GetUsername());
 
 }
 

@@ -35,6 +35,7 @@
 #include "../common/CommonHeaders.h"
 
 #include <wx/txtstrm.h>
+#include "../network/networking.h"
 #include "../network/gterm.hpp"
 #include "../network/gtelnet.hpp"  // <------------
 #include "../common/debug.h"
@@ -42,16 +43,15 @@
 #include "../common/process2events.h"
 #include "../common/Options.h"
 #include "wxterm.h"
-#include "wxssh.h"
 
-class Networking;
+#define MAX_INPUT_BUF_LEN 50
 
 
 class wxSSH : public wxTerm
 {
 	public:
 		wxSSH(wxWindow* parent, wxWindowID id,
-				Options* options,
+				Networking* network,
 				const wxPoint& pos = wxDefaultPosition,
 				int width = 80, int height = 25,
 				const wxString& name = "wxSSH");
@@ -73,11 +73,12 @@ class wxSSH : public wxTerm
 	private:
 		bool m_connected;
 		wxProcess2* m_plink;
-		//Networking* m_networking;
+		Networking* m_networking;
 		//wxString m_host;
 		//wxString m_user;
-		Options* m_options;
 		long m_plinkPid;
+		wxString m_inputBuffer;
+		bool m_isInESCsequence;
 
 	
 	DECLARE_EVENT_TABLE()
