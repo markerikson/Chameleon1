@@ -397,9 +397,9 @@ NetworkStatus Networking::GetStatus()
 		}
 	}
 
-	while(m_status = NET_STARTING) {
-		wxSafeYield();
-	}
+	//while(m_status = NET_STARTING) {
+	//	wxSafeYield();
+	//}
 
 	return m_status;
 }
