@@ -70,7 +70,7 @@ class Debugger : public wxEvtHandler
 {
 	public:
 		//defaults
-		Debugger(wxTextCtrl* outBox, wxEvtHandler* pointer);
+		Debugger(wxTextCtrl* outBox, Networking* networking, wxEvtHandler* pointer);
 		~Debugger();					//destructor
 
 		void onDebugEvent(wxDebugEvent &event);

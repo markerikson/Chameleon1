@@ -44,7 +44,7 @@ BEGIN_EVENT_TABLE(Debugger, wxEvtHandler)
 END_EVENT_TABLE()
 
 //straight up constructor
-Debugger::Debugger(wxTextCtrl* outBox, wxEvtHandler* pointer)
+Debugger::Debugger(wxTextCtrl* outBox, Networking* networking, wxEvtHandler* pointer)
 {
 	flushPrivateVar();
 
@@ -53,6 +53,7 @@ Debugger::Debugger(wxTextCtrl* outBox, wxEvtHandler* pointer)
 	procLives = false;
 	status = DEBUG_DEAD;
 	classStatus = STOP;
+	myConnection = networking;
 }
 //end constructors
 
@@ -431,7 +432,7 @@ void Debugger::startProcess(bool fullRestart, bool mode, wxString fName, wxStrin
 		pid = debugProc->GetPID();
 		if(pid > 0) {procLives = true;}
 
-		command = execThis;
+		command = execThis + returnChar;
 		if(procLives)
 		{
 			wxTextOutputStream streamOut(*(debugProc->GetOutputStream()));//me to GDB
@@ -901,6 +902,7 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 	//~~DEBUG CODE~~//
 	//(*outputScreen)<<"-Class Status: "<<classStatus<<"-\n";
 	//(*outputScreen)<<"--Output:\n"<<tempHold<<"\n--end output--\n";
+	wxLogDebug("DB output: %s", tempHold);
 	tempHold.Empty();
 
 	//What we're doing with output events:
@@ -1236,6 +1238,7 @@ void Debugger::onProcessErrOutEvent(wxProcess2StdErrEvent &e)
 	addErrorHist("Event-Generated error");
 
 	//(*outputScreen)<<"Generated Error: "<<error<<"\n";
+	wxLogDebug("DB error event: %s", error);
 	//again, some event stuff here...
 }
 
@@ -1306,6 +1309,7 @@ void Debugger::sendCommand(wxString send)
 		streamOut.WriteString(send);
 		send = send + "<- sent";
 		//(*outputScreen)<<send<<"\n";
+		wxLogDebug("DB send command: %s", send);
 	}
 	else
 	{
