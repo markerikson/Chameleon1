@@ -59,10 +59,14 @@ class ProfOptionsDialog: public wxDialog
 public:
     /// Constructors
     ProfOptionsDialog( );
-    ProfOptionsDialog( wxWindow* parent, wxWindowID id = -1, const wxString& caption = _("Chameleon Options Manager"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU );
+    ProfOptionsDialog( wxWindow* parent, wxWindowID id = -1, const wxString& caption = _("Chameleon Options Manager"), 
+					const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, 
+					long style = wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX );
 
     /// Creation
-    bool Create( wxWindow* parent, wxWindowID id = -1, const wxString& caption = _("Chameleon Options Manager"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU );
+    bool Create( wxWindow* parent, wxWindowID id = -1, const wxString& caption = _("Chameleon Options Manager"), 
+				const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, 
+				long style = wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX );
 
     /// Creates the controls and sizers
     void CreateControls();
@@ -86,7 +90,7 @@ public:
 
 ////@end ProfOptionsDialog event handler declarations
 
-	void OnQuit(wxCommandEvent &event);
+	void OnQuit(wxCloseEvent &event);
 
 ////@begin ProfOptionsDialog member function declarations
 
