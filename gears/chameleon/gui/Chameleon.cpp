@@ -688,10 +688,9 @@ void ChameleonWindow::OnMenuEvent(wxCommandEvent &event)
 			// it's worth doing anyway to make sure it's current.
 			m_config->Write("Permissions/authorized", perms->GetAuthCode());
 
-			if(result == wxOK)
-			{
-				EvaluateOptions();			
-			}
+			// For the same reason, ALWAYS re-evaluate the options.  If the user canceled
+			// the dialog, things won't have changed.
+			EvaluateOptions();	
 
 			m_currentEd->SetFocus();
 			break;
@@ -2600,35 +2599,38 @@ void ChameleonWindow::CloseProjectFile()
 {
 	if(!m_appClosing)
 	{
-		int response = wxMessageBox("Do you want to close all files from this project?", 
-									"Close Project", wxYES_NO | wxCANCEL | wxCENTER);
-
 		EditorPointerArray edList = m_projMultiFiles->GetEditors();
 
-		if(response == wxYES)
+		if(edList.GetCount() > 0)
 		{
-			for(int i = 0; i < (int)edList.GetCount(); i++)
-			{
-				ChameleonEditor* ed = edList[i];
-				int tabnum = m_book->FindPagePosition(ed);
-				CloseFile(tabnum);
-			}
-		}
-		else if(response == wxNO)
-		{
-			for(int i = 0; i < (int)edList.GetCount(); i++)
-			{
-				ChameleonEditor* ed = edList[i];
-				ProjectInfo* proj = new ProjectInfo();
-				ed->SetProject(proj);
-			}
-		}
-		else
-		{
-			return;
-		}
+			int response = wxMessageBox("Do you want to close all files from this project?", 
+				"Close Project", wxYES_NO | wxCANCEL | wxCENTER);
 
+			if(response == wxYES)
+			{
+				for(int i = 0; i < (int)edList.GetCount(); i++)
+				{
+					ChameleonEditor* ed = edList[i];
+					int tabnum = m_book->FindPagePosition(ed);
+					CloseFile(tabnum);
+				}
+			}
+			else if(response == wxNO)
+			{
+				for(int i = 0; i < (int)edList.GetCount(); i++)
+				{
+					ChameleonEditor* ed = edList[i];
+					ProjectInfo* proj = new ProjectInfo();
+					ed->SetProject(proj);
+				}
+			}
+			else
+			{
+				return;
+			}
+		}
 	}
+
 	wxPathFormat currentPathFormat = (m_projMultiFiles->IsRemote() ? wxPATH_UNIX : wxPATH_DOS);
 	wxMemoryInputStream mis("", 0);
 	wxFileConfig config(mis);
@@ -2968,6 +2970,7 @@ void ChameleonWindow::OnDebugEvent(wxDebugEvent &event)
 				pEdit->MarkerDeleteAll(MARKER_FOCUSEDLINE);
 			}
 			wxLogDebug("Debugger exit");
+			m_debugTerminal->Disconnect();
 
 			break;
 		}
@@ -3014,6 +3017,9 @@ void ChameleonWindow::OnDebugEvent(wxDebugEvent &event)
 		}
 		case ID_DEBUG_VARINFO:
 			m_watchPanel->UpdateVariableInfo(event);
+			break;
+		case ID_DEBUG_RUNTOCURSOR:
+			m_debugger->AddPendingEvent(event);
 			break;
 		default:
 			wxLogDebug("Default DebugEvent.  Value: %d", eventID);
