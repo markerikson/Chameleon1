@@ -12,23 +12,23 @@
 <h1>4.0 Activities</h1>
 
  <h2><a name="ID">4.1 Configuration Identification</a></h2>
-  <p>The standard used to name CFs is the filename of the item with respect to the root SCML directory. Forward slashes are used to denote subdirectories. For example, the single string "images/readme.txt" names a specific Configuration File in the Software Configuration Management Library. All Configuration Files will be listed in the file chameleon_files.txt.</p>
+  <p>All files will be listed in the Maintenance Manual.</p>
 
  <h2><a name="location">4.2 SCML Location</a></h2>
-  <p>During the development of the project, the SCML is stored on one of the Cedarville CS Department servers.  The exact location will be determined by the Lab Administrator.</p>
+  <p>During the development of the project, the SCML is stored on David Czechowksi's server.  The IP address is 163.11.160.218.  The SCML root is located in <i>/home/cvsroot/gears</i>.  A read-only view of the SCML is provided at <a href="http://163.11.160.218/cgi-bin/viewcvs.cgi/*checkout*/">http://163.11.160.218/cgi-bin/viewcvs.cgi/*checkout*/</a></p>
 
  <h2><a name="control">4.3 Configuration Control</a></h2>
-  <p>We will be using various CVS clients, depending on needs and current working platform.  Under Windows, this may include WinCVS and TortoiseCVS; under Linux, this may include LinCVS, Cervisia, and the command-line CVS client.
+  <p>We will be using various CVS clients, depending on needs and current working platform.  Under Windows, this may include WinCVS and TortoiseCVS; under Linux, this may include Cervisia, and the command-line CVS client.
   <p>We will be maintaining one SCML, using CVS. To this, the SCM Users will commit all code changes.  At the end of each iteration, after advisement from the Test/QA Manager, the SCM Administrator will cvs-tag the code as a stable build release.
-  <p>CVS provides the ability to record comments when making a checkin. Each checkin has its time and author listed as well.  This will serve as our main means of tracking changes.  Further procedures will be worked out at future meetings.
-  <p>We intend to maintain a policy of individual code ownership.  This should minimize conflicts involving multiple developers working on the same code.  With that said, CVS is designed to handle multiple users working on the same file simultaneously, and is capable of intelligently merging file differences.  Should more than one developer be working on a file at the same time, problems should be minimal.</p>
+  <p>CVS provides the ability to record comments when making a checkin. Each checkin has its time and author listed as well.  This will serve as our main means of tracking changes.
+  <p>We intend to maintain a policy of individual code ownership.  This should minimize conflicts involving multiple developers working on the same code.  Still, CVS is designed to handle multiple users working on the same file simultaneously, and is capable of intelligently merging file differences.  Should more than one developer be working on a file at the same time, problems should be minimal.</p>
 
  <h2><a name="reviews">4.4 Configuration Reviews/Audits</a></h2>
-  <p>The SCM Administrator will review the SCML on a bi-weekly basis (ie, at the end of each iteration), during the integration of  code into the stable branch.
-  <p>We have node determined if we will have code reviews before the tagging of a build.</p>
- 
+  <p>The SCM Administrator will monitor the SCML after each check-in/creation, and alert the team to problems that may have been caused by the changes.</p>
+
  <h2><a name="archive">4.5 SCML Archives</a></h2>
-  <p>A current copy of the stable branch of the SCML will be included  in each bi-weekly release, in addition to the binary executables.</p>
+  <p>CVS is designed to do archiving, so no additional archiving will be done.
+  <p>Because of the structure of cvs usage, every developer will have a working copy of the SCML in their development environment.  As a result, no explicit form of backup will be used.</p>
 
 
 
