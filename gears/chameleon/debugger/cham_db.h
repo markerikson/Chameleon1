@@ -19,8 +19,8 @@
 #include <wx/event.h>
 #include <wx/txtstrm.h>
 
-#include "../gears_chameleon/common/process2.h"
-#include "../gears_chameleon/common/process2events.h"
+#include "../common/process2.h"
+#include "../common/process2events.h"
 
 //global declarations
 const int MAX_HIST_ITEMS = 50;
