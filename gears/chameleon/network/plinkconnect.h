@@ -40,6 +40,7 @@ class PlinkConnect : public wxEvtHandler {
 		wxString output;
 		wxString errlog;
 		wxString message;
+		wxString lastcmd;
 		// Streams:
 		wxInputStream* rin;
 		wxInputStream* rerr;
