@@ -22,6 +22,9 @@
 #include "../common/process2.h"
 #include "../common/process2events.h"
 
+//dave code
+#include <wx/textctrl.h>
+
 //global declarations
 const int MAX_HIST_ITEMS = 50;
 const char PROMPT_CHAR = '%';
@@ -64,7 +67,7 @@ class Debugger : public wxEvtHandler
 {
 	public:
 		//defaults
-		Debugger(bool mode, wxString fName, wxString execThis);
+		Debugger(bool mode, wxString fName, wxString execThis, wxTextCtrl* outBox);
 		~Debugger();					//destructor
 
 		//status modifiers
@@ -74,7 +77,7 @@ class Debugger : public wxEvtHandler
 		bool setFile(wxString fName);	//sets a file for debugging
 		wxString getFile();				//returns current file up for debugging
 
-		int genericStatus();				//returns current debug status
+		int genericStatus();			//returns current debug status
 		int programStatus();
 		wxString errorMsg();			//returns error message, if any
 		bool resetStatus();				//resets from error
@@ -95,19 +98,19 @@ class Debugger : public wxEvtHandler
 		void step();
 		void stepOver();				//execute function lines (don't go into)
 		void stepOut();					//execute current stack frame to finish
-		bool jump(int lineNum);			//go to line # and run
+		void jump(int lineNum);			//go to line # and run
 		void go();						//run program
 		void cont();					//continue debugging
 		//CODE IN A RUN-TO-CURSOR function
 
-		/* \/ WHERE I AM \/ */
 		//variable management
-		//return /set value of a variable
-		wxString snoopVar(wxString varName);
-		bool setVar(wxString varName, wxString newValue);
+		void snoopVar(wxString varName, bool oneShot);
+		void setVar(wxString varName, wxString newValue);
+		void removeVar(wxString varName);
 
 		//misc management
 		bool stop(bool pleaseRestart);	//kills process & reloads it (?)
+		void kill();					//simple?
 		int getCurrLine();				//returns current line number on debug
 		//use STEPI ^
 
@@ -158,13 +161,16 @@ class Debugger : public wxEvtHandler
 		wxArrayString varNames;		//holds variables being watched
 		wxArrayString varValue;		//holds variable values
 		wxArrayInt varDispIndex;	//holds variable "display#" assigned by GDB
-		int topVarIndex;			//holds array position to insert next var
-		int varCount;				//holds next GDB display #
+		int gdbVarIndex;			//holds next GDB display #
+		int varCount;				//holds array position to insert next var
 		
 		wxString firstExecString;	//holds the first executed string
 		wxProcess2 *debugProc;		//holds pointer to process pipe
 		wxInputStream *streamIn;		//GDB to me
 		wxInputStream *streamError;		//problems
+
+		//dave code
+		wxTextCtrl* outputScreen;
 
 		DECLARE_EVENT_TABLE()
 };

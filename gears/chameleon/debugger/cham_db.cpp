@@ -20,14 +20,18 @@
 *              new functions... re-did a few functions, changed
 *              some logic.  I feel like I'm debugging without
 *              compiling!  AUGH!
+*BSC-03/19/04->Alright... i'm adapting my code into Dave's window
+*              API so I can test it.  All portions with "cout"
+*              debug statements have been altered & "dave's code"
+*              shows obvious places i've moded.
 \*****************************************************************/
 
 #include "cham_db.h"
 //#include <wx/process.h>
 #include <wx/file.h>
-#include <iostream>
+//#include <iostream>
 
-using namespace std;
+//using namespace std;
 
 // Event Table Declaration
 BEGIN_EVENT_TABLE(Debugger, wxEvtHandler)
@@ -37,8 +41,11 @@ BEGIN_EVENT_TABLE(Debugger, wxEvtHandler)
 END_EVENT_TABLE()
 
 //straight up constructor
-Debugger::Debugger(bool mode, wxString fName, wxString execThis)
+Debugger::Debugger(bool mode, wxString fName, wxString execThis, wxTextCtrl* outBox)
 {
+	//dave code
+	outputScreen = outBox;
+
 	//generic initialization
 	isRemote = mode;			//false = local
 	procLives = false;
@@ -51,7 +58,8 @@ Debugger::Debugger(bool mode, wxString fName, wxString execThis)
 	deadBreakpoints = 0;
 	errorCount = 0;
 	currDebugLine = 0;
-	topVarIndex = 0;
+	gdbVarIndex = 0;
+	
 
 	firstExecString = execThis;
 
@@ -70,6 +78,8 @@ Debugger::Debugger(bool mode, wxString fName, wxString execThis)
 		status = DEBUG_NEED_FILE;
 		fileIsSet = false;
 	}
+
+	varCount = 0;
 
 	//begin funky process stuff
 	debugProc = new wxProcess2(this);
@@ -105,6 +115,9 @@ Debugger::Debugger(bool mode, wxString fName, wxString execThis)
 	{
 		int currInit = 0;
 		wxArrayString initString;
+
+		//dave code
+		(*outputScreen) << "Started Process.  PID: " << pid << "\n";
 
 		procLives = true;
 
@@ -350,7 +363,7 @@ bool Debugger::resetStatus()
 		data.Empty();
 		varNames.Empty();
 		varValue.Empty();
-		topVarIndex = 0;
+		gdbVarIndex = 0;
 
 		return(true);
 	}
@@ -646,10 +659,9 @@ void Debugger::stepOut()
 //jump(): jumps to a given [lineNum] and then RUNs from there.  I might
 //  modify this function to accept a boolean to STEP or RUN from the given
 //  line number.
-bool Debugger::jump(int lineNum)
+void Debugger::jump(int lineNum)
 {
 	/* will be completed if needed*/
-	return(false);
 }
 
 // go(): run the program using GDB.
@@ -671,10 +683,22 @@ void Debugger::go()
 
 bool Debugger::stop(bool pleaseRestart)
 {
+	if(status == DEBUG_RUNNING || status == DEBUG_ERROR)
+	{
+		debugProc->Kill(pid, wxSIGKILL);	//KILL KILL KILL!!
+	} 
+	else if(status == DEBUG_DEAD)
+	{
+		//um... hello!
+	}
+	else
+	{
+		command = "quit";
+		sendCommand(command);
+	}
+
 	classStatus = STOP;
 	status = DEBUG_STOPPED;
-
-	debugProc->Kill(pid, wxSIGKILL);	//KILL KILL KILL!!
 
 	if(pleaseRestart)
 	{
@@ -752,6 +776,15 @@ bool Debugger::stop(bool pleaseRestart)
 	return(true);
 }
 
+//kill(): questions?
+void Debugger::kill()
+{
+	classStatus = STOP;
+	status = DEBUG_STOPPED;
+
+	debugProc->Kill(pid, wxSIGKILL);	//KILL KILL KILL!!
+}
+
 //cont(): continues running a stopped program
 void Debugger::cont()
 {
@@ -762,6 +795,43 @@ void Debugger::cont()
 		sendCommand(command);
 
 	}
+}
+
+//VARIABLE FUNCTIONALITY
+//----------------------
+// there are only 2 functions here: a snoopVar and a setVar.
+// do you need anything else?  ^_^
+
+//snoopVar(): returns the variable's value, and if oneShot = false
+//  will add it to the watch list.
+void Debugger::snoopVar(wxString varName, bool oneShot = true)
+{
+	if(status == DEBUG_STOPPED || 
+		status == DEBUG_WAIT ||
+		status == DEBUG_BREAK)
+	{
+		classStatus = WATCH_VAR;
+		command.Printf("print %s%s", varName.c_str(), returnChar.c_str());
+		//sendCommand(command);
+
+		if(!oneShot)
+		{
+			wxString tmp;
+			tmp.Printf("display %s%s", varName.c_str(), returnChar.c_str());
+			command.Append(tmp.c_str());
+			//sendCommand(command);
+		}
+
+		sendCommand(command);
+	}//end status check
+}
+
+void Debugger::setVar(wxString varName, wxString newValue)
+{
+}
+
+void Debugger::removeVar(wxString varName)
+{
 }
 
 //PRIVATE FUNCTIONS:
@@ -784,7 +854,14 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 	status = DEBUG_WAIT;
 
 	//data now has the output...
-	data.Add(e.GetOutput());
+	tempHold = e.GetOutput();
+	data.Add(tempHold);
+	tempHold.Empty();
+
+	//data.Add(e.GetOutput());
+
+	//~~DEBUG CODE~~//
+	(*outputScreen)<<"--Output:\n"<<tempHold<<"\n--end output--\n";
 
 	//What we're doing with output events:
 	//1) See if the captured string has a [$] all by itself at the end
@@ -807,7 +884,7 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 	}
 
 	//check to see if something good was found.
-	if(classStatusBackup == 0)
+	if(classStatusBackup != 0)
 	{
 		classStatusBackup = classStatus;
 		classStatus = WAITING;
@@ -876,8 +953,8 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 
 			firstCase = tempHold.Left(14);
 			
-			initPos = (tempHold.Find(" at ")) + 4;
-			if(initPos >= 0)
+			initPos = (tempHold.Find(" at ")) + 4;	//-1 if not there...
+			if(initPos >= 4)
 			{
 				finalPos = tempHold.Find(returnChar);
 				secondCase = tempHold.Mid(initPos, (initPos - finalPos));
@@ -914,9 +991,9 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 					tmp.ToLong(&mark_lineNum);
 
 					/*DEBUG CODE*/
-					cout<<"Case 2:"<<endl;
-					cout<<"Captured filename: "<<mark_fileName.c_str()<<endl;
-					cout<<"Captured line num: "<<mark_lineNum<<endl;
+					(*outputScreen)<<"Case 2:\n";
+					(*outputScreen)<<"Captured filename: "<<mark_fileName.c_str()<<"\n";
+					(*outputScreen)<<"Captured line num: "<<mark_lineNum<<"\n";
 				}
 				else
 				{
@@ -933,8 +1010,8 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 				thirdCase.ToLong(&mark_lineNum);
 
 				/*DEBUG CODE*/
-				cout<<"Case 3:"<<endl;
-				cout<<"Captured line num: "<<mark_lineNum<<endl;
+				(*outputScreen)<<"Case 3:\n";
+				(*outputScreen)<<"Captured line num: "<<mark_lineNum<<"\n";
 			}
 			break;
 
