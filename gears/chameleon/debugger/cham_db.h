@@ -111,9 +111,9 @@ class Debugger : public wxEvtHandler
 		void step();
 		void stepOver();				//execute function lines (don't go into)
 		void stepOut();					//execute current stack frame to finish
-		void jump(int lineNum);			//go to line # and run
 		void go();						//run program
 		void cont();					//continue debugging
+		void runToCursor(wxString srcFile, int lineNum);	//
 		//CODE IN A RUN-TO-CURSOR function
 
 		//variable management
@@ -185,6 +185,7 @@ class Debugger : public wxEvtHandler
 		StringStringHashmap varRegExes;
 		wxString Filename, Linenumber, FuncName;	//globals for use in parse
 
+		//obsolete or unused code
 		//wxArrayString varNames;		//holds variables being watched
 		//wxArrayString varValue;		//holds variable values
 		//wxArrayInt varDispIndex;	//holds variable "display#" assigned by GDB

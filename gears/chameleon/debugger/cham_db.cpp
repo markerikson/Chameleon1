@@ -75,7 +75,8 @@ Debugger::Debugger(wxTextCtrl* outBox, Networking* networking, wxEvtHandler* poi
 	classStatus = STOP;
 	myConnection = networking;
 
-
+	//reg-Ex for Variable watching
+	//------
 	// ints - "$n = val"
 	// look for a space first, to make sure we don't grab the GDB print number instead
 	varRegExes["int"] = " ([[:digit:]]+)";
@@ -169,8 +170,9 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 	wxString firstFile;
 	wxString sendAllBreakpoints;
 	
-	if((eventCommand == ID_DEBUG_ADD_BREAKPOINT) ||
-			(eventCommand == ID_DEBUG_REMOVE_BREAKPOINT) )
+	if( eventCommand == ID_DEBUG_ADD_BREAKPOINT ||
+		eventCommand == ID_DEBUG_REMOVE_BREAKPOINT ||
+		eventCommand == ID_DEBUG_RUN_TO_LINE)
 	{
 		firstFile = event.GetSourceFilename();
 		eventLineNum = event.GetLineNumber();
@@ -264,6 +266,10 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 		break;
 	case ID_DEBUG_CONTINUE:
 		cont();
+		break;
+
+	case ID_DEBUG_RUN_TO_LINE:
+		runToCursor(firstFile, eventLineNum);
 		break;
 
 	case ID_DEBUG_ADD_BREAKPOINT:
@@ -832,12 +838,22 @@ void Debugger::stepOut()
 	//if not stopped or waiting, then program status is not good for stepOut
 }
 
-//jump(): jumps to a given [lineNum] and then RUNs from there.  I might
-//  modify this function to accept a boolean to STEP or RUN from the given
-//  line number.
-void Debugger::jump(int lineNum)
+//runToCursor(): it runs to the cursor.  GDB has a nice one-shot breakpoint
+//  called "tbreak" so i set that, and send a "cont()" command.  :)
+void Debugger::runToCursor(wxString srcFile, int lineNum)
 {
-	/* will be completed if needed*/
+	if(status == DEBUG_WAIT || status == DEBUG_BREAK)
+	{
+		//GDB automatically sets & kills the breakpoint, but the number is incremented
+		gdbBreakpointNum++;
+
+		command.Printf("tbreak \"%s:%d\"%s", srcFile, lineNum, returnChar);
+		sendCommand(command);
+
+		cont();
+	}
+
+	//if not stopped or waiting, then program status is not good for stepOut
 }
 
 // go(): run the program using GDB.
@@ -952,9 +968,9 @@ void Debugger::cont()
 		classStatus = CONTINUE;
 		status = DEBUG_RUNNING;
 		sendCommand(command);
-
 	}
 }
+//END STEP FUNCTIONALITY
 
 //VARIABLE FUNCTIONALITY
 //----------------------
@@ -1468,6 +1484,7 @@ bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 	}
 	return(true);
 }
+//END VARIABLE FUNCTIONALITY
 
 //PRIVATE FUNCTIONS:
 //------------------
@@ -1615,13 +1632,21 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 
 		case CONTINUE:
 		case GO:
+		{
 			keepParsing = checkOutputStream(tempHold);
 
 			if(keepParsing)
 			{
 				if(classStatus == STOP)
 				{
-					
+					int progIdx = tempHold.Index("Program");
+					if(progIdx != 0)
+					{
+						wxLogDebug("\n-->Supposed User Output:\n");
+						wxLogDebug(tempHold.Mid(0,progIdx));
+						wxLogDebug("\n");
+					}
+
 					outputEvent.SetId(ID_DEBUG_EXIT_NORMAL);
 					guiPointer->AddPendingEvent(outputEvent);
 					stop(false);
@@ -1669,8 +1694,19 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 					break;
 				}
 			}
+			else
+			{
+				int progIdx = tempHold.Index("Program");
+				if(progIdx != 0)
+				{
+					wxLogDebug("\n-->Supposed User Output:\n");
+					wxLogDebug(tempHold.Mid(0,progIdx));
+					wxLogDebug("\n");
+				}
+			}
 			data.Empty();
 			break;
+		}
 
 		case JUMP:
 		case SOFT_RESET:
