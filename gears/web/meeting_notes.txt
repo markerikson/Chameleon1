@@ -394,3 +394,65 @@ by: Ben
 >>To DO:
 	*Meeting tomorrow 8pm!!
 	*Adapt permissions with try_catch blocks (if file doesn't open, keep track... return -1)
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Group Meeting 01/25/2004 11:15pm (2nd of the year)
+by: Ben
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+>>Discussions on the save-file problems.  Solutions for crash errors.
+>>Things broken in the initial beta demo:
+	-tab names?  fixed
+	-caching? fixed
+	-saving? working...
+>>Release v2!!
+	-user interface re-working
+		~networking
+		~open dialogue: if network connection fails, error message shows but open dialogue shows anyway.  kill.
+		~starting Chameleon: clicking "open" results in "unknown network error"
+		~Ben needs to play with it.
+		~Local / Remote play with items... after / before the open dialogue?  BEFORE: it's standard, easier to code.
+		~network transparency with debugging?  how will it make sense to the user?  USE CASE!!!
+	-what do we need?
+		~terminal (working & embedded).  Doable for next beta?
+			*TA telnet?
+			*GT code -- provides functionality?  not entirely...
+			*Tera-term -- weird liscence... no colors ;).  SSH is an add-on DLL!  oooh.
+			*Putty...?  Yanking it out?  Converting?  dave doesn't know... but he's hopeful (last hope??)
+			*Plink?
+		~Prof Program!
+
+>>What to look for in next meeting:
+	*Dave: GT code providing functionality
+	     : Putty fixups
+	*Mark: Save file dialogue?
+	*Ben : Get a professor program running!!  Debugger>> it MUST be working when they're ready for it.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Group Meeting 01/29/2004 8:55pm
+by: Ben
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+>>review
+	~we have a beta!!
+	~what now?
+>>Chasing bugs
+>>Ben's Debugger
+	~What is GDB capable of doing?
+	~Basic functionality >> advanced
+	~C++ Delphi?  Check it out to see how they wrap GDB.
+	~Meeting Friday, 10pm
+>>What we need now
+	~permissions (prof program, adding things to it's list)
+	~Features list
+		-refresh button (for remote dir. listing)
+		-terminal
+		-debugging
+		-compiling (remote & local)
+		-project management (beasty)
+>>For Next Thursday
+	~get some bugs / all bugs
+	~refresh
+	~talk about Terminal (mark & Dave)
+	~options / prof program
+>>Modes
+	~"R" or "L" per tab
+	~icon in toolbar indicating what mode?  Status bar indicator on file's mode?
+	~toggle switch / button in tool-bar
