@@ -1,35 +1,72 @@
-#ifndef __COMPILER__ENDED__EVENT__
-#define __COMPILER__ENDED__EVENT__
+#ifndef __COMPILER__EVENT__
+#define __COMPILER__EVENT__
 
 #include <wx/event.h>
 #include <wx/filename.h>
 #include "../common/debug.h"
 
-DECLARE_EVENT_TYPE(wxEVT_COMPILER_ENDED, wxID_ANY)
+DECLARE_EVENT_TYPE(chEVT_COMPILER_START, wxID_ANY)
+DECLARE_EVENT_TYPE(chEVT_COMPILER_PROBLEM, wxID_ANY)
+DECLARE_EVENT_TYPE(chEVT_COMPILER_END, wxID_ANY)
+
+enum Trinary {
+	TRI_ERROR = -1,
+	TRI_OK = 0,
+	TRI_TERMINATED = 1,
+};
 
 
-class wxCompilerEndedEvent : public wxEvent
+class CompilerEvent : public wxEvent
 {
 	public:
-		wxCompilerEndedEvent(bool isSuccessful, wxFileName outfile);
-		bool wasSuccessful();
-		wxFileName GetExecFile();
-		virtual wxEvent *Clone() const { return new wxCompilerEndedEvent(*this); }
+		CompilerEvent(wxEventType eventtype);
+
+		wxFileName GetFile() { return m_file; }
+		int GetInt() { return m_num; }
+		Trinary GetTrinary() { return m_tri; }
+		wxString GetString() { return m_strng; }
+		wxString GetString2() { return m_strng2; }
+
+		void SetFile(wxFileName file) { m_file = file; }
+		void SetInt(int i) { m_num = i; }
+		void SetTrinary(Trinary t) { m_tri = t; }
+		void SetString(wxString s) { m_strng = s; }
+		void SetString2(wxString s) { m_strng2 = s; }
+
+		virtual wxEvent *Clone() const { return new CompilerEvent(*this); }
+
 
 	public:
-		bool m_success;
-		wxFileName m_resultFile;
+		wxFileName m_file;
+		Trinary m_tri;
+		int m_num;
+		wxString m_strng;
+		wxString m_strng2;
 
 };
 
-typedef void (wxEvtHandler::*wxCompilerEndedEventFunction)(wxCompilerEndedEvent&);
+typedef void (wxEvtHandler::*chCompilerEventFunction)(CompilerEvent&);
 
-#define EVT_COMPILER_ENDED(fn) \
+#define EVT_COMPILER_START(fn) \
 	DECLARE_EVENT_TABLE_ENTRY( \
-			wxEVT_COMPILER_ENDED, wxID_ANY, wxID_ANY, \
-			(wxObjectEventFunction)(wxEventFunction)(wxCompilerEndedEventFunction)&fn, \
+			chEVT_COMPILER_START, wxID_ANY, wxID_ANY, \
+			(wxObjectEventFunction)(wxEventFunction)(chCompilerEventFunction)&fn, \
 			(wxObject *) NULL),
 
 
-#endif  // __COMPILER__ENDED__EVENT__
+#define EVT_COMPILER_PROBLEM(fn) \
+	DECLARE_EVENT_TABLE_ENTRY( \
+			chEVT_COMPILER_PROBLEM, wxID_ANY, wxID_ANY, \
+			(wxObjectEventFunction)(wxEventFunction)(chCompilerEventFunction)&fn, \
+			(wxObject *) NULL),
+
+
+#define EVT_COMPILER_END(fn) \
+	DECLARE_EVENT_TABLE_ENTRY( \
+			chEVT_COMPILER_END, wxID_ANY, wxID_ANY, \
+			(wxObjectEventFunction)(wxEventFunction)(chCompilerEventFunction)&fn, \
+			(wxObject *) NULL),
+
+
+#endif  // __COMPILER__EVENT__
 

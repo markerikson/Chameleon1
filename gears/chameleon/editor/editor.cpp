@@ -29,7 +29,7 @@ BEGIN_EVENT_TABLE(ChameleonEditor, wxStyledTextCtrl)
 	EVT_MENU			(ID_DEBUG_ADD_BREAKPOINT, ChameleonEditor::OnAddBreakpoint)
 	EVT_MENU			(ID_DEBUG_REMOVE_BREAKPOINT, ChameleonEditor::OnRemoveBreakpoint)
 	EVT_MENU			(ID_DEBUG_CLEAR_ALL_BREAKPOINTS, ChameleonEditor::OnClearBreakpoints)
-	EVT_COMPILER_ENDED	(ChameleonEditor::OnCompilerEnded)
+	EVT_COMPILER_END	(ChameleonEditor::OnCompilerEnded)
 END_EVENT_TABLE()
 
 int CompareInts(int n1, int n2)
@@ -596,11 +596,11 @@ void ChameleonEditor::SetCompiled()
 	m_project->SetCompiled(true);
 }
 
-void ChameleonEditor::OnCompilerEnded(wxCompilerEndedEvent &event)
+void ChameleonEditor::OnCompilerEnded(CompilerEvent &event)
 {
-	if(event.wasSuccessful()) {
+	if(event.GetTrinary() == TRI_OK) {
 		m_bHasBeenCompiled = true;
-		m_executableFilename = event.GetExecFile();
+		m_executableFilename = event.GetFile();
 	}
 }
 

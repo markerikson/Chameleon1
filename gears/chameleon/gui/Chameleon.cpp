@@ -519,6 +519,7 @@ void ChameleonWindow::OnMenuEvent(wxCommandEvent &event)
 			else 
 			{
 				wxLogDebug("Tried to start Terminal with invalid networking status: %d", isok);
+				CheckNetworkStatus();//  <--- causes some problems
 			}
 			break;
 		}

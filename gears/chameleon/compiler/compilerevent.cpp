@@ -1,20 +1,12 @@
 #include "compilerevent.h"
 
 
-DEFINE_EVENT_TYPE(wxEVT_COMPILER_ENDED)
+DEFINE_EVENT_TYPE(chEVT_COMPILER_START)
+DEFINE_EVENT_TYPE(chEVT_COMPILER_PROBLEM)
+DEFINE_EVENT_TYPE(chEVT_COMPILER_END)
 
-wxCompilerEndedEvent::wxCompilerEndedEvent(bool isSuccessful, wxFileName outfile)
+CompilerEvent::CompilerEvent(wxEventType t)
+	: wxEvent(t)
 {
-	m_success = isSuccessful;
-	m_resultFile = outfile;
-}
-
-
-bool wxCompilerEndedEvent::wasSuccessful()
-{
-	return m_success;
-}
-
-wxFileName wxCompilerEndedEvent::GetExecFile() {
-	return m_resultFile;
+	//
 }

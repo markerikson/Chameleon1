@@ -69,7 +69,7 @@ private:
 	void OnAddBreakpoint(wxCommandEvent &event);
 	void OnRemoveBreakpoint(wxCommandEvent &event);
 	void OnClearBreakpoints(wxCommandEvent &event);
-	void OnCompilerEnded(wxCompilerEndedEvent &event);
+	void OnCompilerEnded(CompilerEvent &event);
 
 	void CreateBreakpointEvent(int linenumber, bool addBreakpoint);
 	

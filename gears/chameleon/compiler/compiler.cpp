@@ -158,8 +158,15 @@ void Compiler::OnProcessOut(ChameleonProcessEvent& e)
 				m_receivedToken = false;
 
 				// Signal Chameleon
-				wxCompilerEndedEvent evt(success, m_currOutfile);
-				ProcessEvent(evt); // synchronous because I detach in the very next line
+				CompilerEvent e(chEVT_COMPILER_END);
+				if(success) {
+					e.SetTrinary(TRI_OK);
+				}
+				else {
+					e.SetTrinary(TRI_ERROR);
+				}
+				e.SetFile(wxFileName(m_currOutfile));
+				ProcessEvent(e); // synchronous because I detach in the very next line
 				SetNextHandler(NULL);
 
 				// Signal the User
