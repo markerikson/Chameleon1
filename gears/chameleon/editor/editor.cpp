@@ -443,6 +443,10 @@ void ChameleonEditor::ResetEditor()
 	SetSavePoint();
 	EmptyUndoBuffer();
 	m_fileNameAndPath.Clear();
+	m_breakpoints.Clear();
+	
+	MarkerDeleteAll(MARKER_BREAKPOINT);
+	MarkerDeleteAll(MARKER_FOCUSEDLINE);
 
 	if(m_project != NULL && m_project->IsSingleFile())
 	{
