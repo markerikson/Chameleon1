@@ -24,6 +24,8 @@
 *              API so I can test it.  All portions with "cout"
 *              debug statements have been altered & "dave's code"
 *              shows obvious places i've moded.
+*BSC-04/03/04->So much has changed that it's not funny.  Debug
+*              event code has been changed to work with projects.
 \*****************************************************************/
 
 //#define CRTDBG_MAP_ALLOC
@@ -124,6 +126,10 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 	ProjectInfo* proj = event.GetProject();
 
 	wxArrayString srcFiles = proj->sourceFiles;//event.GetSourceFilenames();
+
+	wxArrayString gui_var_names;
+	wxString varName;
+	
 	wxArrayInt breakpointLines;
 
 	FileBreakpointHash breakpointList;
@@ -144,7 +150,8 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 			eventLineNum = event.GetLineNumber();
 		}
 	}
-	else*/ if((eventCommand == ID_DEBUG_ADD_BREAKPOINT) ||
+	else*/ 
+	if((eventCommand == ID_DEBUG_ADD_BREAKPOINT) ||
 			(eventCommand == ID_DEBUG_REMOVE_BREAKPOINT) )
 	{
 		firstFile = event.GetSourceFilename();
@@ -154,6 +161,13 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 	if(eventCommand == ID_DEBUG_START)
 	{
 		breakpointList = event.GetFileBreakpoints();
+	}
+
+	if( eventCommand == ID_DEBUG_WATCHVAR ||
+		eventCommand == ID_DEBUG_REMOVE_VAR)
+	{
+		gui_var_names = event.GetVariableNames();
+		varName = gui_var_names[0];
 	}
 
 	//loop vars
@@ -222,6 +236,14 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 
 	case ID_DEBUG_REMOVE_BREAKPOINT:
 		killBreak(firstFile, eventLineNum);
+		break;
+
+	case ID_DEBUG_WATCHVAR:
+		snoopVar(varName, false);
+		break;
+
+	case ID_DEBUG_REMOVE_VAR:
+		removeVar(varName);
 		break;
 
 	//case ID_DEBUG_RUNTOCURSOR:
@@ -843,6 +865,12 @@ void Debugger::stop(bool pleaseRestart)
 			sendCommand(command);
 		}
 
+		if(varCount > 0)
+		{
+			command = "delete display" + returnChar;
+			sendCommand(command);
+		}
+
 		if(fileIsSet)
 		{
 			command = "file" + returnChar;
@@ -919,27 +947,52 @@ void Debugger::cont()
 //  will add it to the watch list.
 void Debugger::snoopVar(wxString varName, bool oneShot)
 {
+	wxString tmp;
+	wxDebugEvent outputEvent;
+
 	if(	status == DEBUG_WAIT ||
 		status == DEBUG_BREAK)
 	{
 		classStatus = WATCH_VAR;
-		command.Printf("print %s%s", varName.c_str(), returnChar.c_str());
+		command.Clear();
+		
+		//get the type
+		tmp.Printf("whatis %s%s", varName.c_str(), returnChar.c_str());
+		command.Append(tmp.c_str());
+
+		tmp.Clear();
+		tmp.Printf("print %s%s", varName.c_str(), returnChar.c_str());
+		command.Append(tmp.c_str());
 		//sendCommand(command);
 
 		if(!oneShot)
 		{
-			wxString tmp;
+			//set it to watching
+			tmp.Clear();
 			tmp.Printf("display %s%s", varName.c_str(), returnChar.c_str());
 			command.Append(tmp.c_str());
 
 			//add the variable being watched to our repository.
 			//this will be used to match up name/value pairs in onProcessOutput
 			varNames.Add(varName);
+			varDispIndex.Add(gdbVarIndex);
 
 			//gdbVarIndex = the # GDB uses
 			//varCount = my index for varNames[] and varValue[]
 			gdbVarIndex++;
 			varCount++;
+
+			if(varCount != (int)varNames.GetCount())
+			{
+				error = "Variable name array mismatched with # of displayed variables\n";
+				makeGenericError("snoopVar: ");
+				error.Printf("Variable count=%d, array count=%d", varCount, (int)varNames.GetCount()));
+				makeGenericError("snoopVar: ");
+
+				outputEvent.SetStatus(ID_DEBUG_EXIT_ERROR);
+				guiPointer->AddPendingEvent(outputEvent);
+				stop(false);
+			}
 		}
 
 		sendCommand(command);
@@ -1105,7 +1158,6 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 					outputEvent.SetStatus(ID_DEBUG_EXIT_NORMAL);
 					guiPointer->AddPendingEvent(outputEvent);
 					stop(false);
-					data.Empty();
 					break;
 				}
 
@@ -1208,7 +1260,6 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 			// [topVarIndex]
 			//If we only get text in the stream, raise an error; we tried
 			// to snoop a non-existant variable.
-		
 			break;
 		}
 
@@ -1239,7 +1290,6 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 					outputEvent.SetStatus(ID_DEBUG_EXIT_NORMAL);
 					guiPointer->AddPendingEvent(outputEvent);
 					stop(false);
-					data.Empty();
 					break;
 				}
 
