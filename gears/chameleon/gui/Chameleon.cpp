@@ -24,7 +24,6 @@
 #include "dialogs/wxTermContainer.h"
 #include "dialogs/VariableWatchPanel.h"
 #include "../common/ChameleonPrintout.h"
-#include "../common/PasswordEncryptor.h"
 #include "../perms/p.h"
 #include "../common/ProjectInfo.h"
 #include "../network/networking.h"
@@ -2701,6 +2700,7 @@ void ChameleonWindow::OnUpdateDebugUI(wxUpdateUIEvent &event)
 		}
 
 		// TODO Better determination (project-based is needed too)
+		// TODO The debugger still isn't responding properly... status issues?
 		bool canStartDebug = !m_currentEd->Modified() && 
 							m_currentEd->HasBeenCompiled() &&
 							m_currentEd->HasBeenSaved();
@@ -2729,7 +2729,9 @@ void ChameleonWindow::OnUpdateCompileUI(wxUpdateUIEvent &event)
 	bool canCompile = false;
 	ProjectInfo* edProj = m_currentEd->GetProject();
 
+	
 	wxToolBar* tb = GetToolBar();
+	/*
 	wxToolBarToolBase* compileButton = tb->FindById(ID_COMPILE);
 	
 	bool isCompiling = m_compiler->IsCompiling();
@@ -2751,9 +2753,10 @@ void ChameleonWindow::OnUpdateCompileUI(wxUpdateUIEvent &event)
 	}
 
 	bool enableButton = currentProjCompiling || !isCompiling;
+	*/
 
-
-	tb->EnableTool(ID_COMPILE, enableButton);
+	//tb->EnableTool(ID_COMPILE, enableButton);
+	tb->EnableTool(ID_COMPILE, edProj->IsCompiled() && !edProj->IsBeingCompiled());
 }
 
 
@@ -2865,6 +2868,8 @@ void ChameleonWindow::OnFindEvent(wxFindDialogEvent& event)
 		m_currentEd->SetSelection(pos, pos + replaceString.Length());
 
 		m_currentEd->SetFocus();
+
+		// TODO Do a Find after this for the next item automatically?
 	}
 	else if (type == wxEVT_COMMAND_FIND_REPLACE_ALL)
 	{
