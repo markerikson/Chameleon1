@@ -110,13 +110,13 @@ bool Permission::setGlobal(long newAuthCode)
 	long int fuzz = newAuthCode;
 
 	//load up the authorization array with the new permissions
-	bitset<NUM_MODULES> temp(code);
+	bitset<NUM_MODULES> temp(newAuthCode);
 	auth = temp;
 
 	//test for successful pass
-	code = auth.to_ulong();
+	newAuthCode = auth.to_ulong();
 
-	if(code != fuzz)
+	if(newAuthCode != fuzz)
 		return(false);
 
 	authCode = newAuthCode;
