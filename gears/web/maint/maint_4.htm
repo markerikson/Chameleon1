@@ -39,6 +39,8 @@
         <dd>Definitely useful.  This is not a necessary feature, but if implemented would be useful.  We underestimated the complexity of this feature, and ran out of time.  The Scintilla Widget has the hooks to display popup windows for autocompletion and member completion, which is why this feature was added to the requirements list.  But, the Editor would be responsible for keeping track of what's typed and telling Scintilla to pop up a window with the appropriate information.</dd>
       <dt><h3>Code Folding.  </h3></dt>
         <dd>Potentially useful.  Again, Scintilla supports this, and shouldn't be that hard to implement. We just didn't have enough time.</dd>
+      <dt><h3>Local Processes.  </h3></dt>
+        <dd>The ability to run the MinGW versions of GDB and G++ on the local system was never finished.  This would be useful for doing work without having to be connected to the network, but is outside the Project Requirements.</dd>
     </dl>
 
     <br>
@@ -61,6 +63,10 @@
       <dt><h3>Auto-Save/Backup Save.</h3></dt>
       <dt><h3>Integrate the Plink code more directly into Chameleon instead of running it externally.</h3></dt>
       <dt><h3>Port to Linux.</h3></dt>
+      <dt><h3>Smart Build/Compile.</h3></dt>
+        <dd>For multi-file projects, the compiler currently rebuilds every file.  Extending the Compiler or Project Manager to keep track of object files and date stamps would make compilation quicker.</dd>
+      <dt><h3>Terminal Resizing.</h3></dt>
+        <dd>The built-in terminal is currently limited to commandline functionality because the backend does not handle resize events.</dd>
     </dl>
 
 
