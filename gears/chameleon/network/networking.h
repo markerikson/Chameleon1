@@ -1,20 +1,13 @@
 /***********************
  *
- * Alternative's that may be considered.  My prefernce(for now), are the ones being used.
- *   wxString GetFile(wxString path_file);
- *   wxString GetFileContents(wxString file, wxString path);
- *   wxString GetFileContents(wxString path_file);
- *   int SendFile(wxString lpath_file, wxString rpath_file);
- *   int SendFileContents(wxString file, wxString path);
- *   wxString GetFileContents(wxString path_file);
- *
  * Consideration needs to be made for (perceived) overwriting of files
- *
  *
  * Internally, I will keep the trailing / on directories, but...
  * Externally, I will receive pathes without trailing /
  *
  * When I have path_name that means path+name (ie. "c:/windows/plink.exe")
+ *
+ * 1/18/04 - No longer passing files to/fro, instead passing the contents of the files
  *
  ***************************/
 
@@ -33,28 +26,25 @@ class Networking {
 		void SetPlinkProg(wxString path_name);
 		void SetPscpProg(wxString path_name);
 		void SetDetails(wxString hostname, wxString username, wxString passphrase);
-		void SetDefaultDownloadDir(wxString path);    //no trailing "/" ???
+		//void SetDefaultDownloadDir(wxString path);
 
 		// Methods
-		bool IsConnected();
+		//bool IsConnected(); No longer maintaining a live connection
 		wxString GetHomeDirPath();
-		DirListing GetDirListing(wxString dirPath);
-		wxString GetFile(wxString file, wxString path); // returns path+filename location of file locally
-		//wxString GetFile(wxString path_name); // for consistency's sake?
-		int SendFile(wxString lfile, wxString lpath, wxString rfile, wxString rpath);
-		//int SendFile(wxString lpath_name, wxString rpath_name); // consistancy?
-
-		// SSH Specific
-		//No longer maintaining a live connection,
-		//  all commands done in 'batch' mode
-		//int SSHConnect();
-		//int SSHDisconnect();
+		DirListing GetDirListing(wxString dirPath, bool includeHidden = false);
+		// Pass strings back and forth:
+		wxString GetFileContents(wxString file, wxString path);
+		int SendFileContents(wxString strng, wxString rfile, wxString rpath);
+		// As opposed to:
+		//wxString GetFile(wxString file, wxString path); // returns path+name of file locally
+		//int SendFile(wxString lfile, wxString lpath, wxString rfile, wxString rpath);
 
 
 	private:
 		// Methods:
-		DirListing GetSSHDirListing(wxString dirPath);
-		wxArrayString ParseLS(wxString strng);
+		DirListing SSHGetDirListing(wxString dirPath, bool includeHidden = false);
+		wxString SSHSendCommand(wxString command);
+		wxArrayString ParseLS(wxString strng, bool includeHidden);
 		// Data:
 		bool isConnected;
 		PlinkConnect* ssh_plink;

@@ -8,7 +8,7 @@
 #include <wx/event.h>
 
 
-class PlinkConnect : public wxEvtHandler {
+class PlinkConnect {
 
 	public:
 		// ..structors:
@@ -16,8 +16,7 @@ class PlinkConnect : public wxEvtHandler {
 					wxString username, wxString passphrase);
 		~PlinkConnect();
 		// Methods:
-		void sendCmd(wxString command);
-		bool isBusy();
+		void sendCommand(wxString command, bool isBatch = true); // use Batch!!!
 
 		// gets/sets
 		wxString getOutput();
@@ -28,16 +27,10 @@ class PlinkConnect : public wxEvtHandler {
 		void setUsername(wxString username);
 		void setPassphrase(wxString passphrase);
 
-
-		// Event Handlers:
-		//void onProcessTermEvent(wxProcessEvent &event);  // Dont't forget an Event in Event Table
-		void onProcessTermEvent();
-
 	private:
 		// Methods:
-		void send(wxString strng);
-		void sendCommand(wxString command, bool isBatch);
-		void cleanlogs();
+		void sendToStream(wxString strng);
+		void scrubLogs();
 		// Data:
 		wxString plinkApp, host, user, pass;
 		wxProcess* proc;
@@ -51,11 +44,6 @@ class PlinkConnect : public wxEvtHandler {
 		wxInputStream* rin;
 		wxInputStream* rerr;
 
-		//to be removed:
-		bool confirmConnected();
-
-	public:
-		DECLARE_EVENT_TABLE()
 };
 
 
