@@ -9,6 +9,10 @@ AppPublisher=Digital Gearheads
 AppVersion=1.0
 AppID={28B3D46A-A094-44A1-AEDC-A790DB2D20DE}
 UninstallDisplayName=Chameleon
+DefaultGroupName=Digital Gearheads
+OutputBaseFilename=ChameleonSetup10
+VersionInfoVersion=1.0
+VersionInfoCompany=Digital Gearheads
 [Files]
 Source: plink.exe; DestDir: {app}
 Source: pscp.exe; DestDir: {app}
