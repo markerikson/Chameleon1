@@ -36,6 +36,7 @@ class Options
 		bool SetRemoteCompileOut(wxString path_and_file);
 		bool SetLocalCompileOut(wxString path_and_file);
 		void SetPrintStyle(int style);
+		void SetShowToolbarText(bool useText);
 
 		// Accessors:  (inlined)
 		wxString GetPscpApp() { return m_pscpProg; }
@@ -48,6 +49,7 @@ class Options
 		wxString GetLocalCompileOut() { return m_localCompileOut; }
 		Permission* GetPerms() { return m_perms; }
 		int GetPrintStyle() { return m_printStyle; }
+		bool GetShowToolbarText() { return m_showToolbarText; }
 
 	private:
 		wxString m_pscpProg;
@@ -62,6 +64,8 @@ class Options
 		wxString m_localCompileOut;
 
 		int m_printStyle;
+
+		bool m_showToolbarText;
 
 		Permission* m_perms;
 };

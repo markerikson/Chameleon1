@@ -24,7 +24,8 @@ Options::Options()
 	m_printStyle = wxSTC_PRINT_BLACKONWHITE;
 
 	m_perms = new Permission();
-	int q = 42;
+	
+	m_showToolbarText = true;
 	//wxFileName pscpPath(wxGetCwd(), "pscp.exe");
 	//SetPscpApp(pscpPath.GetFullPath());
 	//wxFileName plinkPath(wxGetCwd(), "plink.exe");
@@ -108,6 +109,11 @@ bool Options::SetLocalCompileOut(wxString path_and_file) {
 void Options::SetPrintStyle(int style)
 {
 	m_printStyle = style;
+}
+
+void Options::SetShowToolbarText(bool useText)
+{
+	m_showToolbarText = useText;
 }
 
 
