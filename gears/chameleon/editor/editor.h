@@ -9,6 +9,7 @@
 
 class ChameleonWindow;
 class ChameleonNotebook;
+class wxFileName;
 
 
 class ChameleonEditor : public wxStyledTextCtrl
@@ -51,7 +52,8 @@ public:
 	wxString GetFileNameAndPath();
 	wxString GetFilename();
 	wxString GetFilePath();
-	void SetFileNameAndPath(wxString path, wxString name, bool fileIsRemote);
+	//void SetFileNameAndPath(wxString path, wxString name, bool fileIsRemote);
+	void SetFilename(wxFileName filename, bool fileIsRemote);
 	bool HasBeenSaved();
 	void ResetEditor();
 	bool LastSavedRemotely() 

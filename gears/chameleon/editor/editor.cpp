@@ -368,11 +368,13 @@ void ChameleonEditor::UpdateSyntaxHighlighting()
 	}
 }
 
-void ChameleonEditor::SetFileNameAndPath(wxString path, wxString name, bool fileIsRemote)
+//void ChameleonEditor::SetFileNameAndPath(wxString path, wxString name, bool fileIsRemote)
+void ChameleonEditor::SetFilename(wxFileName filename, bool fileIsRemote)
 {
 	m_bLastSavedRemotely = fileIsRemote;
 
-	m_fileNameAndPath.Assign(path, name, fileIsRemote ? wxPATH_UNIX : wxPATH_DOS);
+	//m_fileNameAndPath.Assign(path, name, fileIsRemote ? wxPATH_UNIX : wxPATH_DOS);
+	m_fileNameAndPath = filename;
 }
 
 wxString ChameleonEditor::GetFileNameAndPath()
