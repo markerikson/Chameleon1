@@ -72,6 +72,8 @@ bool AddVariableWatchDialog::Create( wxWindow* parent, wxWindowID id, const wxSt
     wxDialog::Create( parent, id, caption, pos, size, style );
 
     CreateControls();
+    GetSizer()->Fit(this);
+    GetSizer()->SetSizeHints(this);
     Centre();
 ////@end AddVariableWatchDialog creation
     return TRUE;
@@ -112,23 +114,21 @@ void AddVariableWatchDialog::CreateControls()
     wxBoxSizer* item9 = new wxBoxSizer(wxVERTICAL);
     item2->Add(item9, 0, wxGROW|wxALL, 5);
 
-    wxCheckBox* item10 = new wxCheckBox( item1, ID_CHECKBOX2, _("Variable inside class:"), wxDefaultPosition, wxDefaultSize, 0 );
+    wxCheckBox* item10 = new wxCheckBox( item1, ID_CHECKBOX2, _("Function is part of class:"), wxDefaultPosition, wxDefaultSize, 0 );
     item10->SetValue(FALSE);
     item9->Add(item10, 0, wxGROW|wxLEFT|wxRIGHT|wxTOP, 5);
 
     wxTextCtrl* item11 = new wxTextCtrl( item1, ID_TEXTCTRL2, _T(""), wxDefaultPosition, wxSize(200, -1), 0 );
     item9->Add(item11, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxBOTTOM, 5);
 
-    item2->Add(5, 40, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+    wxBoxSizer* item12 = new wxBoxSizer(wxHORIZONTAL);
+    item2->Add(item12, 0, wxALIGN_LEFT|wxALL, 5);
 
-    wxBoxSizer* item13 = new wxBoxSizer(wxHORIZONTAL);
-    item2->Add(item13, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+    wxButton* item13 = new wxButton( item1, ID_BUTTON, _("Add watch"), wxDefaultPosition, wxDefaultSize, 0 );
+    item12->Add(item13, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxButton* item14 = new wxButton( item1, ID_BUTTON, _("Button"), wxDefaultPosition, wxDefaultSize, 0 );
-    item13->Add(item14, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
-
-    wxButton* item15 = new wxButton( item1, ID_BUTTON1, _("Button"), wxDefaultPosition, wxDefaultSize, 0 );
-    item13->Add(item15, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxButton* item14 = new wxButton( item1, ID_BUTTON1, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
+    item12->Add(item14, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
 ////@end AddVariableWatchDialog content construction
 }
