@@ -105,18 +105,21 @@ DirListing Networking::SSHGetDirListing(wxString dirPath, bool includeHidden)
 								+ " && find -maxdepth 1 -type f "
 								+ " && echo N_E_TwOrKiNg-DiRs"
 								+ " && find -maxdepth 1 -type d");
-	while(dirs.Left(18) != "N_E_TwOrKiNg-DiRs\n") {
-		files += dirs.Left(1); // peek
-		dirs.Remove(0,1); // pop
-	}
-	dirs.Remove(0,18);
+	if(status == NET_GOOD) {
+		while(dirs.Left(18) != "N_E_TwOrKiNg-DiRs\n") {
+			files += dirs.Left(1); // peek
+			dirs.Remove(0,1); // pop
+		}
+		dirs.Remove(0,18);
 
-	r.fileNames = ParseLS(files, includeHidden);
-	if(dirs.Left(2) == ".\n") {
-		//Special Case for "." directory
-		dirs.Remove(0,2);
+		r.fileNames = ParseLS(files, includeHidden);
+		if(dirs.Left(2) == ".\n") {
+			//Special Case for "." directory
+			dirs.Remove(0,2);
+		}
+		r.dirNames = ParseLS(dirs, includeHidden);
 	}
-	r.dirNames = ParseLS(dirs, includeHidden);
+	//else there was an error
 
 	return r;
 }
