@@ -1,7 +1,15 @@
 **************
 * TEAM NOTES *
 **************
+How to read:
 
+	*These were taken as meetings progressed.  They are "generally" formatted according to this manner:
+		>> = Major topic of discussion
+		*, ~, -, --, etc = sub-topics or notes
+
+	*These are NOTES; not whole complete "minutes" of the meeting, and are here for posterity and idea-refreshing.
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 Meeting 9/11/03 9:35pm
 by: Ben
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -460,7 +468,7 @@ by: Ben
 Group Meeting 02/01/2004 11:20pm
 by: Ben
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
->>See meet_020104.htm
+>>See <a href="meet_020104.htm">meet_020104.htm</a>
 >>For next Thursday
 	Mark: prof program, terminal code, USER MANUAL
 	Dave: terminal code
@@ -680,6 +688,13 @@ by: Ben
 >Thoughts on permissions:
 	-add a label with current authorization code in CHAMELEON
 	-add a reverse-authorize ability in PROFESSOR PROGRAM
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Group Meeting 3/04/2004 9:00pm
+by: Ben
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+>>see <a href="meet_030404.htm">meet_030404.htm</a>
+
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 Group Meeting 3/15/2004 11:17pm
 by: Ben

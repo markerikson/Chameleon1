@@ -1,0 +1,298 @@
+****************
+* BETA REPORTS *
+****************
+
+This file chronicles the communicate between Digital_Gearheads and our volunteer Beta-group, consisting of a small group of Computer Science Freshman (the generic target audience for Chameleon).
+Major communication "threads" are simplified into sections.  Otherwise, individual e-mails are shown.
+**NOTE: Names have been changed**
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+From:   	c0d3_m0nk3y
+To:   		bETA_gROUP
+BC:   		David, aceMarkE
+Date:   	Tuesday - April 27, 2004 1:49 PM
+Subject:   	Thank you
+  	
+Thank you for a good year and for using Chameleon when you could.  Chameleon has certainly grown up since you were first exposed to it.
+
+Well our final release for the year is posted on our Beta page:
+
+http://pc160218/gears/beta/index.html
+
+Again thank you for volunteering some of your time to help us work out the kinks in our project!
+
+Sincerely,
+c0d3_m0nk3y, David, aceMarkE
+-Digital_Gearheads
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+From:   	c0d3_m0nk3y
+To:   		bETA_gROUP
+CC:   		da_customer
+BC:   		David, aceMarkE
+Date:   	Sunday - April 18, 2004 11:53 PM
+Subject:   	Digital Gearheads Final Presentation
+  	
+Greetings!
+
+First of all, thank you for using and testing our software.  Since we have received no problems since our first beta, we are confident that we have a robust and usable program.
+
+As the semester draws to a close, we, the members of "Digital Gearheads" and makers of "Chameleon," would like to invite you, as the beta tester group of our software, to our final presentation of our software!
+
+We will be presenting:
+
+Tuesday, April 20th
+ENS 245 ("Big Blue Bedroom")
+11:00am till 11:45am
+
+There may be doughnuts.  Come if you can, see how far we've come, as well as the most current version of our software!
+
+Sincerely,
+c0d3_m0nk3y
+Testing Lead 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+From:   	c0d3_m0nk3y
+To:   		bETA_gROUP
+BC:   		David, aceMarkE
+Date:   	Sunday - March 21, 2004 11:59 PM
+Subject:   	New Beta!!
+  	
+Greetings Gentlemen!
+
+I hope things are going well with you!
+
+There is a new Beta for you to download & test out!  Full details are here:
+
+http://pc160218/gears/beta/index.html
+
+This version includes a simple terminal window (it might have some interesting scroll bugs; we know, we're working 'round the clock to fix it), remote compiling, and new Permission management.
+
+As always when you encounter an error please e-mail us the details!
+
+-c0d3_m0nk3y-
+<edit_remove>
+IM: <edit_remove>
+VOICE: <edit_remove>
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+From:   	beta3
+To:   		c0d3_m0nk3y
+Date:   	Monday - March 1, 2004 12:06 AM
+Subject:   	Re: How are things going?
+  	
+hey-
+well, just letting you know that i havent run into any problems.
+nothing more to report.
+beta3
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+From:   	c0d3_m0nk3y
+To:   		bETA_gROUP
+BC:	   	David, aceMarkE
+Date:   	Monday - March 1, 2004 12:03 AM
+Subject:   	How are things going?
+  	
+I haven't heard a thing from anyone; I can only assume that's a good thing  ^_^.
+
+beta2 has had some interesting ideas, such as short-cut keys for creating "if{" or "do{" statements, but as my groupmate replied to him, we're more stressed on getting the whole project finished than adding flavoring.  ^.^
+
+Another complain beta2 had was lack of compiler.  To be honest that's a low-priority item given our customer's requests.  The main thing that our program is to have is a Linux command line embedded in the program (which we nearly have!).  Until then, it's a custom text-editor with network functionality.  The final release will have integrated compiler functionality, but the main objective is for you to simply save a file, click into the terminal window at the bottom of the screen, and type "g++ filename.cpp dest.out" and have it work.
+
+Speaking of network, beta2 was in the dark about saving to your accounts on Jeremiah or John.  Allow me to clarify as I missed this when I met you.
+
+Click "TOOLS>OPTIONS" and then the "Network" tab.  Type in your destination server (Jeramiah or John), type your ID and password, and click "ok".  Make sure "Remote/Local Modes" is checked in the "Features" tab.
+
+Now when you click on "Open" or "Save" you will be saving to the specified server.
+
+Be looking for a new Beta release soon after break!!
+
+If you have any questions / comments / suggestions don't hesitate to e-mail me!
+
+Sincerely,
+c0d3_m0nk3y
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+From:   	c0d3_m0nk3y
+To:   		bETA_gROUP
+BC:   		David, aceMarkE
+Date:   	Tuesday - February 17, 2004 4:25 PM
+Subject:   	extra notes
+  	
+I though to send along some notes.
+
+First, big THANK YOU to beta1 for suggesting / bringing to our attention the saving with a file-extension automatically.  Kudos!
+
+Second, to activate the "features", just copy the number on the web-site (356899876) and paste it into the "Authorization Code" box in the "Tools > Options" menu, then click "Authorize."
+
+THIS IS NECCESARY to save to the Linux servers!!
+
+Again thank you & let me know if anything goes wrong!
+~c0d3_m0nk3y
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+From:   	c0d3_m0nk3y
+To:   		bETA_gROUP
+BC:   		David, aceMarkE
+Date:   	Tuesday - February 17, 2004 3:31 PM
+Subject:   	updated Beta available
+  	
+Greetings!
+
+There is a new version of Chameleon for you to download!  Follow this link & download the latest version of Chameleon (you may delete the old one):
+
+http://pc160218.cedarville.edu/gears/beta/index.html
+
+If you've been using the program for a while now I would ask that you fill out the following survey and send it back to me please.  It will help us [the Digital Gearheads team] greatly in our finalization of this program.
+
+If you have any questions just e-mail me!
+Thanks!
+~c0d3_m0nk3y
+=======================
+Respond to the following statements as completely as possible
+
+(1) This program is easy to use. (agree or disagree, why you think so)
+
+(2) When I wanted to find a menu command, it was in the menu I thought it would be in (eg: you wanted to copy, and you found "copy" in the edit menu.  If any command was in a "strange" menu list it here).
+
+(3) I encountered the following problems:
+
+(4) This program would be better if...
+
+(5) I liked that this program had...
+
+(6) Any other comments:
+
+========================================
+IMPORTANT NOTE: If the program crashed (aka you had to click "End Now" to close it) PLEASE CONTACT ONE OF US.  You need to attach an error log file to send back to us.  Thank you.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+From:   	beta1
+To:		David
+Date:   	Thursday - February 5, 2004 11:25 PM
+Subject:   	Works Great!!
+  	
+David,
+
+I wrote my first program using Chameleon tonight, it works great.  Makes it a lot easier if i am working on my SPC.  One thing though, when you save the file it doesnt autosave it as a .cpp file, you have to do that yourself.  I dont know if is supposed to or not, just wanted to let you know.
+
+beta1
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+From:   	c0d3_m0nk3y
+To:		bETA_gROUP
+BC:		David, aceMarkE
+Date:   	Monday - February 9, 2004 12:05 AM
+Subject:   	Thanks for Beta-Testing Chameleon!
+  	
+Thank you for choosing to help us!
+We do appreciate your taking the time to use our project and ask that you would take a little more time to reply to this e-mail and fill out the bottom questions.
+
+Your feedback may affect future change or immediate change!
+
+PLEASE IMMEDIATELY REPORT ERRORS OR PROGRAM CRASHES THAT YOU ENCOUNTER WITH AS MUCH DETAIL AS POSSIBLE (using Print Screen, pasting it into mspaint and sending a screen-image is not a bad idea).
+
+Some of you have already found & reported errors.  THANK YOU VERY MUCH!!  See the bottom of this message for the most common error to date & it's solution.
+
+if you have any problems or need explaining, you can contact me the following ways: AOL IM, e-mail, phone
+
+c0d3_m0k3y (Quality Assurance)
+aol: <edit_remove>
+email: <edit_remove>
+phone: <edit_remove>
+
+========================================
+Respond to the following statements as completely as possible
+
+(1) This program is easy to use. (agree or disagree, why you think so)
+
+
+
+
+(2) When I wanted to find a menu command, it was in the menu I thought it would be in (eg: you wanted to copy, and you found "copy" in the edit menu.  If any command was in a "strange" menu list it here).
+
+
+
+(3) I encountered the following problems:
+
+
+
+(4) This program would be better if...
+
+
+
+(5) I liked that this program had...
+
+
+(6) Any other comments:
+
+
+========================================
+IMPORTANT NOTE: If the program crashed (aka you had to click "End Now" to close it) PLEASE CONTACT ONE OF US.  You need to attach an error log file to send back to us.  Thank you.
+
+Common error(s):
+----------------
+1-When trying to run chameleon-0.1b?.exe windows gives you an error stating that a required .dll is missing.
+
+Solution: Chameleon looks for Microsoft Visual Studio's debugging library DLL.  If you don't have MSVC you don't have the file.  You can get this file as well as the other required file here:
+http://pc160218.cedarville.edu/gears/beta/index.html
+
+Save the two .dll files to your "c:\windows\system32" directory.  If this doesn't solve the problem, E-mail me. 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+From:   	c0d3_m0nk3y
+To:   		beta1
+Date:   	Tuesday - February 3, 2004 4:14 PM
+Subject:   	Possible Solution for Chameleon
+Attachment:	<removed>
+  	
+Hello again!
+
+Thanks for the screen shot!  We beleive the problem lies in that you don't have MicroSoft's Visual Studio installed on your system.
+
+I've attached two files.
+If you save them to your hard-drive in the "c:\windows\system32" directory, the program should work.  If it doesn't please notify me so we can work another solution.
+
+FYI I work at Chucks tonite so I won't be at my computer till 8pm at least.
+
+~B~ 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+From:   	aceMarkE
+To:   		c0d3_m0nk3y, David
+Date:   	Tuesday - February 3, 2004 2:03 PM
+Subject:   	Re: Chameleon
+  	
+Yeah, that's the Microsoft Visual C Runtime DLL (debug version).  IE, it's all the standard C functions and stuff (printf, etc).  If he's got Visual Studio installed at all, then it should be on there.  We probably ought to put it up on the beta page.  There may also be other DLLs needed as well.  There's a tool that comes with Visual Studio called "Dependency Walker", most likely located in %VSDIR%\Common\Tools\Depends.exe.  If you run that and then open up Chameleon.exe, you can get a list of what DLLs it needs.  95% of them should already be on a user's system, but double-checking would be a good idea.  David, since you're doing the builds with VS6, you might want to check into that.
+
+Anyway, the DLL just needs to go into c:\windows\system32.
+
+aceMarkE
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+From:		Beta1
+Date:		Tuesday - February 3, 2004 12:42 PM
+Subject:	Re: Problem with Chameleon
+Attachment:	<removed>
+  	
+I try to install chameleon and it comes up with an error saying the executable cannot find the MSVCRTD.dll file as shown in the screen shot attached.  I dont know if i am installing it correctly I did what I was told from the site, but I might have made a mistake.  If you can help, it would be appreciated
+
+>>> c0d3_m0k3y 2/3/2004 12:29:42 PM >>>
+Hello beta1!
+
+Could you send me a detailed description of the file missing & the error?  A screen-shot of your desktop when the error occurs could help (if you need help getting a screen shot let me know).
+
+Thank you!
+~B~
+ps: for real-time help, put one of my IM names in your buddylist so you can see when I'm available:
+
+<edit_remove>
+<edit_remove>
+<edit_remove>
+
+>>> beta1 02/03/04 11:55AM >>>
+Hey,
+
+This is beta1 the guy you told to put Chameleon on my computer.  Hey I tried and I kept coming up with a missing dll file error.  I dont know if I did something wrong or it is something that needs to be addressed.  Do you have any idea what I could do?? Thanks.
+
+beta1
