@@ -177,8 +177,7 @@ void PlinkConnect::acceptCacheFingerprint() {
 	wxString cmd = plinkApp + " -batch -pw password nobody@" + host + " exit";
 	proc = new wxProcess(NULL);
 	proc->Redirect();
-
-	wxExecute(cmd, wxEXEC_ASYNC, proc);
+	long pid = wxExecute(cmd, wxEXEC_ASYNC, proc);
 
 #ifdef _DEBUG
 	wxString tempOutput = "";
@@ -195,8 +194,9 @@ void PlinkConnect::acceptCacheFingerprint() {
 #endif
 
 	sendToStream("y\n");
-	//sendToStream("^C\n");
-	//sendToStream("\n");
+	// Sending wxSIGTERM to the process is all that's needed to close it out gracefully.
+	// It also takes care of deleting the process, so we don't have to do that manually.
+	proc->Kill(pid, wxSIGTERM);
 
 #ifdef _DEBUG
 	while(!rin->Eof()) {
@@ -209,7 +209,6 @@ void PlinkConnect::acceptCacheFingerprint() {
 	rerr = NULL;
 #endif
 
-	delete proc;
 }
 
 //Private:

@@ -9,6 +9,8 @@
 #include "networking.h"
 //#include "../common/datastructure.h"
 #include <wx/utils.h>
+#include <wx/regex.h>
+#include "../common/debug.h"
 
 
 Networking::Networking()
@@ -47,6 +49,7 @@ DirListing Networking::GetDirListing(wxString dirPath, bool forceRefresh, bool i
 
 void Networking::SendFileContents(wxString strng, wxString rfile, wxString rpath)
 {
+	strng.Replace("\"", "\\\"");
 	wxString cmd = "cd " + rpath + " && echo \"" + strng + "\" > " + rfile + " ";
 	SSHSendCommand(cmd);
 
@@ -199,10 +202,35 @@ wxString Networking::SSHSendCommand(wxString command) {
 			// StatusDetail will be the key
 			// Screen-scrape for the key:
 			statusDetails = errlog;
-			int len = 1+ statusDetails.Index("fingerprint is:\n")+16;
-			statusDetails.Remove(0,len);
-			len = 1+ statusDetails.Index("\n");
-			statusDetails.Truncate(len);
+
+			// these lines doesn't work properly... returns 0xffffff + 1 + 16, result is 0x00000010
+			//int len = 1+ statusDetails.Index("fingerprint is:\n")+16;
+			//statusDetails.Remove(0,len);
+
+			/*	MPE:
+				This regular expression looks for the following:
+				one or more digits (0-9) followed by one more more whitespace characters
+				followed by 15 pairs of two hex digits and a colon, followed by two final hex digits
+				
+				Since I know this is a valid regex, I'm leaving out the .IsValid() check that would otherwise
+				be a good idea
+			*/
+			wxRegEx reFingerprint = "[[:digit:]]+[[:blank:]]+([[:xdigit:]]{2}:){15}[[:xdigit:]]{2}";
+
+			if(reFingerprint.Matches(errlog))
+			{
+				wxString match = reFingerprint.GetMatch(errlog);
+				wxLogDebug("Matched fingerprint: \"%s\"", match);
+				statusDetails = match;
+			}
+			else
+			{
+				wxLogDebug("Failed to match the fingerprint in: %s", errlog);
+				statusDetails = "*unknown* - could not parse fingerprint";
+			}
+
+			//len = 1+ statusDetails.Index("\n");
+			//statusDetails.Truncate(len);
 		}
 		else if(errlog.Contains("Unable to authenticate")) {
 			status = NET_AUTH_FAILED;
