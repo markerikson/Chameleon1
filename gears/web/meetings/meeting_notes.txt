@@ -864,7 +864,7 @@ by: Ben
 	*25-35 minutes
 	*Roles
 		--Dave: Intro, Design, Current Status
-		--Ben: Requirements
+		--Ben: Requirements, future evolution
 		--Mark: Accomplishments / Major Goals, Demo
 	*DONE BY SUNDAY: 9pm
 >>Work to Get Done
@@ -876,3 +876,34 @@ by: Ben
 
 >>Meet FRIDAY 9:30pm -->room
 	*code & stamp "DONE"
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Group Meeting 4/18/2004 9:20pm
+by: Ben
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+>>Presentation Work.
+>>Status?  My debugger's broken!! -B
+>>Demo for Tuesday notes:
+	-Whoz Doin What?
+		--Mark: Working
+		--Dave: narrating
+		--Ben: watching the jaw drop
+	-The Setup:
+		--pre-installation
+		--pre-testing (run through this)
+	-What are we doing?
+		--Start it
+		--Logon
+		--Default state - text editor mode (phase 0)
+		--Make a simple hello-world & save it
+		--Phase 1 - terminal activation / syntax highlighting, auto-indent
+		--Use prof. program to get code
+		--use terminal to compile & debug / run code
+		--Phase 2 - basic compiler
+		--open (L)testprog.cpp
+		--show off tabs
+		--save (R)testprog2.cpp (will have errors)
+		--compile & show errors.
+		--fix & re-compile.
+		--Phase 3 - Projects
+		--Phase 4 - Debugger
+		--Phase 5 - Adv. Compiling
