@@ -421,7 +421,7 @@ void Debugger::startProcess(bool fullRestart, bool mode, wxString fName, wxStrin
 
 		currDebugLine = 0;
 		
-		gdbVarIndex = 0;
+		gdbVarIndex = 1;
 		varCount = 0;
 	
 		firstExecString = execThis;
@@ -545,12 +545,13 @@ void Debugger::setBreak(wxString srcFile, int lineNum)
 	{
 		//int currArrayPos = 0;
 
+		//this if{} should never be run...
 		if(numBreak() == 0 && gdbBreakpointNum == 1)
 		{
 			classStatus = START;	//ignore the output
 
-			command = "list" + returnChar;
-			sendCommand(command);
+			//command = "list" + returnChar;
+			//sendCommand(command);
 			gdbBreakpointNum = 1;
 		}
 		
@@ -661,6 +662,10 @@ int Debugger::findBreakpoint(wxString fName, int lineNum, bool andRemove)
 	{
 		if(andRemove)
 		{
+			//~~DEBUG CODE~~//
+			wxLogDebug("--find breakpoint: i=%d, equivNum=%d, ltn[fn].gn.remove(i-1): %d--", i, equivNum, lineToNum[fName].gdbNumbers[i - 1]);
+
+			//do these need to be changed to just "i"?
 			lineToNum[fName].lineNumbers.RemoveAt(i - 1);
 			lineToNum[fName].gdbNumbers.RemoveAt(i - 1);
 
@@ -864,8 +869,7 @@ void Debugger::cont()
 //  will add it to the watch list.
 void Debugger::snoopVar(wxString varName, bool oneShot)
 {
-	if(status == DEBUG_STOPPED || 
-		status == DEBUG_WAIT ||
+	if(	status == DEBUG_WAIT ||
 		status == DEBUG_BREAK)
 	{
 		classStatus = WATCH_VAR;
@@ -877,7 +881,15 @@ void Debugger::snoopVar(wxString varName, bool oneShot)
 			wxString tmp;
 			tmp.Printf("display %s%s", varName.c_str(), returnChar.c_str());
 			command.Append(tmp.c_str());
-			//sendCommand(command);
+
+			//add the variable being watched to our repository.
+			//this will be used to match up name/value pairs in onProcessOutput
+			varNames.Add(varName);
+
+			//gdbVarIndex = the # GDB uses
+			//varCount = my index for varNames[] and varValue[]
+			gdbVarIndex++;
+			varCount++;
 		}
 
 		sendCommand(command);
@@ -902,8 +914,12 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 	//variables to hold stuff for parsing...
 	wxString tempHold, Filename, Linenumber, goBreakpoint;
 	wxArrayString tmpArrayString;
+	wxString tempString;
+	wxDebugEvent outputEvent;
+
 	
-	int classStatusBackup = 0;
+	int classStatusBackup = 0,
+		gdbNum = 0;
 	long tmpLong;
 
 	bool skipThrough = true, 
@@ -916,6 +932,9 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 	//go parsing RegEx
 	wxRegEx reStart = " command: \"done\"";
 	wxRegEx reGoCase = "Breakpoint ([[:digit:]]+)";
+
+	//breakpoint parsing RegEx
+	wxRegEx reSetBreak = "Breakpoint ([[:digit:]]+)";
 	//!!END variables!!//
 
 	status = DEBUG_WAIT;
@@ -930,9 +949,8 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 	wxLogDebug("DB output: %s", tempHold);
 	//tempHold.Empty();
 
-	//What we're doing with output events:
 	//1) See if the captured string has a [$] all by itself at the end
-	//2) If so, begin parsing.  Set [classStatus = PARSING]
+	//2) If so, begin parsing.
 	//3) If not, wait for another output
 	if(classStatus != START)
 	{
@@ -957,35 +975,30 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 		skipThrough = false;
 	}
 
-	//(*outputScreen)<<"output: "<<tempHold<<"\n";
-
 	//check to see if something good was found.
 	if(skipThrough)
 	{
 		classStatusBackup = classStatus;
 		classStatus = WAITING;
 	}
-
-	wxString tempString;
-	wxDebugEvent outputEvent;
 	
-	//i need to do parsing here & sending mark stuff i guess...
+	
 	switch(classStatus)
 	{
 		case START:			//program start
+			//this re-directs to where the output actually is that we want
 			if(isRemote)
-			{
-				tempString = tempHold;
-			}
+			{tempString = tempHold;}
 			else
-			{
-				tempString = errorMsg();
-			}
+			{tempString = errorMsg();}
+
 			if(tempString != "")
 			{
 				if(reStart.Matches(tempString))
 				{
-				//	(*outputScreen)<<"\n\nSTART!\n\n";
+					//the dope command "done" sent to GDB returns an error.
+					//this means that all init. commands have gone through,
+					//and we can start the program.
 					status = DEBUG_STOPPED;
 					go();
 				}
@@ -1006,6 +1019,27 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 			break;
 
 		case S_BREAK:		//set break
+			if(reSetBreak.Matches(tempHold))
+			{
+				goBreakpoint = reSetBreak.GetMatch(tempHold, 1);
+				
+				goBreakpoint.ToLong(&tmpLong);
+				gdbNum = (int)tmpLong;
+				
+				//~~DEBUG CODE~~//
+				wxLogDebug("--output_parse: setbreak: caught num=%d, gdb_num=%d--", gdbNum, (gdbBreakpointNum - 1));
+
+				if(gdbNum != (gdbBreakpointNum - 1))
+				{
+					error.Printf("#s don't match: caught=%d internal=%d", gdbNum, (gdbBreakpointNum - 1));
+					makeGenericError("Set_Break parse: ");
+
+					
+					outputEvent.SetStatus(ID_DEBUG_EXIT_ERROR);
+					guiPointer->AddPendingEvent(outputEvent);
+					stop(false);
+				}
+			}
 			data.Empty();
 			break;
 
@@ -1026,7 +1060,6 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 				if(reGoCase.Matches(tempHold))
 				{
 					goBreakpoint = reGoCase.GetMatch(tempHold, 1);
-					//(*outputScreen)<<"\nCaptured GO Breakpoint = "<<goBreakpoint<<"\n\n";
 
 					if(reCase1.Matches(tempHold))
 					{

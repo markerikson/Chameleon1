@@ -181,6 +181,7 @@ class Debugger : public wxEvtHandler
 		int varCount;				//holds array position to insert next var
 		
 		wxString firstExecString;	//holds the first executed string
+		wxString currentSourceName;	//holds filename source
 		Networking *myConnection;	//the networking object for remote
 		wxProcess2 *debugProc;		//holds pointer to process pipe
 		wxInputStream *streamIn;		//GDB to me
