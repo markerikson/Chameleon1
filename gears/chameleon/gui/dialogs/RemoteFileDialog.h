@@ -23,12 +23,10 @@
 ////@begin includes
 ////@end includes
 
-#include <wx/filename.h>
-#include <wx/toolbar.h>
 
 
 
-#include "../../common/datastructures.h"
+
 
 
 #include <wx/dynarray.h>
@@ -53,6 +51,28 @@ class ChameleonEditor;
 class ChameleonWindow;
 class Networking;
 class wxListEvent;
+class wxFileConfig;
+class ChameleonNotebook;
+class wxTreeCtrl;
+class wxTextCtrl;
+class wxLogWindow;
+class wxTabCtrl;
+class IntIntHashmap;
+class WindowPointerArray;
+class wxPanel;
+class wxSplitterWindow;
+class RemoteFileDialog;
+class OptionsDialog;
+class Permission;
+class wxFileConfig;
+class wxTelnet;
+class wxMenu;
+class wxTreeItemId;
+class wxImageList;
+class wxFileName;
+
+
+#include "../../common/datastructures.h"
 
 /*!
  * Control identifiers
@@ -134,11 +154,13 @@ public:
 
 	//void OpenRemoteFile();
 	void StoreFileName(wxString filename);
-	bool Prepare(bool open, FileDisplayType displayType);
+	bool Prepare(bool open, wxString filterString);//FileDisplayType displayType);
 
 	bool ShowDirectory(wxString dirname, bool refresh = false, bool showHidden = false);
 	void FillListView();
 	void LoadTestData();
+
+	int GetIconIndex(wxString extension);
 
     /// Should we show tooltips?
     static bool ShowToolTips();
@@ -167,7 +189,7 @@ private:
 
 	int m_currentFilterIndex;
 	int m_filterAllFilesIndex;
-	FileDisplayType m_currentDisplayType;
+	FileFilterType m_currentFilterType;
 	DirListing m_currentDirListing;
 
 	wxFileName m_localFileNamePath;
@@ -175,7 +197,9 @@ private:
 	wxSortedArrayString m_currentDirs;
 	wxSortedArrayString m_currentFiles;
 	wxArrayString m_filterList;
-	ThreeDStringVector m_fileExtensionList;
+	//ThreeDStringVector m_fileExtensionList;
+	TwoDStringVector m_fileExtensionList;
+
 	StringIntHashmap m_iconExtensionMapping;
 
 	ChameleonWindow* m_parentFrame;
