@@ -64,8 +64,8 @@ class MyApp : public wxApp
 public:
 	~MyApp();
 	virtual bool OnInit();
-	virtual int OnRun();
-	virtual void OnUnhandledException(); 
+	//virtual int OnRun();
+	//virtual void OnUnhandledException(); 
 };
 
 //----------------------------------------------------------------------
@@ -101,7 +101,6 @@ public:
 
 private:
 	void CheckSize();
-	void ResizeSplitter();
 
 	void OnMenuEvent(wxCommandEvent &event);
 	void OnDebugCommand(wxCommandEvent &event);
