@@ -138,6 +138,7 @@ class Debugger : public wxEvtHandler
 
 		void sendWhat();					//for use with snoopVar
 		void sendPrint(wxString fromGDB);	//for use with snoopVar as well
+		void parsePrintOutput(wxString fromGDB, wxArrayString &varValue);
 		int findBreakpoint(wxString fName, int lineNum, bool andRemove = false);
 		//void sendWatchVariableCommand(wxString varName);
 		bool checkOutputStream(wxString stream);	//true = okay to parse further
@@ -182,6 +183,8 @@ class Debugger : public wxEvtHandler
 		wxArrayString data;			//holds data from GDB
 
 		StringStringHashmap varRegExes;
+		wxString Filename, Linenumber, FuncName;	//globals for use in parse
+
 		//wxArrayString varNames;		//holds variables being watched
 		//wxArrayString varValue;		//holds variable values
 		//wxArrayInt varDispIndex;	//holds variable "display#" assigned by GDB

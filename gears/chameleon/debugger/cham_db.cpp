@@ -79,13 +79,13 @@ Debugger::Debugger(wxTextCtrl* outBox, Networking* networking, wxEvtHandler* poi
 	varRegExes["int"] = "([[:digit:]]+)";
 	
 	// double-"$n = val.val"
-	varRegExes["double"] = "$([[:digit:]]+\\.[[:digit:]]+)";
+	varRegExes["double"] = "([[:digit:]]+\\.[[:digit:]]+)";
 
 	// char[]-"$n = val 'char'"
 	varRegExes["char"] = "[[:digit:]]+ '([[:alnum:]]+)'";
 	
 	// char - "$n = "text""
-	varRegExes["char[]"] = "$[[:digit:]]+ '([[:alnum:]]+)'";
+	varRegExes["char[]"] = "\"([[:alnum:]]+)\"";//"[[:digit:]]+ '([[:alnum:]]+)'";
 	
 	// array- "$n = {val, val...}"
 	varRegExes["array"] = "{(.+?)}";
@@ -224,7 +224,7 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 		}
 
 		//~~DEBUG CODE~~//
-		wxLogDebug("--STARTUP: breakpoint string:\n------\n" + sendAllBreakpoints + "\n\n";
+		wxLogDebug("--STARTUP: breakpoint string:\n------\n" + sendAllBreakpoints + "\n\n");
 
 
 		sendCommand("list"+returnChar);
@@ -264,7 +264,6 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 	case ID_DEBUG_ADD_WATCH:
 		snoopVar(varName, funcName, className, false);
 		break;
-	}
 
 	case ID_DEBUG_REMOVE_WATCH:
 		removeVar(varName, funcName, className);
@@ -438,10 +437,7 @@ bool Debugger::resetStatus()
 		error = "";
 		command = "";
 		data.Empty();
-		varNames.Empty();
-		varValue.Empty();
-		gdbVarIndex = 0;
-
+		
 		return(true);
 	}
 
@@ -1049,7 +1045,7 @@ void Debugger::snoopVar(wxString varName, wxString funcName, wxString className,
 	}
 
 	//Step 2: if GDB is running, send a "whatis" command to get the type.
-	if( nofFound &&
+	if( notFound &&
 		(status == DEBUG_BREAK || status == DEBUG_WAIT))
 	{
 		command.Printf("whatis %s%s", varName.c_str(), returnChar.c_str());
@@ -1213,6 +1209,8 @@ void Debugger::sendPrint(wxString fromGDB)
 	}while(fromGDB != PROMPT_CHAR);
 
 
+	if(!fromWatch.IsEmpty())
+	{
 		for(int i = 0; i < varCount; i++)
 		{
 			if(ignoreVars.Index(m_varInfo[i].name) == wxNOT_FOUND)
@@ -1221,18 +1219,24 @@ void Debugger::sendPrint(wxString fromGDB)
 				if(m_varInfo[i].type == "null")
 				{
 					m_varInfo[i].type = fromWatch[fromWatchIndex];
+					
+					if(m_varInfo[i].type == "string")
+					{
+						m_varInfo[i].name = m_varInfo[i].name + "._M_dataplus._M_p";
+					}
+
 					fromWatchIndex++;
 				}
 			}
 		}//end for
+	}
 
-		for(i = 0; i < varCount; i++)
-		{
-			command.Printf("print %s%s", m_varInfo[i].name.c_str(), returnChar.c_str());
-			sendCommand(command);
-		}
-
-		classStatus = GET_PRINT;
+	for(int i = 0; i < varCount; i++)
+	{
+		command.Printf("print %s%s", m_varInfo[i].name.c_str(), returnChar.c_str());
+		sendCommand(command);
+	}
+	classStatus = GET_PRINT;
 }
 
 //removeVar(): removes a variable from the array list.
@@ -1260,6 +1264,93 @@ void Debugger::removeVar(wxString varName, wxString funcName, wxString className
 	}//end varCount if
 }
 
+//parseOutput(): takes GDB output & parses it for the "print %s" string
+void Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
+{
+	wxString singleLine;
+	wxArrayString fromWatch, ignoreVars;
+	int lineBreak = 0, endQuote = 0, fromWatchIndex = 0;
+	bool parseError = false, stayIn = true;
+
+	for(int i = 0; (i < varCount) && !parseError; i++)
+	{
+		lineBreak = fromGDB.Find("\r");
+
+		if(lineBreak == -1)
+		{
+			parseError = true;
+		}
+		else
+		{
+			stayIn = true;
+
+			do
+			{
+				singleLine = fromGDB.Mid(0, lineBreak);
+				fromGDB.Remove(0, lineBreak);
+
+				if( singleLine.Mid(0,1) == "$" ||
+					singleLine.Mid(0,9) == "No symbol")
+				{stayIn = false;}
+
+				fromGDB.Remove(0, 1);	//get rid of the \r
+			}while(stayIn);
+
+			if(singleLine.Mid(0,9) == "No symbol")
+			{
+				varValue.Add(singleLine);
+			}
+			else if(m_varInfo[i].type.Find("[") == -1)
+			{
+				wxRegEx global = varRegExes[m_varInfo[i].type];
+				if(global.Matches(singleLine))
+				{
+					varValue.Add(global.GetMatch(singleLine, 1));
+				}
+				else
+				{
+					varValue.Add("Error Parsing Value: RegEx miss-match for "+m_varInfo[i].type);
+				}
+			}
+			else
+			{
+				//we have an array of some type...
+				if(m_varInfo[i].type.Find("char") != -1)
+				{
+					wxRegEx global = varRegExes["char[]"];
+					//it's a char string.  Parse as regular string
+					if(global.Matches(singleLine))
+					{
+						varValue.Add(global.GetMatch(singleLine, 1));
+					}
+					else
+					{
+						varValue.Add("Error Parsing Value: RegEx miss-match for "+m_varInfo[i].type);
+					}
+				}
+				else
+				{
+					wxRegEx global = varRegExes["array"];
+					//it's a regular array.
+					if(global.Matches(singleLine))
+					{
+						varValue.Add(global.GetMatch(singleLine, 1));
+					}
+					else
+					{
+						varValue.Add("Error Parsing Value: RegEx miss-match for "+m_varInfo[i].type);
+					}
+				}
+			}//end array-test
+		}
+	}//end for-loop
+
+	if(parseError)
+	{
+		varValue.Add("Error with printed output");
+	}
+}
+
 //PRIVATE FUNCTIONS:
 //------------------
 
@@ -1268,7 +1359,7 @@ void Debugger::removeVar(wxString varName, wxString funcName, wxString className
 void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 {
 	//variables to hold stuff for parsing...
-	wxString tempHold, Filename, Linenumber, goBreakpoint, FuncName;
+	wxString tempHold, goBreakpoint;
 	wxArrayString tmpArrayString;
 	
 	wxArrayString varNames, varValue, varType;
@@ -1423,25 +1514,23 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 
 					if(reCase1.Matches(tempHold))
 					{
-						FuncName = reCase1.GetMatch(tempHold, 1);
+						//funcName is for adv. variable watching
+						//FuncName = reCase1.GetMatch(tempHold, 1);
 						Filename = reCase1.GetMatch(tempHold, 2);
-						currentSourceName = Filename;
 						Linenumber = reCase1.GetMatch(tempHold, 3);
+
 						status = DEBUG_BREAK;
 
 						Linenumber.ToLong(&tmpLong);
-						//tmpArrayString = myEvent->GetSourceFilenames();
-						wxArrayString tmpArrayString;
-						tmpArrayString.Add(Filename);
+	
+						outputEvent.SetLineNumber((int)tmpLong);
+						outputEvent.SetSourceFilename(Filename);
+						outputEvent.SetStatus(ID_DEBUG_BREAKPOINT);
+						guiPointer->AddPendingEvent(outputEvent);
 
-						
-						
-						//outputEvent.SetLineNumber((int)tmpLong);
-						//outputEvent.SetSourceFilenames(tmpArrayString);
-						//outputEvent.SetSourceFilename(Filename);
-						//outputEvent.SetStatus(ID_DEBUG_BREAKPOINT);
-						//guiPointer->AddPendingEvent(outputEvent);
-						//(*outputScreen)<<"\nCASE1 Matches: fname="<<Filename<<" #="<<Linenumber<<"\n\n";
+						data.Empty();
+
+						sendWhat();
 					}
 					else
 					{
@@ -1481,15 +1570,44 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 			//Next we check for the same things WATCH_VAR does...
 			// so we can probably remove this "break" and let it flow into
 			// WATCH_VAR...
+			//or we could ignore what i wrote a coupl'a months ago ^^ and
+			//let this flow into GET_PRINT.  :)  or an equiv.
 			break;
 
 		case GET_WHAT:
+			sendPrint(tempHold);
+			break;
+
 		case GET_PRINT:
+			{
+			//varNames, varValue, varType
+			parsePrintOutput(tempHold, varValue);
+
+			for(int i = 0; i < varCount; i++)
+			{
+				varNames.Add(m_varInfo[i].name);
+				varType.Add(m_varInfo[i].type);
+			}
+
+			classStatus = WAITING;
+
+			if(varCount > 0)
+			{
+				outputEvent.SetVariableNames(varNames);
+				outputEvent.SetVariableTypes(varType);
+				outputEvent.SetVariableValues(varValue);
+				outputEvent.SetStatus(ID_DEBUG_VARINFO);
+				guiPointer->AddPendingEvent(outputEvent);
+			}
+
+			data.Empty();
+			break;
+			}
+
 		case WATCH_VAR:
 			break;
 
-		case STEP:
-		//	(*outputScreen)<<"--Made it to the STEP case--"<<classStatus<<"\n";
+ 		case STEP:
 		case STEP_OVER:
 		case STEP_OUT:
 
@@ -1521,22 +1639,14 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 				if(reCase1.Matches(tempHold))
 				{
 					Filename = reCase1.GetMatch(tempHold, 2);
-					currentSourceName = Filename;
 					Linenumber = reCase1.GetMatch(tempHold, 3);
 
 					Linenumber.ToLong(&tmpLong);
-					wxArrayString tmpArrayString;
-					tmpArrayString.Add(Filename);
-					//tmpArrayString = myEvent->GetSourceFilenames();
-					//tmpArrayString[0] = Filename;
-
 					
 					outputEvent.SetLineNumber((int)tmpLong);
-					//outputEvent.SetSourceFilenames(tmpArrayString);
 					outputEvent.SetSourceFilename(Filename);
 					outputEvent.SetStatus(ID_DEBUG_BREAKPOINT);
 					guiPointer->AddPendingEvent(outputEvent);
-					//(*outputScreen)<<"\nCASE 1: file="<<Filename<<" line="<<Linenumber<<"\n\n";
 				}
 				else if(reCase2.Matches(tempHold))
 				{
@@ -1544,22 +1654,15 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 	
 					Linenumber.ToLong(&tmpLong);
 					
-					
 					outputEvent.SetLineNumber((int)tmpLong);
-					wxArrayString sourceFiles;
-					sourceFiles.Add(currentSourceName);
-					//outputEvent.SetSourceFilenames(sourceFiles);
-					outputEvent.SetSourceFilename(currentSourceName);
+					outputEvent.SetSourceFilename(Filename);
 					outputEvent.SetStatus(ID_DEBUG_BREAKPOINT);
 					guiPointer->AddPendingEvent(outputEvent);
-					//(*outputScreen)<<"\nCASE 2: #="<<Linenumber<<"\n\n";
 				}
 				else
 				{
-					//(*outputScreen)<<"Couldn't parse STEP output\n";
 					error = "Failed to match STEP output";
 					makeGenericError("step parse:");
-
 					
 					outputEvent.SetStatus(ID_DEBUG_EXIT_ERROR);
 					guiPointer->AddPendingEvent(outputEvent);
@@ -1568,13 +1671,14 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 			}
 			else
 			{
-				
 				outputEvent.SetStatus(ID_DEBUG_EXIT_ERROR);
 				guiPointer->AddPendingEvent(outputEvent);
 				stop(false);
 			}
 
 			data.Empty();
+
+			sendPrint("");
 			break;
 
 		case WAITING:		//i'm waiting...
