@@ -138,7 +138,7 @@ class Debugger : public wxEvtHandler
 
 		void sendWhat();					//for use with snoopVar
 		void sendPrint(wxString fromGDB);	//for use with snoopVar as well
-		void parsePrintOutput(wxString fromGDB, wxArrayString &varValue);
+		bool parsePrintOutput(wxString fromGDB, wxArrayString &varValue);
 		int findBreakpoint(wxString fName, int lineNum, bool andRemove = false);
 		//void sendWatchVariableCommand(wxString varName);
 		bool checkOutputStream(wxString stream);	//true = okay to parse further

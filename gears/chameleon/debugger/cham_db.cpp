@@ -80,9 +80,10 @@ Debugger::Debugger(wxTextCtrl* outBox, Networking* networking, wxEvtHandler* poi
 	varRegExes["int"] = "([[:digit:]]+)";
 
 	// ints & - "$n = (int &) val"
-	varRegExes["int&"] = ".+ ([[:digit:]]+)";
+	varRegExes["&"] = ".+ ([[:digit:]]+)";
 
 	// ints * - "$n = val"
+	//TODO: Eliminate this
 	varRegExes["int*"] = "([[:digit:]]+)";
 	
 	// double-"$n = val.val"
@@ -1183,6 +1184,7 @@ void Debugger::sendPrint(wxString fromGDB)
 {
 	wxString singleLine;
 	wxArrayString fromWatch, ignoreVars;
+	bool watchStatus = false;
 	int lineBreak = 0, endQuote = 0, fromWatchIndex = 0, ampIdx = -1;
 
 	do
@@ -1226,7 +1228,7 @@ void Debugger::sendPrint(wxString fromGDB)
 				wxLogDebug("--sendPrint: ampIdx: %d, singleLine: %s", ampIdx, singleLine);
 
 				fromWatch.Add(singleLine);
-				ampIdx = -2;
+				//ampIdx = -2;
 			}
 			else if(singleLine.Mid(0,9) == "No symbol")
 			{
@@ -1254,33 +1256,46 @@ void Debugger::sendPrint(wxString fromGDB)
 				//current variable is not in the "ignoreVars" list...
 				if(m_varInfo[i].type == "null")
 				{
-					m_varInfo[i].type = fromWatch[fromWatchIndex];
+					if(fromWatchIndex < (int)fromWatch.GetCount())
+					{
+						m_varInfo[i].type = fromWatch[fromWatchIndex];
 					
-					//special cases:
-					// type==string: append "._M_dataplus._M_p" to format the string
-					// type==[xxx]*: pre-pend "*" to de-reference the pointer type
-					if(m_varInfo[i].type == "string")
-					{
-						m_varInfo[i].name = m_varInfo[i].name + "._M_dataplus._M_p";
-					}
-					if(m_varInfo[i].type.Find("*") != -1)
-					{
-						singleLine = m_varInfo[i].name;
-						m_varInfo[i].name = "*" + singleLine;
-					}
+						//special cases:
+						// type==string: append "._M_dataplus._M_p" to format the string
+						// type==[xxx]*: pre-pend "*" to de-reference the pointer type
+						if(m_varInfo[i].type == "string")
+						{
+							m_varInfo[i].name = m_varInfo[i].name + "._M_dataplus._M_p";
+						}
+						if(m_varInfo[i].type.Find("*") != -1)
+						{	
+							singleLine = m_varInfo[i].name;
+							m_varInfo[i].name = "*" + singleLine;
+						}
 
-					fromWatchIndex++;
+						fromWatchIndex++;
+					}//testing "fromWatchIndex"
+					else
+					{
+						//if we're down here, then there are more variables than there are
+						//printed outputs.  So we by-pass the output in hopes that the
+						//next few "whatis" statements come through
+						watchStatus = true;
+					}
 				}
-			}
+			}//end variable ignore existance check
 		}//end for
 	}
 
-	for(int i = 0; i < varCount; i++)
+	if(!watchStatus)
 	{
-		command.Printf("print %s%s", m_varInfo[i].name.c_str(), returnChar.c_str());
-		sendCommand(command);
+		for(int i = 0; i < varCount; i++)
+		{
+			command.Printf("print %s%s", m_varInfo[i].name.c_str(), returnChar.c_str());
+			sendCommand(command);
+		}
+		classStatus = GET_PRINT;
 	}
-	classStatus = GET_PRINT;
 }
 
 //removeVar(): removes a variable from the array list.
@@ -1309,7 +1324,7 @@ void Debugger::removeVar(wxString varName, wxString funcName, wxString className
 }
 
 //parseOutput(): takes GDB output & parses it for the "print %s" string
-void Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
+bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 {
 	wxString singleLine, match;
 	wxArrayString fromWatch, ignoreVars;
@@ -1402,8 +1417,10 @@ void Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 
 	if(parseError)
 	{
-		varValue.Add("Error with printed output");
+		//varValue.Add("Fewer items in GDB output than with current varCount");
+		return(false);
 	}
+	return(true);
 }
 
 //PRIVATE FUNCTIONS:
@@ -1636,30 +1653,34 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 			break;
 
 		case GET_PRINT:
-			{
+		{
 			//varNames, varValue, varType
-			parsePrintOutput(tempHold, varValue);
+			bool dontskip = true;
+			dontskip = parsePrintOutput(tempHold, varValue);
 
-			for(int i = 0; i < varCount; i++)
+			if(dontskip)
 			{
-				varNames.Add(m_varInfo[i].name);
-				varType.Add(m_varInfo[i].type);
-			}
+				for(int i = 0; i < varCount; i++)
+				{
+					varNames.Add(m_varInfo[i].name);
+					varType.Add(m_varInfo[i].type);
+				}
 
-			classStatus = WAITING;
+				classStatus = WAITING;
 
-			if(varCount > 0)
-			{
-				outputEvent.SetVariableNames(varNames);
-				outputEvent.SetVariableTypes(varType);
-				outputEvent.SetVariableValues(varValue);
-				outputEvent.SetStatus(ID_DEBUG_VARINFO);
-				guiPointer->AddPendingEvent(outputEvent);
+				if(varCount > 0)
+				{
+					outputEvent.SetVariableNames(varNames);
+					outputEvent.SetVariableTypes(varType);
+					outputEvent.SetVariableValues(varValue);
+					outputEvent.SetStatus(ID_DEBUG_VARINFO);
+					guiPointer->AddPendingEvent(outputEvent);
+				}
 			}
 
 			data.Empty();
 			break;
-			}
+		}
 
 		case WATCH_VAR:
 			break;
