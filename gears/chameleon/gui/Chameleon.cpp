@@ -202,8 +202,8 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 	menuTools->Append(ID_OPTIONS, "&Options");
 
-	menuTools->Append(ID_STARTCONNECT, "&Connect");
-	menuTools->InsertSeparator(2);
+	//menuTools->Append(ID_STARTCONNECT, "&Connect");
+	//menuTools->InsertSeparator(2);
 
 	wxMenu* menuEdit = new wxMenu();
 
