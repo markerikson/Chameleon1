@@ -413,7 +413,6 @@ void ChameleonEditor::SetFilename(wxFileName filename, bool fileIsRemote)
 	m_bLastSavedRemotely = fileIsRemote;
 
 	//m_fileNameAndPath.Assign(path, name, fileIsRemote ? wxPATH_UNIX : wxPATH_DOS);
-	m_fileNameAndPath = filename;
 
 	if(m_project->IsSingleFile())
 	{
@@ -451,6 +450,8 @@ void ChameleonEditor::SetFilename(wxFileName filename, bool fileIsRemote)
 			m_project->AddFileToProject(newFileName, newFilterType);
 		}		
 	}	
+
+	m_fileNameAndPath = filename;
 }
 
 wxString ChameleonEditor::GetFileNameAndPath()
