@@ -1,0 +1,131 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: chameleon - Win32 Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating command line "rc.exe /l 0x409 /fo"Release/Chameleon.res" /i "c:\wxWindows-2.5.1\include" /i "c:\wxWindows-2.5.1\lib\msw" /i "\chameleon\gears_chameleon" /d "NDEBUG" "H:\chameleon\gears_chameleon\Chameleon.rc"" 
+Creating temporary file "C:\DOCUME~1\DCZECH~1\LOCALS~1\Temp\RSP105.tmp" with contents
+[
+/nologo /MD /W3 /GX /O2 /I "c:\wxWindows-2.5.1\include" /I "C:\wxWindows-2.5.1\lib\vc_dll\msw" /I "c:\wxWindows-2.5.1\contrib\include" /D "MSVC6" /D "WIN32" /D "_WINDOWS" /D WINVER=0x400 /D "_MT" /D wxUSE_GUI=1 /D WXDEBUG=0 /Fp"Release/chameleon.pch" /YX /Fo"Release/" /Fd"Release/" /FD /c 
+"H:\chameleon\gears_chameleon\common\ChameleonPrintout.cpp"
+"H:\chameleon\gears_chameleon\common\chameleonprocessevent.cpp"
+"H:\chameleon\gears_chameleon\common\Crc16.cpp"
+"H:\chameleon\gears_chameleon\common\DebugEvent.cpp"
+"H:\chameleon\gears_chameleon\common\options.cpp"
+"H:\chameleon\gears_chameleon\common\ProjectInfo.cpp"
+"H:\chameleon\gears_chameleon\compiler\compiler.cpp"
+"H:\chameleon\gears_chameleon\compiler\compilerevent.cpp"
+"H:\chameleon\gears_chameleon\debugger\cham_db.cpp"
+"H:\chameleon\gears_chameleon\editor\editor.cpp"
+"H:\chameleon\gears_chameleon\gui\dialogs\AboutChameleonDialog.cpp"
+"H:\chameleon\gears_chameleon\gui\dialogs\AddVariableWatch.cpp"
+"H:\chameleon\gears_chameleon\gui\dialogs\CompilerOutputPanel.cpp"
+"H:\chameleon\gears_chameleon\gui\dialogs\OptionsDialog.cpp"
+"H:\chameleon\gears_chameleon\gui\dialogs\RemoteFileDialog.cpp"
+"H:\chameleon\gears_chameleon\gui\dialogs\VariableWatchPanel.cpp"
+"H:\chameleon\gears_chameleon\gui\dialogs\wxTermContainer.cpp"
+"H:\chameleon\gears_chameleon\gui\Chameleon.cpp"
+"H:\chameleon\gears_chameleon\gui\ChameleonNotebook.cpp"
+"H:\chameleon\gears_chameleon\gui\wxssh.cpp"
+"H:\chameleon\gears_chameleon\gui\wxterm.cpp"
+"H:\chameleon\gears_chameleon\network\actions.cpp"
+"H:\chameleon\gears_chameleon\network\gtelnet.cpp"
+"H:\chameleon\gears_chameleon\network\gterm.cpp"
+"H:\chameleon\gears_chameleon\network\keytrans.cpp"
+"H:\chameleon\gears_chameleon\network\networking.cpp"
+"H:\chameleon\gears_chameleon\network\plinkconnect.cpp"
+"H:\chameleon\gears_chameleon\network\states.cpp"
+"H:\chameleon\gears_chameleon\network\TextManager.cpp"
+"H:\chameleon\gears_chameleon\network\utils.cpp"
+"H:\chameleon\gears_chameleon\network\vt52_states.cpp"
+"H:\chameleon\gears_chameleon\network\winmesgbeep.cpp"
+"H:\chameleon\gears_chameleon\perms\p.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\DCZECH~1\LOCALS~1\Temp\RSP105.tmp" 
+Creating temporary file "C:\DOCUME~1\DCZECH~1\LOCALS~1\Temp\RSP106.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib rpcrt4.lib wsock32.lib wxbase25.lib wxmsw25_core.lib wxmsw25_stc.lib wxregex.lib wxmsw25_adv.lib wxjpeg.lib wxpng.lib wxtiff.lib wxzlib.lib /nologo /subsystem:windows /incremental:no /pdb:"Release/chameleon.pdb" /machine:I386 /out:"Release/chameleon.exe" /libpath:"c:\wxwindows-2.5.1\lib\vc_lib" 
+.\Release\ChameleonPrintout.obj
+.\Release\chameleonprocessevent.obj
+.\Release\Crc16.obj
+.\Release\DebugEvent.obj
+.\Release\options.obj
+.\Release\ProjectInfo.obj
+.\Release\compiler.obj
+.\Release\compilerevent.obj
+.\Release\cham_db.obj
+.\Release\editor.obj
+.\Release\AboutChameleonDialog.obj
+.\Release\AddVariableWatch.obj
+.\Release\CompilerOutputPanel.obj
+.\Release\OptionsDialog.obj
+.\Release\RemoteFileDialog.obj
+.\Release\VariableWatchPanel.obj
+.\Release\wxTermContainer.obj
+.\Release\Chameleon.obj
+.\Release\ChameleonNotebook.obj
+.\Release\wxssh.obj
+.\Release\wxterm.obj
+.\Release\actions.obj
+.\Release\gtelnet.obj
+.\Release\gterm.obj
+.\Release\keytrans.obj
+.\Release\networking.obj
+.\Release\plinkconnect.obj
+.\Release\states.obj
+.\Release\TextManager.obj
+.\Release\utils.obj
+.\Release\vt52_states.obj
+.\Release\winmesgbeep.obj
+.\Release\p.obj
+.\Release\Chameleon.res
+]
+Creating command line "link.exe @C:\DOCUME~1\DCZECH~1\LOCALS~1\Temp\RSP106.tmp"
+<h3>Output Window</h3>
+Compiling resources...
+Compiling...
+ChameleonPrintout.cpp
+chameleonprocessevent.cpp
+Crc16.cpp
+DebugEvent.cpp
+options.cpp
+ProjectInfo.cpp
+compiler.cpp
+compilerevent.cpp
+cham_db.cpp
+editor.cpp
+AboutChameleonDialog.cpp
+AddVariableWatch.cpp
+CompilerOutputPanel.cpp
+OptionsDialog.cpp
+RemoteFileDialog.cpp
+VariableWatchPanel.cpp
+wxTermContainer.cpp
+Chameleon.cpp
+ChameleonNotebook.cpp
+wxssh.cpp
+wxterm.cpp
+actions.cpp
+gtelnet.cpp
+gterm.cpp
+keytrans.cpp
+networking.cpp
+plinkconnect.cpp
+states.cpp
+TextManager.cpp
+utils.cpp
+vt52_states.cpp
+winmesgbeep.cpp
+p.cpp
+Linking...
+
+
+
+<h3>Results</h3>
+chameleon.exe - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

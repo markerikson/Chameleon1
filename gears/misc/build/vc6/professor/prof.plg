@@ -1,0 +1,42 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: prof - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\DCZECH~1\LOCALS~1\Temp\RSP46.tmp" with contents
+[
+/nologo /MDd /W3 /Gm /GX /ZI /Od /I "c:\wxWindows-2.4.2\include" /I "c:\wxWindows-2.4.2\lib\mswd" /D "MSVC6" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D WINVER=0x400 /D "_MT" /D wxUSE_GUI=1 /D "__WXDEBUG__" /D WXDEBUG=1 /Fp"Debug/prof.pch" /YX /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"H:\chameleon\gears_chameleon\common\Crc16.cpp"
+"H:\chameleon\gears_chameleon\profmanager\ProfOptionsDialog.cpp"
+"H:\chameleon\gears_chameleon\profmanager\ProfOptionsManager.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\DCZECH~1\LOCALS~1\Temp\RSP46.tmp" 
+Creating temporary file "C:\DOCUME~1\DCZECH~1\LOCALS~1\Temp\RSP47.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib rpcrt4.lib wsock32.lib zlibd.lib regexd.lib pngd.lib jpegd.lib tiffd.lib wxmswd.lib stcd.lib /nologo /subsystem:windows /incremental:yes /pdb:"Debug/prof.pdb" /debug /machine:I386 /out:"Debug/prof.exe" /pdbtype:sept /libpath:"c:\wxWindows-2.4.2\lib" 
+.\Debug\Crc16.obj
+.\Debug\ProfOptionsDialog.obj
+.\Debug\ProfOptionsManager.obj
+.\Debug\Chameleon.res
+]
+Creating command line "link.exe @C:\DOCUME~1\DCZECH~1\LOCALS~1\Temp\RSP47.tmp"
+<h3>Output Window</h3>
+Compiling...
+ProfOptionsDialog.cpp
+h:\chameleon\gears_chameleon\profmanager\profoptionsdialog.h(62) : error C2065: 'wxCLOSE_BOX' : undeclared identifier
+h:\chameleon\gears_chameleon\profmanager\profoptionsdialog.cpp(362) : warning C4800: 'int' : forcing value to bool 'true' or 'false' (performance warning)
+Crc16.cpp
+ProfOptionsManager.cpp
+h:\chameleon\gears_chameleon\profmanager\profoptionsdialog.h(62) : error C2065: 'wxCLOSE_BOX' : undeclared identifier
+Error executing cl.exe.
+
+
+
+<h3>Results</h3>
+prof.exe - 2 error(s), 1 warning(s)
+</pre>
+</body>
+</html>
