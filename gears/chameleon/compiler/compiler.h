@@ -42,7 +42,6 @@ class Compiler : public wxEvtHandler
 		bool m_isCompiling;
 		bool m_isLinking;
 		CompileResult m_compilingStatus;
-		wxEvtHandler* m_handler;
 
 
 	DECLARE_EVENT_TABLE()

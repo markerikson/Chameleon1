@@ -34,7 +34,6 @@ Compiler::Compiler(Options* options, Networking* network)
 	m_isCompiling = false;
 	m_isLinking = false;
 	m_compilerStdIn = NULL; // used only for forced terminations
-	m_handler = NULL;
 	m_currProj = NULL;
 	m_currFileNum = -2;
 }
@@ -95,6 +94,7 @@ void Compiler::StartNextFile()
 	CompilerEvent e(chEVT_COMPILER_START);
 	e.SetRemoteFile(isRemote);
 	e.SetFile(inFile);
+	AddPendingEvent(e);
 
 	m_currFileNum++; // increment file counter
 }
@@ -167,8 +167,6 @@ void Compiler::RemoveIntermediateFiles() {
 	}
 
 	m_intermediateFiles.Clear();
-
-	SetNextHandler(NULL);
 }
 
 
