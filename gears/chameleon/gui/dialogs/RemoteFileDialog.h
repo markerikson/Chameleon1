@@ -44,12 +44,13 @@ class wxListEvent;
 
 ////@begin control identifiers
 #define ID_DIALOG 10000
-#define ID_BUTTON2 10007
+#define ID_PATHBOX 10002
+#define ID_BUTTONUPFOLDER 10007
 #define ID_LISTCTRL 10001
 #define ID_TXTFILENAME 10008
-#define ID_BUTTON 10003
+#define ID_BUTTONOPEN 10003
 #define ID_COMBOBOX1 10004
-#define ID_BUTTON1 10005
+#define ID_BUTTONCANCEL 10005
 ////@end control identifiers
 
 /*!
@@ -80,7 +81,7 @@ public:
 
 ////@begin RemoteFileDialog event handler declarations
 
-    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON2
+    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTONUPFOLDER
     void OnButtonUpClick( wxCommandEvent& event );
 
     /// wxEVT_COMMAND_LIST_ITEM_SELECTED event handler for ID_LISTCTRL
@@ -89,26 +90,28 @@ public:
     /// wxEVT_COMMAND_LIST_ITEM_ACTIVATED event handler for ID_LISTCTRL
     void OnItemActivated( wxListEvent& event );
 
-    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON
+    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTONOPEN
     void OnButtonOpenClick( wxCommandEvent& event );
 
-    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON1
+    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTONCANCEL
     void OnButtonCancelClick( wxCommandEvent& event );
 
 ////@end RemoteFileDialog event handler declarations
 
 ////@begin RemoteFileDialog member function declarations
 
-    wxString GetCurrentPath() const { return m_currentPath ; }
-    void SetCurrentPath(wxString value) { m_currentPath = value ; }
-
 ////@end RemoteFileDialog member function declarations
 
 	void SetNetworking(Networking* network);
 	wxString GetLocalFileNameAndPath();
+	wxString GetRemoteFileName() { return m_remoteFileNamePath.GetFullName();}
+	wxString GetRemotePath() { return m_remoteFileNamePath.GetPath(wxPATH_UNIX);}
+
 	wxString GetRemoteFileNameAndPath();
 
 	void OpenRemoteFile();
+	void SaveRemoteFile();
+	void Prepare(bool open);
 
 	void ShowDirectory(wxString dirname);
 	void LoadTestData();
@@ -116,14 +119,23 @@ public:
     /// Should we show tooltips?
     static bool ShowToolTips();
 
+private:
+
+	wxPathFormat GetCurrentPathFormat();
+	void ItemActivated();
+
 ////@begin RemoteFileDialog member variables
+    wxTextCtrl* m_pathBox;
     wxListCtrl* m_list;
     wxTextCtrl* m_txtFilename;
     wxButton* m_buttonOpen;
     wxComboBox* m_comboFiletypes;
     wxButton* m_buttonCancel;
-    wxString m_currentPath;
 ////@end RemoteFileDialog member variables
+
+	wxFileName m_currentPath;
+	
+	bool m_openMode;
 
 	wxFileName m_localFileNamePath;
 	wxFileName m_remoteFileNamePath;

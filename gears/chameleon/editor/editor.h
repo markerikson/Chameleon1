@@ -24,25 +24,40 @@ public:
 
 
 	bool LoadFile ();
-	bool LoadFile (const wxString &filename);
+	bool LoadLocalFile (const wxString &filename);
+	bool LoadFileText(wxString fileContents);
 	bool SaveFileAs();
 	bool SaveFile(const wxString& filename);
+	bool SaveFile();
 
 	bool Modified();
-	void OnSetTabModified(wxStyledTextEvent &event);
+
+	void SetTabUnmodified();
 
 	void OnChar(wxStyledTextEvent &event);
+
+	wxString GetRemoteFileName() { return m_remoteFileName.GetFullName();}
+	wxString GetRemotePath() { return m_remoteFileName.GetPath(wxPATH_UNIX);}
+	wxString GetRemoteFileNameAndPath() { return m_remoteFileName.GetFullPath(wxPATH_UNIX);}
+	void SetRemoteFileNameAndPath(wxString path, wxString name);
 
 
 
 	wxString GetFilename () {return m_filename;};
 	void SetFilename (const wxString &filename) {m_filename;};
+	bool HasBeenSaved();
 
 private:
+
+
+	void OnSetTabModified(wxStyledTextEvent &event);
+	
 
 	ChameleonWindow* m_mainFrame;
 	ChameleonNotebook* m_parentNotebook;	
 
+	wxFileName m_remoteFileName;
+	wxFileName m_localFileName;
 	wxString m_filename;
 	wxDateTime m_filetime;
 	

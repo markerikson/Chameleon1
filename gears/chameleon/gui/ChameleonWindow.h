@@ -78,7 +78,7 @@
 #include "dialogs/OptionsDialog.h"
 #include "dialogs/RemoteFileDialog.h"
 #include "../perms/p.h"
-//#include "../network/networking.h"
+#include "../network/networking.h"
 
 #include "ChameleonNotebook.h"
 
@@ -109,13 +109,14 @@ public:
 	int GetIntVar(int variableName);
 
 	bool IsEnabled(int permission);
+	bool InRemoteMode();
 
 	void EvaluateOptions();
 
 	void OpenFile(wxArrayString fnames);
 
 	//ChameleonEditor* GetCurrentEditor();
-	//Networking* GetNetworking();
+	Networking* GetNetworking();
 
 
 
@@ -133,6 +134,7 @@ private:
 	void OnSaveAs(wxCommandEvent &event);
 	//void SaveFileLocal(bool saveas);
 	void OpenFile();
+	void SaveFile(bool saveas);
 	void Test(wxCommandEvent& event);
 	//void SaveFileAs(wxCommandEvent& event);
 	void OnUpdateSave(wxUpdateUIEvent &event);
@@ -161,7 +163,7 @@ private:
 	void OnCopy(wxCommandEvent &event);
 	void OnPaste(wxCommandEvent &event);
 
-
+	bool GetFileContents(wxString filename, wxString &fileContents);
 
 	
 	void CloseFile(int pageNr = -1);
@@ -202,8 +204,7 @@ private:
 	//wxBoxSizer* sizerTab;
 
 	Permission*  m_perms;
-
-	//Networking* m_network;
+	Networking* m_network;
 
 	//wxArrayPtrVoid* docArray; 
 	//scintillaDocPageHash* docHash;

@@ -11,7 +11,7 @@
 
 BEGIN_EVENT_TABLE(ChameleonEditor, wxStyledTextCtrl)
 	EVT_STC_CHARADDED(-1, ChameleonEditor::OnChar)
-	EVT_STC_CHANGE(-1, ChameleonEditor::OnSetTabModified)
+	EVT_STC_MODIFIED(-1, ChameleonEditor::OnSetTabModified)
 END_EVENT_TABLE()
 
 ChameleonEditor::ChameleonEditor( ChameleonWindow *mframe,
@@ -124,6 +124,11 @@ bool ChameleonEditor::SaveFileAs()
     return SaveFile(m_filename);
 }
 
+bool ChameleonEditor::SaveFile()
+{
+	return SaveFile(m_filename);
+}
+
 bool ChameleonEditor::SaveFile( const wxString & filename )
 {
 
@@ -166,7 +171,9 @@ bool ChameleonEditor::SaveFile( const wxString & filename )
 bool ChameleonEditor::LoadFile ()
 {
 
-    // get filname
+	// commented out because I'm moving functionality to ChameleonWindow
+	/*
+    // get filename
     if( !m_filename )
     {
         wxFileDialog dlg (this, _T("Open file"), _T(""), _T(""),
@@ -180,9 +187,13 @@ bool ChameleonEditor::LoadFile ()
 
     // load file
     return LoadFile(m_filename);
+
+	*/
+
+	return true;
 }
 
-bool ChameleonEditor::LoadFile( const wxString & filename )
+bool ChameleonEditor::LoadLocalFile( const wxString & filename )
 {
     wxString buf;
 
@@ -212,14 +223,27 @@ bool ChameleonEditor::LoadFile( const wxString & filename )
 
         buf.UngetWriteBuf();
 
-        InsertText(0, buf);
+        //InsertText(0, buf);
     }
+
+
+	file.Close();
+
+	return LoadFileText(buf);
+}
+
+bool ChameleonEditor::LoadFileText(wxString fileContents)
+{
+	if(fileContents.Length() > 0)
+	{
+		ClearAll();
+		InsertText(0, fileContents);
+	}
 
     EmptyUndoBuffer();
 
-    file.Close();
 
-    m_filetime = wxFileName(m_filename).GetModificationTime();
+    //m_filetime = wxFileName(m_filename).GetModificationTime();
 
     // determine and set EOL mode
     int eolMode = -1;
@@ -228,13 +252,13 @@ bool ChameleonEditor::LoadFile( const wxString & filename )
 
     wxString eolName;
 
-    if( buf.Contains("\r\n") )
+    if( fileContents.Contains("\r\n") )
     {
         eolMode = wxSTC_EOL_CRLF;
 
         eolName = _("CR+LF (Windows)");
     }
-    else if( buf.Contains("\r") )
+    else if( fileContents.Contains("\r") )
     {
         if(eolMode != -1) { eolMix = true; }
         else
@@ -244,7 +268,7 @@ bool ChameleonEditor::LoadFile( const wxString & filename )
             eolName = _("CR (Macintosh)");
         }
     }
-    else if( buf.Contains("\n") )
+    else if( fileContents.Contains("\n") )
     {
         if(eolMode != -1) { eolMix = true; }
         else
@@ -283,6 +307,8 @@ bool ChameleonEditor::LoadFile( const wxString & filename )
 	//m_parentNotebook->SetPageText(currentTab, wxFileName(m_filename).GetFullName());
 	//m_parentNotebook->Refresh();
 
+	//SetTabUnmodified();
+
 
 
     return true;
@@ -296,27 +322,42 @@ bool ChameleonEditor::Modified ()
 
 void ChameleonEditor::OnSetTabModified(wxStyledTextEvent &event)
 {
+	int modType = event.GetModificationType();
 	
-	bool isModified = this->Modified();
 
-	if(isModified)
+	if( (modType && wxSTC_MOD_INSERTTEXT) ||
+		(modType && wxSTC_MOD_DELETETEXT))
 	{
-		int tabNum = m_parentNotebook->GetSelection();
-		wxString title = m_parentNotebook->GetPageText(tabNum);
-		
-		if(!title.Contains("*"))
+		bool isModified = this->Modified();
+
+		if(isModified)
 		{
-			title += "*";
-			m_parentNotebook->SetPageText(tabNum, title);
-			//this->Refresh();
-			m_parentNotebook->Refresh();
+			int tabNum = m_parentNotebook->GetSelection();
+			wxString title = m_parentNotebook->GetPageText(tabNum);
+
+			if(!title.Contains("*"))
+			{
+				title += "*";
+				m_parentNotebook->SetPageText(tabNum, title);
+				//this->Refresh();
+				m_parentNotebook->Refresh();
+			}
+			else
+			{
+				title.RemoveLast(1);
+				m_parentNotebook->SetPageText(tabNum, title);
+			}
+
 		}
-
 	}
-	
-	
+}
 
-	//wxMessageBox("Modified");
+void ChameleonEditor::SetTabUnmodified()
+{
+	int tabNum = m_parentNotebook->GetSelection();
+
+	wxFileName fn(m_filename);
+	m_parentNotebook->SetPageText(tabNum, fn.GetFullName());
 
 
 }
@@ -389,4 +430,23 @@ void ChameleonEditor::OnChar( wxStyledTextEvent &event )
 	}
 
 	return;
+}
+
+bool ChameleonEditor::HasBeenSaved()
+{
+	if(m_mainFrame->InRemoteMode())
+	{
+		wxString remote = m_remoteFileName.GetFullPath();
+		return remote != wxEmptyString;
+	}
+	else
+	{
+		wxString local = m_localFileName.GetFullPath();
+		return local != wxEmptyString;
+	}
+}
+
+void ChameleonEditor::SetRemoteFileNameAndPath(wxString path, wxString name)
+{
+	m_remoteFileName.Assign(path, name, wxPATH_UNIX);
 }
