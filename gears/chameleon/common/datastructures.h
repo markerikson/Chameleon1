@@ -7,6 +7,7 @@
 #include <wx/hashmap.h>
 #include <wx/string.h>
 #include <wx/dynarray.h>
+//#include <wx/treectrl.h>
 
 class wxWindow;
 
@@ -42,7 +43,9 @@ enum WindowID
 	ID_PANEL_ED,
 	ID_ED,
 	ID_TELNET,
-	ID_SPLITTER,
+	ID_SPLITEDITOROUTPUT,
+	ID_SPLITPROJECTEDITOR,
+	ID_PROJECTTREE,
 	ID_OPTIONSDIALOG,
 	ID_REMOTEFILEDIALOG,
 
@@ -58,17 +61,15 @@ enum WindowID
 
 
 	// temporary - IDs for working with multiple documents
-	ID_CREATEDOC,
-	ID_SETDOC, 
-	ID_GETDOC,
-	ID_RELEASEDOC,
+
 
 	ID_COMPILE,
 
 	ID_STARTCONNECT,
 
-
 	ID_TEST,
+
+	ID_ADDPROJECTFILE,
 
 	// debugging IDs
 	ID_DEBUG_IDS_FIRST,
@@ -79,8 +80,6 @@ enum WindowID
 	ID_STEPOVER,
 	ID_STEPOUT,
 	ID_DEBUG_IDS_LAST,
-
-	ID_OPTIONS_GRID = 10005,
 };
 
 enum modules
@@ -122,6 +121,7 @@ WX_DECLARE_HASH_MAP(wxString,
 					wxStringEqual,
 					StringIntHashmap);
 
+
 WX_DEFINE_ARRAY(wxWindow*, WindowPointerArray);
 
 
@@ -152,11 +152,23 @@ enum NetworkCallResult
 	NETCALL_REDO,
 };
 
-enum FileDisplayType
+enum FileFilterType
 {
-	FILE_SOURCECODE,
+	FILE_ALLSOURCES,
 	FILE_PROJECT,
+	FILE_LIBRARY,
+	FILE_SOURCEONLY,
+	FILE_HEADERONLY,
+	FILE_ALLFILES,
 	FILE_LASTTYPE,
 };
+
+/*
+class FileNameTreeData : public wxTreeItemData
+{
+public:
+	wxString filename;
+};
+*/
 
 #endif
