@@ -359,7 +359,8 @@ bool Networking::MaintainSettings() {
 		m_currPass = newP;
 
 		//Update PlinkConnect
-		m_plinks->setLogin(newH, newU, newP);
+		m_plinks->setLogin(newH, newU, newP); // this restarts the network
+		m_status = NET_STARTING;
 
 		return true;
 	}
@@ -462,11 +463,17 @@ void Networking::onTimerTick(wxTimerEvent &e) {
 }
 
 
+// This function can NOT be SYNCHRONOUS (especially not locking -- wxSafeYield)
 void Networking::PingOptions() {
-	MaintainSettings();
 	// If nothing has changed, nothing will happen.
-	// If settings have changed, the changes will be propagated to PlinkConnect, then
-	//     (asynchronously) PlinkConnect will spawn a connection (if possible)
+	if( MaintainSettings() || m_status == NET_STARTING) {
+		// If settings have changed, the changes will be propagated to PlinkConnect, then
+		//     (asynchronously) PlinkConnect will spawn a connection (if possible)
+		if(m_plinks->getIsSettled()) {
+			// only do this if I know I will can an immediate response
+			GetStatus();
+		}
+	}
 }
 
 /////////////////////////////////////////////////////////////////////

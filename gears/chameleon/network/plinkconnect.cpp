@@ -167,6 +167,13 @@ bool PlinkConnect::getIsConnected()
 }
 
 
+// ASYNCHRONOUS
+bool PlinkConnect::getIsSettled()
+{
+	return m_processes.GetFirst() != NULL && m_processes.GetFirst()->GetData()->state != PC_STARTING;
+}
+
+
 // This method should only be called if IsConnected().
 // ASYNCHRONOUS (relatively)
 wxTextOutputStream* PlinkConnect::executeCommand(wxString command, wxEvtHandler* listener)

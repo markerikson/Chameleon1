@@ -38,6 +38,7 @@ class PlinkConnect : public wxEvtHandler {
 		// Gets/Sets
 		void setLogin(wxString hostname, wxString username, wxString passphrase);
 		bool getIsConnected();
+		bool getIsSettled();
 		wxString getMessage() { return m_message; }
 
 	private:
