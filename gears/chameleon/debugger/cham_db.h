@@ -111,8 +111,6 @@ class Debugger : public wxEvtHandler
 		int getCurrLine();				//returns current line number on debug
 		//use STEPI ^
 
-		wxString snoopOutput();		//~~DEBUG CODE~~  returns complete output
-
 	private:
 		//misc functions i thought would be handy
 		void updateHistory(wxString addMe);	//so I don't have to do it manualy

@@ -78,8 +78,6 @@ Debugger::Debugger(bool mode, wxString fName, wxString execThis)
 	command = execThis;
 	updateHistory(command);
 	
-	//pid = wxExecute(command, wxEXEC_ASYNC, debugProc);	//launch GDB
-
 	//this is dave's \/ 
 	//pid = wxExecute("plink.exe -pw dayspring danroeber@163.11.160.218 gdb -q", wxEXEC_ASYNC, debugProc);
 
@@ -91,7 +89,7 @@ Debugger::Debugger(bool mode, wxString fName, wxString execThis)
 		//Debug started unsuccessfully
 		status = DEBUG_DEAD;
 		classStatus = STOP;
-		error = "Unable to launch GDB.  Process ID not assigned.";
+		error = "Unable to launch.  Process ID not assigned.";
 		makeGenericError("Launch_fail");
 		delete debugProc;
 	}
@@ -426,6 +424,7 @@ void Debugger::setProcess(wxString nExec)
 		procLives = true;
 		classStatus = NEW_PROC;
 		status = DEBUG_STOPPED;
+		firstExecString = nExec;
 
 		streamIn = debugProc->GetInputStream();		//GDB to me
 		streamError = debugProc->GetErrorStream();	//problems
@@ -792,8 +791,8 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 	//2) If so, begin parsing.  Set [classStatus = PARSING]
 	//3) If not, wait for another output
 	for(int i = 0; 
-	i < int(data.GetCount()) && classStatus != WAITING; 
-	i++)
+	    i < int(data.GetCount()) && classStatusBackup == 0; 
+	    i++)
 	{
 		tempHold = data[i];
 		if(tempHold.Last() == PROMPT_CHAR)
