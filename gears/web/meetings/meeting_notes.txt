@@ -514,3 +514,44 @@ by: Ben
 	-Mark: Saving .ini file to %user_path%
 	-Dave: put up a build monday night
 	**UpDaTe TASK LISTS**
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Group Meeting 02/12/2004 8:20pm
+by: Ben
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+>>What's up?
+	-Succesful presentation!
+	-Mark's gone through the G-Term code
+		--History will be considered "not doable" until terminal is working
+		--if customer asks?  We can't lead him on; we should tell him.  Hold off until Mark's worked it.
+	-Design issues:
+		--networking ASYNC: when is an event is thrown?  on arrival of character or completion of line?
+		--so how would GDB connect?  Dave hands me a pointer to a plink session.
+		--the commands being sent are identical between local/remote...
+		--the difference is a pointer in my program to a wxProcess that Mark could pass me
+
+		--debugger: new insantiation every time debugger is begun
+		--should the debugger be aware of local/remote?
+		--Dave is now saying it should & I get a pointer to a network object
+		--back to events!
+
+		--How are events handled?
+		--when we have a lot of output comming through the buffer, who's holding it?
+		--gdb launches the other program in a seperate window... how do we get that output?
+>>For nExT wEeK
+	-no history for term?
+	-local/remote option with locations of important programs
+	-GDB: more research
+	-network: 
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Group Meeting 02/15/2004 11:20pm
+by: Ben
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+>>AOL chat + phone call
+	--VNC demo
+	--GDB handles output for [a.out] on the command line!  but that means I need to parse it more...
+	--better check this with John & Jeremiah
+	--so design issue: Dave throws an event, I catch, and parse.  I send command to Dave.
+>>Progress?  no....
+	--visible in GDB
+	--messing with ASync
+	--kuddos to Dave!!
