@@ -28,7 +28,7 @@
 
 //global declarations
 const int MAX_HIST_ITEMS = 50;
-const char PROMPT_CHAR = '%';
+const wxString PROMPT_CHAR = "%";
 
 //keywords for parsing output
 enum DEBUG_KEYS {
@@ -48,9 +48,10 @@ enum DEBUG_KEYS {
 	VAR_ASSIGN,
 	WATCH_VAR,
 	STEP,
+	STEP_OVER,
 	STEP_OUT,
 	STOP,
-	WAITING,
+	WAITING,	//134260
 };
 
 //status of program
@@ -88,15 +89,14 @@ class Debugger : public wxEvtHandler
 		bool resetStatus();				//hard reset * USE CAUTIOUSLY *
 		void clearError();				//just resets the status variable
 		
-		void setProcess(wxString nExec);//sets the current process pointer
+		void setProcess(bool newIsRemote, wxString newFname, wxString nExec);//sets the current process pointer
 
 		//breakpoint management
-		void setBreak(int lineNum);		//set breakpoint
-		void disableBreak(int lineNum);	//disable breakpoint
-		void enableBreak(int lineNum);	//enable a breakpoint
-		void killBreak(int lineNum);	//delete breakpoint
-		//int breakStat(int lineNum);	//hit stats on a breakpoint at line#[int]
-		int numBreaks();				//return the # of breakpoints
+		void setBreak(wxString srcFile, int lineNum);		//set breakpoint
+		void disableBreak(wxString srcFile, int lineNum);	//disable breakpoint
+		void enableBreak(wxString srcFile, int lineNum);	//enable a breakpoint
+		void killBreak(wxString srcFile, int lineNum);		//delete breakpoint
+		int numBreak();										//return the # of breakpoints
 
 		//step management
 		void step();
@@ -115,7 +115,7 @@ class Debugger : public wxEvtHandler
 		//misc management
 		void stop(bool pleaseRestart);	//kills process & reloads it (?)
 		void kill();					//simple?
-		int getCurrLine();				//returns current line number on debug
+		//int getCurrLine();				//returns current line number on debug
 		//use STEPI ^
 
 	private:
@@ -126,6 +126,8 @@ class Debugger : public wxEvtHandler
 		wxString getHistoryItem(int offset);//ditto
 		void flushBuffer();					//flushes the input-data array
 		void flushPrivateVar();				//flushes all private variables
+
+		int findBreakpoint(wxString fName, int lineNum, bool andRemove = false);
  
 		void sendCommand(wxString send);	//sends command & updates history
 		wxString getResult(int debugFlag);	//gets returned output
@@ -150,10 +152,11 @@ class Debugger : public wxEvtHandler
 		long pid;					//process ID of GDB (if running)
 		int currDebugLine;			//holds line number program is on
 		
-		int breakpointCount;		//counts breakpoints
-		int deadBreakpoints;		//counts deleted breakpoints
-		//MARK IS NOW HANDLING IT//
-		//wxArrayInt breakpointLoc;	//hold breakpoint line #'s
+		int gdbBreakpointNum;		//keeps track of GDB's #ing system
+//		int deadBreakpoints;		//counts deleted breakpoints
+		int numBreakpoints;			//keeps track of actual number of live ones
+//		wxArrayInt breakpointNum;	//hold breakpoint line #'s
+		DebugBreakHash lineToNum;
 		
 		wxString commandHistory[MAX_HIST_ITEMS];	//stores command history
 		int histPointer;			//points to current command history

@@ -58,34 +58,6 @@ Debugger::Debugger(wxTextCtrl* outBox)
 Debugger::~Debugger()
 {
 	//initial stuff to cleanly exit (sorta)
-	bool alright = resetStatus();
-
-	if(numBreaks() > 0)
-	{
-		command = "delete break" + returnChar;
-		sendCommand(command);
-	}
-
-	if(fileIsSet)
-	{
-		command = "file" + returnChar;
-		sendCommand(command);
-	}
-
-	command = "quit" + returnChar;
-	sendCommand(command);
-
-	//this extra command will actually be universal if we start a CMD
-	//session in windows.  A CMD session isn't neccesary really, but it's a
-	//thought.  If we're running GDB directly, "exit" is redundant and prob.
-	//won't do anything.
-	if(isRemote)
-	{
-		command = "exit" + returnChar;
-		sendCommand(command);
-	}
-
-	//attempt kill of the process
 	stop(false);
 
 	//dump history & errors into debug file
@@ -98,18 +70,102 @@ Debugger::~Debugger()
 
 	dumpFile.Write("Errors:");
 	for(int o = 0; o < errorCount; o++)
+	{
 		dumpFile.Write(errorHist[o]);
+	}
+
 	dumpFile.Close();
+
+	if(debugProc != NULL) {delete debugProc;}
 }//end ~Debugger
 
 //onDebugEvent(): catches when Mark sends me something...
 void Debugger::onDebugEvent(wxDebugEvent &event)
 {
+	//all the variables i need here:
 	int eventCommand = event.GetId();
+	int eventLineNum = event.GetLineNumber();
+	bool mode = event.IsRemote();
 
-//	switch(eventCommand)
-//	{
-//	}
+	wxArrayString srcFiles = event.GetSourceFilenames();
+	wxArrayInt breakpointLines;
+
+	FileBreakpointHash breakpointList = event.GetFileBreakpoints();
+	
+	wxString tmp;
+	wxString firstFile = srcFiles[0];
+	wxString sendAllBreakpoints;
+	wxString execFile = event.GetExecutableFilename();
+
+	//loop vars
+	int i, j;
+
+	switch(eventCommand)
+	{
+	case ID_DEBUG_START:
+		//start process
+		startProcess(true, mode, execFile, "gdb -q", outputScreen);
+
+		//set breakpoints
+		for(i = 0; i < (int)srcFiles.GetCount(); i++)
+		{
+			tmp = srcFiles[i];
+			if(breakpointList.find(tmp) != breakpointList.end())
+			{
+				breakpointLines = breakpointList[tmp];
+
+				for(j = 0; j < (int)breakpointLines.GetCount(); j++)
+				{
+					sendAllBreakpoints<<"break \""<<tmp<<":"<<breakpointLines[j]<<"\""<<returnChar;
+					numBreakpoints++;
+					gdbBreakpointNum++;
+				}
+			}//end if
+		}
+
+
+		sendCommand("list"+returnChar);
+		sendCommand(sendAllBreakpoints);
+
+		//assuming all is well...
+		go();
+		break;
+
+	case ID_DEBUG_STOP:
+		stop(false);
+		break;
+
+	case ID_DEBUG_STEPNEXT:
+		(*outputScreen)<<"<event> received step command <event>\n";
+		step();
+		break;
+
+	case ID_DEBUG_STEPOVER:
+		stepOver();
+		break;
+
+	case ID_DEBUG_STEPOUT:
+		stepOut();
+		break;
+
+	case ID_DEBUG_ADD_BREAKPOINT:
+		setBreak(firstFile, eventLineNum);
+		break;
+
+	case ID_DEBUG_REMOVE_BREAKPOINT:
+		killBreak(firstFile, eventLineNum);
+		break;
+
+	//case ID_DEBUG_RUNTOCURSOR:
+	default:
+		tmp = error;
+		eventLineNum = status;
+		error = "Unrecognized Debug Event";
+		makeGenericError("onDebugEvent: ");
+		error = tmp;
+		status = eventLineNum;
+		break;
+	}
 }
 
 //PUBLIC FUNCTIONS:
@@ -145,6 +201,7 @@ bool Debugger::getMode()
 	return(isRemote);
 }
 
+//for Mark...
 bool Debugger::isDebugging()
 {
 	return(status == DEBUG_RUNNING);
@@ -154,6 +211,7 @@ bool Debugger::isPaused()
 {
 	return(status == DEBUG_WAIT || status == DEBUG_BREAK);
 }
+//--//
 
 //setFile(): set's the current file to be debugged.
 bool Debugger::setFile(wxString fName)
@@ -180,7 +238,7 @@ bool Debugger::setFile(wxString fName)
 			fileIsSet = true;
 		}//end file-empty-check
 	}
-	return(true);
+	return(fileIsSet);
 }
 
 //currFile(): returns the currently loaded file
@@ -226,9 +284,12 @@ bool Debugger::resetStatus()
 	{
 		wxArrayString debugReset;
 
-		if(numBreaks() > 0)
+		if(numBreak() > 0)
 		{
 			debugReset.Add("delete breakpoint" + returnChar);
+			gdbBreakpointNum = 0;
+			numBreakpoints = 0;
+			lineToNum.empty();
 		}
 
 		//if the file was just loaded... no need to kill something not
@@ -294,78 +355,17 @@ void Debugger::clearError()
 }
 
 //setProcess(): re-directs or changes the process pointer.
-void Debugger::setProcess(wxString nExec)
+void Debugger::setProcess(bool newIsRemote, wxString newFname, wxString nExec)//, wxTextCtrl *outbox)
 {
 	//begin with a hard reset of everything.
-	status = DEBUG_RUNNING;
-		
-	resetStatus();
+	stop(false);
+	flushPrivateVar();
 	
-	delete debugProc;
-	delete streamIn;
-	delete streamError;
+	//Option 1
+	//startProcess(true,newIsRemote, newFname, nExec, newOutbox);
 	
-	debugProc = new wxProcess2(this);
-
-	updateHistory("new proc->" + nExec);
-
-	//begin fresh...
-	classStatus = START;
-	pid = wxExecute(nExec, wxEXEC_ASYNC, debugProc);
-	if (pid == 0)
-	{
-		//Debug started unsuccessfully
-		status = DEBUG_DEAD;
-		classStatus = STOP;
-		error = "Unable to execute "+nExec+".  Process ID not assigned.";
-		makeGenericError("Launch_fail");
-		delete debugProc;
-	}
-	else if(pid == -1)
-	{
-		status = DEBUG_DEAD;
-		classStatus = STOP;
-		error = "Unable to launch process.  -1 PID assigned";
-		makeGenericError("Get a real operating system!");
-		delete debugProc;
-	}
-	else	//process started
-	{
-		int currInit = 0;
-		wxArrayString initString;
-
-		procLives = true;
-		classStatus = NEW_PROC;
-		status = DEBUG_STOPPED;
-		firstExecString = nExec;
-
-		streamIn = debugProc->GetInputStream();		//GDB to me
-		streamError = debugProc->GetErrorStream();	//problems
-
-		//initialize GDB
-		initString.Add("set prompt " + PROMPT_CHAR + returnChar);
-		initString.Add("set print pretty on" + returnChar);
-		initString.Add("set print address off" + returnChar);
-		initString.Add("set confirm off" + returnChar);
-
-		//send all initlization commands to GDB
-		while(currInit < int(initString.GetCount()))
-		{
-			(*outputScreen)<<"INIT COMM: "<<initString.Item(currInit)<<"\n";
-			sendCommand(initString.Item(currInit));
-			currInit++;
-		}
-		
-		if(fileIsSet)
-		{
-			command = "file " + currFile + returnChar;
-			sendCommand(command);
-		}//end set-file conditional
-		else
-		{
-			status = DEBUG_NEED_FILE;
-		}
-	}//end execution failure-conditional
+	//Option 2 (outputscreen used to copy into itself)
+	startProcess(true,newIsRemote, newFname, nExec, outputScreen);
 }
 
 
@@ -381,10 +381,14 @@ void Debugger::startProcess(bool fullRestart, bool mode, wxString fName, wxStrin
 		currFile = fName;
 	
 		histPointer = 0;
-		breakpointCount = 0;
-		deadBreakpoints = 0;
+	
+		numBreakpoints = 0;
+		gdbBreakpointNum = 1;
+	
 		errorCount = 0;
+
 		currDebugLine = 0;
+		
 		gdbVarIndex = 0;
 		varCount = 0;
 	
@@ -407,13 +411,9 @@ void Debugger::startProcess(bool fullRestart, bool mode, wxString fName, wxStrin
 		fileIsSet = false;
 	}
 	
-	if(debugProc == NULL)
-	{
-		//begin funky process stuff
-		debugProc = new wxProcess2(this);
-	}
 
-	procLives = false;
+	//begin funky process stuff
+	debugProc = new wxProcess2(this);	procLives = false;
 	classStatus = NEW_PROC;
 	
 	//initial commands to GDB
@@ -459,7 +459,7 @@ void Debugger::startProcess(bool fullRestart, bool mode, wxString fName, wxStrin
 		streamError = debugProc->GetErrorStream();	//problems
 
 		//initialize GDB
-		tmp.Printf("set prompt %s%s", PROMPT_CHAR, returnChar);
+		tmp.Printf("set prompt %s%s", PROMPT_CHAR.c_str(), returnChar.c_str());
 		initString.Add(tmp);
 		initString.Add("set print pretty on" + returnChar);
 		initString.Add("set print address off" + returnChar);
@@ -483,128 +483,142 @@ void Debugger::startProcess(bool fullRestart, bool mode, wxString fName, wxStrin
 
 //BREAKPOINT FUNCTIONALITY
 //------------------------
-//i have 3 variables to use for breakpoints:
-//	[breakpointCount] = how many breakpoints
-//  [deadBreakpoints] = how many are deleted
-//	[breakpointLoc] = corresponding line #'s
-//GDB loops breakpoint #s continuously, so unfortuneatly
-//breakpointLoc is continuously growing (until a useful
-//fix is found).  GDB also keeps track of both elements
-//that these variables track, but it's easier for me
-//to track them than to parse through what GDB gives
-//me in response to what i want.
+//i used to have 3 variables to use for breakpoints.
+//Now I don't know.  ^_^  We re-designed things.
 
 //setBreak(): accepts a line number with which to break on
-void Debugger::setBreak(int lineNum)
+void Debugger::setBreak(wxString srcFile, int lineNum)
 {
-	if(fileIsSet)
+	if(fileIsSet &&
+		(status == DEBUG_WAIT || status == DEBUG_BREAK))
 	{
+		//int currArrayPos = 0;
+
+		if(numBreak() == 0 && gdbBreakpointNum == 1)
+		{
+			classStatus = START;	//ignore the output
+
+			command = "list" + returnChar;
+			sendCommand(command);
+			gdbBreakpointNum = 1;
+		}
+		
 		classStatus = S_BREAK;
-		command.Printf("break %d%s", lineNum, returnChar.c_str());
-	
+		command.Printf("break \"%s:%d%\"s", srcFile, lineNum, returnChar.c_str());	
 		sendCommand(command);
 	
-//		breakpointLoc.Add(lineNum);
-		breakpointCount++;
+		//breakpointNum[numBreakpoints] = gdbBreakpointNum;
+		//currArrayPos = lineToNum[srcFile].lineNumbers.GetCount();
+		lineToNum[srcFile].lineNumbers.Add(lineNum);
+		lineToNum[srcFile].gdbNumbers.Add(gdbBreakpointNum);
+		numBreakpoints++;
+		gdbBreakpointNum++;
 	}
 }
 
-//enableBreak(): enables a breakpoint at a given line number.  This is
-//  nearly identical to disable break since the only difference is the
-//  command being sent.  ^.^
-void Debugger::enableBreak(int lineNum)
+//enableBreak(): enables a breakpoint at a given line number.
+void Debugger::enableBreak(wxString srcFile, int lineNum)
 {
-	//this is the same as disableBreak().  only opposite.  -o.0-
-	if(status == DEBUG_STOPPED ||
-		status == DEBUG_WAIT ||
-		status == DEBUG_BREAK)
-	{
-		classStatus = E_BREAK;
-		//get the breakpoint number by locating it using wxArrayInt
-		//note: at this point [breakNum] is actually an INDEX
-		int breakNum = 0; //breakpointLoc.Index(lineNum, false);
+	int equivNum = findBreakpoint(srcFile, lineNum);
 
-		if(breakNum != wxNOT_FOUND)
-		{
-			//we found it!  
-			//breakNum = breakpointLoc[breakNum];
-			command.Printf("enable %d%s", breakNum, returnChar.c_str());
-			sendCommand(command);
-		}
-		else
-		{
-			//raise an event to Mark??
-			status = DEBUG_ERROR;
-			error.Printf("Breakpoint not found for line number %d", lineNum);
-			addErrorHist("Enable_breakpoint_fail:");
-		}
+	if(equivNum == -1)
+	{
+		wxString baka = error;
+		int suBaka = status;
+
+		error.Printf("Failed to locate breakpoint in %s at %d", srcFile.c_str(), lineNum);
+		makeGenericError("enableBreak: ");
+
+		error = baka;
+		status = suBaka;
+	}
+	else
+	{
+		command.Printf("enable %d%s", equivNum, returnChar.c_str());
+		sendCommand(command);
 	}
 }
 
 //disableBreak(): disables a breakpoint at a given line number
-void Debugger::disableBreak(int lineNum)
+void Debugger::disableBreak(wxString srcFile, int lineNum)
 {
-	if(status != DEBUG_DEAD &&
-		status != DEBUG_NEED_FILE &&
-		status != DEBUG_RUNNING &&
-		status != DEBUG_ERROR)
+	int equivNum = findBreakpoint(srcFile, lineNum);
+
+	if(equivNum == -1)
 	{
-		classStatus = D_BREAK;
-		//get the breakpoint number by locating it using wxArrayInt
-		//note: at this point [breakNum] is actually an INDEX
-		int breakNum = 0;//breakpointLoc.Index(lineNum, false);
+		wxString baka = error;
+		int suBaka = status;
 
-		if(breakNum != wxNOT_FOUND)
-		{
-			//we found it!  
-			//breakNum = breakpointLoc[breakNum];
-			command.Printf("disable %d%s", breakNum, returnChar.c_str());
-			sendCommand(command);
-		}
-		else
-		{
-			//raise an event to Mark??
-			status = DEBUG_ERROR;
-			error.Printf("Breakpoint not found for line number %d", lineNum);
-			addErrorHist("Disable_breakpoint_fail:");
-		}
-	}//end file-set-check
-}
+		error.Printf("Failed to locate breakpoint in %s at %d", srcFile.c_str(), lineNum);
+		makeGenericError("disableBreak: ");
 
-//killBreak(): deletes a breakpoint at line X
-void Debugger::killBreak(int lineNum)
-{
-	if(status == DEBUG_STOPPED ||
-		status == DEBUG_WAIT ||
-		status == DEBUG_BREAK)
+		error = baka;
+		status = suBaka;
+	}
+	else
 	{
-		//see [disableBreak()]
-		int breakNum = 0;//breakpointLoc.Index(lineNum, false);
-
-		if(breakNum != wxNOT_FOUND)
-		{
-			classStatus = K_BREAK;
-			//breakNum = breakpointLoc[breakNum];
-
-			command.Printf("delete %d%s", breakNum, returnChar.c_str());
-			sendCommand(command);
-
-			deadBreakpoints++;
-		}
-		else
-		{
-			//raise an event here too for Mark
-			status = DEBUG_ERROR;
-			error.Printf("Breakpoint not found for line number %d", lineNum);
-			addErrorHist("Delete_breakpoint_fail:");
-		}
+		command.Printf("disable %d%s", equivNum, returnChar.c_str());
+		sendCommand(command);
 	}
 }
 
-//numBreaks(): returns the # of breakpoints
-int Debugger::numBreaks()
+//killBreak(): deletes a breakpoint at line X
+void Debugger::killBreak(wxString srcFile, int lineNum)
 {
-	return(breakpointCount - deadBreakpoints);
+	int equivNum = findBreakpoint(srcFile, lineNum, true);
+	if(equivNum == -1)
+	{
+		wxString baka = error;
+		int suBaka = status;
+
+		error.Printf("Failed to locate breakpoint in %s at %d", srcFile.c_str(), lineNum);
+		makeGenericError("killBreak: ");
+
+		error = baka;
+		status = suBaka;
+	}
+}
+
+//findBreakpoint(): finds a breakpoint within the hash & returns the GDB #
+int Debugger::findBreakpoint(wxString fName, int lineNum, bool andRemove)
+{
+	//altered... added wxArrayInt & took (lineToNum[fName].lineNumbers) out
+	bool found = false;
+	int equivNum = 0;
+	int arrayCount = lineToNum[fName].lineNumbers.GetCount();
+	wxArrayInt tmp = lineToNum[fName].lineNumbers;
+
+	for(int i = 0; i < arrayCount && found == false; i++)
+	{
+		if(tmp[i] == lineNum)
+		{
+			found = true;
+			equivNum = lineToNum[fName].gdbNumbers[i];
+		}
+	}//end for loop
+
+	if(found)
+	{
+		if(andRemove)
+		{
+			lineToNum[fName].lineNumbers.RemoveAt(i);
+			lineToNum[fName].gdbNumbers.RemoveAt(i);
+
+			command.Printf("delete break %d%s", equivNum, returnChar.c_str());
+			sendCommand(command);
+
+			numBreakpoints--;
+		}
+
+		return(equivNum);
+	}
+	return(-1);
+}
+
+//numBreaks(): returns the # of breakpoints
+int Debugger::numBreak()
+{
+	return(numBreakpoints);
 }
 //END BREAKPOINT SECTION
 
@@ -634,7 +648,6 @@ void Debugger::step()
 		status = DEBUG_RUNNING;
 		classStatus = STEP;
 		sendCommand(command);
-
 	}
 	//if not stopped or waiting, then program status = error
 }
@@ -647,7 +660,7 @@ void Debugger::stepOver()
 	{
 		command = "next" + returnChar;
 		status = DEBUG_RUNNING;
-		classStatus = STEP;
+		classStatus = STEP_OVER;
 		sendCommand(command);
 	}
 	//if not waiting, then program status is not good for a step-over
@@ -705,12 +718,30 @@ void Debugger::stop(bool pleaseRestart)
 	} 
 	else if(status == DEBUG_DEAD)
 	{
-		//um... hello!
+		error = "tried to stop dead process";
+		makeGenericError("stop(): ");
+		status = DEBUG_DEAD;
 	}
 	else
 	{
+		//try to stop as cleanly as possible?
+		if(numBreak() > 0)
+		{
+			command = "delete breakpoint" + returnChar;
+			sendCommand(command);
+		}
+
+		if(fileIsSet)
+		{
+			command = "file" + returnChar;
+			sendCommand(command);
+		}
+
 		command = "quit" + returnChar;
 		sendCommand(command);
+
+		//temporary---?
+		//debugProc->Detach();
 	}
 
 	//is this appropriate for me???
@@ -728,10 +759,6 @@ void Debugger::stop(bool pleaseRestart)
 	classStatus = STOP;
 	status = DEBUG_DEAD;
 
-	delete debugProc;
-	delete streamIn;
-	delete streamError;
-	
 	procLives = false;
 
 	if(pleaseRestart)
@@ -749,10 +776,6 @@ void Debugger::kill()
 	procLives = false;
 
 	debugProc->Kill(pid, wxSIGKILL);	//KILL KILL KILL!!
-
-	delete debugProc;
-	delete streamIn;
-	delete streamError;
 
 	flushBuffer();
 	flushPrivateVar();
@@ -833,6 +856,7 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 	//data.Add(e.GetOutput());
 
 	//~~DEBUG CODE~~//
+	(*outputScreen)<<"-Class Status: "<<classStatus<<"-\n";
 	(*outputScreen)<<"--Output:\n"<<tempHold<<"\n--end output--\n";
 	tempHold.Empty();
 
@@ -840,20 +864,28 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 	//1) See if the captured string has a [$] all by itself at the end
 	//2) If so, begin parsing.  Set [classStatus = PARSING]
 	//3) If not, wait for another output
-	for(int i = 0; 
-	    i < int(data.GetCount()) && classStatusBackup == 0; 
-	    i++)
+	if(classStatus != START)
 	{
-		tempHold = data[i];
-		if(tempHold.Last() == PROMPT_CHAR)
+		for(int i = 0; 
+		    i < int(data.GetCount()) && classStatusBackup == 0; 
+			i++)
 		{
-			tempHold.Empty();
+			tempHold = data[i];
+			(*outputScreen)<<"--DEBUG: tmpHold.Last(): "<<tempHold.Last()<<"--\n";
+			if(tempHold.Last() == PROMPT_CHAR)
+			{
+				tempHold.Empty();
 
-			for(int j = 0; j <= i; j++)
-			{tempHold << data[j];}
+				for(int j = 0; j <= i; j++)
+				{tempHold << data[j];}
 
-			classStatusBackup = GO;
+				classStatusBackup = GO;
+			}
 		}
+	}
+	else
+	{
+		classStatusBackup = GO;
 	}
 
 	//check to see if something good was found.
@@ -862,6 +894,8 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 		classStatusBackup = classStatus;
 		classStatus = WAITING;
 	}
+
+	(*outputScreen)<<"<onOutputEvent> class status: "<<classStatus<<" <onOutputEvent>\n";
 	
 	//i need to do parsing here & sending mark stuff i guess...
 	switch(classStatus)
@@ -914,6 +948,8 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 			break;
 
 		case STEP:
+			(*outputScreen)<<"--Made it to the STEP case--"<<classStatus<<"\n";
+		case STEP_OVER:
 			//looking for this heirarchy:
 			// 1) the word "Program" as this indicates a fatal error
 			//  2) the pattern "f_name.ext:ln"
@@ -939,6 +975,10 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 
 			initPos = tempHold.Find(char(32));
 			thirdCase = tempHold.Mid(0, initPos - 1);
+
+			(*outputScreen)<<"1stcase: "<<firstCase<<"\n";
+			(*outputScreen)<<"2ndcase: "<<secondCase<<"\n";
+			(*outputScreen)<<"3rdcase: "<<thirdCase<<"\n";
 
 			//begin testing cases
 			if(firstCase == "Program receiv" ||
@@ -1044,7 +1084,7 @@ void Debugger::onProcessTermEvent(wxProcess2EndedEvent &e)
 		streamIn = NULL;
 		pid = -2; // a nothing pid
 		procLives = false;
-		delete debugProc;
+		if(debugProc != NULL){delete debugProc;}
 	}
 }
 
@@ -1063,9 +1103,10 @@ void Debugger::flushPrivateVar()
 	currFile = "";
 	pid = 0;
 	currDebugLine = 0;
-	breakpointCount = 0;
-	deadBreakpoints = 0;
-	//breakpointLoc.Empty();
+	numBreakpoints = 0;
+	gdbBreakpointNum = 1;
+	//breakpointNum.Empty();
+	lineToNum.empty();
 
 	for(int i = 0; i < MAX_HIST_ITEMS; i++)
 	{
@@ -1100,6 +1141,7 @@ void Debugger::sendCommand(wxString send)
 		wxTextOutputStream streamOut(*(debugProc->GetOutputStream()));//me to GDB
 		streamOut.WriteString(send);
 		send = send + "<- sent";
+		(*outputScreen)<<send<<"\n";
 	}
 	else
 	{
