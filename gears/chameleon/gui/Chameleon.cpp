@@ -2863,35 +2863,13 @@ void ChameleonWindow::UpdateTerminalNotebook()
 		m_noteTerm->AddPage(m_outputPanel, "Compiler output");
 		m_outputPanel->SetAdvanced(advCompileEnabled);
 		m_outputPanel->ClearOutput();
-		/*
-		if(advCompileEnabled)
-		{
-			// TODO Advanced compiler listctrl here
-
-			//m_noteTerm->AddPage(m_compilerTextbox, "Compiler Output");
-			//m_noteTerm->AddPage(m_compilerList, "Compiler Output");
-		}
-		else
-		{
-			m_noteTerm->AddPage(m_compilerTextbox, "Compiler Output");
-		}
-		*/
-
-	}
-	/*
+		m_outputPanel->Show();
+	}	
 	else
 	{
-		if(advCompileEnabled)
-		{
-			m_compilerTextbox->Hide();
-		}
-		else
-		{
-			m_compilerTextbox->Hide();
-			//m_compilerList->Hide();
-		}
+		m_outputPanel->Hide();
 	}
-	*/
+	
 
 	if(perms->isEnabled(PERM_DEBUG))
 	{
