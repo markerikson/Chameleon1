@@ -181,8 +181,11 @@ private:
 	//wxListCtrl* m_compilerList;
 	CompilerOutputPanel* m_outputPanel;
 	wxTermContainer* m_termContainer;
+	wxTermContainer* m_debugTermContainer;
 	VariableWatchPanel* m_watchPanel;
 	wxSSH* m_terminal;
+	wxSSH* m_debugTerminal;
+	//wxFrame* m_
 
 	// dialogs
 	OptionsDialog*  m_optionsDialog;

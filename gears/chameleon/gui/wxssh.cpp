@@ -96,7 +96,8 @@ wxString wxSSH::ConnectForDebug()
 
 	// Synchronous:
 	wxRegEx reParseTTY(".+?\\s+(.+?)\\s+\\w{3}\\s+\\d+\\s+\\d+:\\d+\\s", wxRE_ADVANCED);
-	while(!reParseTTY.Matches(m_inputBuffer) && m_inputBuffer.Contains("CHdEBUGGER-CONNECT")) {
+	while(!reParseTTY.Matches(m_inputBuffer) && 
+		!m_inputBuffer.Contains("CHdEBUGGER-CONNECT")) {
 		wxSafeYield(); // yes, mark probably won't like this, but darn it's simple, and works
 	}
 
@@ -114,6 +115,9 @@ void wxSSH::Disconnect()
 	if(m_connected)
 	{
 		m_networking->ForceKillProcess(m_plinkStdIn);
+		
+		// Not sure if this is needed or not... if we've got problems on exit, we'll come back here
+		//wxUsleep(250);
 		m_connected = false;
 
 		GTerm::Reset();
