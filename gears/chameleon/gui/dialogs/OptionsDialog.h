@@ -44,15 +44,15 @@ class ChameleonWindow;
 #define ID_PANEL1 10006
 #define ID_CHECKLISTBOX 10007
 #define ID_PROFCODE 10004
-#define ID_BUTTON 10012
+#define ID_SETAUTHCODE 10012
 #define ID_PANEL 10005
-#define ID_TEXTCTRL1 10008
-#define ID_TEXTCTRL2 10009
-#define ID_TEXTCTRL3 10010
-#define ID_TEXTCTRL4 10011
+#define ID_HOSTNAME 10008
+#define ID_USERNAME 10009
+#define ID_PASSWORD1 10010
+#define ID_PASSWORD2 10011
 #define ID_PANEL2 10013
-#define ID_TEXTCTRL 10014
-#define ID_BUTTON1 10015
+#define ID_MINGWPATH 10014
+#define ID_MINGWBROWSE 10015
 #define ID_BUTTON_OK 10002
 #define ID_BUTTON_CANCEL 10003
 ////@end control identifiers
@@ -63,6 +63,7 @@ class wxTextCtrl;
 class wxButton;
 class wxCheckListBox;
 class wxString;
+class Options;
 
 /*!
  * OptionsDialog class declaration
@@ -76,7 +77,7 @@ class OptionsDialog: public wxDialog
 public:
     /// Constructors
     OptionsDialog( );
-    OptionsDialog( wxWindow* parent, wxWindowID id = -1, const wxString& caption = _("Options"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU );
+    OptionsDialog( wxWindow* parent, Options* options, wxWindowID id = -1,  const wxString& caption = _("Options"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU );
 
     /// Creation
     bool Create( wxWindow* parent, wxWindowID id = -1, const wxString& caption = _("Options"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU );
@@ -86,8 +87,11 @@ public:
 
 ////@begin OptionsDialog event handler declarations
 
-    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON
+    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_SETAUTHCODE
     void OnUpdateAuthCode( wxCommandEvent& event );
+
+    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_MINGWBROWSE
+    void OnMinGWBrowseClick( wxCommandEvent& event );
 
     /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_OK
     void OnButtonOkClick( wxCommandEvent& event );
@@ -112,6 +116,10 @@ public:
     wxString GetPassword1();
     wxString GetPassword2();
 	wxString GetAuthCode();
+	wxString GetMingwPath(){ return m_txtMingwPath->GetValue(); }
+
+	void BrowseForDir(wxTextCtrl* textbox, wxString name);
+	bool EvaluateOptions();
 
 	void ExitDialog();
 	void OnEnter(wxCommandEvent &event);
@@ -144,6 +152,7 @@ public:
 ////@end OptionsDialog member variables
 
 	ChameleonWindow* m_parentFrame;
+	Options* m_options;
 };
 
 #endif

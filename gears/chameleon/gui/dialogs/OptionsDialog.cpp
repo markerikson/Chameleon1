@@ -21,6 +21,7 @@
 #endif
 
 #include "../../common/CommonHeaders.h"
+#include "../../common/Options.h"
 
 ////@begin includes
 #include "wx/wx.h"
@@ -54,7 +55,9 @@ IMPLEMENT_CLASS( OptionsDialog, wxDialog )
 BEGIN_EVENT_TABLE( OptionsDialog, wxDialog )
 
 ////@begin OptionsDialog event table entries
-    EVT_BUTTON( ID_BUTTON, OptionsDialog::OnUpdateAuthCode )
+    EVT_BUTTON( ID_SETAUTHCODE, OptionsDialog::OnUpdateAuthCode )
+
+    EVT_BUTTON( ID_MINGWBROWSE, OptionsDialog::OnMinGWBrowseClick )
 
     EVT_BUTTON( ID_BUTTON_OK, OptionsDialog::OnButtonOkClick )
 
@@ -63,10 +66,10 @@ BEGIN_EVENT_TABLE( OptionsDialog, wxDialog )
 ////@end OptionsDialog event table entries
 	EVT_CHAR(OptionsDialog::OnChar)
 	EVT_TEXT_ENTER( ID_PROFCODE, OptionsDialog::OnEnter )
-	EVT_TEXT_ENTER(ID_TEXTCTRL1, OptionsDialog::OnEnter)
-	EVT_TEXT_ENTER(ID_TEXTCTRL2, OptionsDialog::OnEnter)
-	EVT_TEXT_ENTER(ID_TEXTCTRL3, OptionsDialog::OnEnter)
-	EVT_TEXT_ENTER(ID_TEXTCTRL4, OptionsDialog::OnEnter)
+	EVT_TEXT_ENTER(ID_HOSTNAME, OptionsDialog::OnEnter)
+	EVT_TEXT_ENTER(ID_USERNAME, OptionsDialog::OnEnter)
+	EVT_TEXT_ENTER(ID_PASSWORD1, OptionsDialog::OnEnter)
+	EVT_TEXT_ENTER(ID_PASSWORD2, OptionsDialog::OnEnter)
 
 END_EVENT_TABLE()
 
@@ -78,10 +81,11 @@ OptionsDialog::OptionsDialog( )
 {
 }
 
-OptionsDialog::OptionsDialog( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+OptionsDialog::OptionsDialog( wxWindow* parent, Options* options, wxWindowID id,  const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
 {
     Create(parent, id, caption, pos, size, style);
 	m_parentFrame = (ChameleonWindow*)parent;
+	m_options = options;
 }
 
 /*!
@@ -143,7 +147,7 @@ void OptionsDialog::CreateControls()
     wxTextCtrl* item13 = new wxTextCtrl( item4, ID_PROFCODE, _(""), wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER );
     m_txtProfCode = item13;
     item11->Add(item13, 0, wxGROW|wxLEFT|wxRIGHT|wxBOTTOM, 5);
-    wxButton* item14 = new wxButton( item4, ID_BUTTON, _("Set authorization code"), wxDefaultPosition, wxSize(120, -1), 0 );
+    wxButton* item14 = new wxButton( item4, ID_SETAUTHCODE, _("Set authorization code"), wxDefaultPosition, wxSize(120, -1), 0 );
     m_butSetAuthCode = item14;
     item11->Add(item14, 0, wxALIGN_LEFT|wxALL, 5);
     wxStaticText* item15 = new wxStaticText( item4, wxID_STATIC, _("Current authorization code:"), wxDefaultPosition, wxDefaultSize, 0 );
@@ -160,22 +164,22 @@ void OptionsDialog::CreateControls()
     item18->Add(item19, 0, wxALIGN_TOP, 5);
     wxStaticText* item20 = new wxStaticText( item17, wxID_STATIC, _("Network server address:"), wxDefaultPosition, wxDefaultSize, 0 );
     item19->Add(item20, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
-    wxTextCtrl* item21 = new wxTextCtrl( item17, ID_TEXTCTRL1, _(""), wxDefaultPosition, wxSize(160, -1), wxTE_PROCESS_ENTER );
+    wxTextCtrl* item21 = new wxTextCtrl( item17, ID_HOSTNAME, _(""), wxDefaultPosition, wxSize(160, -1), wxTE_PROCESS_ENTER );
     m_serverAddress = item21;
     item19->Add(item21, 0, wxALIGN_CENTER_HORIZONTAL|wxLEFT|wxRIGHT|wxBOTTOM, 5);
     wxStaticText* item22 = new wxStaticText( item17, wxID_STATIC, _("Username:"), wxDefaultPosition, wxDefaultSize, 0 );
     item19->Add(item22, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
-    wxTextCtrl* item23 = new wxTextCtrl( item17, ID_TEXTCTRL2, _(""), wxDefaultPosition, wxSize(160, -1), wxTE_PROCESS_ENTER );
+    wxTextCtrl* item23 = new wxTextCtrl( item17, ID_USERNAME, _(""), wxDefaultPosition, wxSize(160, -1), wxTE_PROCESS_ENTER );
     m_username = item23;
     item19->Add(item23, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxBOTTOM, 5);
     wxStaticText* item24 = new wxStaticText( item17, wxID_STATIC, _("Password:"), wxDefaultPosition, wxDefaultSize, 0 );
     item19->Add(item24, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
-    wxTextCtrl* item25 = new wxTextCtrl( item17, ID_TEXTCTRL3, _(""), wxDefaultPosition, wxSize(160, -1), wxTE_PROCESS_ENTER|wxTE_PASSWORD );
+    wxTextCtrl* item25 = new wxTextCtrl( item17, ID_PASSWORD1, _(""), wxDefaultPosition, wxSize(160, -1), wxTE_PROCESS_ENTER|wxTE_PASSWORD );
     m_password1 = item25;
     item19->Add(item25, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxBOTTOM, 5);
     wxStaticText* item26 = new wxStaticText( item17, wxID_STATIC, _("Confirm password:"), wxDefaultPosition, wxDefaultSize, 0 );
     item19->Add(item26, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
-    wxTextCtrl* item27 = new wxTextCtrl( item17, ID_TEXTCTRL4, _(""), wxDefaultPosition, wxSize(160, -1), wxTE_PROCESS_ENTER|wxTE_PASSWORD );
+    wxTextCtrl* item27 = new wxTextCtrl( item17, ID_PASSWORD2, _(""), wxDefaultPosition, wxSize(160, -1), wxTE_PROCESS_ENTER|wxTE_PASSWORD );
     m_password2 = item27;
     item19->Add(item27, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxBOTTOM, 5);
     item3->AddPage(item17, _("Network"));
@@ -188,30 +192,24 @@ void OptionsDialog::CreateControls()
     wxStaticText* item31 = new wxStaticText( item28, wxID_STATIC, _("Path to MinGW:"), wxDefaultPosition, wxDefaultSize, 0 );
     item30->Add(item31, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
     wxBoxSizer* item32 = new wxBoxSizer(wxHORIZONTAL);
-    item30->Add(item32, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
-    wxTextCtrl* item33 = new wxTextCtrl( item28, ID_TEXTCTRL, _(""), wxDefaultPosition, wxSize(180, -1), 0 );
+    item30->Add(item32, 0, wxALIGN_CENTER_HORIZONTAL|wxBOTTOM, 5);
+    wxTextCtrl* item33 = new wxTextCtrl( item28, ID_MINGWPATH, _(""), wxDefaultPosition, wxSize(295, -1), 0 );
     m_txtMingwPath = item33;
-    item32->Add(item33, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
-    wxButton* item34 = new wxButton( item28, ID_BUTTON1, _("Browse"), wxDefaultPosition, wxDefaultSize, 0 );
+    item32->Add(item33, 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT|wxBOTTOM, 5);
+    wxButton* item34 = new wxButton( item28, ID_MINGWBROWSE, _("Browse"), wxDefaultPosition, wxDefaultSize, 0 );
     m_butBrowseMingw = item34;
-    item32->Add(item34, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
-    wxStaticText* item35 = new wxStaticText( item28, wxID_STATIC, _("Username:"), wxDefaultPosition, wxDefaultSize, 0 );
-    item30->Add(item35, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
-    wxStaticText* item36 = new wxStaticText( item28, wxID_STATIC, _("Password:"), wxDefaultPosition, wxDefaultSize, 0 );
-    item30->Add(item36, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
-    wxStaticText* item37 = new wxStaticText( item28, wxID_STATIC, _("Confirm password:"), wxDefaultPosition, wxDefaultSize, 0 );
-    item30->Add(item37, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
+    item32->Add(item34, 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT|wxBOTTOM, 5);
     item3->AddPage(item28, _("Compiler"));
     item2->Add(item3, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
-    wxBoxSizer* item38 = new wxBoxSizer(wxHORIZONTAL);
-    item2->Add(item38, 0, wxALIGN_RIGHT|wxALL, 0);
+    wxBoxSizer* item35 = new wxBoxSizer(wxHORIZONTAL);
+    item2->Add(item35, 0, wxALIGN_RIGHT|wxALL, 0);
 
-    wxButton* item39 = new wxButton( item1, ID_BUTTON_OK, _("OK"), wxDefaultPosition, wxDefaultSize, 0 );
-    item38->Add(item39, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxButton* item36 = new wxButton( item1, ID_BUTTON_OK, _("OK"), wxDefaultPosition, wxDefaultSize, 0 );
+    item35->Add(item36, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxButton* item40 = new wxButton( item1, ID_BUTTON_CANCEL, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
-    item38->Add(item40, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxButton* item37 = new wxButton( item1, ID_BUTTON_CANCEL, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
+    item35->Add(item37, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
 ////@end OptionsDialog content construction
 }
@@ -403,4 +401,51 @@ void OptionsDialog::DisableServerSettings()
 void OptionsDialog::SetAuthCode(wxString authcode)
 {
 	m_authCodeLabel->SetLabel(authcode);
+}
+
+void OptionsDialog::BrowseForDir(wxTextCtrl* textbox, wxString title)
+{
+	wxString currentDir = textbox->GetValue();
+
+	title = "Select the directory where MinGW is installed (usually inside the Chameleon directory)";
+
+	wxString newDir;
+	wxString defaultDir;
+
+	if(wxFileName::DirExists(currentDir))
+	{
+		defaultDir = currentDir;
+	}
+	else
+	{
+		defaultDir = wxEmptyString;
+	}
+
+	wxString resultDir = wxDirSelector(title, defaultDir);
+
+	if(resultDir != wxEmptyString)
+	{
+		textbox->SetValue(resultDir);
+	}
+
+	
+}/*!
+ * wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_MINGWBROWSE
+ */
+
+void OptionsDialog::OnMinGWBrowseClick( wxCommandEvent& event )
+{
+    // Insert custom code here
+    event.Skip();
+
+    BrowseForDir(m_txtMingwPath, wxEmptyString);
+}
+
+
+bool OptionsDialog::EvaluateOptions()
+{
+	bool validOptions = true;
+
+	return validOptions;
+	
 }
