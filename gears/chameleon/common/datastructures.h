@@ -67,6 +67,7 @@ enum WindowID
 	ID_REMOTEFILEDIALOG,
 	ID_COMPILERTEXTBOX,
 	ID_COMPILERLISTCTRL,
+	ID_COMPILEROUTPUT,
 	ID_VARWATCHPANEL,
 
 	// edit menu items
@@ -170,6 +171,12 @@ enum IconIndex
 	ICON_DISABLED_SOURCE_C,
 	ICON_DISABLED_SOURCE_CPP,
 	ICON_DISABLED_SOURCE_H,
+};
+
+enum CompileResult {
+	CR_ERROR = -1,
+	CR_OK = 0,
+	CR_TERMINATED = 1,
 };
 
 // IMPORTANT!!! Any changes to this enum need to be reflected in the 
