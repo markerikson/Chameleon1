@@ -41,7 +41,7 @@
 
 
 BEGIN_EVENT_TABLE(ChameleonWindow, wxFrame)
-	EVT_MENU						(ID_NEW, ChameleonWindow::OnFileNew)
+	EVT_MENU						(ID_NEW_SOURCE, ChameleonWindow::OnFileNew)
 	EVT_MENU						(ID_OPEN_SOURCE_LOCAL, ChameleonWindow::OnFileOpen)
 	EVT_MENU						(ID_OPEN_SOURCE_REMOTE, ChameleonWindow::OnFileOpen)
 	EVT_MENU						(ID_QUIT,  ChameleonWindow::OnQuit)
@@ -49,10 +49,12 @@ BEGIN_EVENT_TABLE(ChameleonWindow, wxFrame)
 	EVT_MENU						(ID_TEST, ChameleonWindow::Test)
 	EVT_MENU						(ID_SAVE, ChameleonWindow::OnSave)
 	EVT_MENU						(ID_SAVE_AS, ChameleonWindow::OnSaveAs)
-	EVT_MENU						(ID_PAGECLOSE, ChameleonWindow::OnFileClose)
+	EVT_MENU						(ID_CLOSEPAGE, ChameleonWindow::OnFileClose)
 	EVT_MENU						(ID_CLOSETAB, ChameleonWindow::CloseTab)
+	EVT_MENU						(ID_CLOSEALL, ChameleonWindow::OnFileCloseAll)
 	EVT_UPDATE_UI					(ID_SAVE, ChameleonWindow::OnUpdateSave)
 	EVT_MENU						(ID_STARTCONNECT, ChameleonWindow::OnConnect)
+	EVT_MENU						(ID_DISCONNECT, ChameleonWindow::OnDisconnect)
 	EVT_MENU						(ID_UNDO, ChameleonWindow::OnUndo)
 	EVT_MENU						(ID_REDO, ChameleonWindow::OnRedo)
 	EVT_MENU						(ID_OPTIONS, ChameleonWindow::OnToolsOptions)
@@ -68,8 +70,11 @@ BEGIN_EVENT_TABLE(ChameleonWindow, wxFrame)
 	EVT_TREE_ITEM_RIGHT_CLICK		(ID_PROJECTTREE, ChameleonWindow::OnTreeItemRightClick)
 	EVT_MENU						(ID_PROJECT_ADDFILE, ChameleonWindow::OnAddFileToProject)
 	EVT_TREE_ITEM_ACTIVATED			(ID_PROJECTTREE, ChameleonWindow::OnTreeItemActivated)
+	EVT_MENU						(ID_NEW_PROJECT, ChameleonWindow::OnFileNewProject)
 	EVT_MENU						(ID_OPEN_PROJECT_LOCAL, ChameleonWindow::OnOpenProjectFile)
 	EVT_MENU						(ID_OPEN_PROJECT_REMOTE, ChameleonWindow::OnOpenProjectFile)
+	EVT_MENU						(ID_CLOSE_PROJECT, ChameleonWindow::CloseProjectFile)
+	EVT_MENU						(ID_PROJECT_REMOVEFILE, ChameleonWindow::OnRemoveFileFromProject)
 
 	
 END_EVENT_TABLE()
@@ -164,10 +169,25 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	m_network = new Networking();
 
 	wxFileName plinkPath(wxGetCwd(), "plink.exe");
-	m_network->SetPlinkProg(plinkPath.GetFullPath());
+	if(wxFileName::FileExists(plinkPath.GetFullPath()))
+	{
+		m_network->SetPlinkProg(plinkPath.GetFullPath());
+	}
+	else
+	{
+		wxLogDebug("Plink does not exist in the working directory!");
+	}
+
 
 	wxFileName pscpPath(wxGetCwd(), "pscp.exe");
-	m_network->SetPlinkProg(pscpPath.GetFullPath());
+	if(wxFileName::FileExists(pscpPath.GetFullPath()))
+	{
+		m_network->SetPscpProg(pscpPath.GetFullPath());
+	}
+	else
+	{
+		wxLogDebug("Pscp does not exist in the working directory!");
+	}
 
 	m_network->SetDetailsNoStatus(hostname, username, "");
 
@@ -190,6 +210,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 
     // Menu creation
+	/*
     wxMenu* menuFile = new wxMenu();
 
 	
@@ -217,26 +238,19 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
     wxMenu *helpMenu = new wxMenu;
     helpMenu->Append(ID_ABOUT, "&About...\tCtrl-A", "Show about dialog");
-
-    wxMenuBar *menuBar = new wxMenuBar();
-	SetMenuBar(menuBar);
+*/
+    //wxMenuBar *menuBar = new wxMenuBar();
+	//SetMenuBar(menuBar);
+	/*
     menuBar->Append(menuFile, "&File");
 	menuBar->Append(menuEdit, "&Edit");
 	menuBar->Append(menuTools, "&Tools");
     menuBar->Append(helpMenu, "&Help");
+	*/
 
 	// don't want to do this until we've attached the file menu
 	// to the menu bar
-	UpdateFileMenu();
-	
-	wxToolBar* toolBar = CreateToolBar(wxTB_FLAT | wxTB_TEXT);
 
-	SetToolBar(toolBar);
-	UpdateToolbar();
-	
-    
-
-    m_statusBar = CreateStatusBar(2);
 
 	long time5 = stopwatch.Time();
 	stopwatch.Start();
@@ -309,7 +323,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	m_remoteFileDialog = new RemoteFileDialog(this, ID_REMOTEFILEDIALOG);
 	m_remoteFileDialog->SetNetworking(m_network);
 
-	wxTreeItemId rootNode = m_projectTree->AddRoot("Root node", 0, 1);
+	wxTreeItemId rootNode = m_projectTree->AddRoot("No project open", 0, 1);
 	m_projectFileFolders[0] = m_projectTree->AppendItem(rootNode, "Source files", 0, 1);
 	m_projectFileFolders[1] = m_projectTree->AppendItem(rootNode, "Header files", 0, 1);
 	m_projectFileFolders[2] = m_projectTree->AppendItem(rootNode, "Libraries", 0, 1);
@@ -321,12 +335,21 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	m_appClosing = false;
 	m_setSelection = false;
 
+	UpdateMenuBar();
+
+	wxToolBar* toolBar = CreateToolBar(wxTB_FLAT | wxTB_TEXT);
+
+	SetToolBar(toolBar);
+	UpdateToolbar();
+
+	m_statusBar = CreateStatusBar(2);
+
 	// create the initial blank open file
 	wxCommandEvent ev;
 	OnFileNew(ev);
 	PageHasChanged(m_currentPage);
 
-	m_projectPopupMenu.Append(ID_PROJECT_ADDFILE, "Add file");
+	//m_projectPopupMenu.Append(ID_PROJECT_ADDFILE, "Add file");
 
 
 	m_filterCPPFiles = "C++ source files (*.cpp, *.c)|*.cpp;*.c";
@@ -347,8 +370,9 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	wxLogDebug("Startup timing: notebook and editor = %d", time7);
 	*/
 	m_appStarting = false;
+	m_bProjectOpen = false;
 
-	
+
 
 }
 
@@ -361,6 +385,7 @@ ChameleonWindow::~ChameleonWindow()
 	delete m_optionsDialog;
 	delete m_network;
 	delete m_config;
+
 
 
 }
@@ -396,6 +421,7 @@ void ChameleonWindow::PageHasChanged (int pageNr)
 {
 	// no pages - null out the current ed pointer
 	// You know, this should really never happen with the current design
+	// 3/11/04: Unless, of course, we're closing out the program...
 	if (m_book->GetPageCount() == 0) 
 	{
 		m_currentPage = -1;
@@ -470,17 +496,12 @@ void ChameleonWindow::PageHasChanged (int pageNr)
 void ChameleonWindow::OnClose(wxCloseEvent &event) 
 {
 	// close all open files
-	int cnt = m_book->GetPageCount();
+
 
 	m_appClosing = true;
 
-	for (int i = 0; i < cnt; i++) 
-	{
-		CloseFile();
-	}
-	
+	CloseAllFiles();
 
-	PageHasChanged();
 
 	// double check in case something went wrong
 	if (m_currentEd && m_currentEd->Modified()) 
@@ -491,6 +512,11 @@ void ChameleonWindow::OnClose(wxCloseEvent &event)
 		}
 
 		return;
+	}
+
+	if(m_bProjectOpen)
+	{
+		CloseProjectFile();
 	}
 
 	Destroy();
@@ -533,13 +559,10 @@ void ChameleonWindow::CloseFile (int pageNr)
 		else
 		{
 			m_fileNum = 1;
-			m_currentEd->ClearAll();
-			m_currentEd->SetSavePoint();
-			m_currentEd->EmptyUndoBuffer();
 			wxString locationPrefix = "(?) ";
 			wxString noname = locationPrefix + "<untitled> " + wxString::Format ("%d", m_fileNum);
 			m_book->SetPageText (pageNr, noname);
-			m_currentEd->SetFileNameAndPath(wxEmptyString, wxEmptyString, true);
+			m_currentEd->ResetEditor();
 		}
 		if(m_book->GetPageCount() > 0)
 		{
@@ -610,7 +633,7 @@ int ChameleonWindow::HandleModifiedFile(int pageNr, bool closingFile)
 			ChameleonEditor* tmpCurrentEd = m_currentEd;
 			m_currentEd = edit;
 			// only do a Save As if necessary
-			SaveFile(false);
+			SaveFile(false, FILE_ALLSOURCES);
 			m_currentEd = tmpCurrentEd;
 			m_currentEd->SetFocus();
 
@@ -688,10 +711,12 @@ wxArrayString ChameleonWindow::OpenFile(FileFilterType filterType)
 
 	
 
-	if(! (m_perms->isEnabled(PERM_REMOTELOCAL) && m_remoteMode))
+	//if(! (m_perms->isEnabled(PERM_REMOTELOCAL) && m_remoteMode))
+	if(!m_remoteMode)
 	{
 		wxFileDialog dlg (this, _("Open"), "", "", filterString,
-			wxOPEN | wxFILE_MUST_EXIST | wxMULTIPLE | wxCHANGE_DIR);
+			// | wxMULTIPLE
+			wxOPEN | wxFILE_MUST_EXIST  | wxCHANGE_DIR);
 		if (dlg.ShowModal() != wxID_OK)
 		{
 			return fnames;
@@ -993,23 +1018,35 @@ void ChameleonWindow::OnConnect(wxCommandEvent& WXUNUSED(event))
 // my "I need to try something out, I'll stick it in here" function
 void ChameleonWindow::Test(wxCommandEvent& WXUNUSED(event))
 {
+	/*
+	wxString homepath = m_network->GetHomeDirPath();
+	wxString filename = "~/java/numeric/GCD.java";
+	filename.Replace("~", homepath);
+	wxFileName newpath(filename);
+	newpath.MakeRelativeTo("/some/other/directory/entirely", wxPATH_UNIX);
+	wxLogDebug("Home: %s, relative path: %s", homepath.c_str(), newpath.GetFullPath(wxPATH_UNIX).c_str());
+*/
+
 	
-	wxToolBar* t = GetToolBar();
-	wxToolBarToolBase* tool = NULL;
-	//tool = 
-	wxControl* c = t->FindControl(ID_RANDOMTEXTLABEL);
-	bool result = t->DeleteTool(ID_RANDOMTEXTLABEL);
-	
-	if(c != NULL)
+	if(!m_bProjectOpen)
 	{
-		//t->RemoveChild(c);
-		c->Hide();
-		c->Reparent(NULL);
-		delete c;
+		return;
 	}
 
-	t->Realize();
-	t->Refresh();
+	for(size_t i = 0; i < m_currentProjectInfo->headerFiles.Count(); i++)
+	{
+		wxLogDebug("Header %d: %s", i, m_currentProjectInfo->headerFiles[i].c_str());
+	}
+
+	for(size_t i = 0; i < m_currentProjectInfo->sourceFiles.Count(); i++)
+	{
+		wxLogDebug("Source %d: %s", i, m_currentProjectInfo->sourceFiles[i].c_str());
+	}
+
+	for(size_t i = 0; i < m_currentProjectInfo->libraryFiles.Count(); i++)
+	{
+		wxLogDebug("Library %d: %s", i, m_currentProjectInfo->libraryFiles[i].c_str());
+	}
 	
 	
 	/*
@@ -1192,27 +1229,60 @@ void ChameleonWindow::OnUpdateSave(wxUpdateUIEvent &event)
 
 void ChameleonWindow::OnSave(wxCommandEvent& WXUNUSED(event))
 {
-	SaveFile(false);
+	SaveFile(false, FILE_ALLSOURCES);
 }
 
 void ChameleonWindow::OnSaveAs(wxCommandEvent& WXUNUSED(event))
 {
-	SaveFile(true);
+	SaveFile(true, FILE_ALLSOURCES);
 }
 
-void ChameleonWindow::SaveFile(bool saveas)
+bool ChameleonWindow::SaveFile(bool saveas, FileFilterType filterType)
 {
 	wxString filename;
+	wxString fileContents;
 
 	bool doSaveAs = saveas || !m_currentEd->HasBeenSaved() || (m_remoteMode != m_currentEd->LastSavedRemotely());
 
-	bool remoteEnabled = m_perms->isEnabled(PERM_REMOTELOCAL);
+	//bool remoteEnabled = m_perms->isEnabled(PERM_REMOTELOCAL);
+	bool isSourceFile = true;
+
+	wxString filterString;
+	switch(filterType)
+	{
+	case FILE_ALLSOURCES:
+		filterString = m_filterCPPFiles;
+		filterString += "|";
+		filterString += m_filterHeaderFiles;
+		filterString += "|";
+		filterString += m_filterAllFiles;
+		break;
+	case FILE_SOURCEONLY:
+		filterString = m_filterCPPFiles;
+		break;
+	case FILE_HEADERONLY:
+		filterString = m_filterHeaderFiles;
+		break;
+	case FILE_PROJECT:
+		filterString = m_filterProjectFiles;
+		isSourceFile = false;
+		break;
+	case FILE_ALLFILES:
+	default:
+		filterString = m_filterAllFiles;
+		break;
+	}
+
+	
 
 	// default to saving locally
 	//bool saveFileRemotely = false;
 	m_remoteMode = false;
 
-	if(doSaveAs && remoteEnabled)
+	//if(doSaveAs && remoteEnabled)
+	
+	// assume for the moment that we won't have remote mode as a permission
+	if(doSaveAs)
 	{
 		wxArrayString choices;
 		choices.Add("Remote");
@@ -1226,69 +1296,122 @@ void ChameleonWindow::SaveFile(bool saveas)
 		else if(choice == wxEmptyString)
 		{
 			// user hit Cancel - don't save
-			return;
+			return false;
 		}
+	}
+	// new project files will always have doSaveAs = true, 
+	// so this just needs to be for source files
+	else
+	{
+		m_remoteMode = m_currentEd->LastSavedRemotely();
+	}
 
+	if(isSourceFile)
+	{
+		if(m_remoteMode)
+		{
+			m_currentEd->SetEOLMode(wxSTC_EOL_LF);
+		}		
+		fileContents = m_currentEd->GetText();
+
+		if(m_remoteMode)
+		{
+			m_currentEd->SetEOLMode(wxSTC_EOL_CRLF);
+		}
+	}
+	// we must be saving a new project
+	else
+	{
+		fileContents = "[Headers]\n\n[Sources]\n\n[Libraries]\n";
 	}
 
 	// check if we're in local mode or not
-	if(!remoteEnabled && !m_remoteMode)
+	//if(!remoteEnabled && !m_remoteMode)
+	if(!m_remoteMode)
 	{
 		if(doSaveAs)
 		{		
 			// the last item in a filter's list will be the default extension if none is given
 			// ie, right now, .cpp is the default extension for C++ files
-			wxFileDialog dlg (this, _T("Save file"), _T(""), 
-				_T(""), _T("C++ files (*.cpp, *.h, *.c)|*.c;*.h;*.cpp|All files (*.*)|*.*"),
-							wxSAVE | wxOVERWRITE_PROMPT | wxCHANGE_DIR);
+			wxFileDialog dlg (this, "Save file", "", "", filterString, 
+								wxSAVE | wxOVERWRITE_PROMPT | wxCHANGE_DIR);
 
 			// ie, user clicked cancel
 			if(dlg.ShowModal() != wxID_OK) 
 			{ 
-				return; 
+				return false; 
 			}
 
-			m_currentEd->SetFocus();
-			
 			filename = dlg.GetPath();
-			wxFileName fn(filename);
 
-			
-			m_currentEd->SetFileNameAndPath(fn.GetPath(false, wxPATH_DOS), fn.GetFullName(), false);
-			
-			m_currentEd->SaveFile(filename);
+			/*
+			if(isSourceFile)
+			{
+				m_currentEd->SetFocus();
+
+				
+				wxFileName fn(filename);
+
+				m_currentEd->SetFileNameAndPath(fn.GetPath(false, wxPATH_DOS), fn.GetFullName(), false);
+
+				m_currentEd->SaveFile(filename);
+			}			
+			else
+			{
+				wxFile newProjectFile(filename, wxFile::write);
+				newProjectFile.Write(fileContents);
+				newProjectFile.Close();
+			}
+			*/
 		}
+		/*
 		else
 		{
 			m_currentEd->SaveFileLocal();
 		}
+		*/
+		if(isSourceFile)
+		{
+			m_currentEd->SetFocus();
 
-		wxString simpleFileName = m_currentEd->GetFilename();
+			wxFileName fn(filename);
 
-		int currentTab = m_book->GetSelection();
+			m_currentEd->SetFileNameAndPath(fn.GetPath(false, wxPATH_DOS), fn.GetFullName(), false);
 
-		wxString locationPrefix = "(L) ";
-		m_book->SetPageText(currentTab, locationPrefix + simpleFileName);
-		m_book->Refresh();
+			m_currentEd->SaveFile(filename);
+
+
+			wxString simpleFileName = m_currentEd->GetFilename();
+
+			int currentTab = m_book->GetSelection();
+
+			wxString locationPrefix = "(L) ";
+			m_book->SetPageText(currentTab, locationPrefix + simpleFileName);
+			m_book->Refresh();
+		}
+		else
+		{
+			wxFile newProjectFile(filename, wxFile::write);
+			newProjectFile.Write(fileContents);
+			newProjectFile.Close();
+		}
+		
 	}
 	// remote mode
 	else
 	{
-		wxString remotePath, remoteFile, fileContents;
+		wxString remotePath, remoteFile;
 
-		m_currentEd->SetEOLMode(wxSTC_EOL_LF);
-		fileContents = m_currentEd->GetText();
-		m_currentEd->SetEOLMode(wxSTC_EOL_CRLF);
 		if(doSaveAs)
 		{
-			if(m_remoteFileDialog->Prepare(false, m_filterCPPFiles))//FILE_SOURCECODE))
+			if(m_remoteFileDialog->Prepare(false, filterString))//FILE_SOURCECODE))
 			{
 				int result = m_remoteFileDialog->ShowModal();
 				m_currentEd->SetFocus();
 
 				if(result != wxOK)
 				{
-					return;
+					return false;
 				}
 
 				remotePath = m_remoteFileDialog->GetRemotePath();
@@ -1296,14 +1419,11 @@ void ChameleonWindow::SaveFile(bool saveas)
 			}
 			else
 			{
-				return;
-			}
-			
+				return false;
+			}			
 		}
 		else
 		{
-			//remoteFile = m_currentEd->GetRemoteFileName();
-			//remotePath = m_currentEd->GetRemotePath();
 			remoteFile = m_currentEd->GetFilename();
 			remotePath = m_currentEd->GetFilePath();
 		}
@@ -1321,26 +1441,56 @@ void ChameleonWindow::SaveFile(bool saveas)
 		}
 		else if(netStatus == NETCALL_FAILED)
 		{
-			return;
+			return false;
 		}
 
-		wxString currentFilenameAndPath = m_currentEd->GetFileNameAndPath();
-		if((currentFilenameAndPath == wxEmptyString) ||
-			(currentFilenameAndPath != wxFileName(remotePath, remoteFile, wxPATH_UNIX).GetFullPath()))
+		if(isSourceFile)
 		{
-			int currentTab = m_book->GetSelection();
-			wxString locationPrefix = "(R) ";
-			m_book->SetPageText(currentTab, locationPrefix + remoteFile);
-		}
+			wxString currentFilenameAndPath = m_currentEd->GetFileNameAndPath();
+			if((currentFilenameAndPath == wxEmptyString) ||
+				(currentFilenameAndPath != wxFileName(remotePath, remoteFile, wxPATH_UNIX).GetFullPath()))
+			{
+				int currentTab = m_book->GetSelection();
+				wxString locationPrefix = "(R) ";
+				m_book->SetPageText(currentTab, locationPrefix + remoteFile);
+			}
 
-		//m_currentEd->SetFilename(remoteFile);
-		//m_currentEd->SetRemoteFileNameAndPath(remotePath, remoteFile);
-		m_currentEd->SetFileNameAndPath(remotePath, remoteFile, true);
+			m_currentEd->SetFileNameAndPath(remotePath, remoteFile, true);
+		}
+		else
+		{
+			// store the name so we can set the name in the project tree
+			filename = wxFileName(remotePath, remoteFile, wxPATH_UNIX).GetFullPath();
+		}		
 	}
 
-	m_currentEd->EmptyUndoBuffer();
-	m_currentEd->SetSavePoint();
-	m_book->Refresh();
+	if(isSourceFile)
+	{
+		m_currentEd->EmptyUndoBuffer();
+		m_currentEd->SetSavePoint();
+		m_book->Refresh();
+	}
+	else
+	{
+		if(m_bProjectOpen)
+		{
+			CloseProjectFile();
+		}
+		
+
+		m_currentProjectInfo = new ProjectInfo;
+		m_bProjectOpen = true;
+
+		m_currentProjectInfo->isRemote = m_remoteMode;
+		wxFileName projectPath(filename);
+		m_currentProjectInfo->projectName = projectPath.GetFullName();
+		m_currentProjectInfo->projectBasePath = projectPath.GetPath(true, m_remoteMode ? wxPATH_UNIX : wxPATH_DOS);
+
+		wxTreeItemId rootItem = m_projectTree->GetRootItem();
+		m_projectTree->SetItemText(rootItem, projectPath.GetFullName());
+	}
+
+	return true;
 }
 
 
@@ -1478,30 +1628,123 @@ bool ChameleonWindow::InRemoteMode()
 	return m_remoteMode;
 }
 
-void ChameleonWindow::UpdateFileMenu()
+void ChameleonWindow::UpdateMenuBar()
 {
 	wxMenuBar* menuBar = GetMenuBar();
+
+	if(menuBar != NULL)
+	{
+		SetMenuBar(NULL);
+		delete menuBar;
+	}
+
+	menuBar = new wxMenuBar();
+	SetMenuBar(menuBar);
+
+	//menuBar->Clear();
+/*
+	int numMenus = menuBar->GetMenuCount();
+	if(numMenus > 0)
+	{
+		for(int i = 0; i < numMenus; numMenus++)
+		{
+			// always retrieve the first one
+			wxMenu* oldMenu = menuBar->GetMenu(0);
+			delete oldMenu;
+		}
+	}
+*/
+	/*
 	int menuIndex = menuBar->FindMenu("&File");
 	if(menuIndex == wxNOT_FOUND)
 	{
-		wxLogDebug("File menu not found");
-		return;
+	wxLogDebug("File menu not found");
+	return;
 	}
+	*/
 
-	wxMenu* menuFile = menuBar->GetMenu(menuIndex);
 
-	menuFile->Append(ID_NEW, "&New\tCtrl-N", "Create a new file");
+	wxMenu* menuFile = new wxMenu();//menuBar->GetMenu(menuIndex);
+
+
+	menuFile->Append(ID_NEW_SOURCE, "&New\tCtrl-N", "Create a new C++ file");
 	menuFile->Append(ID_OPEN_SOURCE_LOCAL, "&Open C++ File (Local)", "Open an existing C++ file");
 	menuFile->Append(ID_OPEN_SOURCE_REMOTE, "&Open C++ File (Remote)", "Open an existing C++ file");
-	menuFile->Append(ID_PAGECLOSE, "&Close", "Close the active file");
+	menuFile->Append(ID_CLOSEPAGE, "&Close", "Close the active file");
+	menuFile->Append(ID_CLOSEALL, "Close All Files");
 	menuFile->AppendSeparator();
-	menuFile->Append(ID_SAVE, "&Save Source File\tCtrl-S", "Save the current file");
-	menuFile->Append(ID_SAVE_AS, "Save Source File &As", "Save the current file as a different name");
+	menuFile->Append(ID_SAVE, "&Save C++ File\tCtrl-S", "Save the current file");
+	menuFile->Append(ID_SAVE_AS, "Save C++ File &As", "Save the current file as a different name");
 	menuFile->AppendSeparator();
-	menuFile->Append(ID_OPEN_PROJECT_LOCAL, "Open Project File (Local)");
-	menuFile->Append(ID_OPEN_PROJECT_REMOTE, "Open Project File (Remote)");
-	menuFile->AppendSeparator();
-	menuFile->Append(ID_QUIT, "E&xit\tAlt-X", "Quit this program");
+
+	if(m_perms->isEnabled(PERM_PROJECTS))
+	{
+		menuFile->Append(ID_NEW_PROJECT, "Create New Project");
+		menuFile->Append(ID_OPEN_PROJECT_LOCAL, "Open Project File (Local)");
+		menuFile->Append(ID_OPEN_PROJECT_REMOTE, "Open Project File (Remote)");
+		menuFile->Append(ID_CLOSE_PROJECT, "Close Project");
+		menuFile->AppendSeparator();
+	}
+	
+	menuFile->Append(ID_QUIT, "E&xit\tAlt-F4", "Quit this program");
+
+	menuBar->Append(menuFile, "&File");
+
+
+	wxMenu* menuEdit = new wxMenu();
+
+	menuEdit->Append(ID_UNDO, "&Undo\tCtrl-Z");
+	menuEdit->Append(ID_REDO, "&Redo\tCtrl-Y");
+	menuEdit->AppendSeparator();
+	menuEdit->Append(ID_CUT, "Cu&t\tCtrl-X");
+	menuEdit->Append(ID_COPY, "&Copy\tCtrl-C");
+	menuEdit->Append(ID_PASTE, "&Paste\tCtrl-V");
+	menuEdit->AppendSeparator();
+	menuEdit->Append(ID_INDENT, "Indent text\tTab");
+	menuEdit->Append(ID_UNINDENT, "Unindent text\tShift-Tab");
+	menuEdit->AppendSeparator();
+	menuEdit->Append(ID_SELECTALL, "Select all\tCtrl-A");
+	menuEdit->Append(ID_SELECTLINE, "Select line");
+
+	menuBar->Append(menuEdit, "&Edit");
+
+
+	wxMenu* menuTools = new wxMenu();
+
+	menuTools->Append(ID_OPTIONS, "&Options");
+
+	if(m_perms->isEnabled(PERM_TELNETTEST))
+	{
+		menuTools->AppendSeparator();
+		menuTools->Append(ID_STARTCONNECT, "&Connect to server");
+		menuTools->Append(ID_DISCONNECT, "&Disconnect rom server");
+	}
+
+	menuBar->Append(menuTools, "&Tools");
+
+
+	wxMenu* compileMenu = new wxMenu();
+	compileMenu->Append(ID_COMPILE, "Compile File");
+	menuBar->Append(compileMenu, "&Compile");
+
+
+	if(m_perms->isEnabled(PERM_PROJECTS))
+	{
+		wxMenu* projectMenu = new wxMenu();
+		projectMenu->Append(ID_PROJECT_ADDFILE, "Add file to project");
+		projectMenu->Append(ID_PROJECT_REMOVEFILE, "Remove file from project");
+		projectMenu->Append(ID_PROJECT_SETTINGS, "Project settings");
+		menuBar->Append(projectMenu, "&Project");
+	}
+
+
+	wxMenu *helpMenu = new wxMenu;
+	helpMenu->Append(ID_HELP, "Chameleon help contents");
+	helpMenu->Append(ID_ABOUT, "&About Chameleon", "Show about dialog");	
+	
+	menuBar->Append(helpMenu, "&Help");
+
+
 
 }
 
@@ -1530,7 +1773,7 @@ void ChameleonWindow::UpdateToolbar()
 	
 
 	wxBitmap bmNew(new_xpm);
-	t->AddTool(ID_NEW, "New", bmNew);	
+	t->AddTool(ID_NEW_SOURCE, "New", bmNew);	
 
     
 	wxBitmap bmOpen(open_xpm);
@@ -1684,6 +1927,7 @@ void ChameleonWindow::EvaluateOptions()
 
 
 	UpdateToolbar();
+	UpdateMenuBar();
 	// update the debug buttons
 
 
@@ -1878,44 +2122,71 @@ void ChameleonWindow::PassImageList(wxImageList* imagelist)
 
 void ChameleonWindow::OnTreeItemRightClick(wxTreeEvent& event)
 {
+	if(!m_bProjectOpen)
+	{
+		wxMessageBox("You do not currently have a project open.", "No project open", 
+					wxOK | wxCENTRE | wxICON_EXCLAMATION);
+		return;
+	}
+    
 	wxTreeItemId item = event.GetItem();
+	m_clickedTreeItem = item;
+	wxMenu popupMenu;
+
+	wxString label = "Add file";		
+
+	if(m_clickedTreeItem == m_projectFileFolders[0])
+	{		
+		m_projectSelectedFolderType = FILE_SOURCEONLY;
+	}
+	else if(m_clickedTreeItem == m_projectFileFolders[1])
+	{		
+		m_projectSelectedFolderType = FILE_HEADERONLY;
+	}
+	else if(m_clickedTreeItem == m_projectFileFolders[2])
+	{		
+		m_projectSelectedFolderType = FILE_LIBRARY;
+	}
 
 	if(m_projectTree->GetItemParent(item) == m_projectTree->GetRootItem())
 	{
-		m_clickedTreeItem = item;
-		wxString label = "Add file";		
-
-		if(m_clickedTreeItem == m_projectFileFolders[0])
+		switch(m_projectSelectedFolderType)
 		{
-			label = "Add source file";
-			m_projectSelectedFolderType = FILE_SOURCEONLY;
-		}
-		else if(m_clickedTreeItem == m_projectFileFolders[1])
-		{
-			label = "Add header file";
-			m_projectSelectedFolderType = FILE_HEADERONLY;
-		}
-		else if(m_clickedTreeItem == m_projectFileFolders[2])
-		{
-			label = "Add library";
-			m_projectSelectedFolderType = FILE_LIBRARY;
-
+			case FILE_SOURCEONLY:
+				label = "Add source file";
+				break;
+			case FILE_HEADERONLY:
+				label = "Add header file";
+				break;
+			case FILE_LIBRARY:
+				label = "Add library";
+				break;
 		}
 
-		m_projectPopupMenu.SetLabel(ID_PROJECT_ADDFILE, label);
 
+		//m_projectPopupMenu.SetLabel(ID_PROJECT_ADDFILE, label);
 
-		wxPoint p = event.GetPoint();
-		m_projectTree->PopupMenu(&m_projectPopupMenu, p);
+		popupMenu.Append(ID_PROJECT_ADDFILE, label);
+
 	}
+	/// user right-clicked a file in the project
+	else
+	{
+		popupMenu.Append(ID_PROJECT_REMOVEFILE, "Remove file from project");
+	}
+
+	wxPoint p = event.GetPoint();
+	m_projectTree->PopupMenu(&popupMenu, p);
 }
 
 void ChameleonWindow::OnOpenProjectFile(wxCommandEvent &event)
 {	
 	int id = event.GetId();
+	wxPathFormat currentPathFormat = wxPATH_UNIX;
 	if( id == ID_OPEN_PROJECT_LOCAL)
 	{
 		m_remoteMode = false;
+		currentPathFormat = wxPATH_DOS;
 	}
 	else if(id == ID_OPEN_PROJECT_REMOTE)
 	{
@@ -1931,8 +2202,17 @@ void ChameleonWindow::OnOpenProjectFile(wxCommandEvent &event)
 	// TODO Check right here if a project is already open, and if it is,
 	//		ask the user if he wants to replace the open one
 	
+	if(m_bProjectOpen)
+	{
+		wxString message = "A project is already open.  Do you want to replace the currently open project";
+		message += " with a different one?";
+		int result = wxMessageBox(message, "Project already open", wxOK | wxCANCEL);
 
-	
+		if(result == wxCANCEL)
+		{
+			return;
+		}
+	}	
 
 	wxArrayString fileNames = OpenFile(FILE_PROJECT);
 
@@ -1942,7 +2222,14 @@ void ChameleonWindow::OnOpenProjectFile(wxCommandEvent &event)
 		return;
 	}
 
-	CloseProjectFile();
+	m_projectTree->Freeze();
+	if(m_bProjectOpen)
+	{
+		CloseProjectFile();
+	}
+	
+	
+	m_currentProjectInfo = new ProjectInfo;
 
 	m_projectTree->DeleteChildren(m_projectFileFolders[0]);
 	m_projectTree->DeleteChildren(m_projectFileFolders[1]);
@@ -1956,7 +2243,15 @@ void ChameleonWindow::OnOpenProjectFile(wxCommandEvent &event)
 	
 
 	// TODO Relative or absolute file names?
-	m_currentProjectInfo->projectBasePath = wxFileName(fileNames[0]).GetPath(m_remoteMode ? wxPATH_UNIX : wxPATH_DOS);
+
+	// set the current project's base path based on the project file's directory, 
+	// choosing the path separators based on where the file is stored
+
+	wxFileName projectFileName(fileNames[0]);
+
+	m_currentProjectInfo->projectBasePath = projectFileName.GetPath(currentPathFormat);
+	m_currentProjectInfo->projectName = projectFileName.GetFullName();
+	m_currentProjectInfo->isRemote = m_remoteMode;
 
 	wxTreeItemId rootItem = m_projectTree->GetRootItem();
 	m_projectTree->SetItemText(rootItem, fileName);
@@ -1966,57 +2261,24 @@ void ChameleonWindow::OnOpenProjectFile(wxCommandEvent &event)
 	
 	wxFileConfig config(projectFileStream);
 
-	int numEntries;
 	
-	config.SetPath("/Headers");
-	numEntries = config.GetNumberOfEntries();
-	wxLogDebug("Header entries: %d", numEntries);
 
-	
-	for(int i = 1; i <= numEntries; i++)
-	{
-		wxString keyname = "header";
-		keyname << i;
-		wxString headerName = config.Read(keyname);
+	LoadFilesIntoProjectTree("/Sources", "source", m_projectFileFolders[0], config, currentPathFormat);
 
-		int iconNum = m_remoteFileDialog->GetIconIndex(wxFileName(headerName).GetExt());
+	LoadFilesIntoProjectTree("/Headers", "header", m_projectFileFolders[1], config, currentPathFormat);
 
-		if(headerName != wxEmptyString)
-		{
-			m_projectTree->AppendItem(m_projectFileFolders[0], headerName, iconNum);
-			m_currentProjectInfo->headerFiles.Add(headerName);
-		}
-	}
+	LoadFilesIntoProjectTree("/Libraries", "library", m_projectFileFolders[2], config, currentPathFormat);
 
-	m_projectTree->SortChildren(m_projectFileFolders[0]);
+	m_projectTree->Thaw();
 
-	config.SetPath("/Sources");
-
-	numEntries = config.GetNumberOfEntries();
-	wxLogDebug("Source entries: %d", numEntries);
-
-	for(int i = 1; i <= numEntries; i++)
-	{
-		wxString keyname = "source";
-		keyname << i;
-		wxString sourceName = config.Read(keyname);
-
-		int iconNum = m_remoteFileDialog->GetIconIndex(wxFileName(sourceName).GetExt());
-
-		if(sourceName != wxEmptyString)
-		{
-			m_projectTree->AppendItem(m_projectFileFolders[1], sourceName, iconNum);
-			m_currentProjectInfo->headerFiles.Add(sourceName);
-		}
-	}
-
-	// TODO Library file support, including file icon
+	m_bProjectOpen = true;
 }
 
 
 void ChameleonWindow::OnAddFileToProject(wxCommandEvent &event)
 {
 	wxLogDebug("event id: %d", event.GetId());
+	m_remoteMode = m_currentProjectInfo->isRemote;
 	wxArrayString fileNames = OpenFile(m_projectSelectedFolderType);
 
 	if(fileNames.Count() < 1)
@@ -2028,30 +2290,91 @@ void ChameleonWindow::OnAddFileToProject(wxCommandEvent &event)
 	// right here, I need to check if the file is in the project already.  
 	// first off, of course, I need to figure out how I'm storing filenames and such
 
+	// TODO I hate redundant code... surely there has to be a better way to do this?
+
+	/*
 	int fileExistsInProject;
 
 	if(m_clickedTreeItem == m_projectFileFolders[0])
 	{
 		fileExistsInProject = m_currentProjectInfo->headerFiles.Index(fileNames[0]);
 	}
+	else if(m_clickedTreeItem == m_projectFileFolders[1])
+	{
+		fileExistsInProject = m_currentProjectInfo->sourceFiles.Index(fileNames[0]);
+	}
+	else if(m_clickedTreeItem == m_projectFileFolders[2])
+	{
+		fileExistsInProject = m_currentProjectInfo->libraryFiles.Index(fileNames[0]);
+	}
+	*/
+
+	wxString fileToOpen = fileNames[0];
+
+	wxPathFormat currentPathFormat = wxPATH_DOS;
+
+	wxString basePath = m_currentProjectInfo->projectBasePath;	
+
+	if(m_currentProjectInfo->isRemote)
+	{
+		currentPathFormat = wxPATH_UNIX;
+		wxString homepath = m_network->GetHomeDirPath();
+		fileToOpen.Replace("~", homepath);
+		basePath.Replace("~", homepath);
+	}
+
+	wxFileName relativeFilePath(fileToOpen);
+	relativeFilePath.MakeRelativeTo(basePath, currentPathFormat);
+
+	//(m_currentProjectInfo->isRemote ? wxPATH_UNIX : wxPATH_DOS);
+	
+
+/*
+	if(m_currentProjectInfo->isRemote)
+	{
+		wxString homepath = m_network->GetHomeDirPath();
+		fileToOpen.Replace("~", homepath);
+		wxFileName newpath(fileToOpen);
+		wxString basePath = m_currentProjectInfo->projectBasePath;		
+		basePath.Replace("~", homepath);
+		relativeFilePath.Assign(fileToOpen);
+		relativeFilePath.MakeRelativeTo(basePath, wxPATH_UNIX);
+		//fileToOpen = newpath.GetFullPath(wxPATH_UNIX);
+	}
+	else
+	{
+		relativeFilePath.Assign(fileToOpen);
+		relativeFilePath.MakeRelativeTo(m_currentProjectInfo->projectBasePath, wxPATH_DOS);
+	}*/
+
+	//wxFileName newFileName(fileToOpen);
+	
+	//newFileName.MakeRelativeTo(m_currentProjectInfo->projectBasePath, wxPATH_DOS);
+
+	if(m_currentProjectInfo->FileExistsInProject(relativeFilePath.GetFullPath(currentPathFormat)))
+	{
+		wxString message = "The file " + fileNames[0] + " already exists in this project, so it was not added.";
+		wxMessageBox(message, "File already in project", wxOK | wxCENTRE | wxICON_EXCLAMATION);
+		return;
+	}
 
 	wxString fileContents;
 	wxString fileName;
 	
 
+	m_remoteMode = m_currentProjectInfo->isRemote;
 	GetFileContents(fileNames[0], fileContents, fileName);
 
-	int iconIndex = m_remoteFileDialog->GetIconIndex(wxFileName(fileName).GetExt());
+	m_currentProjectInfo->AddFileToProject(relativeFilePath.GetFullPath(currentPathFormat), m_projectSelectedFolderType);
+
+	int iconIndex = m_remoteFileDialog->GetIconIndex(relativeFilePath.GetExt());
 
 	FileNameTreeData* data = new FileNameTreeData();
 	data->filename = fileNames[0];
 	
 	m_projectTree->AppendItem(m_clickedTreeItem, fileName, iconIndex, -1, data);
 	m_projectTree->SortChildren(m_clickedTreeItem);
-	m_projectTree->Refresh();
-
-
-	
+	m_projectTree->Refresh();	
 }
 
 void ChameleonWindow::OnTreeItemActivated(wxTreeEvent &event)
@@ -2076,18 +2399,41 @@ void ChameleonWindow::OnTreeItemActivated(wxTreeEvent &event)
 			OpenSourceFile(filesToOpen);
 		}
 	}
+	m_currentEd->Refresh();
+	m_book->Refresh();
 }
 
 void ChameleonWindow::CloseProjectFile()
 {
-	/*
+	wxPathFormat currentPathFormat = (m_currentProjectInfo->isRemote ? wxPATH_UNIX : wxPATH_DOS);
 	wxMemoryInputStream mis("", 0);
 	wxFileConfig config(mis);
 
-	for(int i = 0; i < m_currentProjectInfo->headerFiles.Count(); i++)
+	config.SetPath("/Headers");
+	for(size_t i = 0; i < m_currentProjectInfo->headerFiles.Count(); i++)
 	{
 		wxString headerName = "header";
-		headerName << i;
+		headerName << (i + 1);
+		wxFileName relativeName(m_currentProjectInfo->headerFiles[i]);
+		config.Write(headerName, relativeName.GetFullPath(currentPathFormat));
+	}
+
+	config.SetPath("/Sources");
+	for(size_t i = 0; i < m_currentProjectInfo->sourceFiles.Count(); i++)
+	{
+		wxString sourceName = "source";
+		sourceName << (i + 1);
+		wxFileName relativeName(m_currentProjectInfo->sourceFiles[i]);
+		config.Write(sourceName, relativeName.GetFullPath(currentPathFormat));
+	}
+
+	config.SetPath("/Libraries");
+	for(size_t i = 0; i < m_currentProjectInfo->libraryFiles.Count(); i++)
+	{
+		wxString libraryName = "library";
+		libraryName << (i + 1);
+		wxFileName relativeName(m_currentProjectInfo->libraryFiles[i]);
+		config.Write(libraryName, relativeName.GetFullPath(currentPathFormat));
 	}
 
 	wxMemoryOutputStream outputStream;
@@ -2099,6 +2445,113 @@ void ChameleonWindow::CloseProjectFile()
 	char* bufptr = resultContents.GetWriteBuf(streamsize);
 	outputStream.CopyTo(bufptr,streamsize);
 	resultContents.UngetWriteBuf();
-	*/
 
+	if(m_currentProjectInfo->isRemote)
+	{
+		m_network->SendFileContents(resultContents, m_currentProjectInfo->projectName, 
+									m_currentProjectInfo->projectBasePath);
+	}
+	else
+	{
+		wxString filename = m_currentProjectInfo->projectBasePath + "\\" +
+							m_currentProjectInfo->projectName;
+		wxFile projectFile(filename, wxFile::write);
+		projectFile.Write(resultContents);
+		projectFile.Close();
+		
+	}
+	
+	m_projectTree->DeleteChildren(m_projectFileFolders[0]);
+	m_projectTree->DeleteChildren(m_projectFileFolders[1]);
+	m_projectTree->DeleteChildren(m_projectFileFolders[2]);
+
+	m_projectTree->SetItemText(m_projectTree->GetRootItem(), "No project");
+
+	delete m_currentProjectInfo;
+	m_bProjectOpen = false;
+}
+
+void ChameleonWindow::LoadFilesIntoProjectTree(wxString configPath, wxString configEntryBaseName, 
+										   wxTreeItemId treeid, wxFileConfig& config, wxPathFormat currentPathFormat)
+{
+	config.SetPath(configPath);
+
+	int numEntries = config.GetNumberOfEntries();
+	//wxLogDebug("Source entries: %d", numEntries);
+
+	for(int i = 1; i <= numEntries; i++)
+	{
+		wxString keyname = configEntryBaseName;
+		keyname << i;
+		wxString fileName = config.Read(keyname);		
+
+		if(fileName != wxEmptyString)
+		{
+			wxFileName newFileName(fileName);
+			int iconNum = m_remoteFileDialog->GetIconIndex(newFileName.GetExt());
+
+			FileNameTreeData* data = new FileNameTreeData();
+			//newFileName.MakeAbsolute(m_currentProjectInfo->projectBasePath, currentPathFormat);
+			data->filename = newFileName.GetFullPath(currentPathFormat);
+
+			m_projectTree->AppendItem(treeid, newFileName.GetFullName(), iconNum, -1, data);
+
+			if(configEntryBaseName == "source")
+			{
+				m_currentProjectInfo->sourceFiles.Add(fileName);
+			}
+			else if(configEntryBaseName == "header")
+			{
+				m_currentProjectInfo->headerFiles.Add(fileName);
+			}
+			else if(configEntryBaseName == "library")
+			{
+				m_currentProjectInfo->libraryFiles.Add(fileName);
+			}
+			else
+			{
+				wxLogDebug("Bad entry string in CW::LFIPT.  Value: %s", configEntryBaseName.c_str());
+			}
+			
+		}
+	}
+
+	m_projectTree->SortChildren(treeid);
+}
+
+void ChameleonWindow::OnDisconnect(wxCommandEvent &event)
+{
+	m_telnet->Disconnect();
+}
+
+void ChameleonWindow::OnFileNewProject(wxCommandEvent &event)
+{
+	SaveFile(true, FILE_PROJECT);
+}
+
+void ChameleonWindow::OnRemoveFileFromProject(wxCommandEvent &event)
+{
+	FileNameTreeData* treeData = static_cast<FileNameTreeData*> (m_projectTree->GetItemData(m_clickedTreeItem));
+
+	if(m_currentProjectInfo->FileExistsInProject(treeData->filename))
+	{
+		m_currentProjectInfo->RemoveFileFromProject(treeData->filename, m_projectSelectedFolderType);
+		m_projectTree->Delete(m_clickedTreeItem);
+	}
+}
+
+void ChameleonWindow::OnFileCloseAll(wxCommandEvent &event)
+{
+	CloseAllFiles();
+}
+
+void ChameleonWindow::CloseAllFiles()
+{
+	int cnt = m_book->GetPageCount();
+	for (int i = 0; i < cnt; i++) 
+	{
+		CloseFile();
+	}
+
+	PageHasChanged();
 }

@@ -115,12 +115,13 @@ private:
 
 	void OnQuit(wxCommandEvent& event);
 	void OnClose(wxCloseEvent& event);
+	
 	void OnAbout(wxCommandEvent& event);
 	void OnSave(wxCommandEvent &event);
 	void OnSaveAs(wxCommandEvent &event);
 	//void SaveFileLocal(bool saveas);
 	wxArrayString OpenFile(FileFilterType filterType );
-	void SaveFile(bool saveas);
+	bool SaveFile(bool saveas, FileFilterType filterType);
 	void Test(wxCommandEvent& event);
 	//void SaveFileAs(wxCommandEvent& event);
 	void OnUpdateSave(wxUpdateUIEvent &event);
@@ -128,6 +129,7 @@ private:
 	void OnRedo(wxCommandEvent &event);
 	void OnCloseWindow(wxCloseEvent& event);
 	void OnConnect(wxCommandEvent &event);
+	void OnDisconnect(wxCommandEvent &event);
 	void OnToolsOptions(wxCommandEvent &event);
 	void OnSplitterDoubleClick(wxSplitterEvent &event);
 	void OnSize(wxSizeEvent &event);
@@ -136,6 +138,7 @@ private:
 	void OnTreeItemActivated(wxTreeEvent &event);
 	void OnOpenProjectFile(wxCommandEvent &event);
 	void OnAddFileToProject(wxCommandEvent &event);
+	void OnRemoveFileFromProject(wxCommandEvent &event);
 
 	void OnPageChange (wxNotebookEvent &event);
 	void OnPageClose(wxCommandEvent& event);
@@ -147,6 +150,8 @@ private:
 	void OnFileSave (wxCommandEvent &event);
 	void OnFileSaveAs (wxCommandEvent &event);
 	void OnFileClose (wxCommandEvent &event);
+	void OnFileCloseAll(wxCommandEvent &event);
+	void OnFileNewProject(wxCommandEvent &event);
 	void OnFileRecents (wxCommandEvent &event);
 
 	// edit menu functions
@@ -158,13 +163,16 @@ private:
 
 	
 	void CloseFile(int pageNr = -1);
+	void CloseAllFiles();
 	void CloseProjectFile();
 	int HandleModifiedFile(int pageNr, bool closingFile); 
+	void LoadFilesIntoProjectTree(wxString configPath, wxString configEntryBaseName, wxTreeItemId treeid, 
+								wxFileConfig& config, wxPathFormat currentPathFormat);
 	void CloseTab();
 	void PageHasChanged (int pageNr = -1);
 	int GetPageNum(const wxString& fname);
 
-	void UpdateFileMenu();
+	void UpdateMenuBar();
 	void UpdateToolbar();
 	void UpdatePermsList();
 
@@ -206,7 +214,7 @@ private:
 	wxTreeItemId m_clickedTreeItem;
 	FileFilterType m_projectSelectedFolderType;
 
-	wxMenu m_projectPopupMenu;
+	//wxMenu m_projectPopupMenu;
 	//wxPanel* tcPanel1;
 
 	//wxBoxSizer* sizerPanel;
@@ -229,6 +237,7 @@ private:
 	bool m_setSelection;
 	bool m_remoteMode;
 	bool m_appStarting;
+	bool m_bProjectOpen;
 
 
 	//ChameleonEditor* m_edit;
