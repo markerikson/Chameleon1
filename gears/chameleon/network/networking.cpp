@@ -49,6 +49,10 @@ DirListing Networking::GetDirListing(wxString dirPath, bool forceRefresh, bool i
 
 void Networking::SendFileContents(wxString strng, wxString rfile, wxString rpath)
 {
+	// need to escape quote marks and backticks in order for them to
+	// properly go through
+	strng.Replace("\"", "\\\"");
+	strng.Replace("`", "\\`");
 	//wxString cmd = "cd " + rpath + " && echo \"" + strng + "\" > " + rfile + " ";
 
 	// The "<<ENDOFFILE" says that all input on stdin will be piped to cat until
@@ -267,6 +271,10 @@ wxString Networking::GetStatusDetails() {
 
 void Networking::SSHCacheFingerprint() {
 	ssh_plink->acceptCacheFingerprint();
+<<<<<<< networking.cpp
+	status = NET_CACHED_FINGERPRINT;
+=======
 	// Set the status
 	SSHSendCommand("");
+>>>>>>> 1.10
 }
