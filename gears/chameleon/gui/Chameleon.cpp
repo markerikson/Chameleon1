@@ -296,22 +296,24 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	{
 		m_splitEditorOutput->SplitHorizontally(m_splitProjectEditor, m_noteTerm, 0);	
 		m_splitEditorOutput->SetMinimumPaneSize(20);
-		
 
-
-		m_noteTerm->AddPage(m_telnet, "Terminal");
+		//m_noteTerm->AddPage(m_telnet, "Terminal");
+		m_noteTerm->InsertPage(0, m_telnet, "Terminal");
 
 		m_infoTabTracker.Add(m_telnet);
-
 		//m_splitEditorOutput->SetMinimumPaneSize(200);
-
-
 	}
 	else
 	{
 		m_splitEditorOutput->Initialize(m_splitProjectEditor);
 		//m_telnet = NULL;
 	}
+
+	m_compilerOutput = new wxTextCtrl(m_noteTerm, ID_COMPILERTEXTBOX, wxEmptyString, wxDefaultPosition,
+									wxDefaultSize, wxTE_RICH | wxTE_MULTILINE | wxTE_READONLY);
+
+	m_noteTerm->AddPage(m_compilerOutput, "Output");
+	m_infoTabTracker.Add(m_compilerOutput);
 
 	m_projectTree = new wxTreeCtrl(m_splitProjectEditor, ID_PROJECTTREE);
 
@@ -1803,6 +1805,7 @@ void ChameleonWindow::UpdateToolbar()
 	
 
 	wxBitmap bmNew(new_xpm);
+	//wxToolBarToolBase* tbt = new wxToolBarToolBase();
 	t->AddTool(ID_NEW_SOURCE, "New", bmNew);	
 
     

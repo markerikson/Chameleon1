@@ -195,10 +195,11 @@ private:
 	wxPanel* panelEd;
 	wxSplitterWindow*  m_splitEditorOutput;
 	wxSplitterWindow* m_splitProjectEditor;
-	//wxTextCtrl* textbox;
+	wxTextCtrl* m_compilerOutput;
 	//UpdateUIHandler*  uih;
 	//wxTelnet*  m_telnet;
 	wxSSH* m_telnet;
+
 	OptionsDialog*  m_optionsDialog;
 	RemoteFileDialog* m_remoteFileDialog;
 	//wxGrid* m_optGrid;
