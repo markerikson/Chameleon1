@@ -5,6 +5,7 @@
 #include "../gui/ChameleonWindow.h"
 #include "../gui/ChameleonNotebook.h"
 #include "../common/datastructures.h"
+#include "../common/Options.h"
 #include "../common/debug.h"
 
 
@@ -21,9 +22,18 @@ BEGIN_EVENT_TABLE(ChameleonEditor, wxStyledTextCtrl)
 	EVT_STC_CHARADDED(-1, ChameleonEditor::OnChar)
 	EVT_STC_MODIFIED(-1, ChameleonEditor::OnEditorModified)
 	EVT_RIGHT_DOWN		(ChameleonEditor::OnRightClick)
+	EVT_MENU			(ID_DEBUG_ADD_BREAKPOINT, ChameleonEditor::OnAddBreakpoint)
+	EVT_MENU			(ID_DEBUG_REMOVE_BREAKPOINT, ChameleonEditor::OnRemoveBreakpoint)
 END_EVENT_TABLE()
 
+int CompareInts(int n1, int n2)
+{
+	return n1 - n2;
+}
+
+
 ChameleonEditor::ChameleonEditor( ChameleonWindow *mframe,
+								 Options* options,
                                   wxWindow *parent,     wxWindowID id, const
                                       wxPoint & pos /* = wxDefaultPosition */,
                                   const wxSize & size /* = wxDefaultSize */,
@@ -33,6 +43,7 @@ ChameleonEditor::ChameleonEditor( ChameleonWindow *mframe,
 {
     m_mainFrame = mframe;
 	m_parentNotebook = (ChameleonNotebook*)parent;
+	m_options = options;
 
 	m_bLoadingFile = false;
 	m_bLastSavedRemotely = true;
@@ -418,7 +429,8 @@ void ChameleonEditor::OnRightClick(wxMouseEvent &event)
 	m_popupMenu.Enable(ID_DEBUG_REMOVE_BREAKPOINT, breakpointsAllowed);
 	m_popupMenu.Enable(ID_DEBUG_RUNTOCURSOR, breakpointsAllowed);
 
-	PopupMenu(&m_popupMenu, event.GetPosition());
+	m_lastRightClick = event.GetPosition();
+	PopupMenu(&m_popupMenu, m_lastRightClick);
 }
 
 void ChameleonEditor::OnEditorModified(wxStyledTextEvent &event)
@@ -436,8 +448,57 @@ void ChameleonEditor::OnEditorModified(wxStyledTextEvent &event)
 		case wxSTC_MOD_DELETETEXT:
 			message = "Delete mod.";
 			break;
+	}	
+}
+
+void ChameleonEditor::OnAddBreakpoint(wxCommandEvent &event)
+{
+	int charpos = PositionFromPoint(m_lastRightClick);
+	int linenum = LineFromPosition(charpos);
+
+	int markerNum = this->MarkerAdd(linenum, 0);
+	
+	m_breakpoints.Add(markerNum);
+	
+}
+
+void ChameleonEditor::OnRemoveBreakpoint(wxCommandEvent &event)
+{
+	int charpos = PositionFromPoint(m_lastRightClick);
+	int linenum = LineFromPosition(charpos);
+
+	// need to remove the marker handle from the array - use
+	// LineFromHandle on debug start and clean up then
+	this->MarkerDelete(linenum, 0);
+}
+
+wxArrayInt ChameleonEditor::GetBreakpoints()
+{
+	wxArrayInt linenumbers;
+	wxArrayInt invalidBreakpoints;
+
+	int numStoredBreakpoints = m_breakpoints.GetCount();
+	for(int i = 0; i < numStoredBreakpoints; i++)
+	{
+		int markerHandle = m_breakpoints[i];
+
+		int linenum = this->MarkerLineFromHandle(markerHandle);
+
+		if(linenum != -1)
+		{
+			linenumbers.Add(linenum + 1);
+		}
+		else
+		{
+			invalidBreakpoints.Add(markerHandle);
+		}
 	}
 
+	for(int i = 0; i < invalidBreakpoints.GetCount(); i++)
+	{
+		m_breakpoints.Remove(invalidBreakpoints[i]);
+	}
 
-	
+	linenumbers.Sort((CMPFUNC_wxArraywxArrayInt)CompareInts);
+	return linenumbers;
 }

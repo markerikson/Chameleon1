@@ -5,17 +5,19 @@
 #include "stc.h"
 #include <wx/menu.h>
 #include <wx/dynarray.h>
+#include "../common/datastructures.h"
 //#include <wx/wx.h>
 
 class ChameleonWindow;
 class ChameleonNotebook;
 class wxFileName;
+class Options;
 
 
 class ChameleonEditor : public wxStyledTextCtrl
 {
 public:
-	ChameleonEditor(ChameleonWindow* mframe, wxWindow *parent, wxWindowID id, 
+	ChameleonEditor(ChameleonWindow* mframe, Options* options, wxWindow *parent, wxWindowID id, 
 					const wxPoint& pos = wxDefaultPosition,
 					const wxSize& size = wxDefaultSize, long style = 0,
 					const wxString& name = wxSTCNameStr);
@@ -52,6 +54,7 @@ public:
 	wxFileName GetFileName(); // capital N
 	wxFileName GetExecutableFileName() 	{ return m_executableFilename; }
 	wxString GetFilePath();
+	wxArrayInt GetBreakpoints();
 	//void SetFileNameAndPath(wxString path, wxString name, bool fileIsRemote);
 	void SetFilename(wxFileName filename, bool fileIsRemote);
 	void SetExecutableFilename(wxFileName filename){ m_executableFilename = filename; }
@@ -63,10 +66,13 @@ private:
 
 
 	void OnEditorModified(wxStyledTextEvent &event);
+	void OnAddBreakpoint(wxCommandEvent &event);
+	void OnRemoveBreakpoint(wxCommandEvent &event);
 	
 
 	ChameleonWindow* m_mainFrame;
 	ChameleonNotebook* m_parentNotebook;	
+	Options* m_options;
 
 	wxFileName m_fileNameAndPath;
 	wxFileName m_executableFilename;
@@ -76,6 +82,7 @@ private:
 	wxDateTime m_filetime;
 
 	wxArrayInt m_breakpoints;
+	wxPoint m_lastRightClick;
 
 	bool m_bLoadingFile;
 	bool m_bLastSavedRemotely;
