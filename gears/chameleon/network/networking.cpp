@@ -42,6 +42,15 @@ Networking::Networking(Options* options)
 	m_currHost = m_options->GetHostname();
 	m_currUser = m_options->GetUsername();
 	m_currPass = m_options->GetPassphrase();
+
+	//Timer:
+	m_timer.SetOwner(this);
+	bool timerSuccess =	m_timer.Start(POLL_RATE);
+	if(!timerSuccess) {
+		wxLogDebug("PlinkConnect could not get a timer.\n");
+	}
+
+	//Plink:
 	m_plinks = new PlinkConnect(m_options->GetPlinkApp(), m_currHost,
 								m_currUser, m_currPass);
 
@@ -675,7 +684,9 @@ void Networking::PingOptions() {
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public StartCommand
-///  <TODO: insert text here>
+///  This is for asynchronous interaction.
+///  Extremely simple: if isRemote is true, it calls StartRemoteCommand,
+///     otherwise, it calls StartLocalCommand.
 ///
 ///  @param  isRemote             bool           <TODO: insert text here>
 ///  @param  cmd                  wxString       <TODO: insert text here>
@@ -699,6 +710,7 @@ wxTextOutputStream* Networking::StartCommand(bool isRemote, wxString cmd,
 
 //////////////////////////////////////////////////////////////////////////////
 ///  public StartRemoteCommand
+///  This is for asynchronous interaction.
 ///  Passes this off to PlinkConnect. [see PlinkConnect::executeCommand()]
 ///
 ///  @param  cmd                  wxString       command
@@ -784,16 +796,15 @@ wxString Networking::ExecuteRemoteCommand(wxString cmd)
 //////////////////////////////////////////////////////////////////////////////
 wxString Networking::ExecuteLocalCommand(wxString cmd)
 {
-	wxLogDebug("Local Process Execution still missing.");
+	wxLogDebug("Local Synchronous Process Execution still missing.");
 	return wxEmptyString;
 }
 
 
-// This is certainly not a common-sense thing to pass when desiring to terminate
-//    a process
 //////////////////////////////////////////////////////////////////////////////
 ///  public ForceKillProcess
-///  <TODO: insert text here>
+///  This is certainly not a common-sense thing to pass when desiring to
+///     terminate a process
 ///
 ///  @param  w    wxTextOutputStream * <TODO: insert text here>
 ///
@@ -831,6 +842,8 @@ void Networking::onTerm(wxProcessEvent &e) {
 //Private:
 void Networking::onTimerTick(wxTimerEvent &e) {
 	//
+
+	m_plinks->PollTick();
 }
 
 

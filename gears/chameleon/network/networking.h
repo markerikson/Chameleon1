@@ -9,8 +9,7 @@
 //
 ///////////////////////////////////////
 #include <wx/wx.h>
-#include <wx/string.h>
-//#include <wx/utils.h> ???
+//#include <wx/string.h>
 #include <wx/filename.h>
 #include "../common/datastructures.h"
 #include "../common/debug.h"
@@ -19,6 +18,8 @@ class wxProcessEvent;
 class PlinkConnect;
 class Options;
 class wxTextOutputStream;
+
+#define POLL_RATE 10 //milliseconds
 
 
 class Networking : public wxEvtHandler {
@@ -73,6 +74,7 @@ class Networking : public wxEvtHandler {
 		NetworkStatus m_status;
 		wxString m_statusDetails;
 		wxString m_userHomeDir; // mini-cache
+		wxTimer m_timer;
 
 
 		DECLARE_EVENT_TABLE()

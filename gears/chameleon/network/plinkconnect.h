@@ -9,7 +9,7 @@
 //
 //=================================================================
 
-#define _PC_INTERNAL_TIMER_  //for testing purposes
+//#define _PC_INTERNAL_TIMER_  <-- for testing purposes
 #ifdef _PC_INTERNAL_TIMER_
 	#define POLL_RATE 10 //milliseconds
 #endif
