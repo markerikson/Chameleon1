@@ -173,7 +173,6 @@ class Debugger : public wxEvtHandler
 		wxString returnChar;		//contains the \n or \r for each command
 		wxArrayString data;			//holds data from GDB
 
-		wxString currentSourceName;	//current source file being executed
 		wxArrayString varNames;		//holds variables being watched
 		wxArrayString varValue;		//holds variable values
 		wxArrayInt varDispIndex;	//holds variable "display#" assigned by GDB

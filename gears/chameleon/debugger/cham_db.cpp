@@ -26,11 +26,22 @@
 *              shows obvious places i've moded.
 \*****************************************************************/
 
+//#define CRTDBG_MAP_ALLOC
+//#include <stdlib.h>
+//#include <crtdbg.h>
+
 #include "cham_db.h"
+#include "../common/ProjectInfo.h"
 //#include <wx/process.h>
 #include <wx/wfstream.h>
 #include <wx/RegEx.h>
 //#include <iostream>
+
+#include "../common/debug.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
 
 //using namespace std;
 
@@ -47,6 +58,8 @@ END_EVENT_TABLE()
 Debugger::Debugger(wxTextCtrl* outBox, Networking* networking, wxEvtHandler* pointer)
 {
 	flushPrivateVar();
+
+	myEvent = NULL;
 
 	outputScreen = outBox;
 	guiPointer = pointer;
@@ -85,6 +98,11 @@ Debugger::~Debugger()
 		dumpFile.Write(tmp.c_str(), tmp.Len());
 	}
 
+	if(myEvent != NULL)
+	{
+		delete myEvent;
+	}
+
 	//delete outputScreen;
 	//delete guiPointer;
 	//if(debugProc != NULL) {delete debugProc;}
@@ -93,13 +111,19 @@ Debugger::~Debugger()
 //onDebugEvent(): catches when Mark sends me something...
 void Debugger::onDebugEvent(wxDebugEvent &event)
 {
+	if(myEvent != NULL)
+	{
+		delete myEvent;
+	}
 	myEvent = (wxDebugEvent*)event.Clone();
 	//all the variables i need here:
 	int eventCommand = event.GetId();
 	int eventLineNum;
 	bool mode = event.IsRemote();
 
-	wxArrayString srcFiles = event.GetSourceFilenames();
+	ProjectInfo* proj = event.GetProject();
+
+	wxArrayString srcFiles = proj->sourceFiles;//event.GetSourceFilenames();
 	wxArrayInt breakpointLines;
 
 	FileBreakpointHash breakpointList;
@@ -107,11 +131,11 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 	wxString tmp;
 	wxString firstFile;
 	wxString sendAllBreakpoints;
-	wxString execFile = event.GetExecutableFilename();
 	
-	if( (eventCommand == ID_DEBUG_START) ||
-		(eventCommand == ID_DEBUG_ADD_BREAKPOINT) ||
-		(eventCommand == ID_DEBUG_REMOVE_BREAKPOINT) )
+	wxString execFile = proj->GetExecutableFileName();//event.GetExecutableFilename();
+	
+	/*
+	if(eventCommand == ID_DEBUG_START)
 	{
 		firstFile = srcFiles[0];
 
@@ -119,6 +143,12 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 		{
 			eventLineNum = event.GetLineNumber();
 		}
+	}
+	else*/ if((eventCommand == ID_DEBUG_ADD_BREAKPOINT) ||
+			(eventCommand == ID_DEBUG_REMOVE_BREAKPOINT) )
+	{
+		firstFile = event.GetSourceFilename();
+		eventLineNum = event.GetLineNumber();
 	}
 
 	if(eventCommand == ID_DEBUG_START)
@@ -146,8 +176,14 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 				for(j = 0; j < (int)breakpointLines.GetCount(); j++)
 				{
 					sendAllBreakpoints<<"break \""<<tmp<<":"<<breakpointLines[j]<<"\""<<returnChar;
+
+					lineToNum[tmp].lineNumbers.Add(breakpointLines[j]);
+					lineToNum[tmp].gdbNumbers.Add(gdbBreakpointNum);
+
 					numBreakpoints++;
 					gdbBreakpointNum++;	
+
+					
 					//~~DEBUG CODE~~//
 					wxLogDebug("--STARTUP: make breakpoint: num=%d, gdb_num=%d--",numBreakpoints, gdbBreakpointNum);
 				}
@@ -651,7 +687,9 @@ int Debugger::findBreakpoint(wxString fName, int lineNum, bool andRemove)
 	int arrayCount = lineToNum[fName].lineNumbers.GetCount();
 	wxArrayInt tmp = lineToNum[fName].lineNumbers;
 
-	for(int i = 0; i < arrayCount && found == false; i++)
+	/*
+	int i;
+	for(i = 0; i < arrayCount && found == false; i++)
 	{
 		if(tmp[i] == lineNum)
 		{
@@ -659,17 +697,24 @@ int Debugger::findBreakpoint(wxString fName, int lineNum, bool andRemove)
 			equivNum = lineToNum[fName].gdbNumbers[i];
 		}
 	}//end for loop
+	*/
 
-	if(found)
+
+	//if(found)
+	int lineIndex = tmp.Index(lineNum);
+	if(lineIndex != wxNOT_FOUND)
 	{
 		if(andRemove)
 		{
 			//~~DEBUG CODE~~//
-			wxLogDebug("--find breakpoint: i=%d, equivNum=%d, ltn[fn].gn.remove(i-1): %d--", i, equivNum, lineToNum[fName].gdbNumbers[i - 1]);
-
+			//wxLogDebug("--find breakpoint: i=%d, equivNum=%d, ltn[fn].gn.remove(i-1): %d--", i, equivNum, lineToNum[fName].gdbNumbers[i - 1]);
+			
+			int equivNum = lineToNum[fName].gdbNumbers[lineIndex];
 			//do these need to be changed to just "i"?
-			lineToNum[fName].lineNumbers.RemoveAt(i - 1);
-			lineToNum[fName].gdbNumbers.RemoveAt(i - 1);
+
+			wxLogDebug("--find breakpoint: index=%d, equivNum=%d--", lineIndex, equivNum);
+			lineToNum[fName].lineNumbers.Remove(lineNum);//At(i - 1);
+			lineToNum[fName].gdbNumbers.Remove(equivNum);//At(i - 1);
 
 			command.Printf("delete break %d%s", equivNum, returnChar.c_str());
 			sendCommand(command);
@@ -827,6 +872,7 @@ void Debugger::stop(bool pleaseRestart)
 
 	classStatus = STOP;
 	status = DEBUG_DEAD;
+	resetStatus();
 
 	procLives = false;
 
@@ -1081,7 +1127,8 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 
 						
 						outputEvent.SetLineNumber((int)tmpLong);
-						outputEvent.SetSourceFilenames(tmpArrayString);
+						//outputEvent.SetSourceFilenames(tmpArrayString);
+						outputEvent.SetSourceFilename(Filename);
 						outputEvent.SetStatus(ID_DEBUG_BREAKPOINT);
 						guiPointer->AddPendingEvent(outputEvent);
 						//(*outputScreen)<<"\nCASE1 Matches: fname="<<Filename<<" #="<<Linenumber<<"\n\n";
@@ -1127,6 +1174,8 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 			break;
 
 		case WATCH_VAR:
+		{
+		
 			//the only time this status occurs is after a "print var"
 			//(gdb) command "whatis" returns variable type
 			//in this situation we are looking for:
@@ -1150,7 +1199,7 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 			wxRegEx watch_rawString = "$[[:digit:]]+ = .+_M_p = \"(.+?)\"\n},\nstatic";
 
 			// str#2- "$n = "text"" (same as [char])
-			wxRegEx watch_string = watch_char;
+			wxRegEx watch_string = "$[[:digit:]]+ = \"([[:alnum:]]+)\"";
 
 			// obj -  "$n = {varName = val, varName = val, ..} (varName can be of any listed type...)
 			
@@ -1159,7 +1208,9 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 			// [topVarIndex]
 			//If we only get text in the stream, raise an error; we tried
 			// to snoop a non-existant variable.
+		
 			break;
+		}
 
 		case STEP:
 		//	(*outputScreen)<<"--Made it to the STEP case--"<<classStatus<<"\n";
@@ -1206,7 +1257,8 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 
 					
 					outputEvent.SetLineNumber((int)tmpLong);
-					outputEvent.SetSourceFilenames(tmpArrayString);
+					//outputEvent.SetSourceFilenames(tmpArrayString);
+					outputEvent.SetSourceFilename(Filename);
 					outputEvent.SetStatus(ID_DEBUG_BREAKPOINT);
 					guiPointer->AddPendingEvent(outputEvent);
 					//(*outputScreen)<<"\nCASE 1: file="<<Filename<<" line="<<Linenumber<<"\n\n";
@@ -1221,7 +1273,8 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 					outputEvent.SetLineNumber((int)tmpLong);
 					wxArrayString sourceFiles;
 					sourceFiles.Add(currentSourceName);
-					outputEvent.SetSourceFilenames(sourceFiles);
+					//outputEvent.SetSourceFilenames(sourceFiles);
+					outputEvent.SetSourceFilename(currentSourceName);
 					outputEvent.SetStatus(ID_DEBUG_BREAKPOINT);
 					guiPointer->AddPendingEvent(outputEvent);
 					//(*outputScreen)<<"\nCASE 2: #="<<Linenumber<<"\n\n";
