@@ -1,127 +1,11 @@
-/////////////////////////////////////////////////////////////////////////////
-// Name:        stctest.cpp
-// Purpose:     sample of using wxStyledTextCtrl
-// Author:      Robin Dunn
-// Modified by:
-// Created:     3-Feb-2000
-// RCS-ID:      $Id$
-// Copyright:   (c) 2000 by Total Control Software
-// Licence:     wxWindows licence
-/////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUG__) && !defined(__APPLE__)
-    #pragma implementation "stctest.cpp"
-    #pragma interface "stctest.cpp"
-#endif
-
-// For compilers that support precompilation, includes "wx/wx.h".
-#include "wx/wxprec.h"
-
-#ifdef __BORLANDC__
-    #pragma hdrstop
-#endif
-
-// for all others, include the necessary headers (this file is usually all you
-// need because it includes almost all "standard" wxWindows headers
-#ifndef WX_PRECOMP
-    #include "wx/wx.h"
-#endif
-
-#include <wx/wfstream.h>
-#include <wx/frame.h>
-#include <wx/toolbar.h>
-#include <wx/bitmap.h>
-#include <wx/frame.h>
-#include <wx/string.h>
-#include <wx/filedlg.h>
-#include <wx/file.h>
-#include <wx/textfile.h>
-#include <wx/splitter.h>
-
-#include "new.xpm"
-#include "open.xpm"
-#include "save.xpm"
-#include "build.xpm"
-#include "button.xpm"
-
-#include "stc.h"
-
-//----------------------------------------------------------------------
-
-class MyApp : public wxApp
-{
-public:
-    virtual bool OnInit();
-};
-
-//----------------------------------------------------------------------
-
-// Define a new frame type: this is going to be our main frame
-class MyFrame : public wxFrame
-{
-public:
-    MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size);
-
-    void OnQuit(wxCommandEvent& event);
-    void OnAbout(wxCommandEvent& event);
-	void SaveFile(wxCommandEvent& event, bool saveas);
-	void OpenFile(wxCommandEvent& event);
-	void Test(wxCommandEvent& event);
-	void SaveFileAs(wxCommandEvent& event);
-
-	
-private:
-	void CheckSize();
-	void ResizeSplitter();
-
-
-
-    wxStyledTextCtrl* ed;
-	wxSplitterWindow* split;
-	wxTextCtrl* textbox;
-
-	wxString saveFileName;
-
-    DECLARE_EVENT_TABLE()
-};
-
-
-// IDs for the controls and the menu commands
-enum
-{
-    // menu items
-    ID_Quit = 5200,
-	ID_New,
-	ID_Open,
-	ID_Save,
-    ID_About,
-    ID_ED,
-	ID_Copy,
-	ID_Cut,
-	ID_Paste,
-	ID_Compile,
-	ID_Test,
-};
-
-BEGIN_EVENT_TABLE(MyFrame, wxFrame)
-	EVT_MENU			(ID_Open, MyFrame::OpenFile)
-    EVT_MENU            (ID_Quit,  MyFrame::OnQuit)
-    EVT_MENU            (ID_About, MyFrame::OnAbout)
-	EVT_MENU			(ID_Test, MyFrame::ResizeSplitter)
-	EVT_MENU			(ID_Save, MyFrame::SaveFile)
-	//
-	//EVT_SIZE			(MyFrame::ResizeSplitter)
-END_EVENT_TABLE()
-
-
-IMPLEMENT_APP(MyApp)
+#include "ChameleonWindow.h"
 
 //----------------------------------------------------------------------
 // `Main program' equivalent: the program execution "starts" here
 
 bool MyApp::OnInit()
 {
-    MyFrame *frame = new MyFrame("Chameleon",
+    ChameleonWindow *frame = new ChameleonWindow("Chameleon",
                                  wxPoint(5, 5), wxSize(400, 300));
 
     frame->Show(TRUE);
@@ -131,7 +15,7 @@ bool MyApp::OnInit()
 //----------------------------------------------------------------------
 
 // frame constructor
-MyFrame::MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
+ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, const wxSize& size)
        : wxFrame((wxFrame *)NULL, -1, title, pos, size)
 {
 #ifdef __WXMAC__
@@ -144,44 +28,53 @@ MyFrame::MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
 
 
     // create a menu bar
-    wxMenu *menuFile = new wxMenu("", wxMENU_TEAROFF);
+    wxMenu* menuFile = new wxMenu("", wxMENU_TEAROFF);
+
+	menuFile->Append(ID_NEW, "&New\tCtrl-N", "Create a new file");
+	menuFile->Append(ID_OPEN, "&Open\tCtrl-O", "Open an existing file");
+	menuFile->Append(ID_SAVE, "&Save\tCtrl-S", "Save the current file");
+	menuFile->Append(ID_QUIT, "E&xit\tAlt-X", "Quit this program");
+
+	wxMenu* menuEdit = new wxMenu();
+
+	menuEdit->Append(ID_UNDO, "&Undo\tCtrl-Z");
+	menuEdit->Append(ID_REDO, "&Redo\t\trl-Y");
+
+
 
     // the "About" item should be in the help menu
     wxMenu *helpMenu = new wxMenu;
-    helpMenu->Append(ID_About, "&About...\tCtrl-A", "Show about dialog");
+    helpMenu->Append(ID_ABOUT, "&About...\tCtrl-A", "Show about dialog");
 
-	menuFile->Append(ID_New, "&New\tCtrl-N", "Create a new file");
-	menuFile->Append(ID_Open, "&Open\tCtrl-O", "Open an existing file");
-	menuFile->Append(ID_Save, "&Save\tCtrl-S", "Save the current file");
 
-    menuFile->Append(ID_Quit, "E&xit\tAlt-X", "Quit this program");
 
     // now append the freshly created menu to the menu bar...
     wxMenuBar *menuBar = new wxMenuBar();
     menuBar->Append(menuFile, "&File");
+	menuBar->Append(menuEdit, "&Edit");
     menuBar->Append(helpMenu, "&Help");
 
 	
 	wxToolBar* toolBar = CreateToolBar(wxTB_FLAT | wxTB_TEXT);
 	wxBitmap bmNew(new_xpm);
-	toolBar->AddTool(ID_New, "New File", bmNew);
+	toolBar->AddTool(ID_NEW, "New File", bmNew);
 	
 		
 	wxBitmap bmOpen(open_xpm);
-	toolBar->AddTool(ID_Open, "Open File", bmOpen);
+	toolBar->AddTool(ID_OPEN, "Open File", bmOpen);
 
 	wxBitmap bmSave(save_xpm);
-	toolBar->AddTool(ID_Save, "Save File", bmSave);
+	toolBar->AddTool(ID_SAVE, "Save File", bmSave);
 
 	toolBar->InsertSeparator(3);
 
 	wxBitmap bmBuild(build_xpm);
-	toolBar->AddTool(ID_Compile, "Compile", bmBuild);
+	toolBar->AddTool(ID_COMPILE, "Compile", bmBuild);
 
 	toolBar->InsertSeparator(5);
 
 	wxBitmap bmTest(button_xpm);
-	toolBar->AddTool(ID_Test, "Test", button_xpm);
+	toolBar->AddTool(ID_TEST, "Test", button_xpm);
 	
 
 
@@ -208,9 +101,10 @@ MyFrame::MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
 
     //----------------------------------------
     // Setup the editor
-    ed = new wxStyledTextCtrl(split, ID_ED);
+    ed = new ChameleonEditor(split, ID_ED);//wxStyledTextCtrl(split, ID_ED);
+	uih = new UpdateUIHandler(this);
 
-
+	ed->PushEventHandler(uih);
 
 	textbox = new wxTextCtrl(split, 5206, "", wxDefaultPosition, wxDefaultSize,
 		wxTE_MULTILINE | wxTE_RICH, wxDefaultValidator);
@@ -294,7 +188,7 @@ MyFrame::MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
                     "using virtual void volatile wchar_t while");	
 }
 
-void MyFrame::OpenFile(wxCommandEvent& WXUNUSED(event))
+void ChameleonWindow::OpenFile(wxCommandEvent& WXUNUSED(event))
 {
 	wxString filetext;
 	wxString filename = ::wxFileSelector("Pick a file", "",
@@ -317,20 +211,31 @@ void MyFrame::OpenFile(wxCommandEvent& WXUNUSED(event))
 
 
 // event handlers
-void MyFrame::Test(wxCommandEvent& WXUNUSED(event))
+void ChameleonWindow::Test(wxCommandEvent& WXUNUSED(event))
 {
-	int i = 0;
-}
-
-
-void MyFrame::OnQuit(wxCommandEvent& WXUNUSED(event))
-{
-    // TRUE is to force the frame to close
-    Close(TRUE);
+	//ed->Undo();
+//	wxEventType et = event.GetEventType();
 	
 }
 
-void MyFrame::OnAbout(wxCommandEvent& WXUNUSED(event))
+
+void ChameleonWindow::OnQuit(wxCommandEvent& WXUNUSED(event))
+{
+    // TRUE is to force the frame to close
+    Close(TRUE);	
+}
+
+void ChameleonWindow::OnUndo(wxCommandEvent &event)
+{
+	ed->Undo();
+}
+
+void ChameleonWindow::OnRedo(wxCommandEvent &event)
+{
+	ed->Redo();
+}
+
+void ChameleonWindow::OnAbout(wxCommandEvent& WXUNUSED(event))
 {
     wxString msg;
     msg.Printf( _T("Testing wxStyledTextCtrl...\n"));
@@ -338,7 +243,7 @@ void MyFrame::OnAbout(wxCommandEvent& WXUNUSED(event))
     wxMessageBox(msg, "About This Test", wxOK | wxICON_INFORMATION, this);
 }
 
-void MyFrame::CheckSize()
+void ChameleonWindow::CheckSize()
 {
 	int x, y;
 	this->GetClientSize(&x, &y);
@@ -349,21 +254,91 @@ void MyFrame::CheckSize()
 	
 }
 
+void ChameleonWindow::OnUpdateSave(wxUpdateUIEvent &event)
+{
+	event.Enable(ed->GetModify());
+}
 
 
-void MyFrame::SaveFile(wxCommandEvent& WXUNUSED(event), bool saveas)
+void ChameleonWindow::OnSave(wxCommandEvent& WXUNUSED(event))
+{
+	::wxMessageBox("OnSave");
+	SaveFileLocal(false);
+}
+
+void ChameleonWindow::OnSaveAs(wxCommandEvent& WXUNUSED(event))
+{
+	::wxMessageBox("OnSaveAs");
+	SaveFileLocal(true);
+}
+
+
+void ChameleonWindow::SaveFileLocal(bool saveas)
 {
 
 	wxString name = wxEmptyString;
 
-	/*
+	
 	if( (saveFileName == wxEmptyString) ||
 		(saveas) )
 	{
+/*
 		SaveFileDialog sfd = new SaveFileDialog();
 		sfd.Filter = "HTML files (*.html)|*.html|All files (*.*)|*.*";
 		DialogResult dr = sfd.ShowDialog();
+*/
+		wxString filetext;
+		wxString filetypes = "C++ files (*.cpp)|*.cpp|Header files (*.h)|*.h|All files (*.*)|*.*";
+		//wxString filename = ::wxFileSelector("Pick a file", "",
+		//	"", "", "", wxSAVE, NULL);
+		wxFileDialog fd(NULL, "Save As", wxEmptyString, 
+						wxEmptyString, filetypes, wxSAVE);
 
+		int dialogResult = fd.ShowModal();
+		//ed->On
+
+		if(dialogResult == wxID_OK)
+		{			
+			wxString filename = fd.GetFilename();
+			int filteridx = fd.GetFilterIndex();
+
+			wxString message = "Filter index: ";
+			message << filteridx;
+			
+			::wxMessageBox(message);
+/*
+			switch(filteridx)
+			{
+				case 0:
+					::wxMessageBox("Filter index: 0");
+					break;
+				case 1:
+					::wxMessageBox()
+			}
+		
+
+			wxFile file();
+
+			file.Write(ed->GetText());
+			file.Close();
+*/	
+
+			/*
+			wxTextFile file(filename);
+			file.Read
+			if(!file.Exists())
+			{
+			file.Create();
+			}
+			wxString buffertext = ed->GetText();
+
+			file.AddLine(buffertext);
+			file.Write();
+			file.Close();
+			*/
+		}
+
+/*
 		if(dr == DialogResult.OK)
 		{	
 			name  = sfd.FileName;
@@ -398,41 +373,15 @@ void MyFrame::SaveFile(wxCommandEvent& WXUNUSED(event), bool saveas)
 
 
 
-	//if(ed->GetModify())
-	wxString filetext;
-	wxString filename = ::wxFileSelector("Pick a file", "",
-		"", "", "", wxSAVE, NULL);
-	if(!filename.empty())
-	{
-		wxFile file(filename);
-
-		file.Write(ed->GetText());
-		/*
-		wxTextFile file(filename);
-		file.Read
-		if(!file.Exists())
-		{
-			file.Create();
-		}
-		wxString buffertext = ed->GetText();
-		
-		file.AddLine(buffertext);
-		file.Write();
-		file.Close();
-		*/
 	}
-}
-
-void MyFrame::SaveFileAs(wxCommandEvent& WXUNUSED(event))
-{
+	
 
 }
 
 
-
-
-void MyFrame::ResizeSplitter()
+void ChameleonWindow::ResizeSplitter()
 {
+	/*
 	int x, y;
 	this->GetClientSize(&x, &y);
 	int newsize = (y / 7) * 6;
@@ -440,6 +389,7 @@ void MyFrame::ResizeSplitter()
 	
 
 	split->SetSashPosition(newsize);	
+	*/
 	
 }
 
