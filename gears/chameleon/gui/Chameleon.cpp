@@ -231,7 +231,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 	menuTools->Append(ID_OPTIONS, "&Options");
 
-	if(m_perms->isEnabled(PERM_TELNETTEST))
+	if(m_perms->isEnabled(PERM_TERMINAL))
 	{
 		menuTools->Append(ID_STARTCONNECT, "&Connect");
 	}
@@ -1808,7 +1808,7 @@ void ChameleonWindow::UpdateMenuBar()
 
 	menuTools->Append(ID_OPTIONS, "&Options");
 
-	if(m_perms->isEnabled(PERM_TELNETTEST))
+	if(m_perms->isEnabled(PERM_TERMINAL))
 	{
 		menuTools->AppendSeparator();
 
@@ -2664,14 +2664,27 @@ void ChameleonWindow::OnCompile(wxCommandEvent &event)
 
 		doCompile = false;
 	}
-	else if(!m_currentEd->LastSavedRemotely())
-	{
-		wxMessageBox("Compiling local files is currently not supported.");
-	}
 
 	if(doCompile)
 	{
-		m_compiler->SimpleCompileFile(m_currentEd->GetFilePath(), m_currentEd->GetFilename(), m_compilerOutput);
+		bool isAdvanced = m_perms->isEnabled(PERM_ADVANCEDCOMPILE);
+		bool isProj = false;
+		if(m_currentProjectInfo != NULL && m_currentProjectInfo->FileExistsInProject(m_currentEd->GetFilename()) ) {
+			isProj = true;
+		}
+
+		if(!isAdvanced) {
+			if(isProj) {
+				m_compiler->CompileProject(m_currentProjectInfo, m_remoteMode, m_compilerOutput);
+			}
+			else {
+				m_compiler->CompileFile(m_currentEd->GetFilePath(), m_currentEd->GetFilename(), m_remoteMode, m_compilerOutput);
+			}
+		}
+		else {
+			// Forward Planning
+			wxMessageBox("Advanced Compiling is currently not supported.");
+		}
 	}
 }
 

@@ -13,10 +13,17 @@ class Compiler : public wxEvtHandler
 	public:
 		Compiler(Options* options, Networking* network);
 
-		void SimpleCompileFile(wxString path, wxString file, wxTextCtrl* textbox);
-		void SimpleCompileProject(ProjectInfo* proj, wxTextCtrl* textbox);
-		//void AdvancedCompileFile(wxString file, CompilerWindow* window);
-		//void AdvancedCompileProject(ProjectInfo* proj, CompilerWindow* window);
+		// Simple Output:
+		void CompileFile(wxString path, wxString filename, bool isRemote, wxTextCtrl* textbox);
+		void CompileProject(ProjectInfo* proj, bool isRemote, wxTextCtrl* textbox);
+		// Advanced Output:
+		//void CompileFile(wxString path, wxString file, bool isRemote, CompilerWindow* window);
+		//void CompileProject(ProjectInfo* proj, bool isRemote, CompilerWindow* window);
+
+		void SimpleRemoteCompile(wxString path, wxString file, wxTextCtrl* textbox);
+		void SimpleRemoteCompile(ProjectInfo* proj, wxTextCtrl* textbox);
+		void SimpleLocalCompile(wxString path, wxString file, wxTextCtrl* textbox);
+		void SimpleLocalCompile(ProjectInfo* proj, wxTextCtrl* textbox);
 
 	private:
 		void OnProcessTerm(wxProcess2EndedEvent& e);
@@ -24,6 +31,7 @@ class Compiler : public wxEvtHandler
 		void OnProcessErr(wxProcess2StdErrEvent& e);
 
 		void CompileRemoteFile(wxString filename, wxString outfile);
+		void CompileLocalFile(wxString filename, wxString outfile);
 
 		// Data:
 		Options* m_options;

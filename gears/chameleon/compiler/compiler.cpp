@@ -21,19 +21,54 @@ Compiler::Compiler(Options* options, Networking* network) {
 	m_compilePID = -2;
 }
 
-void Compiler::SimpleCompileFile(wxString path, wxString filename, wxTextCtrl* textbox)
-{
+
+void Compiler::CompileFile(wxString path, wxString filename, bool isRemote, wxTextCtrl* textbox) {
 	m_out = textbox;
-	m_proc = m_network->GetPlinkProcess(this);
-	if(m_proc != NULL) {
-		*m_out << "Compiling...\n";
-		wxTextOutputStream os(* (m_proc->GetOutputStream()) );
-		os.WriteString("cd " + path + "\r");
-		CompileRemoteFile(filename, m_options->GetRemoteCompileOut());
+
+	// I really wish I could merge these two:
+	if(isRemote) {
+		m_proc = m_network->GetPlinkProcess(this);
+		if(m_proc != NULL) {
+			*m_out << "Compiling...\n";
+			wxTextOutputStream os(* (m_proc->GetOutputStream()) );
+			os.WriteString("cd " + path + "\r");
+			CompileRemoteFile(filename, m_options->GetRemoteCompileOut());
+		}
+		else {
+			wxLogDebug("Compiler could not get a process.");
+		}
+	}
+	else { // Local:
+		m_proc = m_network->GetLocalProcess(this);
+		if(m_proc != NULL) {
+			*m_out << "Compiling...\n";
+			wxTextOutputStream os(* (m_proc->GetOutputStream()) );
+			os.WriteString("cd " + path + "\r");
+			CompileLocalFile(filename, m_options->GetLocalCompileOut());
+		}
+		else {
+			wxLogDebug("Compiler could not get a local process.");
+		}
 	}
 }
 
 
+void Compiler::CompileProject(ProjectInfo* proj, bool isRemote, wxTextCtrl* textbox) {
+	m_out = textbox;
+
+	if(isRemote) {
+		// Remote Compilation:
+		*m_out << "Can't compile remote projects yet.";
+
+		//walk through the list of files in the project and call SimpleCompileFile on each
+	}
+	else { // Local Compilation:
+		*m_out << "Can't compile local projects yet.";
+	}
+}
+
+
+// This assumes that I already have a live process (m_proc)
 //Private:
 void Compiler::CompileRemoteFile(wxString filename, wxString outfile) {
 
@@ -53,22 +88,11 @@ void Compiler::CompileRemoteFile(wxString filename, wxString outfile) {
 }
 
 
-void Compiler::SimpleCompileProject(ProjectInfo* proj, wxTextCtrl* textbox)
+//Private:
+void Compiler::CompileLocalFile(wxString filename, wxString outfile)
 {
-	//walk through the list of files in the project and call SimpleCompileFile on each
+	//
 }
-
-
-//void Compiler::AdvancedCompileFile(wxString file, CompilerWindow* window)
-//{
-//	//
-//}
-
-
-//void Compiler::AdvancedCompileProject(ProjectInfo* proj, CompilerWindow* window)
-//{
-//	//
-//}
 
 
 //Private:
