@@ -26,6 +26,7 @@
 //                  also set it so that if normal compilation is disabled*, ADV
 //                  compilation is disabled.  I didn't touch authorizations.
 //                  *note- this disabling only occurs of "disable(id)" is called.
+//  ~BSC--03/22/04--Adjused for Mark: a blank constructor
 
 //includes
 #include "p.h"
@@ -52,10 +53,15 @@ wxString GlobalPermStrings[] = {"Syntax highlighting",
 //@ BEGIN @
 //@@@@@@@@@
 
-//Constructor
-//Input: Zip right now.
-//Output: Nothing really; just initializes the authorization and permission
-//        codes and arrays.
+//Constructor(s)
+
+//blank one: blank slate init.
+Permission::Permission()
+{
+	setGlobalAuthorized("0");
+	setGlobalEnabled("0");
+}
+
 Permission::Permission(wxString loadAuthCode, wxString loadPermCode)
 {
 	long tPCode, tACode;

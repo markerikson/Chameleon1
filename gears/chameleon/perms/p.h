@@ -27,14 +27,19 @@ const int NUM_MODULES = 15;
 class Permission
 {
 	public:
+		Permission();
 		Permission(wxString loadAuthCode, wxString loadPermCode);
 		~Permission();
+
 		bool isEnabled(int id);		//module-specific permissions request
 		bool isAuthorized(int id);	//module-specific authorization request
+
 		void enable(int id);		//module-specific enable
 		void disable(int id);		//module-specific disable
+
 		bool setGlobalAuthorized(wxString newAuthCode);//set everything
 		void setGlobalEnabled(wxString newEnableCode);
+
 		long getGlobalEnabled();	//what should be visible
 		long getGlobalAuthorized();	//what's allowed to be turned on/off
 
