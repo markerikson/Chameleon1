@@ -470,6 +470,7 @@ void Debugger::startProcess(bool fullRestart, bool mode, wxString fName, wxStrin
 	}
 	else
 	{
+		//CHANGE ME!!!//
 		debugProc = new wxProcess2(this);
 		pid = wxExecute(execThis, wxEXEC_ASYNC, debugProc);
 		command = execThis;
@@ -506,8 +507,8 @@ void Debugger::startProcess(bool fullRestart, bool mode, wxString fName, wxStrin
 		procLives = true;
 		classStatus = START;
 
-		streamIn = debugProc->GetInputStream();		//GDB to me
-		streamError = debugProc->GetErrorStream();	//problems
+		//streamIn = debugProc->GetInputStream();		//GDB to me
+		//streamError = debugProc->GetErrorStream();	//problems
 
 		//initialize GDB
 		tmp.Printf("set prompt %s%s", PROMPT_CHAR.c_str(), returnChar.c_str());
@@ -515,6 +516,7 @@ void Debugger::startProcess(bool fullRestart, bool mode, wxString fName, wxStrin
 		initString.Add("set print pretty on" + returnChar);
 		initString.Add("set print address off" + returnChar);
 		initString.Add("set confirm off" + returnChar);
+		initString.Add("set overload-resolution off" + returnChar);
 
 		//send all initlization commands to GDB
 		for(int currInit = 0; currInit < int(initString.GetCount()); currInit++)
@@ -821,6 +823,8 @@ void Debugger::stop(bool pleaseRestart)
 		}
 	}
 
+	flushPrivateVar();
+
 	classStatus = STOP;
 	status = DEBUG_DEAD;
 
@@ -836,7 +840,7 @@ void Debugger::stop(bool pleaseRestart)
 void Debugger::kill()
 {
 	classStatus = STOP;
-	status = DEBUG_STOPPED;
+	status = DEBUG_DEAD;
 
 	procLives = false;
 
@@ -1054,6 +1058,8 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 					
 					outputEvent.SetStatus(ID_DEBUG_EXIT_NORMAL);
 					guiPointer->AddPendingEvent(outputEvent);
+					stop(false);
+					data.Empty();
 					break;
 				}
 
@@ -1124,14 +1130,30 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 			//the only time this status occurs is after a "print var"
 			//(gdb) command "whatis" returns variable type
 			//in this situation we are looking for:
+
 			// ints - "$n = val"
-			// array- "$n = {val, val...}"
-			// string-"$n = {static bleh bleh...", re-format to:
-			// str#2- "$n = "text""
-			// obj -  "$n = {varName = val, varName = val, ..} (varName can be of any listed type...)
+			wxRegEx watch_int = "$[[:digit:]]+ = ([[:digit:]]+)";
+
 			// double-"$n = val.val"
+			wxRegEx watch_dbl = "$[[:digit:]]+ = ([[:digit:]]+\\.[[:digit:]]+)";
+
 			// char[]-"$n = val 'char'"
+			wxRegEx watch_1char = "$[[:digit:]]+ = [[:digit:]]+ '([[:alnum:]]+)'";
+
 			// char - "$n = "text""
+			wxRegEx watch_char = "$[[:digit:]]+ = \"([[:alnum:]]+)\"";
+
+			// array- "$n = {val, val...}"
+			wxRegEx watch_array = "$[[:digit:]]+ = {(.+?)}";
+
+			// string-"$n = {static bleh bleh...", re-format to:
+			wxRegEx watch_rawString = "$[[:digit:]]+ = .+_M_p = \"(.+?)\"\n},\nstatic";
+
+			// str#2- "$n = "text"" (same as [char])
+			wxRegEx watch_string = watch_char;
+
+			// obj -  "$n = {varName = val, varName = val, ..} (varName can be of any listed type...)
+			
 			//once this is parsed, send off the event with the varName / value
 			// pair in the [topVarIndex] position.  BUT DO NOT CHANGE
 			// [topVarIndex]
@@ -1165,6 +1187,8 @@ void Debugger::onProcessOutputEvent(wxProcess2StdOutEvent &e)
 
 					outputEvent.SetStatus(ID_DEBUG_EXIT_NORMAL);
 					guiPointer->AddPendingEvent(outputEvent);
+					stop(false);
+					data.Empty();
 					break;
 				}
 
@@ -1268,6 +1292,7 @@ bool Debugger::checkOutputStream(wxString stream)
 
 	wxString prog = "Program ";
 	int progIndex = thirdCase.Find(prog);
+
 	if(progIndex != -1)
 	//if(thirdCase.Left(8) == "Program")
 	{
