@@ -168,7 +168,8 @@ void PlinkConnect::spawnConnection()
 
 	wxString p = m_pass;
 	if(m_pass == "") {
-		p = "password";
+		//p = "password";
+		return;
 	}
 
 	wxString cmd = m_plinkApp

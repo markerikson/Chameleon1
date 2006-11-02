@@ -160,6 +160,8 @@ private:
 
 	void EvaluateOptions();
 
+	bool AskUserForPassword();
+
 	void UpdateMenuBar();
 	void UpdateToolbar();
 	void UpdateTerminalNotebook();

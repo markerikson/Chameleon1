@@ -21,7 +21,6 @@
  */
 
 ////@begin includes
-#include "wx/wx.h"
 #include "wx/notebook.h"
 #include "wx/spinctrl.h"
 ////@end includes
@@ -44,11 +43,6 @@ class ChameleonWindow;
 
 ////@begin control identifiers
 #define ID_DIALOG 10000
-#define SYMBOL_OPTIONSDIALOG_STYLE wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX
-#define SYMBOL_OPTIONSDIALOG_TITLE _("Options")
-#define SYMBOL_OPTIONSDIALOG_IDNAME ID_DIALOG
-#define SYMBOL_OPTIONSDIALOG_SIZE wxSize(420, 315)
-#define SYMBOL_OPTIONSDIALOG_POSITION wxPoint(0, 0)
 #define ID_NOTEBOOK 10001
 #define ID_PANEL1 10006
 #define ID_CHECKLISTBOX 10007
@@ -61,12 +55,16 @@ class ChameleonWindow;
 #define ID_PASSWORD2 10011
 #define ID_PANEL3 10016
 #define ID_PRINTSTYLE 10017
+#define ID_CHECKBOX1 10013
 #define ID_CHECKBOX 10018
 #define ID_SPINCTRL 10019
-#define ID_MINGWPATH 10014
-#define ID_MINGWBROWSE 10015
 #define ID_BUTTON_OK 10002
 #define ID_BUTTON_CANCEL 10003
+#define SYMBOL_OPTIONSDIALOG_STYLE wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX
+#define SYMBOL_OPTIONSDIALOG_TITLE _("Options")
+#define SYMBOL_OPTIONSDIALOG_IDNAME ID_DIALOG
+#define SYMBOL_OPTIONSDIALOG_SIZE wxSize(420, 315)
+#define SYMBOL_OPTIONSDIALOG_POSITION wxDefaultPosition
 ////@end control identifiers
 
 //#include <wx/wx.h>
@@ -102,9 +100,6 @@ public:
     /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_SETAUTHCODE
     void OnUpdateAuthCode( wxCommandEvent& event );
 
-    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_MINGWBROWSE
-    void OnMinGWBrowseClick( wxCommandEvent& event );
-
     /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_OK
     void OnButtonOkClick( wxCommandEvent& event );
 
@@ -119,6 +114,11 @@ public:
 
 ////@begin OptionsDialog member function declarations
 
+    /// Retrieves bitmap resources
+    wxBitmap GetBitmapResource( const wxString& name );
+
+    /// Retrieves icon resources
+    wxIcon GetIconResource( const wxString& name );
 ////@end OptionsDialog member function declarations
 
     /*
@@ -164,10 +164,9 @@ public:
     wxTextCtrl* m_password1;
     wxTextCtrl* m_password2;
     wxComboBox* m_printStyle;
+    wxCheckBox* m_cbPrintLineNumbers;
     wxCheckBox* m_showToolbarText;
     wxSpinCtrl* m_termHistory;
-    wxTextCtrl* m_txtMingwPath;
-    wxButton* m_butBrowseMingw;
 ////@end OptionsDialog member variables
 
 	ChameleonWindow* m_parentFrame;

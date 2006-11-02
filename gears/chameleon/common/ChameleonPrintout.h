@@ -5,6 +5,7 @@
 #include "wx/print.h"
 
 class ChameleonEditor;
+class Options;
 
 /** 
  * This class was swiped almost entirely from wxGuide, and only had a couple slight changes made.  
@@ -16,11 +17,12 @@ class ChameleonPrintout: public wxPrintout
 public:
 
 	//! constructor
-	ChameleonPrintout (ChameleonEditor *edit, wxChar *title = _T(""));
+	ChameleonPrintout (ChameleonEditor *edit, Options* options, wxChar *title = _T(""));
 
 	//! event handlers
 	bool OnPrintPage (int page);
 	bool OnBeginDocument (int startPage, int endPage);
+	void OnEndDocument();
 
 	//! print functions
 	bool HasPage (int page);
@@ -31,6 +33,8 @@ private:
 	int m_printed;
 	wxRect m_pageRect;
 	wxRect m_printRect;
+	Options* m_options;
+	wxArrayInt m_pages;
 
 	bool PrintScaling (wxDC *dc);
 };

@@ -35,13 +35,29 @@
 #include <wx/mstream.h>
 
 
+
 //#include "debug.h"
 
 #ifdef MSVC6
 #include "../common/fixvsbug.h"
 #endif
 
+#if (_MSC_VER >= 1400)       // VC8+
+#pragma warning(disable : 4996)    // Either disable all deprecation warnings,
+// Or just turn off warnings about the newly deprecated CRT functions.
+// #ifndef _CRT_SECURE_NO_DEPRECATE
+// #define _CRT_SECURE_NO_DEPRECATE
+// #endif
+// #ifndef _CRT_NONSTDC_NO_DEPRECATE
+// #define _CRT_NONSTDC_NO_DEPRECATE
+// #endif
 
 
+
+#if defined(__WXMSW__) && !defined(__WXWINCE__)
+#pragma comment(linker, "\"/manifestdependency:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='X86' publicKeyToken='6595b64144ccf1df'\"")
+#endif
+
+#endif // VC8
 
 #endif

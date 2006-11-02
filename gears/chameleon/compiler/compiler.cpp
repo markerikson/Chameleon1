@@ -117,11 +117,14 @@ void Compiler::StartNextFile()
 		cmd +=  " && echo C_O_M_P_I_L_E_SUCCESS || echo C_O_M_P_I_L_E_FAILED";
 	}
 	else {
+		/*
 		cmd +=  "\"" + m_options->GetMingwPath() + "/bin/g++.exe\" "; // compiler
 		cmd +=  " -g -c -fmessage-length=0 ";
 		cmd +=  " -o " + outFile.GetFullPath(wxPATH_DOS) + " ";
 		cmd +=  inFile.GetFullPath(wxPATH_DOS);
 		cmd +=  " && echo C_O_M_P_I_L_E_SUCCESS || echo C_O_M_P_I_L_E_FAILED";
+		*/
+		wxLogDebug("Error: compiling local projects not supported yet!");
 	}
 	//wxLogDebug("Starting to Compile with cmd= \"%s\"", cmd);
 	m_compilerStdIn = m_network->StartCommand(isRemote, cmd, this);
@@ -177,10 +180,13 @@ void Compiler::StartLinking() {
 		cmd +=  " && echo C_O_M_P_I_L_E_SUCCESS || echo C_O_M_P_I_L_E_FAILED";
 	}
 	else {
+		/*
 		cmd +=  "\"" + m_options->GetMingwPath() + "/bin/g++.exe\" ";
 		cmd +=  " -g -fmessage-length=0 -o " + outFile.GetFullPath(wxPATH_DOS);
 		cmd +=  inFiles;
 		cmd +=  " && echo C_O_M_P_I_L_E_SUCCESS || echo C_O_M_P_I_L_E_FAILED";
+		*/
+		wxLogDebug("Error: seriously, you can't compile anything locally yet!");
 	}
 	//wxLogDebug("Starting to Link with cmd= \"%s\"", + cmd);
 	m_compilerStdIn = m_network->StartCommand(isRemote, cmd, this);

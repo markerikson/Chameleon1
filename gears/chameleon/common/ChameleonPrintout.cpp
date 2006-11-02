@@ -2,6 +2,7 @@
 #include "../editor/editor.h"
 #include "wx/printdlg.h"  // wxPageSetupDialog
 #include "wx/progdlg.h"   // wxProgressDialog
+#include "../common/Options.h"
 
 #include "debug.h"
 
@@ -14,10 +15,11 @@
 extern wxPrintData *g_printData;
 extern wxPageSetupData *g_pageSetupData;
 
-ChameleonPrintout::ChameleonPrintout (ChameleonEditor *edit, wxChar *title)
+ChameleonPrintout::ChameleonPrintout (ChameleonEditor *edit, Options* options, wxChar *title)
 : wxPrintout(title) {
 	m_edit = edit;
 	m_printed = 0;
+	m_options = options;
 
 }
 
@@ -43,7 +45,11 @@ bool ChameleonPrintout::OnPrintPage (int page) {
 	// right now it just does from the start
 	// print page
 	if (page == 1) m_printed = 0;
-	m_printed = m_edit->FormatRange (1, m_printed, m_edit->GetLength(),
+	m_printed = m_edit->FormatRange (1, 
+		//(int(m_pages.GetCount()) > page) ? m_pages[page - 1] : 0,
+		//m_edit->GetLength(),
+		m_pages[page-1],
+		(int(m_pages.GetCount()) > page) ? m_pages[page] : m_edit->GetLength(),
 		dc, dc, m_printRect, m_pageRect);
 
 	return true;
@@ -63,11 +69,26 @@ bool ChameleonPrintout::OnPrintPage (int page) {
 bool ChameleonPrintout::OnBeginDocument (int startPage, int endPage) {
 
 	m_printed = 0;
+	
+
+	if(!m_options->GetLineNumberPrinting())
+	{
+		// Hide line numbers until after printing is finished
+		m_edit->SetMarginWidth(0, 0);
+		m_edit->SetMarginWidth(1, 0);
+	}
+
+
+	return wxPrintout::OnBeginDocument(startPage, endPage);
+
+
+	/*
 	if (!wxPrintout::OnBeginDocument (startPage, endPage)) {
 		return false;
 	}
 
 	return true;
+	*/
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -90,6 +111,8 @@ void ChameleonPrintout::GetPageInfo (int *minPage, int *maxPage, int *selPageFro
 	*maxPage = 0;
 	*selPageFrom = 0;
 	*selPageTo = 0;
+
+	m_pages.Clear();
 
 	// scale DC if possible
 	wxDC *dc = GetDC();
@@ -123,11 +146,16 @@ void ChameleonPrintout::GetPageInfo (int *minPage, int *maxPage, int *selPageFro
 		page.x - (left + right),
 		page.y - (top + bottom));
 
+	int length = m_edit->GetLength();
 	// count pages
-	while (HasPage (*maxPage)) {
-		m_printed = m_edit->FormatRange (0, m_printed, m_edit->GetLength(),
+	//while (HasPage (*maxPage)) {
+	while(m_printed < length)
+	{
+		m_pages.Add(m_printed);
+		m_printed = m_edit->FormatRange (0, m_printed, length,
 			dc, dc, m_printRect, m_pageRect);
 		*maxPage += 1;
+		
 	}
 	if (*maxPage > 0) *minPage = 1;
 	*selPageFrom = *minPage;
@@ -144,9 +172,10 @@ void ChameleonPrintout::GetPageInfo (int *minPage, int *maxPage, int *selPageFro
 ///
 ///  @author Mark Erikson @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
-bool ChameleonPrintout::HasPage (int WXUNUSED(page)) {
+bool ChameleonPrintout::HasPage (int page) {
 
-	return (m_printed < m_edit->GetLength());
+	//return (m_printed < m_edit->GetLength());
+	return (page > 0) && (page-1 < int(m_pages.GetCount())); // pages start at 1
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -189,5 +218,14 @@ bool ChameleonPrintout::PrintScaling (wxDC *dc){
 	dc->SetUserScale (scale_x, scale_y);
 
 	return true;
+}
+
+void ChameleonPrintout::OnEndDocument()
+{
+	// Display line numbers now that printing's done.  If they were already displayed? No problem.
+	m_edit->SetMarginWidth(0, 40);
+	m_edit->SetMarginWidth(1, 16);
+
+	wxPrintout::OnEndDocument();
 }
 

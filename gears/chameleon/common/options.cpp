@@ -14,7 +14,7 @@ Options::Options()
 	// Set Some Default Values (perhaps these should not be set!)
 	m_pscpProg = "pscp.exe";
 	m_plinkProg = "plink.exe";
-	m_mingwPath = "C:\\Program Files\\MinGW\\bin\\";
+	//m_mingwPath = "C:\\Program Files\\MinGW\\bin\\";
 	m_username = "username";
 	m_hostname = "localhost";
 	m_password = "";
@@ -27,6 +27,7 @@ Options::Options()
 	m_perms = new Permission();
 	
 	m_showToolbarText = true;
+	m_printLineNumbers = false;
 }
 
 Options::~Options()
@@ -58,6 +59,7 @@ bool Options::SetPlinkApp(wxString path_and_prog) {
 }
 
 
+/*
 bool Options::SetMingwPath(wxString path) {
 	if(wxFileName::DirExists(path)) {
 		m_mingwPath = path;
@@ -67,7 +69,7 @@ bool Options::SetMingwPath(wxString path) {
 		wxLogDebug("\"" + path + "\" is an invalid path.");
 		return false;
 }
-
+*/
 
 bool Options::SetUsername(wxString user) {
 	m_username = user;
@@ -114,5 +116,10 @@ void Options::SetShowToolbarText(bool useText)
 void Options::SetTerminalHistorySize(int size)
 {
 	m_terminalSize = size;
+}
+
+void Options::SetLineNumberPrinting(bool printLineNumbers)
+{
+	m_printLineNumbers = printLineNumbers;
 }
 

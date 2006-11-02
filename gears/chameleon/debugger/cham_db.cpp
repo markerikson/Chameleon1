@@ -1393,9 +1393,10 @@ void Debugger::removeVar(wxString varName, wxString funcName, wxString className
 
 	if(varCount != 0)
 	{
-		for(int i = 0; (i < varCount) && (notFound); i++)
+		int index = 0;
+		for(index = 0; (index < varCount) && (notFound); index++)
 		{
-			if(m_varInfo[i].name == varName)
+			if(m_varInfo[index].name == varName)
 			{
 				notFound = false;
 				found = true;
@@ -1404,7 +1405,7 @@ void Debugger::removeVar(wxString varName, wxString funcName, wxString className
 
 		if(found)
 		{
-			m_varInfo.RemoveAt(i - 1);
+			m_varInfo.RemoveAt(index - 1);
 			varCount--;
 		}
 	}//end varCount if

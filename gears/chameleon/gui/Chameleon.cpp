@@ -197,7 +197,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	{
 		m_options->SetHostname(m_config->Read("Network/hostname"));
 		m_options->SetUsername(m_config->Read("Network/username"));
-		m_options->SetMingwPath(m_config->Read("Compiler/mingwpath"));
+		//m_options->SetMingwPath(m_config->Read("Compiler/mingwpath"));
 
 		bool printInColor = (m_config->Read("Miscellaneous/PrintInColor", "true") == "true");
 		int printStyle = printInColor ? wxSTC_PRINT_COLOURONWHITE : wxSTC_PRINT_BLACKONWHITE;
@@ -205,6 +205,11 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 		bool showToolbarText = (m_config->Read("Interface/ShowToolbarText", "true") == "true");
 		m_options->SetShowToolbarText(showToolbarText);
+
+		bool printLineNumbers = (m_config->Read("Miscellaneous/PrintLineNumbers", "false") == "true");
+		m_options->SetLineNumberPrinting(printLineNumbers);
+
+
 		int terminalHistory = m_config->Read("Miscellaneous/TerminalHistory", 100);
 		
 		authorizedCode = m_config->Read("Permissions/authorized", defaultAuthorizedCode);
@@ -545,9 +550,22 @@ void ChameleonWindow::OnMenuEvent(wxCommandEvent &event)
 
 		case ID_STARTCONNECT:
 		{
+			wxString password = m_options->GetPassphrase();
+			if(password.IsEmpty())
+			{
+				bool passwordEntered = AskUserForPassword();
+				if(!passwordEntered)
+				{
+					return;
+				}
+
+				m_network->GetStatus();
+			}
+
 			NetworkStatus isok = m_network->GetStatus();
 			if(isok == NET_GOOD) 
 			{ 
+				
 				m_terminal->Connect();
 				wxLogDebug("Connected: %d", m_terminal->IsConnected());
 
@@ -726,7 +744,7 @@ void ChameleonWindow::OnMenuEvent(wxCommandEvent &event)
 			m_currentEd->SetPrintColourMode(m_options->GetPrintStyle());
 			wxPrintDialogData printDialogData( *g_printData);
 			wxPrinter printer (&printDialogData);
-			ChameleonPrintout printout (m_currentEd);
+			ChameleonPrintout printout (m_currentEd, m_options);
 			if (!printer.Print (this, &printout, true)) 
 			{
 				if (wxPrinter::GetLastError() == wxPRINTER_ERROR) 
@@ -744,8 +762,9 @@ void ChameleonWindow::OnMenuEvent(wxCommandEvent &event)
 		{
 			m_currentEd->SetPrintColourMode(m_options->GetPrintStyle());
 			wxPrintDialogData printDialogData( *g_printData);
-			wxPrintPreview *preview = new wxPrintPreview (new ChameleonPrintout (m_currentEd),
-				new ChameleonPrintout (m_currentEd),
+			printDialogData.SetToPage(999);
+			wxPrintPreview *preview = new wxPrintPreview (new ChameleonPrintout (m_currentEd, m_options),
+				new ChameleonPrintout (m_currentEd, m_options),
 				&printDialogData);
 			if (!preview->Ok()) 
 			{
@@ -2002,6 +2021,37 @@ void ChameleonWindow::UpdateStatusBar()
 		m_statusBar->SetStatusText(editable, 2);
 	}
 
+	wxString netStatus = m_network->GetStatusDetails();
+	wxString statusText;
+	if(netStatus == "NET_STARTING")
+	{
+		statusText = "Networking starting";
+	}
+	else if(netStatus == "NET_GOOD")
+	{
+		statusText = "Network connected";
+	}
+	else if(netStatus == "NET_UNKNOWN_HOST")
+	{
+		statusText = "Can't find host";
+	}
+	else if(netStatus == "NET_CONN_REFUSED")
+	{
+		statusText = "Connection refused";
+	}
+	else if (netStatus = "NET_AUTH_FAILED")
+	{
+		statusText = "Login failed";
+	}
+	else if(netStatus == "NET_ERROR_MESSAGE")
+	{
+		statusText = "Unknown network error";
+	
+	}
+
+	SetStatusText(statusText, 3);
+
+
 	int curLine = m_currentEd->GetCurrentLine();
 	int curPos = m_currentEd->GetCurrentPos() -m_currentEd->PositionFromLine (-curLine);
 	wxString linecol;
@@ -2251,13 +2301,15 @@ void ChameleonWindow::EvaluateOptions()
 	m_config->Write("Permissions/enabled", perms->getGlobalEnabled());
 	m_config->Write("Network/hostname", m_options->GetHostname());
 	m_config->Write("Network/username", m_options->GetUsername());
-	m_config->Write("Compiler/mingwpath", m_options->GetMingwPath());
+	//m_config->Write("Compiler/mingwpath", m_options->GetMingwPath());
 	m_config->Write("Miscellaneous/TerminalHistory", newMaxTermSize);
+	
 
 	bool printInColor = (m_options->GetPrintStyle() == wxSTC_PRINT_COLOURONWHITE);
-
 	m_config->Write("Miscellaneous/PrintInColor", printInColor ? "true" : "false");
 	
+	bool printLineNumbers = m_options->GetLineNumberPrinting();
+	m_config->Write("Miscellaneous/PrintLineNumbers", printLineNumbers ? "true" : "false");
 
 	m_config->Flush();
 }
@@ -2969,7 +3021,8 @@ void ChameleonWindow::SaveProjectFile()
 	}
 
 	wxMemoryOutputStream outputStream;
-	config.FlushToStream(outputStream);
+	//config.FlushToStream(outputStream);
+	config.Save(outputStream);
 
 	wxString resultContents;
 	size_t streamsize = outputStream.GetSize();
@@ -3132,24 +3185,25 @@ NetworkCallResult ChameleonWindow::CheckNetworkStatus()
 		}
 	case NET_AUTH_FAILED:
 		{
+			// If everything's still default, go ahead and ask the user for the password.
 			if(m_options->GetPassphrase() == "" &&
 				m_options->GetHostname() != "127.0.0.1" &&
 				m_options->GetUsername() != "username") 
 			{
-				wxTextEntryDialog getPW(this, "Please enter your password and try again.", "Missing Password", "", wxTE_PASSWORD | wxOK | wxCANCEL);
-				int oked = getPW.ShowModal();
-				if(oked == wxID_OK) 
+				if(AskUserForPassword())
 				{
-					m_options->SetPassphrase(getPW.GetValue());
-					return NETCALL_FAILED;
-					break;
+					return NETCALL_REDO;
 				}
+
 			}
-			wxString message = "Chameleon was unable to log you in using the current username and password.";
-			message += "\nPlease check them in the Options menu and try again.";
-			wxMessageBox(message, "Login failed", wxOK | wxICON_EXCLAMATION);
-			return NETCALL_FAILED;
-			break;
+			else
+			{
+				wxString message = "Chameleon was unable to log you in using the current username and password.";
+				message += "\nPlease check them in the Options menu and try again.";
+				wxMessageBox(message, "Login failed", wxOK | wxICON_EXCLAMATION);
+				return NETCALL_FAILED;
+			}
+
 		}
 	case NET_CONN_REFUSED:
 		{
@@ -3508,4 +3562,17 @@ void ChameleonWindow::OnSize(wxSizeEvent &event)
 
 void ChameleonWindow::OnTermResize(wxSplitterEvent &event)
 {
+}
+
+bool ChameleonWindow::AskUserForPassword()
+{
+	wxTextEntryDialog getPW(this, "Please enter your password and try again.", "Missing Password", "", wxTE_PASSWORD | wxOK | wxCANCEL);
+	int oked = getPW.ShowModal();
+	if(oked == wxID_OK) 
+	{
+		m_options->SetPassphrase(getPW.GetValue());
+		return true;
+	}
+
+	return false;
 }
