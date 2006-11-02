@@ -21,9 +21,7 @@
  */
 
 ////@begin includes
-#include "wx/wx.h"
 #include "wx/listctrl.h"
-#include "wx/statline.h"
 ////@end includes
 
 
@@ -85,22 +83,24 @@ class wxFileName;
 
 ////@begin control identifiers
 #define ID_DIALOG 10000
-#define SYMBOL_REMOTEFILEDIALOG_STYLE wxCAPTION|wxSYSTEM_MENU|wxCLOSE_BOX
-#define SYMBOL_REMOTEFILEDIALOG_TITLE _("Open/Save")
-#define SYMBOL_REMOTEFILEDIALOG_IDNAME ID_DIALOG
-#define SYMBOL_REMOTEFILEDIALOG_SIZE wxSize(440, 330)
-#define SYMBOL_REMOTEFILEDIALOG_POSITION wxPoint(0, 0)
 #define ID_PATHBOX 10002
 #define ID_LISTCTRL 10001
 #define ID_TXTFILENAME 10008
 #define ID_BUTTONOPEN 10003
 #define ID_COMBOBOX1 10004
 #define ID_BUTTONCANCEL 10005
+#define SYMBOL_REMOTEFILEDIALOG_STYLE wxCAPTION|wxSYSTEM_MENU|wxCLOSE_BOX
+#define SYMBOL_REMOTEFILEDIALOG_TITLE _("Open/Save")
+#define SYMBOL_REMOTEFILEDIALOG_IDNAME ID_DIALOG
+#define SYMBOL_REMOTEFILEDIALOG_SIZE wxSize(600, 330)
+#define SYMBOL_REMOTEFILEDIALOG_POSITION wxDefaultPosition
 ////@end control identifiers
 
-#define ID_DIALOGTOOLBAR 10099
+
+#define ID_HOMEFOLDER 10096
 #define ID_UPFOLDER 10097
 #define ID_REFRESHFOLDER 10098
+#define ID_DIALOGTOOLBAR 10099
 
 /*!
  * RemoteFileDialog class declaration
@@ -149,10 +149,16 @@ public:
 
 	void OnButtonUpFolder(wxCommandEvent& event );
 	void OnButtonRefresh(wxCommandEvent &event);
+	void OnButtonHome(wxCommandEvent &event);
 	void OnEnter(wxCommandEvent &event);
 
 ////@begin RemoteFileDialog member function declarations
 
+    /// Retrieves bitmap resources
+    wxBitmap GetBitmapResource( const wxString& name );
+
+    /// Retrieves icon resources
+    wxIcon GetIconResource( const wxString& name );
 ////@end RemoteFileDialog member function declarations
 
 	void SetNetworking(Networking* network);
@@ -179,6 +185,8 @@ private:
 
 	//wxPathFormat GetCurrentPathFormat();
 	void ItemActivated();
+
+	void SetUserHomeDir(wxString path);
 	//void 
 
 ////@begin RemoteFileDialog member variables
@@ -204,6 +212,7 @@ private:
 
 	wxFileName m_localFileNamePath;
 	wxFileName m_remoteFileNamePath;
+	wxFileName m_userHomeDir;
 	wxSortedArrayString m_currentDirs;
 	wxSortedArrayString m_currentFiles;
 	wxArrayString m_filterList;

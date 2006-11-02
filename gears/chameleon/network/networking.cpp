@@ -525,6 +525,8 @@ bool Networking::MaintainSettings() {
 		m_plinks->setLogin(newH, newU, newP); // this restarts the network
 		m_status = NET_STARTING;
 
+		m_userHomeDir = wxEmptyString;
+
 		return true;
 	}
 	//else
@@ -845,5 +847,6 @@ void Networking::onTimerTick(wxTimerEvent &e) {
 
 	m_plinks->PollTick();
 }
+
 
 

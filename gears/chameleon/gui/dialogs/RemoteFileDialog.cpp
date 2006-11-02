@@ -60,6 +60,7 @@ WX_DEFINE_OBJARRAY(ThreeDStringVector)
 #include "defaultfile.xpm"
 #include "upfolder.xpm"
 #include "refresh.xpm"
+#include "HomeHS.xpm"
 
 #include "../../common/debug.h"
 
@@ -93,6 +94,7 @@ BEGIN_EVENT_TABLE( RemoteFileDialog, wxDialog )
 
 	EVT_MENU(ID_UPFOLDER, RemoteFileDialog::OnButtonUpFolder)
 	EVT_MENU(ID_REFRESHFOLDER, RemoteFileDialog::OnButtonRefresh)
+	EVT_MENU(ID_HOMEFOLDER, RemoteFileDialog::OnButtonHome)
 	EVT_TEXT_ENTER(ID_TXTFILENAME, RemoteFileDialog::OnEnter)
 END_EVENT_TABLE()
 
@@ -111,7 +113,8 @@ RemoteFileDialog::RemoteFileDialog( wxWindow* parent, wxWindowID id, const wxStr
 
 	m_parentFrame = (ChameleonWindow*)parent;
 
-	m_currentPath.AssignDir("~");
+	//m_currentPath.AssignDir("~");
+	SetUserHomeDir("~");
 	m_openMode = true;
 
 	m_currentFilterIndex = 0;
@@ -142,12 +145,14 @@ bool RemoteFileDialog::Create( wxWindow* parent, wxWindowID id, const wxString& 
 ////@end RemoteFileDialog member initialisation
 
 ////@begin RemoteFileDialog creation
-    SetExtraStyle(wxWS_EX_BLOCK_EVENTS);
+    SetExtraStyle(GetExtraStyle()|wxWS_EX_BLOCK_EVENTS);
     wxDialog::Create( parent, id, caption, pos, size, style );
 
     CreateControls();
-    GetSizer()->Fit(this);
-    GetSizer()->SetSizeHints(this);
+    if (GetSizer())
+    {
+        GetSizer()->SetSizeHints(this);
+    }
     Centre();
 ////@end RemoteFileDialog creation
 
@@ -206,14 +211,16 @@ bool RemoteFileDialog::Create( wxWindow* parent, wxWindowID id, const wxString& 
 
 
     wxBitmap upfolder(upfolder_xpm);
-	//m_butUpFolder->SetBitmapLabel(upfolder);
 	m_toolbar->AddTool(ID_UPFOLDER, upfolder, "Go up a folder");
 
+	wxBitmap home(HomeHS_xpm);
+	m_toolbar->AddTool(ID_HOMEFOLDER, home, "Home folder");
 	
 
 	wxBitmap refresh(refresh_xpm);
-	//m_butRefresh->SetBitmapLabel(refresh);
 	m_toolbar->AddTool(ID_REFRESHFOLDER, refresh, "Refresh this folder");
+
+
 
 	m_toolbar->Realize();
 
@@ -271,70 +278,61 @@ bool RemoteFileDialog::Create( wxWindow* parent, wxWindowID id, const wxString& 
 void RemoteFileDialog::CreateControls()
 {    
 ////@begin RemoteFileDialog content construction
+    RemoteFileDialog* itemDialog1 = this;
 
-    RemoteFileDialog* item1 = this;
+    wxBoxSizer* itemBoxSizer2 = new wxBoxSizer(wxVERTICAL);
+    itemDialog1->SetSizer(itemBoxSizer2);
 
-    wxBoxSizer* item2 = new wxBoxSizer(wxVERTICAL);
-    item1->SetSizer(item2);
-    item1->SetAutoLayout(TRUE);
+    m_sizToolbar = new wxBoxSizer(wxHORIZONTAL);
+    itemBoxSizer2->Add(m_sizToolbar, 0, wxGROW|wxLEFT|wxRIGHT, 5);
 
-    wxBoxSizer* item3 = new wxBoxSizer(wxHORIZONTAL);
-    m_sizToolbar = item3;
-    item2->Add(item3, 0, wxGROW|wxLEFT|wxRIGHT, 5);
+    wxStaticText* itemStaticText4 = new wxStaticText( itemDialog1, wxID_STATIC, _("Current path:"), wxDefaultPosition, wxDefaultSize, 0 );
+    m_sizToolbar->Add(itemStaticText4, 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
 
-    wxStaticText* item4 = new wxStaticText( item1, wxID_STATIC, _("Current path:"), wxDefaultPosition, wxDefaultSize, 0 );
-    item3->Add(item4, 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
+    m_pathBox = new wxTextCtrl( itemDialog1, ID_PATHBOX, _T(""), wxDefaultPosition, wxSize(300, -1), wxTE_READONLY );
+    m_sizToolbar->Add(m_pathBox, 1, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT|wxTOP|wxFIXED_MINSIZE, 5);
 
-    wxTextCtrl* item5 = new wxTextCtrl( item1, ID_PATHBOX, _T(""), wxDefaultPosition, wxSize(300, -1), wxTE_READONLY );
-    m_pathBox = item5;
-    item3->Add(item5, 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT|wxTOP, 5);
+    m_list = new wxListCtrl( itemDialog1, ID_LISTCTRL, wxDefaultPosition, wxSize(480, 280), wxLC_LIST  );
+    itemBoxSizer2->Add(m_list, 1, wxGROW|wxALL|wxFIXED_MINSIZE, 5);
 
-    wxListCtrl* item6 = new wxListCtrl( item1, ID_LISTCTRL, wxDefaultPosition, wxSize(440, 280), wxLC_LIST  );
-    m_list = item6;
-    item2->Add(item6, 0, wxALIGN_LEFT|wxALL, 5);
+    wxBoxSizer* itemBoxSizer7 = new wxBoxSizer(wxVERTICAL);
+    itemBoxSizer2->Add(itemBoxSizer7, 0, wxGROW|wxALL, 5);
 
-    wxBoxSizer* item7 = new wxBoxSizer(wxVERTICAL);
-    item2->Add(item7, 0, wxGROW|wxALL, 5);
+    wxBoxSizer* itemBoxSizer8 = new wxBoxSizer(wxHORIZONTAL);
+    itemBoxSizer7->Add(itemBoxSizer8, 0, wxGROW|wxALL, 0);
 
-    wxBoxSizer* item8 = new wxBoxSizer(wxHORIZONTAL);
-    item7->Add(item8, 0, wxGROW|wxALL, 0);
+    wxStaticText* itemStaticText9 = new wxStaticText( itemDialog1, wxID_STATIC, _("File &name:"), wxDefaultPosition, wxSize(70, -1), 0 );
+    itemBoxSizer8->Add(itemStaticText9, 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT, 5);
 
-    wxStaticText* item9 = new wxStaticText( item1, wxID_STATIC, _("File &name:"), wxDefaultPosition, wxSize(70, -1), 0 );
-    item8->Add(item9, 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT, 5);
+    m_txtFilename = new wxTextCtrl( itemDialog1, ID_TXTFILENAME, _T(""), wxDefaultPosition, wxSize(246, -1), wxTE_PROCESS_ENTER );
+    itemBoxSizer8->Add(m_txtFilename, 1, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT|wxFIXED_MINSIZE, 5);
 
-    wxTextCtrl* item10 = new wxTextCtrl( item1, ID_TXTFILENAME, _T(""), wxDefaultPosition, wxSize(246, -1), wxTE_PROCESS_ENTER );
-    m_txtFilename = item10;
-    item8->Add(item10, 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT, 5);
+    wxBoxSizer* itemBoxSizer11 = new wxBoxSizer(wxHORIZONTAL);
+    itemBoxSizer8->Add(itemBoxSizer11, 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT|wxFIXED_MINSIZE, 10);
 
-    wxStaticLine* item11 = new wxStaticLine( item1, wxID_STATIC, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL );
-    item8->Add(item11, 0, wxGROW|wxLEFT|wxRIGHT, 10);
+    m_buttonOpen = new wxButton( itemDialog1, ID_BUTTONOPEN, _("Open"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer8->Add(m_buttonOpen, 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT, 5);
 
-    wxButton* item12 = new wxButton( item1, ID_BUTTONOPEN, _("Open"), wxDefaultPosition, wxDefaultSize, 0 );
-    m_buttonOpen = item12;
-    item8->Add(item12, 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT, 5);
+    wxBoxSizer* itemBoxSizer13 = new wxBoxSizer(wxHORIZONTAL);
+    itemBoxSizer7->Add(itemBoxSizer13, 0, wxGROW|wxALL, 0);
 
-    wxBoxSizer* item13 = new wxBoxSizer(wxHORIZONTAL);
-    item7->Add(item13, 0, wxGROW|wxALL, 0);
+    wxStaticText* itemStaticText14 = new wxStaticText( itemDialog1, wxID_STATIC, _("Files of &type:"), wxDefaultPosition, wxSize(70, -1), 0 );
+    itemBoxSizer13->Add(itemStaticText14, 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT, 5);
 
-    wxStaticText* item14 = new wxStaticText( item1, wxID_STATIC, _("Files of &type:"), wxDefaultPosition, wxSize(70, -1), 0 );
-    item13->Add(item14, 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT, 5);
-
-    wxString item15Strings[] = {
+    wxString m_comboFiletypesStrings[] = {
         _("C++ source files (*.c, *.cpp)"),
         _("C++ header files (*.h, *.hpp)"),
         _("All files (*.*)")
     };
-    wxComboBox* item15 = new wxComboBox( item1, ID_COMBOBOX1, _("C++ source files (*.c, *.cpp)"), wxDefaultPosition, wxSize(246, -1), 3, item15Strings, wxCB_READONLY );
-    m_comboFiletypes = item15;
-    item15->SetStringSelection(_("C++ source files (*.c, *.cpp)"));
-    item13->Add(item15, 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT, 5);
+    m_comboFiletypes = new wxComboBox( itemDialog1, ID_COMBOBOX1, _("C++ source files (*.c, *.cpp)"), wxDefaultPosition, wxSize(246, -1), 3, m_comboFiletypesStrings, wxCB_READONLY );
+    m_comboFiletypes->SetStringSelection(_("C++ source files (*.c, *.cpp)"));
+    itemBoxSizer13->Add(m_comboFiletypes, 1, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT, 5);
 
-    wxStaticLine* item16 = new wxStaticLine( item1, wxID_STATIC, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL );
-    item13->Add(item16, 0, wxGROW|wxLEFT|wxRIGHT, 10);
+    wxBoxSizer* itemBoxSizer16 = new wxBoxSizer(wxHORIZONTAL);
+    itemBoxSizer13->Add(itemBoxSizer16, 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT|wxFIXED_MINSIZE, 10);
 
-    wxButton* item17 = new wxButton( item1, ID_BUTTONCANCEL, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
-    m_buttonCancel = item17;
-    item13->Add(item17, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    m_buttonCancel = new wxButton( itemDialog1, ID_BUTTONCANCEL, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer13->Add(m_buttonCancel, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
 ////@end RemoteFileDialog content construction
 }
@@ -394,6 +392,7 @@ void RemoteFileDialog::OnButtonUpFolder( wxCommandEvent& event )
 	{
 		wxString currPath = m_currentPath.GetPath(false, wxPATH_UNIX);
  
+
 		// if we're not at a user's home directory, get rid of the last
 		// directory in the path
 		if(currPath != "~")
@@ -403,6 +402,13 @@ void RemoteFileDialog::OnButtonUpFolder( wxCommandEvent& event )
 	}
 	wxString path = m_currentPath.GetPath();
 	ShowDirectory(m_currentPath.GetPath(false, wxPATH_UNIX));
+}
+
+void RemoteFileDialog::OnButtonHome( wxCommandEvent& event )
+{
+	event.Skip();
+
+	ShowDirectory(m_userHomeDir.GetPath(false, wxPATH_UNIX));
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -429,7 +435,8 @@ wxString RemoteFileDialog::GetLocalFileNameAndPath()
 void RemoteFileDialog::SetNetworking(Networking* network)
 {
 	m_network = network;
-	m_currentPath.AssignDir("~");
+	//m_currentPath.AssignDir("~");
+	SetUserHomeDir("~");
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -713,6 +720,15 @@ bool RemoteFileDialog::Prepare(bool open, wxString filterString)//FileDisplayTyp
 
 	//wxPathFormat format = GetCurrentPathFormat();
 
+	
+
+	wxString userHomeDir;
+	if(!m_network->GetHomeDirPath(userHomeDir))
+	{
+		return false;
+	}
+	SetUserHomeDir(userHomeDir);
+
 	wxString path = m_currentPath.GetPath(false, wxPATH_UNIX);
 	m_txtFilename->SetValue(wxEmptyString);
 	return ShowDirectory(path);
@@ -866,4 +882,42 @@ void RemoteFileDialog::OnButtonRefresh(wxCommandEvent &event)
 void RemoteFileDialog::OnEnter(wxCommandEvent &event)
 {
 	ItemActivated();
+}
+
+void RemoteFileDialog::SetUserHomeDir( wxString newHomeDir )
+{
+	wxString currentHomeDir = m_userHomeDir.GetPath(false, wxPATH_UNIX);
+
+	if(newHomeDir != currentHomeDir)
+	{
+		m_currentPath.SetPath(newHomeDir, wxPATH_UNIX);
+	}
+	
+	m_userHomeDir.SetPath(newHomeDir, wxPATH_UNIX);
+}
+
+/*!
+ * Get bitmap resources
+ */
+
+wxBitmap RemoteFileDialog::GetBitmapResource( const wxString& name )
+{
+    // Bitmap retrieval
+////@begin RemoteFileDialog bitmap retrieval
+    wxUnusedVar(name);
+    return wxNullBitmap;
+////@end RemoteFileDialog bitmap retrieval
+}
+
+/*!
+ * Get icon resources
+ */
+
+wxIcon RemoteFileDialog::GetIconResource( const wxString& name )
+{
+    // Icon retrieval
+////@begin RemoteFileDialog icon retrieval
+    wxUnusedVar(name);
+    return wxNullIcon;
+////@end RemoteFileDialog icon retrieval
 }
