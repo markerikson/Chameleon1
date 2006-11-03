@@ -34,6 +34,7 @@
 
 #include "RemoteFileDialog.h"
 #include "../ChameleonWindow.h"
+#include "../IconManager.h"
 #include "../../network/networking.h"
 #include "../../common/datastructures.h"
 
@@ -58,10 +59,12 @@ WX_DEFINE_OBJARRAY(ThreeDStringVector)
 #include "closedfolder16x1632bpp.xpm"
 #include "openfolder16x1632bpp.xpm"
 #include "defaultfile.xpm"
+#include "doc.xpm"
+
 #include "upfolder.xpm"
 #include "refresh.xpm"
 #include "HomeHS.xpm"
-#include "doc.xpm"
+
 
 #include "../../common/debug.h"
 
@@ -157,6 +160,7 @@ bool RemoteFileDialog::Create( wxWindow* parent, wxWindowID id, const wxString& 
     Centre();
 ////@end RemoteFileDialog creation
 
+	/*
 	wxImageList* images = new wxImageList(16, 16);
 	wxImageList* transferImageList = new wxImageList(16, 16);
 
@@ -204,7 +208,7 @@ bool RemoteFileDialog::Create( wxWindow* parent, wxWindowID id, const wxString& 
 	wxBitmap bmText(doc_xpm);
 	images->Add(bmText);
 	transferImageList->Add(bmText);
-
+	*/
 	
 
 	m_toolbar = new wxToolBar(this, ID_DIALOGTOOLBAR, wxDefaultPosition, wxDefaultSize, 
@@ -229,6 +233,8 @@ bool RemoteFileDialog::Create( wxWindow* parent, wxWindowID id, const wxString& 
 
 	m_toolbar->Realize();
 
+
+	/*
 	m_list->AssignImageList(images, wxIMAGE_LIST_SMALL);
 
 
@@ -270,7 +276,7 @@ bool RemoteFileDialog::Create( wxWindow* parent, wxWindowID id, const wxString& 
 	dc.SetPen(wxNullPen);
 
 	((ChameleonWindow*) parent)->PassImageList(transferImageList);
-	
+	*/
 
 	
     return TRUE;
@@ -507,24 +513,34 @@ void RemoteFileDialog::FillListView()
 
 	//TwoDStringVector dsv = m_fileExtensionList[m_currentFilterType];
 	
-	wxArrayString currentExtensionList = m_fileExtensionList[m_currentFilterIndex];
+	wxArrayString currentFilterExtensions = m_fileExtensionList[m_currentFilterIndex];
 	
 	wxSortedArrayString currentFileSet;
-	
-	for(int j = 0; j < currentExtensionList.Count(); j++)
+
+	int currentFileIconIndex = 0;
+
+	for(int i = 0; i < sortedFiles.GetCount(); i++)
 	{
-		wxString currentExtensionType = currentExtensionList[j];
+		wxFileName currentName(sortedFiles[i]);
+		wxString currentFileExtension = currentName.GetExt();
 
-		int currentExtensionIconNumber;
+		if(	(currentFilterExtensions[0] == "*.*") ||  
+			(currentFilterExtensions.Index(currentFileExtension) != wxNOT_FOUND))
+		{
+			wxString file = currentName.GetFullName();
+			m_currentFiles.Add(file);
+			currentFileIconIndex = m_iconManager->GetIconIndex(currentFileExtension);
+			m_list->InsertItem(m_list->GetItemCount(), file, currentFileIconIndex);
+		}
+	}
+	
 
-		if(m_iconExtensionMapping.find(currentExtensionType) != m_iconExtensionMapping.end())
-		{
-			currentExtensionIconNumber = m_iconExtensionMapping[currentExtensionType];
-		}
-		else
-		{
-			currentExtensionIconNumber = m_iconExtensionMapping["DEFAULTFILEEXTENSION"];
-		}
+	/*
+	for(int j = 0; j < currentFilterExtensions.Count(); j++)
+	{
+		wxString currentExtensionType = currentFilterExtensions[j];
+
+		int currentExtensionIconNumber = 0; //m_iconManager->GetIconIndex(currentExtensionType)
 
 		for(int i = 0; i < sortedFiles.GetCount(); i++)
 		{
@@ -533,6 +549,7 @@ void RemoteFileDialog::FillListView()
 			if( (currentFileExtension == currentExtensionType) ||
 				(currentExtensionType == "*.*"))
 			{
+				currentExtensionIconNumber = m_iconManager->GetIconIndex(currentFileExtension);
 				wxString file = currentName.GetFullName();
 				m_currentFiles.Add(file);
 				currentFileSet.Add(file);
@@ -545,7 +562,7 @@ void RemoteFileDialog::FillListView()
 		}
 		currentFileSet.Clear();
 	}
-
+	*/
 
 	m_pathBox->SetSelection(0,0);
 	m_list->SetFocus();
@@ -925,4 +942,10 @@ wxIcon RemoteFileDialog::GetIconResource( const wxString& name )
     wxUnusedVar(name);
     return wxNullIcon;
 ////@end RemoteFileDialog icon retrieval
+}
+
+void RemoteFileDialog::SetIconManager(IconManager* iconManager)
+{
+	m_iconManager = iconManager;
+	m_list->SetImageList(m_iconManager->GetImageList(), wxIMAGE_LIST_SMALL);
 }

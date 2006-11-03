@@ -57,6 +57,7 @@ PlinkConnect::PlinkConnect(wxString plinkApp, wxString host, wxString user, wxSt
 {
 	m_plinkApp = plinkApp; // essentially this is assumed accurate, and can't change
 	m_isConnected = false;
+	m_synchronous = false;
 
 #ifdef _PC_INTERNAL_TIMER_
 	m_timer.SetOwner(this);
@@ -344,14 +345,21 @@ wxString PlinkConnect::executeSyncCommand(wxString command)
 	// executeCommand spawns a new process, so my process is the next-to-last one
 	ProcessInfo* p = (ProcessInfo*)m_processes.GetLast()->GetPrevious()->GetData();
 
+	int i = 1;
+	m_synchronous = true;
 	while(p->state == PC_BUSY || p->state == PC_EXECUTING) {
 		// Perhaps this should terminate after an amount of time
 		wxMilliSleep(250);
+		if(i % 4 == 0)
+		{
+			wxLogDebug("Synchronous network operation: %d (command: %s)", i / 4, command);
+		}
 		wxSafeYield();
 	}
 
 	terminateConnection(p);
 
+	m_synchronous = false;
 	return p->outputBuf;
 }
 
@@ -643,6 +651,11 @@ void PlinkConnect::ForceKillProcess(wxTextOutputStream* w)
 		p->owner = NULL;
 		terminateConnection(p);
 	}
+}
+
+bool PlinkConnect::DoingSynchronousOperation()
+{
+	return m_synchronous;
 }
 
 

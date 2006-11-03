@@ -73,6 +73,7 @@ class wxMenu;
 class wxTreeItemId;
 class wxImageList;
 class wxFileName;
+class IconManager;
 
 
 #include "../../common/datastructures.h"
@@ -176,6 +177,8 @@ public:
 	void FillListView();
 	void LoadTestData();
 
+	void SetIconManager(IconManager* iconManager);
+
 	//int GetIconIndex(wxString extension);
 
     /// Should we show tooltips?
@@ -223,6 +226,7 @@ private:
 
 	ChameleonWindow* m_parentFrame;
 	Networking* m_network;
+	IconManager* m_iconManager;
 };
 
 #endif

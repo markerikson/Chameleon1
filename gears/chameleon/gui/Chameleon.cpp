@@ -34,6 +34,7 @@
 #include "../common/DebugEvent.h"
 #include "wxssh.h"
 #include "../compiler/compilerevent.h"
+#include "IconManager.h"
 
 #include "newfile.xpm"
 #include "openremote.xpm"
@@ -285,14 +286,27 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	m_projectTree = new wxTreeCtrl(m_splitProjectEditor, ID_PROJECTTREE);
 	m_projectTree->Hide();
 
+	m_iconManager = new IconManager();
+	
+	wxImageList* fileIcons = m_iconManager->GetImageList();
+	// Sets the list, but doesn't take control of it away
+	m_projectTree->SetImageList(fileIcons);
+
+	int idxFolderClosed = m_iconManager->GetIconIndex("FOLDERCLOSED");
+	int idxFolderOpen = m_iconManager->GetIconIndex("FOLDEROPEN");
+
 	m_remoteFileDialog = new RemoteFileDialog(this, ID_REMOTEFILEDIALOG);
 	m_remoteFileDialog->SetNetworking(m_network);
 
-	wxTreeItemId rootNode = m_projectTree->AddRoot("No project open", ICON_FOLDERCLOSED, ICON_FOLDEROPEN);
-	m_projectFileFolders[0] = m_projectTree->AppendItem(rootNode, "Source files", ICON_FOLDERCLOSED, ICON_FOLDEROPEN);
-	m_projectFileFolders[1] = m_projectTree->AppendItem(rootNode, "Header files", ICON_FOLDERCLOSED, ICON_FOLDEROPEN);
-	m_projectFileFolders[2] = m_projectTree->AppendItem(rootNode, "Libraries", ICON_FOLDERCLOSED, ICON_FOLDEROPEN);
-	m_projectFileFolders[3] = m_projectTree->AppendItem(rootNode, "Other files", ICON_FOLDERCLOSED, ICON_FOLDEROPEN);
+	// This also sets the imagelist for the listview
+	m_remoteFileDialog->SetIconManager(m_iconManager);
+
+
+	wxTreeItemId rootNode = m_projectTree->AddRoot("No project open", idxFolderClosed, idxFolderOpen);
+	m_projectFileFolders[0] = m_projectTree->AppendItem(rootNode, "Source files", idxFolderClosed, idxFolderOpen);
+	m_projectFileFolders[1] = m_projectTree->AppendItem(rootNode, "Header files", idxFolderClosed, idxFolderOpen);
+	m_projectFileFolders[2] = m_projectTree->AppendItem(rootNode, "Libraries", idxFolderClosed, idxFolderOpen);
+	m_projectFileFolders[3] = m_projectTree->AppendItem(rootNode, "Other files", idxFolderClosed, idxFolderOpen);
 
 	m_currentPage = 0;
 	m_fileNum = 0;
@@ -3119,7 +3133,8 @@ void ChameleonWindow::LoadFilesIntoProjectTree(wxString configPath,  FileFilterT
 		if(fileName != wxEmptyString)
 		{
 			wxFileName newFileName(fileName);
-			int iconNum = m_extensionMappings[newFileName.GetExt()];
+			//int iconNum = m_extensionMappings[newFileName.GetExt()];
+			int iconNum = m_iconManager->GetIconIndex(newFileName.GetExt());
 
 			FileNameTreeData* data = new FileNameTreeData();
 			data->filename = newFileName.GetFullPath(currentPathFormat);

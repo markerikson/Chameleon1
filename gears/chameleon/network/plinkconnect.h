@@ -39,6 +39,7 @@ class PlinkConnect : public wxEvtHandler {
 		void setLogin(wxString host, wxString user, wxString pass);
 		bool getIsConnected();
 		bool getIsSettled();
+		bool DoingSynchronousOperation();
 		wxString getMessage() { return m_message; }
 
 	private:
@@ -56,6 +57,7 @@ class PlinkConnect : public wxEvtHandler {
 		wxString m_plinkApp, m_host, m_user, m_pass;
 		wxString m_message;
 		bool m_isConnected; // overall Plink-Network status
+		bool m_synchronous;
 		ProcessInfoList m_processes;
 
 

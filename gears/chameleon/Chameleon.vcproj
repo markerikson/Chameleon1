@@ -215,6 +215,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\gui\IconManager.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\gui\dialogs\OptionsDialog.cpp"
 					>
 				</File>
@@ -362,6 +366,10 @@
 				</File>
 				<File
 					RelativePath=".\editor\editor.h"
+					>
+				</File>
+				<File
+					RelativePath=".\gui\IconManager.h"
 					>
 				</File>
 				<File

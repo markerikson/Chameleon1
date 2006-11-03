@@ -269,7 +269,10 @@ bool Networking::SSHGetHomeDirPath(wxString &path) {
 //Private:
 bool Networking::SSHGetFileContents(wxString file, wxString &contents)
 {
+	file.Replace(" ", "\\ ");
 	wxString cmd = "cat " + file;
+
+	
 	wxString output;
 
 	if( SSHExecSyncCommand(cmd, output) ) {
@@ -850,3 +853,7 @@ void Networking::onTimerTick(wxTimerEvent &e) {
 
 
 
+bool Networking::DoingSynchronousOperation()
+{
+	return m_plinks->DoingSynchronousOperation();
+}

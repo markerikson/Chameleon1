@@ -30,6 +30,7 @@ class Networking : public wxEvtHandler {
 
 		// Methods:
 		NetworkStatus GetStatus();
+		bool DoingSynchronousOperation();
 		wxString GetStatusDetails();
 		void SSHCacheFingerprint();
 		void PingOptions();

@@ -55,6 +55,7 @@ class VariableWatchPanel;
 class wxTimer;
 class wxListCtrl;
 class CompilerOutputPanel;
+class IconManager;
 
 
 //----------------------------------------------------------------------
@@ -233,6 +234,7 @@ private:
 	/*! The currently open multi-file project */
 	ProjectInfo* m_projMultiFiles;
 	Debugger* m_debugger;
+	IconManager* m_iconManager;
 
 	int m_numPages;
 	/*! Tracks the active editor tab */
