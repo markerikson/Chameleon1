@@ -526,6 +526,14 @@ void ChameleonEditor::SetFilename(wxFileName filename, bool fileIsRemote)
 			{
 				oldFilterType = FILE_SOURCES;
 			}
+			else if(oldExtension.StartsWith("txt"))
+			{
+				oldFilterType = FILE_NONSOURCE;
+			}
+			else
+			{
+				oldFilterType = FILE_NONSOURCE;
+			}
 
 			m_project->RemoveFileFromProject(oldFileName, oldFilterType);
 		}
@@ -542,6 +550,14 @@ void ChameleonEditor::SetFilename(wxFileName filename, bool fileIsRemote)
 			else if(newExtension.StartsWith("c"))
 			{
 				newFilterType = FILE_SOURCES;
+			}
+			else if(newExtension.StartsWith("txt"))
+			{
+				newFilterType = FILE_NONSOURCE;
+			}
+			else
+			{
+				newFilterType = FILE_NONSOURCE;
 			}
 			m_project->AddFileToProject(newFileName, newFilterType);
 		}		

@@ -221,7 +221,7 @@ private:
 	wxFindReplaceData m_findData;
 
 	/*! The IDs for the file type folders in the project tree */
-	wxTreeItemId m_projectFileFolders[3];
+	wxTreeItemId m_projectFileFolders[4];
 	/*! The last clicked item in the project tree */
 	wxTreeItemId m_clickedTreeItem;
 	/*! The file type that corresponds to the last clicked project folder */

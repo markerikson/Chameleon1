@@ -292,6 +292,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	m_projectFileFolders[0] = m_projectTree->AppendItem(rootNode, "Source files", ICON_FOLDERCLOSED, ICON_FOLDEROPEN);
 	m_projectFileFolders[1] = m_projectTree->AppendItem(rootNode, "Header files", ICON_FOLDERCLOSED, ICON_FOLDEROPEN);
 	m_projectFileFolders[2] = m_projectTree->AppendItem(rootNode, "Libraries", ICON_FOLDERCLOSED, ICON_FOLDEROPEN);
+	m_projectFileFolders[3] = m_projectTree->AppendItem(rootNode, "Other files", ICON_FOLDERCLOSED, ICON_FOLDEROPEN);
 
 	m_currentPage = 0;
 	m_fileNum = 0;
@@ -1580,7 +1581,7 @@ bool ChameleonWindow::SaveFile(bool saveas, bool askLocalRemote, FileFilterType 
 	// we must be saving a new project
 	else
 	{
-		fileContents = "[Headers]\n\n[Sources]\n\n[Libraries]\n";
+		fileContents = "[Headers]\n\n[Sources]\n\n[Libraries]\n\n[Other]";
 	}
 
 	if(!m_remoteMode)
@@ -1724,14 +1725,16 @@ bool ChameleonWindow::SaveFile(bool saveas, bool askLocalRemote, FileFilterType 
 			CloseProjectFile();
 		}
 
-		m_projMultiFiles = new ProjectInfo();
+		m_projMultiFiles = new ProjectInfo(false);
 		m_projMultiFiles->SetRemote(m_remoteMode);
 
 		wxFileName projectFile(filename);
 		m_projMultiFiles->SetProjectFile(projectFile);
+		m_projMultiFiles->SetProjectName(projectFile.GetFullName());
 
 		wxTreeItemId rootItem = m_projectTree->GetRootItem();
 		m_projectTree->SetItemText(rootItem, m_projMultiFiles->GetProjectName());
+
 	}
 
 	return true;
@@ -2019,6 +2022,13 @@ void ChameleonWindow::UpdateStatusBar()
 	if(editable != m_statusBar->GetStatusText(2))
 	{
 		m_statusBar->SetStatusText(editable, 2);
+	}
+
+	bool synchronousOp = m_network->DoingSynchronousOperation();
+
+	if(synchronousOp)
+	{
+		wxLogDebug("UI aware of synchronous op");
 	}
 
 	wxString netStatus = m_network->GetStatusDetails();
@@ -2671,6 +2681,11 @@ void ChameleonWindow::OnTreeItemRightClick(wxTreeEvent& event)
 			m_projectSelectedFolderType = FILE_LIBRARIES;
 			label = "Add library";
 		}
+		else if(m_clickedTreeItem == m_projectFileFolders[3])
+		{
+			m_projectSelectedFolderType = FILE_NONSOURCE;
+			label = "Add non-source file";
+		}
 
 		popupMenu.Append(ID_PROJECT_ADDFILE, label);
 	}
@@ -2706,6 +2721,10 @@ void ChameleonWindow::OnTreeItemRightClick(wxTreeEvent& event)
 		else if(parentItem == m_projectFileFolders[2])
 		{
 			m_projectSelectedFolderType = FILE_LIBRARIES;
+		}
+		else if(parentItem == m_projectFileFolders[3])
+		{
+			m_projectSelectedFolderType = FILE_NONSOURCE;
 		}
 
 		popupMenu.Append(ID_PROJECT_REMOVEFILE, "Remove file from project");
@@ -2801,6 +2820,7 @@ void ChameleonWindow::OpenProjectFile(bool isRemote)
 	LoadFilesIntoProjectTree("/Sources", FILE_SOURCES, m_projectFileFolders[0], config, currentPathFormat);
 	LoadFilesIntoProjectTree("/Headers", FILE_HEADERS, m_projectFileFolders[1], config, currentPathFormat);
 	LoadFilesIntoProjectTree("/Libraries", FILE_LIBRARIES, m_projectFileFolders[2], config, currentPathFormat);
+	LoadFilesIntoProjectTree("/Other", FILE_NONSOURCE, m_projectFileFolders[3], config, currentPathFormat);
 
 	m_projectTree->Thaw();
 }
@@ -2889,8 +2909,11 @@ void ChameleonWindow::OnTreeItemActivated(wxTreeEvent &event)
 	{
 		wxTreeItemId parentItem = m_projectTree->GetItemParent(item);
 
-		if( (parentItem == m_projectFileFolders[0]) ||
-			(parentItem == m_projectFileFolders[1]) )
+		//if( (parentItem == m_projectFileFolders[0]) ||
+		//	(parentItem == m_projectFileFolders[1]) )
+
+		// allow opening anything but .lib files
+		if(parentItem != m_projectFileFolders[2])
 		{
 			FileNameTreeData* data = static_cast <FileNameTreeData* > (m_projectTree->GetItemData(item));
 			
@@ -2900,7 +2923,7 @@ void ChameleonWindow::OnTreeItemActivated(wxTreeEvent &event)
 
 			OpenSourceFile(filesToOpen);
 		}
-		else if(parentItem == m_projectFileFolders[2])
+		else// if(parentItem == m_projectFileFolders[2])
 		{
 			wxMessageBox("Only source files can be opened", "Chameleon", wxOK | wxICON_INFORMATION);
 			return;
@@ -2966,9 +2989,11 @@ void ChameleonWindow::CloseProjectFile(bool canUserCancel)
 
 	SaveProjectFile();
 	
-	m_projectTree->DeleteChildren(m_projectFileFolders[0]);
-	m_projectTree->DeleteChildren(m_projectFileFolders[1]);
-	m_projectTree->DeleteChildren(m_projectFileFolders[2]);
+	// Clear out all items in the project tree
+	for(int i = 0; i < 4; i++)
+	{
+		m_projectTree->DeleteChildren(m_projectFileFolders[i]);
+	}
 
 	m_projectTree->SetItemText(m_projectTree->GetRootItem(), "No project");
 
@@ -3020,6 +3045,16 @@ void ChameleonWindow::SaveProjectFile()
 		config.Write(libraryName, relativeName.GetFullPath(currentPathFormat));
 	}
 
+	config.SetPath("/Other");
+	wxArrayString other = m_projMultiFiles->GetNonSources();
+	for(size_t i = 0; i < other.Count(); i++)
+	{
+		wxString otherName;
+		otherName << (i + 1);
+		wxFileName relativeName(other[i]);
+		config.Write(otherName, relativeName.GetFullPath(currentPathFormat));
+	}
+
 	wxMemoryOutputStream outputStream;
 	//config.FlushToStream(outputStream);
 	config.Save(outputStream);
@@ -3029,7 +3064,7 @@ void ChameleonWindow::SaveProjectFile()
 
 	if(streamsize == 0)
 	{
-		resultContents = "[Headers]\n\n[Sources]\n\n[Libraries]\n";
+		resultContents = "[Headers]\n\n[Sources]\n\n[Libraries]\n\n[Other]";
 	}
 	else
 	{

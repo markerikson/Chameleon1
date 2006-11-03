@@ -61,6 +61,7 @@ WX_DEFINE_OBJARRAY(ThreeDStringVector)
 #include "upfolder.xpm"
 #include "refresh.xpm"
 #include "HomeHS.xpm"
+#include "doc.xpm"
 
 #include "../../common/debug.h"
 
@@ -178,8 +179,7 @@ bool RemoteFileDialog::Create( wxWindow* parent, wxWindowID id, const wxString& 
 	transferImageList->Add(openfolder);
 	
 
-	m_iconExtensionMapping["c"] = images->GetImageCount();
-	
+	m_iconExtensionMapping["c"] = images->GetImageCount();	
 	wxBitmap bmStandardC(c_xpm);
 	images->Add(bmStandardC);
 	transferImageList->Add(bmStandardC);
@@ -199,6 +199,11 @@ bool RemoteFileDialog::Create( wxWindow* parent, wxWindowID id, const wxString& 
 	wxBitmap bmLib(lib_xpm);
 	images->Add(bmLib);
 	transferImageList->Add(bmLib);
+
+	m_iconExtensionMapping["txt"] = images->GetImageCount();
+	wxBitmap bmText(doc_xpm);
+	images->Add(bmText);
+	transferImageList->Add(bmText);
 
 	
 

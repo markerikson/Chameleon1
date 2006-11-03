@@ -30,12 +30,14 @@ public:
 	wxArrayString GetHeaders() { return m_headerFiles; }
 	wxArrayString GetSources() { return m_sourceFiles; }
 	wxArrayString GetLibraries() { return m_libraryFiles; }
+	wxArrayString GetNonSources() {return m_nonSourceFiles; }
 	EditorPointerArray GetEditors() { return m_edPointers; }
 	bool IsRemote() { return m_isRemote; }
 	bool IsSingleFile() { return m_isSingleFile; }
 	bool IsCompiled() { return m_isCompiled; }
 	bool IsBeingCompiled() { return m_isBeingCompiled; }
 	bool IsReadOnly() { return m_isReadOnly; }
+	bool IsCompilable();
 	wxString GetExecutableFileName() { return m_executableName.GetFullPath(wxPATH_UNIX); }
 	wxString GetProjectName();
 	wxFileName GetProjectFile() { return m_projectFile; }
@@ -44,9 +46,11 @@ public:
 	void SetHeaders(wxArrayString headers) {m_headerFiles = headers; }
 	void SetSources(wxArrayString sources) {m_sourceFiles = sources; }
 	void SetLibraries(wxArrayString libraries) {m_libraryFiles = libraries; }
+	void SetNonSources(wxArrayString nonSources) {m_nonSourceFiles = nonSources; }
 	void SetRemote(bool remote) {m_isRemote = remote; }
 	void SetSingleFile(bool singleFile) { m_isSingleFile = singleFile; }
 	void SetCompiled(bool compiled) { m_isCompiled = compiled; }
+	//void SetCompilable(bool compilable) {m_isCompilable = compilable; }
 	void SetBeingCompiled(bool compiling);
 	void SetProjectName(wxString projname) {m_projectName = projname; }
 	void SetProjectFile(wxFileName projfile);
@@ -60,10 +64,14 @@ private:
 	wxArrayString m_headerFiles;
 	wxArrayString m_sourceFiles;
 	wxArrayString m_libraryFiles;
+	wxArrayString m_nonSourceFiles;
 
 	BoolArray m_headersEnabled;
 	BoolArray m_sourcesEnabled;
 	BoolArray m_librariesEnabled;
+	// Don't need to enable non-source files cause, well, they're non-source files.
+	// But, to keep code simpler, one's included here anyway
+	BoolArray m_nonSourcesEnabled;
 
 	EditorPointerArray m_edPointers;
 
@@ -73,6 +81,7 @@ private:
 	bool m_isCompiled;
 	bool m_isBeingCompiled;
 	bool m_isReadOnly;
+	bool m_isCompilable;
 
 	wxString m_projectName; // not specifically the prj's file name
 	wxFileName m_projectFile;

@@ -20,6 +20,7 @@ ProjectInfo::ProjectInfo(bool singleFile /* = true */)
 	// in fact, it could almost go in the constructor...
 	m_isRemote = true;
 	m_isBeingCompiled = false;
+	m_isCompilable = false;
 	m_projectName = "Chameleon"; // <-- ha ha, just a default
 
 	if(singleFile) {
@@ -114,6 +115,10 @@ bool ProjectInfo::FileExistsInProject(wxString filename)
 	{
 		fileInProject = true;
 	}
+	if(m_nonSourceFiles.Index(filename) != -1)
+	{
+		fileInProject = true;
+	}
 
 	return fileInProject;
 }
@@ -138,6 +143,8 @@ wxArrayString* ProjectInfo::SelectStringArray(FileFilterType filterType)
 		return &m_headerFiles;
 	case FILE_LIBRARIES:
 		return &m_libraryFiles;
+	case FILE_NONSOURCE:
+		return &m_nonSourceFiles;
 	}
 	// shouldn't ever get here, just eliminating the "not all code paths
 	// return a value" warning
@@ -164,6 +171,8 @@ BoolArray* ProjectInfo::SelectBoolArray(FileFilterType filterType)
 		return &m_headersEnabled;
 	case FILE_LIBRARIES:
 		return &m_librariesEnabled;
+	case FILE_NONSOURCE:
+		return &m_nonSourcesEnabled;
 	}
 	// shouldn't ever get here
 	return NULL;
@@ -345,4 +354,11 @@ void ProjectInfo::SetBeingCompiled(bool compiling)
 {
 	m_isBeingCompiled = compiling;
 	MakeReadOnly(compiling);
+}
+
+
+bool ProjectInfo::IsCompilable()
+{
+	wxArrayString enabledSources = GetSourcesToBuild();
+	return (enabledSources.GetCount() > 0);
 }
