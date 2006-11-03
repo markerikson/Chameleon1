@@ -1691,7 +1691,7 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 		 keepParsing = false;
 
 	//step parsing RegEx
-	wxRegEx reCase1 = " at (([[:alnum:]]|[[:blank:]]|\\.|/)+):([[:digit:]]+)";
+	wxRegEx reCase1 = " at (([[:alnum:]]|[[:blank:]]|\\.|/|_)+):([[:digit:]]+)";
 	// needs the wxRE_ADVANCED in order to work properly, so can't just
 	// assign this one as if it were a string
 	wxRegEx reCase2("(\\n|^)(\\d+)[ \\t]+", wxRE_ADVANCED);
@@ -1711,7 +1711,7 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 	data.Add(tempHold);
 	
 	//~~DEBUG CODE~~//
-	//wxLogDebug("DB output: %s", tempHold);
+	wxLogDebug("DB output: %s", tempHold);
 
 	//I don't think this code is effectual anymore... -B
 	//REVISED: This code here is VITAL: DO NOT REMOVE unless you improve it -B

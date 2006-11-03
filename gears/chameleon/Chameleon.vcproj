@@ -41,7 +41,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/EHa"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;C:\toolkits\wxWidgets-2.6.3\include&quot;;&quot;C:\toolkits\wxWidgets-2.6.3\contrib\include&quot;;&quot;C:\toolkits\wxWidgets-2.6.3\lib\vc_lib\mswd&quot;"
+				AdditionalIncludeDirectories=""
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;__WXMSW__;WINVER=0x0400;__WXDEBUG__;_X86_;$(NOINHERIT)"
 				StringPooling="true"
 				MinimalRebuild="true"

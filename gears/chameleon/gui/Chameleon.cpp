@@ -413,6 +413,7 @@ ChameleonWindow::~ChameleonWindow()
 	delete m_options;
 	delete m_debugger;
 	delete m_network;	
+	delete m_iconManager;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1335,6 +1336,7 @@ wxArrayString ChameleonWindow::OpenFile(FileFilterType filterType)
 	{
 		SetStatusText("Doing network operation...", 3);
 
+		wxBusyCursor busyCursor;
 		if(m_remoteFileDialog->Prepare(true, filterString))
 		{
 			int result = m_remoteFileDialog->ShowModal();
