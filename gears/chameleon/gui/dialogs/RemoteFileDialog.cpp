@@ -521,6 +521,8 @@ void RemoteFileDialog::FillListView()
 
 	for(int i = 0; i < sortedFiles.GetCount(); i++)
 	{
+		wxLogNull disableLogging;
+
 		wxFileName currentName(sortedFiles[i]);
 		wxString currentFileExtension = currentName.GetExt();
 

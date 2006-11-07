@@ -131,7 +131,9 @@ ChameleonEditor::ChameleonEditor( ChameleonWindow *mframe,
 
     this->EmptyUndoBuffer();
 
+	m_bNewFile = true;
 	UpdateSyntaxHighlighting();
+	m_bNewFile = false;
 
 	this->MarkerDefine(MARKER_BREAKPOINT, wxSTC_MARK_CIRCLE);
 	this->MarkerSetBackground(MARKER_BREAKPOINT, wxColour("red"));
@@ -471,7 +473,10 @@ void ChameleonEditor::SetLocalFileNameAndPath(wxString path, wxString name)
 //////////////////////////////////////////////////////////////////////////////
 void ChameleonEditor::UpdateSyntaxHighlighting()
 {
-	if( m_options->GetPerms()->isEnabled(PERM_SYNTAXHIGHLIGHT) )
+	wxString filename = GetFileNameAndPath();
+
+	if( m_options->GetPerms()->isEnabled(PERM_SYNTAXHIGHLIGHT) &&
+		( m_bNewFile || m_project->GetFileType(filename) != FILE_NONSOURCE))
 	{
 		this->SetLexer(wxSTC_LEX_CPP);
 

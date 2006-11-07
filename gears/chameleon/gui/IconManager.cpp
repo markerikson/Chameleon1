@@ -8,6 +8,7 @@
 #include "dialogs/defaultfile.xpm"
 #include "dialogs/closedfolder16x1632bpp.xpm"
 #include "dialogs/openfolder16x1632bpp.xpm"
+#include "dialogs/exe.xpm"
 
 
 IconManager::IconManager()
@@ -40,6 +41,12 @@ IconManager::IconManager()
 
 	AddIconToList("txt");
 
+	wxBitmap exe(exe_xpm);
+	m_iconExtensionMapping["exe"] = m_images->GetImageCount();
+
+	// we'll assume any .out files are also executable
+	m_iconExtensionMapping["out"] = m_images->GetImageCount();
+	m_images->Add(exe);
 }
 
 IconManager::~IconManager()
@@ -62,11 +69,21 @@ bool IconManager::AddIconToList(wxString iconInfo)
 	bool result = false;
 	if(fileType->GetIcon(&iconLocation))
 	{
-		wxIcon fileIcon(iconLocation);
-		
-		fileIcon.SetHeight(16);
-		fileIcon.SetWidth(16);
-		fileIcon.SetDepth(32);
+		wxIcon fileIcon;
+
+		wxString fullname = iconLocation.GetFileName();
+
+		if(fullname == wxEmptyString || fullname == "%1")
+		{
+			return false;
+		}
+
+		if ( iconLocation.GetIndex() )
+		{
+			fullname << _T(';') << iconLocation.GetIndex();
+		}
+
+		fileIcon.LoadFile(fullname, wxBITMAP_TYPE_ICO, 16, 16);
 
 		int newIconIndex = m_images->GetImageCount();
 		m_images->Add(fileIcon);

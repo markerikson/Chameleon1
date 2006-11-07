@@ -42,6 +42,7 @@ public:
 	wxString GetProjectName();
 	wxFileName GetProjectFile() { return m_projectFile; }
 	wxString GetProjectBasePath();
+	FileFilterType GetFileType(wxString filename);
 
 	void SetHeaders(wxArrayString headers) {m_headerFiles = headers; }
 	void SetSources(wxArrayString sources) {m_sourceFiles = sources; }

@@ -1366,6 +1366,18 @@ wxArrayString ChameleonWindow::OpenFile(FileFilterType filterType)
 	}
 	else
 	{
+		wxString password = m_options->GetPassphrase();
+		if(password.IsEmpty())
+		{
+			bool passwordEntered = AskUserForPassword();
+			if(!passwordEntered)
+			{
+				return false;
+			}
+
+			m_network->GetStatus();
+		}
+
 		SetStatusText("Doing network operation...", 3);
 
 		wxBusyCursor busyCursor;
@@ -1510,6 +1522,8 @@ void ChameleonWindow::OpenSourceFile (wxArrayString fnames)
 		{
 			firstPageNr = m_currentPage;
 		}
+
+		m_currentEd->UpdateSyntaxHighlighting();
 	}
 
 	// show the active tab, new or otherwise
@@ -1690,6 +1704,18 @@ bool ChameleonWindow::SaveFile(bool saveas, bool askLocalRemote, FileFilterType 
 	else
 	{
 		wxString remotePath, remoteFile;
+
+		wxString password = m_options->GetPassphrase();
+		if(password.IsEmpty())
+		{
+			bool passwordEntered = AskUserForPassword();
+			if(!passwordEntered)
+			{
+				return false;
+			}
+
+			m_network->GetStatus();
+		}
 
 		if(doSaveAs)
 		{

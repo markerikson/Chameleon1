@@ -26,14 +26,6 @@
 #include "AboutChameleonDialog.h"
 #include "../../common/verinfo.h"
 
-#ifdef __WXMSW__
-#include <wx/msw/private.h>
-#endif
-
-
-//extern wxString chameleonVersionString;
-
-
 ////@begin XPM images
 #include "chamlogo_1.xpm"
 #include "team_1.xpm"

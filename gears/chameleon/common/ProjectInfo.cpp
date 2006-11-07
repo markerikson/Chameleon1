@@ -362,3 +362,27 @@ bool ProjectInfo::IsCompilable()
 	wxArrayString enabledSources = GetSourcesToBuild();
 	return (enabledSources.GetCount() > 0);
 }
+
+FileFilterType ProjectInfo::GetFileType(wxString filename)
+{
+	FileFilterType fileType = FILE_NONSOURCE;
+
+	if(m_headerFiles.Index(filename) != -1)
+	{
+		fileType = FILE_HEADERS;
+	}
+	if(m_sourceFiles.Index(filename) != -1)
+	{
+		fileType = FILE_SOURCES;
+	}
+	if(m_libraryFiles.Index(filename) != -1)
+	{
+		fileType = FILE_LIBRARIES;
+	}
+	if(m_nonSourceFiles.Index(filename) != -1)
+	{
+		fileType = FILE_NONSOURCE;
+	}
+
+	return fileType;
+}

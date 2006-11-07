@@ -52,7 +52,6 @@ public:
 	wxString GetFilePath();
 	wxArrayInt GetBreakpoints();
 	ProjectInfo* GetProject(){ return m_project; }
-	FileFilterType GetFileType();
 
 
 	//void SetFileNameAndPath(wxString path, wxString name, bool fileIsRemote);
@@ -93,8 +92,10 @@ private:
 	bool m_bLoadingFile;
 	bool m_bLastSavedRemotely;
 	bool m_bHasBeenCompiled;
-	
+	bool m_bNewFile;
 	wxMenu m_popupMenu;
+
+
 	
 	DECLARE_EVENT_TABLE()
 };

@@ -71,8 +71,13 @@ PlinkConnect::PlinkConnect(wxString plinkApp, wxString host, wxString user, wxSt
 	m_user = user;
 	m_pass = pass;
 
-	spawnConnection(); // jumpstart the 1-always-open-connection
-					   //   this will also establish my status
+	if(pass != "")
+	{
+		spawnConnection(); // jumpstart the 1-always-open-connection
+							//   this will also establish my status
+
+	}
+	
 }
 
 
@@ -226,10 +231,23 @@ void PlinkConnect::spawnConnection()
 //////////////////////////////////////////////////////////////////////////////
 bool PlinkConnect::getIsConnected()
 {
+	int i = 0;
+
+	//wxWindow* topWindow = wxTheApp->GetTopWindow();
+	//topWindow->SetCursor(wxHOURGLASS_CURSOR);
+
+	wxBusyCursor cursor;
 	while(m_processes.GetFirst() != NULL && m_processes.GetFirst()->GetData()->state == PC_STARTING) {
 		// If the first connection is in the starting
 		//   state, wait till "the dust settles"
 		wxMilliSleep(250);
+
+		if(i % 4 == 0)
+		{
+			wxLogDebug("Synchronous network operation (getIsConnected): %d", i / 4);
+		}
+
+		i++;
 		wxSafeYield();
 	}
 
@@ -347,13 +365,19 @@ wxString PlinkConnect::executeSyncCommand(wxString command)
 
 	int i = 1;
 	m_synchronous = true;
+
+	wxBusyCursor cursor;
+
 	while(p->state == PC_BUSY || p->state == PC_EXECUTING) {
 		// Perhaps this should terminate after an amount of time
 		wxMilliSleep(250);
+		
 		if(i % 4 == 0)
 		{
-			wxLogDebug("Synchronous network operation: %d (command: %s)", i / 4, command);
+			wxLogDebug("Synchronous network operation (executeSyncCommand): %d (command: %s)", i / 4, command);
 		}
+
+		i++;
 		wxSafeYield();
 	}
 
