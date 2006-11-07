@@ -977,13 +977,14 @@ wxTerm::OnPaint(wxPaintEvent& WXUNUSED(event))
 void
 wxTerm::OnLeftDown(wxMouseEvent& event)
 {
-	
+	SetFocus();
+/*
   ClearSelection();
   m_selx1 = m_selx2 = event.GetX() / m_charWidth;
   m_sely1 = m_sely2 = event.GetY() / m_charHeight;
   m_selecting = TRUE;
   CaptureMouse();
-  
+*/ 
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -999,13 +1000,13 @@ wxTerm::OnLeftDown(wxMouseEvent& event)
 void
 wxTerm::OnLeftUp(wxMouseEvent& event)
 {
-	
+/*	
   m_selecting = FALSE;
   if(GetCapture() == this)
   {
 	ReleaseMouse();
   }
-  
+*/
   
 }
 
@@ -1022,6 +1023,7 @@ wxTerm::OnLeftUp(wxMouseEvent& event)
 void
 wxTerm::OnMouseMove(wxMouseEvent& event)
 {
+
   if(m_selecting)
   {
     m_selx2 = event.GetX() / m_charWidth;
@@ -1920,7 +1922,7 @@ void wxTerm::OnActivate(wxActivateEvent &event)
 ///  private OnGainFocus
 ///  Enables the cursor
 ///
-///  @param  event wxFocusEvent & The generated focuse event
+///  @param  event wxFocusEvent & The generated focus event
 ///
 ///  @return void
 ///
@@ -1929,7 +1931,7 @@ void wxTerm::OnActivate(wxActivateEvent &event)
 void wxTerm::OnGainFocus(wxFocusEvent &event)
 {
 	this->clear_mode_flag(CURSORINVISIBLE);
-	//wxLogDebug("Gained focus");
+	wxLogDebug("Gained focus");
 	GTerm::Update();
 }
 
@@ -1946,7 +1948,7 @@ void wxTerm::OnGainFocus(wxFocusEvent &event)
 void wxTerm::OnLoseFocus(wxFocusEvent &event)
 {
 	this->set_mode_flag(CURSORINVISIBLE);
-	//wxLogDebug("Lost focus");
+	wxLogDebug("Lost focus");
 	GTerm::Update();
 }
 
