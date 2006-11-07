@@ -623,8 +623,40 @@ void ChameleonWindow::OnMenuEvent(wxCommandEvent &event)
 		}
 
 		case ID_COPY:
-			m_currentEd->Copy();
+		{
+			/* HACK!!! 
+			 * Okay, here's the problem.  When keyboard shortcuts like CTRL-C are listed in the text
+			 * of a menu item, that shortcut is automatically assigned.  But, this means that the menu's
+			 * enclosing frame will always capture that shortcut.
+			 *
+			 * I'd really like to have CTRL-C available to the editor for "Copy", but also available to 
+			 * the terminal for killing programs.  My initial experiments didn't come up with anything,
+			 * but I did come up with this workaround.  It'll do for now.  Basically, if we detect a
+			 * CTRL-C, we check to see if a terminal is active.  If it is, we fake a CTRL-C keyboard
+			 * event, and pass it on to the terminal.  Otherwise, we just copy text as usual.
+			 */
+			wxWindow* focusedWindow = wxWindow::FindFocus();
+			
+			if(focusedWindow == m_terminal || focusedWindow == m_debugTerminal)
+			{
+				wxSSH* focusedTerminal = (focusedWindow == m_terminal) ? m_terminal : m_debugTerminal;
+
+				// magic codes copied from a real CTRL-C event.
+				wxKeyEvent ctrlCEvent(wxEVT_CHAR);
+				ctrlCEvent.m_controlDown = true;
+				ctrlCEvent.m_keyCode = 3;
+				ctrlCEvent.m_rawCode = 3;
+				ctrlCEvent.m_rawFlags = 3014657;
+
+				focusedTerminal->ProcessEvent(ctrlCEvent);
+			}
+			else
+			{
+				m_currentEd->Copy();
+			}
+			
 			break;
+		}
 
 		case ID_CUT:
 			m_currentEd->Cut();
