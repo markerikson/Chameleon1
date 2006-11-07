@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="Chameleon"
 	ProjectGUID="{81F47D67-776F-4E35-8A66-C37BA9CBA3A7}"
+	RootNamespace="Chameleon"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -24,6 +25,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
+				CommandLine=""
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -342,6 +344,10 @@
 					RelativePath=".\common\ProjectInfo.cpp"
 					>
 				</File>
+				<File
+					RelativePath=".\common\verinfo.cpp"
+					>
+				</File>
 			</Filter>
 		</Filter>
 		<Filter
@@ -470,6 +476,10 @@
 				</File>
 				<File
 					RelativePath=".\common\ProjectInfo.h"
+					>
+				</File>
+				<File
+					RelativePath=".\common\verinfo.h"
 					>
 				</File>
 			</Filter>

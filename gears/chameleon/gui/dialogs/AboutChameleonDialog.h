@@ -21,7 +21,6 @@
  */
 
 ////@begin includes
-#include "wx/wx.h"
 #include "wx/notebook.h"
 ////@end includes
 
@@ -30,6 +29,7 @@
  */
 
 ////@begin forward declarations
+class wxBoxSizer;
 ////@end forward declarations
 
 /*!
@@ -38,17 +38,17 @@
 
 ////@begin control identifiers
 #define ID_DIALOG 10000
-#define SYMBOL_ABOUTCHAMELEONDIALOG_STYLE wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX
-#define SYMBOL_ABOUTCHAMELEONDIALOG_TITLE _("About Chameleon")
-#define SYMBOL_ABOUTCHAMELEONDIALOG_IDNAME ID_DIALOG
-#define SYMBOL_ABOUTCHAMELEONDIALOG_SIZE wxSize(400, 300)
-#define SYMBOL_ABOUTCHAMELEONDIALOG_POSITION wxPoint(0, 0)
 #define ID_NOTEBOOK 10001
 #define ID_PROGPANEL 10006
 #define ID_TEAMPANEL 10002
 #define ID_CREDITSPANEL 10003
 #define ID_STATSPANEL 10004
 #define ID_BUTTONOK 10007
+#define SYMBOL_ABOUTCHAMELEONDIALOG_STYLE wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX
+#define SYMBOL_ABOUTCHAMELEONDIALOG_TITLE _("About Chameleon")
+#define SYMBOL_ABOUTCHAMELEONDIALOG_IDNAME ID_DIALOG
+#define SYMBOL_ABOUTCHAMELEONDIALOG_SIZE wxSize(400, 300)
+#define SYMBOL_ABOUTCHAMELEONDIALOG_POSITION wxDefaultPosition
 ////@end control identifiers
 
 /*!
@@ -88,12 +88,19 @@ public:
 
 ////@begin AboutChameleonDialog member function declarations
 
+    /// Retrieves bitmap resources
+    wxBitmap GetBitmapResource( const wxString& name );
+
+    /// Retrieves icon resources
+    wxIcon GetIconResource( const wxString& name );
 ////@end AboutChameleonDialog member function declarations
 
     /// Should we show tooltips?
     static bool ShowToolTips();
 
 ////@begin AboutChameleonDialog member variables
+    wxBoxSizer* m_sizerProgram;
+    wxStaticText* m_lblVersion;
 ////@end AboutChameleonDialog member variables
 };
 
