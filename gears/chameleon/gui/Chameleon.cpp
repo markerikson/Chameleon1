@@ -1927,10 +1927,15 @@ void ChameleonWindow::OnUpdateConnectionUI()//wxUpdateUIEvent &event)
 	tb->EnableTool(ID_DISCONNECT, termConnected);
 
 	wxMenuBar* mb = GetMenuBar();
-	wxMenu* toolsMenu = mb->GetMenu(mb->FindMenu("Tools"));
+	WXWidget handle = mb->GetHandle();
+	if(handle != NULL)
+	{
+		wxMenu* toolsMenu = mb->GetMenu(mb->FindMenu("Tools"));
+		toolsMenu->Enable(ID_STARTCONNECT, !termConnected);
+		toolsMenu->Enable(ID_DISCONNECT, termConnected);	
+	}
 
-	toolsMenu->Enable(ID_STARTCONNECT, !termConnected);
-	toolsMenu->Enable(ID_DISCONNECT, termConnected);	
+
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -2125,7 +2130,13 @@ void ChameleonWindow::OnUpdateSaveUI()//wxUpdateUIEvent &event)
 		}
 	}
 	GetToolBar()->EnableTool(ID_SAVE, enable);
-	GetMenuBar()->FindItem(ID_SAVE)->Enable(enable);
+
+	wxMenuBar* mb = GetMenuBar();
+	WXWidget handle = mb->GetHandle();
+	if(handle != NULL)
+	{
+		mb->FindItem(ID_SAVE)->Enable(enable);
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -2145,8 +2156,13 @@ void ChameleonWindow::OnUpdateProjectUI ()
 	bool projectOpen = (m_projMultiFiles != NULL);
 
 	wxMenuBar* mb = GetMenuBar();
-	mb->FindItem(ID_CLOSE_PROJECT)->Enable(projectOpen);
-	mb->FindItem(ID_COMPILE_PROJECT)->Enable(projectOpen);
+	WXWidget handle = mb->GetHandle();
+	if(handle != NULL)
+	{
+		mb->FindItem(ID_CLOSE_PROJECT)->Enable(projectOpen);
+		mb->FindItem(ID_COMPILE_PROJECT)->Enable(projectOpen);
+	}
+
 }
 
 // Gets / sets begin here
