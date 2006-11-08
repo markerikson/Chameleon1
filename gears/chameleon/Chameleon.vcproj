@@ -233,6 +233,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\gui\wxProportionalSplitterWindow.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\gui\wxssh.cpp"
 					>
 				</File>
@@ -388,6 +392,10 @@
 				</File>
 				<File
 					RelativePath=".\gui\dialogs\VariableWatchPanel.h"
+					>
+				</File>
+				<File
+					RelativePath=".\gui\wxProportionalSplitterWindow.h"
 					>
 				</File>
 				<File

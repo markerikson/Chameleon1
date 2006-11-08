@@ -56,6 +56,7 @@ class wxTimer;
 class wxListCtrl;
 class CompilerOutputPanel;
 class IconManager;
+class wxProportionalSplitterWindow;
 
 
 //----------------------------------------------------------------------
@@ -189,7 +190,7 @@ private:
 	wxStatusBar* m_statusBar;
 	//wxPanel* panelEd;
 	/*! Holds the editor/project group and the output notebook */
-	wxSplitterWindow*  m_splitEditorOutput;
+	wxProportionalSplitterWindow*  m_splitEditorOutput;
 	/*! Holds the project tree and the editor notebook */
 	wxSplitterWindow* m_splitProjectEditor;
 	/*! Displays the output from the compiler */

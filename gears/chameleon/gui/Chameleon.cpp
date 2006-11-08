@@ -35,6 +35,7 @@
 #include "wxssh.h"
 #include "../compiler/compilerevent.h"
 #include "IconManager.h"
+#include "wxProportionalSplitterWindow.h"
 //#include "mmDropMenu.h"
 
 #include "newfile.xpm"
@@ -267,7 +268,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 	m_optionsDialog = new OptionsDialog(this, m_options, ID_OPTIONSDIALOG, "Options");
 
-	m_splitEditorOutput = new wxSplitterWindow(this, ID_SPLITEDITOROUTPUT);
+	m_splitEditorOutput = new wxProportionalSplitterWindow(this, ID_SPLITEDITOROUTPUT);
 	m_splitProjectEditor = new wxSplitterWindow(m_splitEditorOutput, ID_SPLITPROJECTEDITOR);
 	m_book = new ChameleonNotebook(m_splitProjectEditor, ID_NOTEBOOK_ED);
 
@@ -2738,9 +2739,9 @@ void ChameleonWindow::UpdateTerminalNotebook()
 	{
 		if(!m_splitEditorOutput->IsSplit())
 		{
-			m_splitEditorOutput->SplitHorizontally(m_splitProjectEditor, m_noteTerm, -260);//-200);
+			m_splitEditorOutput->SplitHorizontally(m_splitProjectEditor, m_noteTerm, 0.575f);//-260);//-200);
 			m_splitEditorOutput->SetMinimumPaneSize(20);
-			m_splitEditorOutput->SetSashGravity(1.0);
+			//m_splitEditorOutput->SetSashGravity(1.0);
 			m_terminal->UpdateSize();
 			m_noteTerm->Show();	
 		}		
@@ -3712,6 +3713,26 @@ void ChameleonWindow::OnSplitterDoubleClick(wxSplitterEvent &event)
 //////////////////////////////////////////////////////////////////////////////
 void ChameleonWindow::OnSize(wxSizeEvent &event)
 {
+	//wxLogDebug("Full screen: %d", IsFullScreen());
+	wxLogDebug("Maximized: %d", IsMaximized());
+
+	if(!m_appStarting)
+	{
+		wxSize size = m_noteTerm->GetSize();
+		wxLogDebug("Notebook size: %d,%d", size.x, size.y);
+
+		if(IsMaximized())
+		{
+			//m_splitEditorOutput->SetMinimumPaneSize(size.y);
+		}
+		else
+		{
+			//m_splitEditorOutput->SetMinimumPaneSize()
+		}
+		
+
+	}	
+
 	event.Skip();	
 }
 

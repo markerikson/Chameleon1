@@ -6,8 +6,8 @@ IDI_APPICON ICON "chameleon.ico"
 
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,1,1598
- PRODUCTVERSION 9,0,5,1598
+ FILEVERSION 1,1,0,1613
+ PRODUCTVERSION 1,1,0,1613
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -25,12 +25,12 @@ BEGIN
             VALUE "Comments", "The Adaptive Instructional IDE"
             VALUE "CompanyName", "Digital Gearheads"
             VALUE "FileDescription", "Chameleon"
-            VALUE "FileVersion", "1.0.1.1598"
+            VALUE "FileVersion", "1.1.0.1613"
             VALUE "InternalName", "Chameleon (Internal)"
             VALUE "LegalCopyright", "Copyright Digital Gearheads 2006"
             VALUE "OriginalFilename", "Chameleon.exe"
             VALUE "ProductName", "Chameleon (ProductName)"
-            VALUE "ProductVersion", "1.0.1.1598"
+            VALUE "ProductVersion", "1.1.0.1613"
         END
     END
     BLOCK "VarFileInfo"
