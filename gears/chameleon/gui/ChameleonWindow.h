@@ -161,6 +161,7 @@ private:
 
 	void EvaluateOptions();
 
+	bool CheckForBlankPassword();
 	bool AskUserForPassword();
 
 	void UpdateMenuBar();

@@ -566,16 +566,9 @@ void ChameleonWindow::OnMenuEvent(wxCommandEvent &event)
 
 		case ID_STARTCONNECT:
 		{
-			wxString password = m_options->GetPassphrase();
-			if(password.IsEmpty())
+			if(!CheckForBlankPassword())
 			{
-				bool passwordEntered = AskUserForPassword();
-				if(!passwordEntered)
-				{
-					return;
-				}
-
-				m_network->GetStatus();
+				return;
 			}
 
 			NetworkStatus isok = m_network->GetStatus();
@@ -1366,16 +1359,9 @@ wxArrayString ChameleonWindow::OpenFile(FileFilterType filterType)
 	}
 	else
 	{
-		wxString password = m_options->GetPassphrase();
-		if(password.IsEmpty())
+		if(!CheckForBlankPassword())
 		{
-			bool passwordEntered = AskUserForPassword();
-			if(!passwordEntered)
-			{
-				return false;
-			}
-
-			m_network->GetStatus();
+			return false;
 		}
 
 		SetStatusText("Doing network operation...", 3);
@@ -1705,17 +1691,11 @@ bool ChameleonWindow::SaveFile(bool saveas, bool askLocalRemote, FileFilterType 
 	{
 		wxString remotePath, remoteFile;
 
-		wxString password = m_options->GetPassphrase();
-		if(password.IsEmpty())
+		if(!CheckForBlankPassword())
 		{
-			bool passwordEntered = AskUserForPassword();
-			if(!passwordEntered)
-			{
-				return false;
-			}
-
-			m_network->GetStatus();
+			return false;
 		}
+		
 
 		if(doSaveAs)
 		{
@@ -3688,6 +3668,23 @@ void ChameleonWindow::OnSize(wxSizeEvent &event)
 
 void ChameleonWindow::OnTermResize(wxSplitterEvent &event)
 {
+}
+
+bool ChameleonWindow::CheckForBlankPassword()
+{
+	wxString password = m_options->GetPassphrase();
+	if(password.IsEmpty())
+	{
+		bool passwordEntered = AskUserForPassword();
+		if(!passwordEntered)
+		{
+			return false;
+		}
+
+		m_network->GetStatus();
+	}
+
+	return true;
 }
 
 bool ChameleonWindow::AskUserForPassword()
