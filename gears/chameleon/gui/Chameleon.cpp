@@ -2740,6 +2740,7 @@ void ChameleonWindow::UpdateTerminalNotebook()
 		{
 			m_splitEditorOutput->SplitHorizontally(m_splitProjectEditor, m_noteTerm, -260);//-200);
 			m_splitEditorOutput->SetMinimumPaneSize(20);
+			m_splitEditorOutput->SetSashGravity(1.0);
 			m_terminal->UpdateSize();
 			m_noteTerm->Show();	
 		}		
