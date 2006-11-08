@@ -1,0 +1,494 @@
+diff -u -r c:/toolkits/wxWidgets-2.6.3/include/wx/defs.h c:/toolkits/wxWidgets-2.6.3-modified/include/wx/defs.h
+--- c:/toolkits/wxWidgets-2.6.3/include/wx/defs.h	2006-01-26 13:15:48.000000000 +0800
++++ c:/toolkits/wxWidgets-2.6.3-modified/include/wx/defs.h	2006-11-08 23:19:50.444728000 +0800
+@@ -1597,17 +1597,7 @@
+ #define wxLI_HORIZONTAL         wxHORIZONTAL
+ #define wxLI_VERTICAL           wxVERTICAL
+ 
+-/*
+- * wxProgressDialog flags
+- */
+-#define wxPD_CAN_ABORT          0x0001
+-#define wxPD_APP_MODAL          0x0002
+-#define wxPD_AUTO_HIDE          0x0004
+-#define wxPD_ELAPSED_TIME       0x0008
+-#define wxPD_ESTIMATED_TIME     0x0010
+-#define wxPD_SMOOTH             0x0020
+-#define wxPD_REMAINING_TIME     0x0040
+-#define wxPD_CAN_SKIP           0x0080
++
+ 
+ /*
+  * wxDirDialog styles
+diff -u -r c:/toolkits/wxWidgets-2.6.3/include/wx/gauge.h c:/toolkits/wxWidgets-2.6.3-modified/include/wx/gauge.h
+--- c:/toolkits/wxWidgets-2.6.3/include/wx/gauge.h	2005-01-21 17:48:20.000000000 +0800
++++ c:/toolkits/wxWidgets-2.6.3-modified/include/wx/gauge.h	2006-11-08 23:58:35.788408000 +0800
+@@ -35,8 +35,18 @@
+ // obsolete style
+ #define wxGA_PROGRESSBAR     0
+ 
++// GTK and Mac always have native implementation of the indeterminate mode
++// wxMSW has native implementation only if comctl32.dll >= 6.00
++#if !defined(__WXGTK20__) && !defined(__WXMAC__) && !defined(__WXCOCOA__)
++#define wxGAUGE_EMULATE_INDETERMINATE_MODE 1
++#else
++#define wxGAUGE_EMULATE_INDETERMINATE_MODE 0
++#endif
++
++
++//extern WXDLLEXPORT_DATA(const wxChar*) wxGaugeNameStr;
++extern WXDLLEXPORT_DATA(const wxChar) wxGaugeNameStr[];
+ 
+-extern WXDLLEXPORT_DATA(const wxChar*) wxGaugeNameStr;
+ 
+ // ----------------------------------------------------------------------------
+ // wxGauge: a progress bar
+@@ -65,6 +75,10 @@
+     virtual void SetValue(int pos);
+     virtual int GetValue() const;
+ 
++	// indeterminate mode API
++	virtual void Pulse();
++	
++
+     // simple accessors
+     bool IsVertical() const { return HasFlag(wxGA_VERTICAL); }
+ 
+@@ -86,6 +100,10 @@
+     // the current position
+     int m_gaugePos;
+ 
++#if wxGAUGE_EMULATE_INDETERMINATE_MODE
++	int m_nDirection;       // can be wxRIGHT or wxLEFT
++#endif
++
+     DECLARE_NO_COPY_CLASS(wxGaugeBase)
+ };
+ 
+diff -u -r c:/toolkits/wxWidgets-2.6.3/include/wx/generic/progdlgg.h c:/toolkits/wxWidgets-2.6.3-modified/include/wx/generic/progdlgg.h
+--- c:/toolkits/wxWidgets-2.6.3/include/wx/generic/progdlgg.h	2005-01-05 17:37:38.000000000 +0800
++++ c:/toolkits/wxWidgets-2.6.3-modified/include/wx/generic/progdlgg.h	2006-11-08 23:46:38.877540800 +0800
+@@ -57,6 +57,10 @@
+    */
+    virtual bool Update(int value, const wxString& newmsg = wxEmptyString, bool *skip = NULL);
+ 
++   /* Switches the dialog to use a gauge in indeterminate mode and calls
++   wxGauge::Pulse() to show to the user a bit of progress */
++   virtual bool Pulse(const wxString& newmsg = wxEmptyString, bool *skip = NULL);
++
+    /* Can be called to continue after the cancel button has been pressed, but
+        the program decided to continue the operation (e.g., user didn't
+        confirm it)
+@@ -84,6 +88,12 @@
+    // as the next windows in the sizer, returns the created control
+    wxStaticText *CreateLabel(const wxString& text, wxSizer *sizer);
+ 
++   // updates the label message
++   void UpdateMessage(const wxString &newmsg);
++
++   // common part of Update() and Pulse(), returns true if not cancelled
++   bool DoAfterUpdate(bool *skip);
++
+    // shortcuts for enabling buttons
+    void EnableClose();
+    void EnableSkip(bool enable=true);
+diff -u -r c:/toolkits/wxWidgets-2.6.3/include/wx/gtk/gauge.h c:/toolkits/wxWidgets-2.6.3-modified/include/wx/gtk/gauge.h
+--- c:/toolkits/wxWidgets-2.6.3/include/wx/gtk/gauge.h	2005-08-02 22:57:56.000000000 +0800
++++ c:/toolkits/wxWidgets-2.6.3-modified/include/wx/gtk/gauge.h	2006-11-08 23:30:02.544884800 +0800
+@@ -66,14 +66,20 @@
+                  const wxValidator& validator = wxDefaultValidator,
+                  const wxString& name = wxGaugeNameStr );
+ 
+-    void SetShadowWidth( int WXUNUSED(w) ) { }
+-    void SetBezelFace( int WXUNUSED(w) ) { }
+-    void SetRange( int r );
+-    void SetValue( int pos );
+-    int GetShadowWidth() const { return 0; };
+-    int GetBezelFace() const { return 0; };
+-    int GetRange() const;
+-    int GetValue() const;
++	void SetShadowWidth( int WXUNUSED(w) ) { }
++	void SetBezelFace( int WXUNUSED(w) ) { }
++	int GetShadowWidth() const { return 0; };
++	int GetBezelFace() const { return 0; };
++
++	// determinate mode API
++	void SetRange( int r );
++	void SetValue( int pos );
++
++	int GetRange() const;
++	int GetValue() const;
++
++	// indeterminate mode API
++	virtual void Pulse();
+ 
+     bool IsVertical() const { return HasFlag(wxGA_VERTICAL); }
+     
+diff -u -r c:/toolkits/wxWidgets-2.6.3/include/wx/msw/gauge95.h c:/toolkits/wxWidgets-2.6.3-modified/include/wx/msw/gauge95.h
+--- c:/toolkits/wxWidgets-2.6.3/include/wx/msw/gauge95.h	2005-01-21 17:11:12.000000000 +0800
++++ c:/toolkits/wxWidgets-2.6.3-modified/include/wx/msw/gauge95.h	2006-11-08 23:59:40.341230400 +0800
+@@ -18,7 +18,8 @@
+ 
+ #if wxUSE_GAUGE
+ 
+-extern WXDLLEXPORT_DATA(const wxChar*) wxGaugeNameStr;
++//extern WXDLLEXPORT_DATA(const wxChar*) wxGaugeNameStr;
++extern WXDLLEXPORT_DATA(const wxChar) wxGaugeNameStr[];
+ 
+ // Group box
+ class WXDLLEXPORT wxGauge95 : public wxGaugeBase
+@@ -55,6 +56,10 @@
+     virtual bool SetForegroundColour(const wxColour& col);
+     virtual bool SetBackgroundColour(const wxColour& col);
+ 
++	void SetIndeterminateMode();
++	void SetDeterminateMode();
++	void Pulse();
++
+ protected:
+     virtual WXDWORD MSWGetStyle(long style, WXDWORD *exstyle) const;
+     virtual wxSize DoGetBestSize() const;
+diff -u -r c:/toolkits/wxWidgets-2.6.3/include/wx/progdlg.h c:/toolkits/wxWidgets-2.6.3-modified/include/wx/progdlg.h
+--- c:/toolkits/wxWidgets-2.6.3/include/wx/progdlg.h	2005-05-04 18:52:02.000000000 +0800
++++ c:/toolkits/wxWidgets-2.6.3-modified/include/wx/progdlg.h	2006-11-08 23:23:43.319585600 +0800
+@@ -14,6 +14,18 @@
+ 
+ #include "wx/defs.h"
+ 
++/*
++* wxProgressDialog flags
++*/
++#define wxPD_CAN_ABORT          0x0001
++#define wxPD_APP_MODAL          0x0002
++#define wxPD_AUTO_HIDE          0x0004
++#define wxPD_ELAPSED_TIME       0x0008
++#define wxPD_ESTIMATED_TIME     0x0010
++#define wxPD_SMOOTH             0x0020
++#define wxPD_REMAINING_TIME     0x0040
++#define wxPD_CAN_SKIP           0x0080
++
+ #ifdef __WXPALMOS__
+     #include "wx/palmos/progdlg.h"
+ #else
+diff -u -r c:/toolkits/wxWidgets-2.6.3/src/common/datacmn.cpp c:/toolkits/wxWidgets-2.6.3-modified/src/common/datacmn.cpp
+--- c:/toolkits/wxWidgets-2.6.3/src/common/datacmn.cpp	2005-01-21 02:56:16.000000000 +0800
++++ c:/toolkits/wxWidgets-2.6.3-modified/src/common/datacmn.cpp	2006-11-09 00:24:36.232216000 +0800
+@@ -117,7 +117,7 @@
+ WXDLLEXPORT_DATA(const wxChar *) wxComboBoxNameStr = wxT("comboBox");
+ WXDLLEXPORT_DATA(const wxChar *) wxDialogNameStr = wxT("dialog");
+ WXDLLEXPORT_DATA(const wxChar *) wxFrameNameStr = wxT("frame");
+-WXDLLEXPORT_DATA(const wxChar *) wxGaugeNameStr = wxT("gauge");
++//WXDLLEXPORT_DATA(const wxChar) wxGaugeNameStr[] = wxT("gauge");
+ WXDLLEXPORT_DATA(const wxChar *) wxStaticBoxNameStr = wxT("groupBox");
+ WXDLLEXPORT_DATA(const wxChar *) wxListBoxNameStr = wxT("listBox");
+ WXDLLEXPORT_DATA(const wxChar *) wxListCtrlNameStr = wxT("listCtrl");
+diff -u -r c:/toolkits/wxWidgets-2.6.3/src/common/gaugecmn.cpp c:/toolkits/wxWidgets-2.6.3-modified/src/common/gaugecmn.cpp
+--- c:/toolkits/wxWidgets-2.6.3/src/common/gaugecmn.cpp	2004-09-15 13:20:18.000000000 +0800
++++ c:/toolkits/wxWidgets-2.6.3-modified/src/common/gaugecmn.cpp	2006-11-08 23:46:38.977684800 +0800
+@@ -35,6 +35,8 @@
+ 
+ #if wxUSE_GAUGE
+ 
++
++const wxChar wxGaugeNameStr[] = wxT("gauge");
+ // ============================================================================
+ // implementation
+ // ============================================================================
+@@ -69,6 +71,10 @@
+     SetRange(range);
+     SetValue(0);
+ 
++	#if wxGAUGE_EMULATE_INDETERMINATE_MODE
++		m_nDirection = wxRIGHT;
++	#endif
++
+     return true;
+ }
+ 
+@@ -96,6 +102,36 @@
+     return m_gaugePos;
+ }
+ 
++
++void wxGaugeBase::Pulse()
++{
++#if wxGAUGE_EMULATE_INDETERMINATE_MODE
++	// simulate indeterminate mode
++	int curr = GetValue(), max = GetRange();
++
++	if (m_nDirection == wxRIGHT)
++	{
++		if (curr < max)
++			SetValue(curr + 1);
++		else
++		{
++			SetValue(max - 1);
++			m_nDirection = wxLEFT;
++		}
++	}
++	else
++	{
++		if (curr > 0)
++			SetValue(curr - 1);
++		else
++		{
++			SetValue(1);
++			m_nDirection = wxRIGHT;
++		}
++	}
++#endif
++}
++
+ // ----------------------------------------------------------------------------
+ // wxGauge appearance params
+ // ----------------------------------------------------------------------------
+diff -u -r c:/toolkits/wxWidgets-2.6.3/src/generic/progdlgg.cpp c:/toolkits/wxWidgets-2.6.3-modified/src/generic/progdlgg.cpp
+--- c:/toolkits/wxWidgets-2.6.3/src/generic/progdlgg.cpp	2005-04-07 14:52:22.000000000 +0800
++++ c:/toolkits/wxWidgets-2.6.3-modified/src/generic/progdlgg.cpp	2006-11-09 00:03:14.228785600 +0800
+@@ -43,7 +43,8 @@
+     #include "wx/timer.h"
+ #endif
+ 
+-#include "wx/generic/progdlgg.h"
++//#include "wx/generic/progdlgg.h"
++#include "wx/progdlg.h"
+ #include "wx/settings.h"
+ 
+ // ---------------------------------------------------------------------------
+@@ -312,7 +313,8 @@
+     locsizer->Add(dummy, 1, wxALIGN_LEFT);
+     locsizer->Add(label, 1, wxALIGN_LEFT);
+     sizer->Add(locsizer, 0, wxALIGN_LEFT | wxTOP | wxLEFT, LAYOUT_MARGIN);
+-#elif defined(__WXMSW__) || defined(__WXPM__) || defined(__WXMAC__)
++//#elif defined(__WXMSW__) || defined(__WXPM__) || defined(__WXMAC__)
+++#elif defined(__WXMSW__) || defined(__WXPM__) || defined(__WXMAC__) || defined(__WXGTK20__)
+     // label and time centered in one row
+     locsizer->Add(dummy, 1, wxLARGESMALL(wxALIGN_RIGHT,wxALIGN_LEFT));
+     locsizer->Add(label, 1, wxALIGN_LEFT | wxLEFT, LAYOUT_MARGIN);
+@@ -349,12 +351,17 @@
+         m_gauge->SetValue(value == m_maximum ? value : value + 1);
+     }
+ 
++	/*
+     if ( !newmsg.empty() && newmsg != m_msg->GetLabel() )
+     {
+         m_msg->SetLabel(newmsg);
+ 
+         wxYieldIfNeeded() ;
+     }
++	*/
++
++	UpdateMessage(newmsg);
++
+ 
+     if ( (m_elapsed || m_remaining || m_estimated) && (value != 0) )
+     {
+@@ -449,6 +456,7 @@
+     }
+     else
+     {
++		/*
+         // we have to yield because not only we want to update the display but
+         // also to process the clicks on the cancel and skip buttons
+         wxYieldIfNeeded() ;
+@@ -459,6 +467,9 @@
+             m_skip = false;
+             EnableSkip();
+         }
++		*/
++
++		return DoAfterUpdate(skip);
+     }
+ 
+     // update the display in case yielding above didn't do it
+@@ -467,6 +478,45 @@
+     return m_state != Canceled;
+ }
+ 
++bool wxProgressDialog::Pulse(const wxString& newmsg, bool *skip)
++{
++	wxASSERT_MSG( m_gauge, wxT("cannot update non existent dialog") );
++
++	// show a bit of progress
++	m_gauge->Pulse();
++
++	UpdateMessage(newmsg);
++
++	if (m_elapsed || m_remaining || m_estimated)
++	{
++		unsigned long elapsed = wxGetCurrentTime() - m_timeStart;
++
++		SetTimeLabel(elapsed, m_elapsed);
++		SetTimeLabel((unsigned long)-1, m_estimated);
++		SetTimeLabel((unsigned long)-1, m_remaining);
++	}
++
++	return DoAfterUpdate(skip);
++}
++
++bool wxProgressDialog::DoAfterUpdate(bool *skip)
++{
++	// we have to yield because not only we want to update the display but
++	// also to process the clicks on the cancel and skip buttons
++	wxYieldIfNeeded();
++
++	Update();
++
++	if ( m_skip && skip && !*skip )
++	{
++		*skip = true;
++		m_skip = false;
++		EnableSkip();
++	}
++
++	return m_state != Canceled;
++}
++
+ void wxProgressDialog::Resume()
+ {
+     m_state = Continue;
+@@ -576,17 +626,25 @@
+ 
+ static void SetTimeLabel(unsigned long val, wxStaticText *label)
+ {
+-    if ( label )
+-    {
+-        wxString s;
+-        unsigned long hours = val / 3600;
+-        unsigned long minutes = (val % 3600) / 60;
+-        unsigned long seconds = val % 60;
+-        s.Printf(wxT("%lu:%02lu:%02lu"), hours, minutes, seconds);
+-
+-        if ( s != label->GetLabel() )
+-            label->SetLabel(s);
+-    }
++	if ( label )
++	{
++		wxString s;
++
++		if (val != (unsigned long)-1)
++		{
++			unsigned long hours = val / 3600;
++			unsigned long minutes = (val % 3600) / 60;
++			unsigned long seconds = val % 60;
++			s.Printf(wxT("%lu:%02lu:%02lu"), hours, minutes, seconds);
++		}
++		else
++		{
++			s = _("Unknown");
++		}
++
++		if ( s != label->GetLabel() )
++			label->SetLabel(s);
++	}
+ }
+ 
+ void wxProgressDialog::EnableSkip(bool enable)
+@@ -637,4 +695,14 @@
+     }
+ }
+ 
++void wxProgressDialog::UpdateMessage(const wxString &newmsg)
++{
++	if ( !newmsg.empty() && newmsg != m_msg->GetLabel() )
++	{
++		m_msg->SetLabel(newmsg);
++
++		wxYieldIfNeeded() ;
++	}
++}
++
+ #endif // wxUSE_PROGRESSDLG
+diff -u -r c:/toolkits/wxWidgets-2.6.3/src/msw/gauge95.cpp c:/toolkits/wxWidgets-2.6.3-modified/src/msw/gauge95.cpp
+--- c:/toolkits/wxWidgets-2.6.3/src/msw/gauge95.cpp	2004-08-26 08:46:18.000000000 +0800
++++ c:/toolkits/wxWidgets-2.6.3-modified/src/msw/gauge95.cpp	2006-11-08 23:46:31.777331200 +0800
+@@ -62,6 +62,14 @@
+     #define PBM_SETBKCOLOR          0x2001
+ #endif
+ 
++#ifndef PBS_MARQUEE
++	#define PBS_MARQUEE             0x08
++#endif
++
++#ifndef PBM_SETMARQUEE
++	#define PBM_SETMARQUEE          (WM_USER+10)
++#endif
++
+ // ----------------------------------------------------------------------------
+ // wxWin macros
+ // ----------------------------------------------------------------------------
+@@ -147,6 +155,9 @@
+ 
+     SetRange(range);
+ 
++	// in case we need to emulate indeterminate mode...
++	m_nDirection = wxRIGHT;
++
+     return true;
+ }
+ 
+@@ -183,6 +194,9 @@
+ 
+ void wxGauge95::SetRange(int r)
+ {
++	// switch to determinate mode if required
++	SetDeterminateMode();
++
+     m_rangeMax = r;
+ 
+ #ifdef PBM_SETRANGE32
+@@ -195,6 +209,9 @@
+ 
+ void wxGauge95::SetValue(int pos)
+ {
++	// switch to determinate mode if required
++	SetDeterminateMode();
++
+     m_gaugePos = pos;
+ 
+     ::SendMessage(GetHwnd(), PBM_SETPOS, pos, 0);
+@@ -220,5 +237,44 @@
+     return true;
+ }
+ 
++void wxGauge95::SetIndeterminateMode()
++{
++	// add the PBS_MARQUEE style to the progress bar
++	LONG style = ::GetWindowLong(GetHwnd(), GWL_STYLE);
++	if ((style & PBS_MARQUEE) == 0)
++		::SetWindowLong(GetHwnd(), GWL_STYLE, style|PBS_MARQUEE);
++
++	// now the control can only run in indeterminate mode
++}
++
++void wxGauge95::SetDeterminateMode()
++{
++	// remove the PBS_MARQUEE style to the progress bar
++	LONG style = ::GetWindowLong(GetHwnd(), GWL_STYLE);
++	if ((style & PBS_MARQUEE) != 0)
++		::SetWindowLong(GetHwnd(), GWL_STYLE, style & ~PBS_MARQUEE);
++
++	// now the control can only run in determinate mode
++}
++
++void wxGauge95::Pulse()
++{
++	if (wxApp::GetComCtl32Version() >= 600)
++	{
++		// switch to indeterminate mode if required
++		SetIndeterminateMode();
++
++		// NOTE: when in indeterminate mode, the PBM_SETPOS message will just make
++		//       the bar's blocks move a bit and the WPARAM value is just ignored
++		//       so that we can safely use zero
++		SendMessage(GetHwnd(), (UINT) PBM_SETPOS, (WPARAM)0, (LPARAM)0);
++	}
++	else
++	{
++		// emulate indeterminate mode
++		wxGaugeBase::Pulse();
++	}
++}
++
+ #endif // wxUSE_GAUGE
+ 
