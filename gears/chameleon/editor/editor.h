@@ -61,15 +61,20 @@ public:
 	void ResetEditor();
 	bool LastSavedRemotely() {	return m_bLastSavedRemotely;}
 
+	void OnAddBreakpoint(wxCommandEvent &event);
+	void OnRemoveBreakpoint(wxCommandEvent &event);
+	void OnClearBreakpoints(wxCommandEvent &event);
+
 private:
 
 
 	void OnEditorModified(wxStyledTextEvent &event);
-	void OnAddBreakpoint(wxCommandEvent &event);
-	void OnRemoveBreakpoint(wxCommandEvent &event);
-	void OnClearBreakpoints(wxCommandEvent &event);
+
 	void OnRunToCursor(wxCommandEvent &event);
 	//void OnCompilerEnded(CompilerEvent &event);
+
+	int GetLineForBreakpointOperation();
+	void ResetRightClickLocation();
 
 	void CreateBreakpointEvent(int linenumber, bool addBreakpoint);
 	

@@ -105,6 +105,7 @@ private:
 
 	void OnMenuEvent(wxCommandEvent &event);
 	void OnDebugCommand(wxCommandEvent &event);
+	void OnDebugBreakpointCommand(wxCommandEvent &event);
 
 	void OnDebugEvent(wxDebugEvent &event);
 
@@ -167,6 +168,8 @@ private:
 	void UpdateMenuBar();
 	void UpdateToolbar();
 	void UpdateTerminalNotebook();
+
+	//void CleanupDropMenu();
 
 	int* SelectIntVar(int variableName);
 
@@ -261,6 +264,7 @@ private:
 	
 
 	DECLARE_EVENT_TABLE()
+	
 };
 
 class wxTreeItemData;

@@ -76,6 +76,9 @@ ChameleonEditor::ChameleonEditor( ChameleonWindow *mframe,
 
 	m_fileNameAndPath.Assign(wxEmptyString);
 
+	m_lastRightClick.x = -1;
+	m_lastRightClick.y = -1;
+
     this->SetTabWidth(4);
 
     this->SetMarginWidth(0, 40);
@@ -726,13 +729,15 @@ void ChameleonEditor::OnEditorModified(wxStyledTextEvent &event)
 //////////////////////////////////////////////////////////////////////////////
 void ChameleonEditor::OnAddBreakpoint(wxCommandEvent &event)
 {
-	int charpos = PositionFromPoint(m_lastRightClick);
-	int linenum = LineFromPosition(charpos);
+	//int charpos = PositionFromPoint(m_lastRightClick);
+	int linenum = GetLineForBreakpointOperation(); //LineFromPosition(charpos);
 
 	int markerNum = this->MarkerAdd(linenum, MARKER_BREAKPOINT);
 	
 	m_breakpoints.Add(markerNum);
 	CreateBreakpointEvent(linenum, true);	
+
+	ResetRightClickLocation();
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -751,13 +756,14 @@ void ChameleonEditor::OnAddBreakpoint(wxCommandEvent &event)
 //////////////////////////////////////////////////////////////////////////////
 void ChameleonEditor::OnRemoveBreakpoint(wxCommandEvent &event)
 {
-	int charpos = PositionFromPoint(m_lastRightClick);
-	int linenum = LineFromPosition(charpos);
+	int linenum = GetLineForBreakpointOperation();
 
 	// need to remove the marker handle from the array - use
 	// LineFromHandle on debug start and clean up then
 	this->MarkerDelete(linenum, MARKER_BREAKPOINT);
 	CreateBreakpointEvent(linenum, false);
+
+	ResetRightClickLocation();
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -774,7 +780,8 @@ void ChameleonEditor::OnClearBreakpoints(wxCommandEvent &event)
 {
 	// m_breakpoints should have been cleared of any orphaned marker
 	// handles during the right-click that led us here
-	int numBreakpoints = m_breakpoints.GetCount();
+	//int numBreakpoints = m_breakpoints.GetCount();
+	int numBreakpoints = GetBreakpoints().GetCount();
 
 	for(int i = 0; i < numBreakpoints; i++)
 	{
@@ -783,6 +790,8 @@ void ChameleonEditor::OnClearBreakpoints(wxCommandEvent &event)
 		this->MarkerDeleteHandle(markerHandle);
 		CreateBreakpointEvent(linenum, false);
 	}
+
+	ResetRightClickLocation();
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -931,14 +940,44 @@ void ChameleonEditor::SetProject(ProjectInfo* project)
 //////////////////////////////////////////////////////////////////////////////
 void ChameleonEditor::OnRunToCursor(wxCommandEvent &event)
 {
+	/*
 	int charpos = PositionFromPoint(m_lastRightClick);
 	int linenum = LineFromPosition(charpos);
 	// adjust for Scintilla's internal zero-based line numbering
 	linenum++;
+	*/
 
+	int linenum = GetLineForBreakpointOperation();
 	wxDebugEvent debugEvent;
 	debugEvent.SetId(ID_DEBUG_RUNTOCURSOR);	
 	debugEvent.SetSourceFilename(GetFilenameString());
 	debugEvent.SetLineNumber(linenum);
 	m_mainFrame->AddPendingEvent(debugEvent);
+
+	ResetRightClickLocation();
+}
+
+int ChameleonEditor::GetLineForBreakpointOperation()
+{
+	int lineNum = 0;
+
+	if(m_lastRightClick.x < 0 || m_lastRightClick.y < 0)
+	{
+		lineNum =  GetCurrentLine();		
+	}
+	else
+	{
+		int charpos = PositionFromPoint(m_lastRightClick);
+		lineNum = LineFromPosition(charpos);
+		lineNum++;
+	}
+
+	
+	return lineNum;
+}
+
+void ChameleonEditor::ResetRightClickLocation()
+{
+	m_lastRightClick.x = -1;
+	m_lastRightClick.y = -1;
 }

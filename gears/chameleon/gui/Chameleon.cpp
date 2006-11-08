@@ -35,6 +35,7 @@
 #include "wxssh.h"
 #include "../compiler/compilerevent.h"
 #include "IconManager.h"
+//#include "mmDropMenu.h"
 
 #include "newfile.xpm"
 #include "openremote.xpm"
@@ -54,6 +55,9 @@
 #include "stepnext.xpm"
 #include "stepout.xpm"
 #include "stepover.xpm"
+#include "breakpoint_octagon.xpm"
+#include "breakpoint_octagon_crossed.xpm"
+#include "breakpoint_octagon_disable.xpm"
 
 #include "../common/debug.h"
 
@@ -118,6 +122,9 @@ BEGIN_EVENT_TABLE(ChameleonWindow, wxFrame)
 	EVT_MENU						(ID_DEBUG_STEPNEXT, ChameleonWindow::OnDebugCommand)
 	EVT_MENU						(ID_DEBUG_STEPOVER, ChameleonWindow::OnDebugCommand)
 	EVT_MENU						(ID_DEBUG_STEPOUT, ChameleonWindow::OnDebugCommand)
+	EVT_MENU						(ID_DEBUG_ADDEDITORBREAKPOINT, ChameleonWindow::OnDebugBreakpointCommand)
+	EVT_MENU						(ID_DEBUG_REMOVEEDITORBREAKPOINT, ChameleonWindow::OnDebugBreakpointCommand)
+	EVT_MENU						(ID_DEBUG_CLEAREDITORBREAKPOINTS, ChameleonWindow::OnDebugBreakpointCommand)
 	EVT_DEBUG						(ChameleonWindow::OnDebugEvent)
 	EVT_IDLE						(ChameleonWindow::OnIdle)
 	EVT_TIMER						(ID_STATUSTIMER, ChameleonWindow::OnStatusTimer)
@@ -406,6 +413,9 @@ ChameleonWindow::~ChameleonWindow()
 
 	// (hopefully) fixes some issues with widgets not getting deleted for some reason
 	m_noteTerm->DestroyChildren();	
+
+	//CleanupDropMenu();
+
 
 	delete m_optionsDialog;
 	delete m_compiler;
@@ -858,6 +868,28 @@ void ChameleonWindow::OnMenuEvent(wxCommandEvent &event)
 			{
 				delete process;
 			}
+		}
+	}
+}
+
+void ChameleonWindow::OnDebugBreakpointCommand(wxCommandEvent &event)
+{
+	switch(event.GetId())
+	{
+		case ID_DEBUG_ADDEDITORBREAKPOINT:
+		{
+			m_currentEd->OnAddBreakpoint(event);
+			break;
+		}
+		case ID_DEBUG_REMOVEEDITORBREAKPOINT:
+		{
+			m_currentEd->OnRemoveBreakpoint(event);
+			break;
+		}
+		case ID_DEBUG_CLEAREDITORBREAKPOINTS:
+		{
+			m_currentEd->OnClearBreakpoints(event);
+			break;
 		}
 	}
 }
@@ -2532,6 +2564,8 @@ void ChameleonWindow::UpdateToolbar()
 {
 	Permission* perms = m_options->GetPerms();
 
+	//CleanupDropMenu();
+
 	wxToolBar* t = GetToolBar();
 	delete t;
 	SetToolBar(NULL);
@@ -2543,8 +2577,8 @@ void ChameleonWindow::UpdateToolbar()
 		style |= wxTB_TEXT;
 	}
 	m_config->Write("Interface/ShowToolbarText", showText ? "true" : "false");
-	t = new wxToolBar(this, -1, wxDefaultPosition, wxDefaultSize, style);
-	SetToolBar(t);
+	t = CreateToolBar(style);//new wxToolBar(this, -1, wxDefaultPosition, wxDefaultSize, style);
+	//SetToolBar(t);
 
 	wxBitmap bmNew(newfile_xpm);
 	t->AddTool(ID_NEW_SOURCE, "New", bmNew, "New source file");	
@@ -2612,6 +2646,20 @@ void ChameleonWindow::UpdateToolbar()
 		wxBitmap bmStepOut(stepout_xpm);
 		t->AddTool(ID_DEBUG_STEPOUT, "Step out", bmStepOut,
 			"Run all the code in the current function");
+
+		t->AddSeparator();
+
+		wxBitmap bmAddBreakpoint(breakpoint_xpm);
+		t->AddTool(ID_DEBUG_ADDEDITORBREAKPOINT, "Add", bmAddBreakpoint, 
+			"Add a breakpoint at the current line");
+
+		wxBitmap bmRemoveBreakpoint(breakpoint_octagon_disable_xpm);
+		t->AddTool(ID_DEBUG_REMOVEEDITORBREAKPOINT, "Remove", bmRemoveBreakpoint, 
+			"Remove a breakpoint at the current line");
+
+		wxBitmap bmClearBreakpoint(breakpoint_crossed_xpm);
+		t->AddTool(ID_DEBUG_CLEAREDITORBREAKPOINTS, "Clear", bmClearBreakpoint, 
+			"Remove all breakpoints in this file");
 
 		for(int i = ID_DEBUG_IDS_FIRST; i < ID_DEBUG_IDS_LAST; i++)
 		{
@@ -3699,3 +3747,26 @@ bool ChameleonWindow::AskUserForPassword()
 
 	return false;
 }
+
+
+/*
+void ChameleonWindow::CleanupDropMenu()
+{
+	wxToolBar* tb = GetToolBar();
+
+	if(tb == NULL)
+	{
+		return;
+	}
+
+	wxControl* dropControl = tb->FindControl(ID_DEBUG_REMOVEEDITORBREAKPOINT);
+	if(dropControl != NULL)
+	{
+		mmDropMenu* dropMenu = (mmDropMenu*)dropControl;
+		wxMenu* menu = dropMenu->GetChild();
+
+		delete dropMenu;
+		delete menu;
+	}
+}
+*/
