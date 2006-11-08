@@ -13,6 +13,8 @@
 // //////////////////////////////////////
 #include <wx/txtstrm.h>
 #include <wx/process.h>
+#include <wx/progdlg.h>
+
 #include <wx/listimpl.cpp> // CAREFUL!
 #include "plinkconnect.h"
 #include "../common/chameleonprocessevent.h"
@@ -233,22 +235,36 @@ bool PlinkConnect::getIsConnected()
 {
 	int i = 0;
 
-	//wxWindow* topWindow = wxTheApp->GetTopWindow();
-	//topWindow->SetCursor(wxHOURGLASS_CURSOR);
+	wxProgressDialog* progress = NULL;
 
-	wxBusyCursor cursor;
+
 	while(m_processes.GetFirst() != NULL && m_processes.GetFirst()->GetData()->state == PC_STARTING) {
 		// If the first connection is in the starting
 		//   state, wait till "the dust settles"
 		wxMilliSleep(250);
 
+		if(progress != NULL)
+		{
+			progress->Pulse();
+		}
+
 		if(i % 4 == 0)
 		{
 			wxLogDebug("Synchronous network operation (getIsConnected): %d", i / 4);
+
+			if(i > 12  && progress == NULL)
+			{
+				progress = new wxProgressDialog("Network Operation", "This network connection may take a while...");
+			}
 		}
 
 		i++;
 		wxSafeYield();
+	}
+
+	if(progress != NULL)
+	{
+		delete progress;
 	}
 
 	return m_isConnected;
@@ -366,19 +382,37 @@ wxString PlinkConnect::executeSyncCommand(wxString command)
 	int i = 1;
 	m_synchronous = true;
 
-	wxBusyCursor cursor;
+	wxProgressDialog* progress = NULL;
+
 
 	while(p->state == PC_BUSY || p->state == PC_EXECUTING) {
 		// Perhaps this should terminate after an amount of time
 		wxMilliSleep(250);
+
+		if(progress != NULL)
+		{
+			progress->Pulse();
+		}
 		
 		if(i % 4 == 0)
 		{
 			wxLogDebug("Synchronous network operation (executeSyncCommand): %d (command: %s)", i / 4, command);
+
+			if(i > 12 && progress == NULL)
+			{
+				progress = new wxProgressDialog("Network Operation", "This network connection may take a while...");
+			}
 		}
+
+		
 
 		i++;
 		wxSafeYield();
+	}
+
+	if(progress != NULL)
+	{
+		delete progress;
 	}
 
 	terminateConnection(p);
