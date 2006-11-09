@@ -60,6 +60,10 @@ class PlinkConnect : public wxEvtHandler {
 		bool m_synchronous;
 		ProcessInfoList m_processes;
 
+		bool m_waitingForFingerprint;
+		
+		ProcessInfo* m_tempProcess;
+
 
 #ifdef _PC_INTERNAL_TIMER_
 		wxTimer m_timer;

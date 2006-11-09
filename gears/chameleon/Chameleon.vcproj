@@ -233,10 +233,6 @@
 					>
 				</File>
 				<File
-					RelativePath=".\gui\wxProportionalSplitterWindow.cpp"
-					>
-				</File>
-				<File
 					RelativePath=".\gui\wxssh.cpp"
 					>
 				</File>

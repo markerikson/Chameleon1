@@ -581,7 +581,7 @@ void ChameleonWindow::OnMenuEvent(wxCommandEvent &event)
 			{
 				return;
 			}
-
+restartConnection:
 			NetworkStatus isok = m_network->GetStatus();
 			if(isok == NET_GOOD) 
 			{ 
@@ -597,7 +597,10 @@ void ChameleonWindow::OnMenuEvent(wxCommandEvent &event)
 			else 
 			{
 				wxLogDebug("Tried to start Terminal with invalid networking status: %d", isok);
-				CheckNetworkStatus();
+				if(CheckNetworkStatus() == NETCALL_REDO)
+				{
+					goto restartConnection;
+				}
 			}
 			break;
 		}
@@ -3325,8 +3328,10 @@ NetworkCallResult ChameleonWindow::CheckNetworkStatus()
 			if(result == wxYES)
 			{
 				m_network->SSHCacheFingerprint();
+				return NETCALL_REDO;
 			}
-			return NETCALL_REDO;
+			
+			return NETCALL_FAILED;
 			break;
 		}
 	case NET_ERROR_MESSAGE:
@@ -3713,26 +3718,6 @@ void ChameleonWindow::OnSplitterDoubleClick(wxSplitterEvent &event)
 //////////////////////////////////////////////////////////////////////////////
 void ChameleonWindow::OnSize(wxSizeEvent &event)
 {
-	//wxLogDebug("Full screen: %d", IsFullScreen());
-	wxLogDebug("Maximized: %d", IsMaximized());
-
-	if(!m_appStarting)
-	{
-		wxSize size = m_noteTerm->GetSize();
-		wxLogDebug("Notebook size: %d,%d", size.x, size.y);
-
-		if(IsMaximized())
-		{
-			//m_splitEditorOutput->SetMinimumPaneSize(size.y);
-		}
-		else
-		{
-			//m_splitEditorOutput->SetMinimumPaneSize()
-		}
-		
-
-	}	
-
 	event.Skip();	
 }
 

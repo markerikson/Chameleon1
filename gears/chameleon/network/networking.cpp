@@ -11,6 +11,7 @@
 #include <wx/file.h>
 #include <wx/process.h>
 #include <wx/txtstrm.h>
+#include <wx/progdlg.h>
 #include "networking.h"
 #include "plinkconnect.h"
 #include "../common/datastructures.h"
@@ -629,27 +630,78 @@ wxString Networking::GetStatusDetails()
 ///
 ///  @author David Czechowski @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
-void Networking::SSHCacheFingerprint()
+bool Networking::SSHCacheFingerprint()
 {
 	//Start the program asynchonously, answer "y" to caching, then Kill it:
+
 	wxString cmd = m_options->GetPlinkApp() + " " + m_currHost;
 	wxProcess* proc = new wxProcess(NULL);
 	proc->Redirect();
 	long pid = wxExecute(cmd, wxEXEC_ASYNC, proc);
 	wxTextOutputStream pout(*proc->GetOutputStream(), wxEOL_UNIX);
-	pout << "y\n";
+	pout << "y\recho \"Successful Login\"\r";
 
-	// Sending wxSIGTERM should close it out gracefully, but it doesn't terminate (ODD)
-	// And, sending SIGKILL too soon ends the process before it caches the fingerprint
-	// So, pause for 1/4 a second, then send SIGKILL
-	wxUsleep(250);
+	int i = 0; 
+
+	wxProgressDialog* progress = NULL;
+
+	wxString output;
+
+	while(i < 240)
+	{
+		wxMilliSleep(250);
+
+		if(proc->IsInputAvailable())
+		{
+			wxInputStream* pStdOut = proc->GetInputStream();
+			while(proc->IsInputAvailable()) {
+				output += pStdOut->GetC();
+			}
+			break;
+		}
+
+		if(progress != NULL)
+		{
+			progress->Pulse();
+		}
+
+		if(i % 4 == 0)
+		{
+			wxLogDebug("Synchronous network operation (getting fingerprint): %d", i / 4);
+
+			if(i > 12  && progress == NULL)
+			{
+				progress = new wxProgressDialog("Network Operation", "This network connection may take a while...");
+			}
+		}
+
+		i++;
+		wxSafeYield();
+	}
+
+	if(progress != NULL)
+	{
+		delete progress;
+	}
+
 	wxKill(pid, wxSIGKILL);
+
+	// must have waited for a minute with no result
+	if(output.Length() == 0)
+	{
+		wxMessageBox("Caching the fingerprint timed out.  Try logging in with Putty, then run Chameleon again",
+					"Network Error", wxOK | wxCENTRE | wxICON_ERROR);
+		return false;
+	}
+	else
+	{
+		wxLogDebug("Login presumed successful.  Output: %s", output);
+	}
 
 	m_plinks->setLogin("","",""); // terminate all connections, and do a spawn
 	m_status = NET_STARTING;
 
-	// It also takes care of deleting the process, so we don't have to do that manually.
-	//delete proc; // self-destructs
+	return true;
 }
 
 

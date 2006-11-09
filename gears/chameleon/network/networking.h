@@ -32,8 +32,10 @@ class Networking : public wxEvtHandler {
 		NetworkStatus GetStatus();
 		bool DoingSynchronousOperation();
 		wxString GetStatusDetails();
-		void SSHCacheFingerprint();
+		bool SSHCacheFingerprint();
 		void PingOptions();
+
+
 
 		// Remote Specific:
 		bool GetHomeDirPath(wxString &homeDir);
@@ -76,6 +78,8 @@ class Networking : public wxEvtHandler {
 		wxString m_statusDetails;
 		wxString m_userHomeDir; // mini-cache
 		wxTimer m_timer;
+
+		
 
 
 		DECLARE_EVENT_TABLE()
