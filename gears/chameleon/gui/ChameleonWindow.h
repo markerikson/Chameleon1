@@ -105,6 +105,18 @@ private:
 	void CheckSize();
 
 	void OnMenuEvent(wxCommandEvent &event);
+
+	void OnHelp();
+	void OnPrintSetup();
+	void OnPrintPreview();
+	void OnPrintPage();
+	void OnProjectIncludeExcludeFile( int id );
+	void OnOptions();
+	void OnFindReplace(int id );
+	void OnCopy();
+	void OnStartConnect();
+	void OnSaveSourceFile( int id );
+	void OnOpenSourceFile( int id );
 	void OnDebugCommand(wxCommandEvent &event);
 	void OnDebugBreakpointCommand(wxCommandEvent &event);
 
@@ -265,6 +277,7 @@ private:
 	
 
 	DECLARE_EVENT_TABLE()
+	
 	
 };
 

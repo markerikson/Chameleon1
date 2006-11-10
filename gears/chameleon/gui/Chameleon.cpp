@@ -496,61 +496,49 @@ void ChameleonWindow::OnMenuEvent(wxCommandEvent &event)
 	switch(id)
 	{
 		case ID_NEW_SOURCE:
+		{			
 			NewFile();
 			break;
+		}
 
 		case ID_OPEN_SOURCE_LOCAL:
 		case ID_OPEN_SOURCE_REMOTE:
 		{
-			if( id == ID_OPEN_SOURCE_LOCAL)
-			{
-				m_remoteMode = false;
-			}
-			else if(id == ID_OPEN_SOURCE_REMOTE)
-			{
-				m_remoteMode = true;
-			}
-
-			wxArrayString fnames = OpenFile(FILE_ALLSOURCETYPES);
-
-			if(fnames.Count() > 0)
-			{
-				OpenSourceFile (fnames);
-			}
+			OnOpenSourceFile(id);
 			break;
 		}
 
 		case ID_SAVE:
+		{
 			SaveFile(false, true, FILE_ALLSOURCETYPES);
 			break;
+		}
 
 		case ID_SAVE_SOURCE_LOCAL:
 		case ID_SAVE_SOURCE_REMOTE:
 		{
-			if( id == ID_SAVE_SOURCE_LOCAL)
-			{
-				m_remoteMode = false;
-			}
-			else if(id == ID_SAVE_SOURCE_REMOTE)
-			{
-				m_remoteMode = true;
-			}
-			SaveFile(true, false, FILE_ALLSOURCETYPES);
+			OnSaveSourceFile(id);
 			break;
 		}
 
 		case ID_NEW_PROJECT:
+		{
 			SaveFile(true, true, FILE_PROJECT);
 			break;
+		}
 
 		case ID_OPEN_PROJECT_LOCAL:
 		case ID_OPEN_PROJECT_REMOTE:
+		{
 			OpenProjectFile(id == ID_OPEN_PROJECT_REMOTE);
 			break;
+		}
 
 		case ID_CLOSE_PROJECT:
+		{
 			CloseProjectFile();
 			break;
+		}
 
 		case ID_CLOSETAB:
 		{
@@ -571,47 +559,29 @@ void ChameleonWindow::OnMenuEvent(wxCommandEvent &event)
 		}
 
 		case ID_CLOSEALL:
+		{
 			CloseAllFiles();
 			break;
+		}
 
 
 		case ID_STARTCONNECT:
 		{
-			if(!CheckForBlankPassword())
-			{
-				return;
-			}
-restartConnection:
-			NetworkStatus isok = m_network->GetStatus();
-			if(isok == NET_GOOD) 
-			{ 
-				
-				m_terminal->Connect();
-				wxLogDebug("Connected: %d", m_terminal->IsConnected());
-
-				// Focus on the terminal
-				int terminalIndex = m_noteTerm->FindPagePosition(m_termContainer);
-				m_noteTerm->SetSelection(terminalIndex);
-				m_terminal->SetFocus();
-			}
-			else 
-			{
-				wxLogDebug("Tried to start Terminal with invalid networking status: %d", isok);
-				if(CheckNetworkStatus() == NETCALL_REDO)
-				{
-					goto restartConnection;
-				}
-			}
+			OnStartConnect();
 			break;
 		}
 
 		case ID_DISCONNECT:
+		{
 			m_terminal->Disconnect();
 			break;
+		}
 
 		case ID_QUIT:
+		{
 			Close(TRUE);
 			break;
+		}
 
 		case ID_REDO:
 		case ID_UNDO:
@@ -631,75 +601,26 @@ restartConnection:
 
 		case ID_COPY:
 		{
-			/* HACK!!! 
-			 * Okay, here's the problem.  When keyboard shortcuts like CTRL-C are listed in the text
-			 * of a menu item, that shortcut is automatically assigned.  But, this means that the menu's
-			 * enclosing frame will always capture that shortcut.
-			 *
-			 * I'd really like to have CTRL-C available to the editor for "Copy", but also available to 
-			 * the terminal for killing programs.  My initial experiments didn't come up with anything,
-			 * but I did come up with this workaround.  It'll do for now.  Basically, if we detect a
-			 * CTRL-C, we check to see if a terminal is active.  If it is, we fake a CTRL-C keyboard
-			 * event, and pass it on to the terminal.  Otherwise, we just copy text as usual.
-			 */
-			wxWindow* focusedWindow = wxWindow::FindFocus();
-			
-			if(focusedWindow == m_terminal || focusedWindow == m_debugTerminal)
-			{
-				wxSSH* focusedTerminal = (focusedWindow == m_terminal) ? m_terminal : m_debugTerminal;
-
-				// magic codes copied from a real CTRL-C event.
-				wxKeyEvent ctrlCEvent(wxEVT_CHAR);
-				ctrlCEvent.m_controlDown = true;
-				ctrlCEvent.m_keyCode = 3;
-				ctrlCEvent.m_rawCode = 3;
-				ctrlCEvent.m_rawFlags = 3014657;
-
-				focusedTerminal->ProcessEvent(ctrlCEvent);
-			}
-			else
-			{
-				m_currentEd->Copy();
-			}
-			
+			OnCopy();			
 			break;
 		}
 
 		case ID_CUT:
+		{
 			m_currentEd->Cut();
 			break;
+		}
 
 		case ID_PASTE:
+		{
 			m_currentEd->Paste();
 			break;
+		}
 
 		case ID_FIND:
 		case ID_REPLACE:
 		{			
-			if(m_findReplace != NULL)
-			{
-				bool isReplaceDialog = m_findReplace->GetWindowStyle() & wxFR_REPLACEDIALOG;
-
-				if( (isReplaceDialog && (id == ID_REPLACE)) ||
-					(!isReplaceDialog && (id == ID_FIND)) )
-				{
-					return;
-				}				
-				else
-				{
-					delete m_findReplace;
-				}
-			}
-
-			bool showFind = (id == ID_FIND);
-			int dialogFlags = showFind ? 0 : wxFR_REPLACEDIALOG;
-			wxString title = showFind ? "Find" : "Replace";
-
-			m_findData.SetFlags(wxFR_DOWN);
-
-			m_findReplace = new wxFindReplaceDialog(this,	&m_findData, title, dialogFlags);
-			m_findReplace->Show(TRUE);
-
+			OnFindReplace(id);
 			break;
 		}
 
@@ -712,36 +633,14 @@ restartConnection:
 		
 		case ID_OPTIONS:
 		{
-			if(m_terminal->IsConnected())
-			{
-				m_optionsDialog->DisableServerSettings();
-			}
-			else
-			{
-				m_optionsDialog->EnableServerSettings();
-			}
-
-			m_optionsDialog->InitializeDialog();
-			int result = m_optionsDialog->ShowModal();
-
-			Permission* perms = m_options->GetPerms();
-			// because the authorization could be updated and followed by a cancel,
-			// go ahead and write the authcode out.  Odds are it hasn't changed, but
-			// it's worth doing anyway to make sure it's current.
-			m_config->Write("Permissions/authorized", perms->GetAuthCode());
-
-			// For the same reason, ALWAYS re-evaluate the options.  If the user canceled
-			// the dialog, things won't have changed.
-			EvaluateOptions();	
-
-			m_currentEd->SetFocus();
+			OnOptions();
 			break;
 		}
 
 		case ID_COMPILE_PROJECT:
 		case ID_COMPILE:
 		{
-			// We didn't have time to really test compile cancelation, so this 
+			// We didn't have time to really test compile cancellation, so this 
 			// code is commented out.
 			/*
 			if(m_compiler->IsCompiling())
@@ -760,118 +659,49 @@ restartConnection:
 			}
 			Compile();
 			break;
-		}
-			
+		}			
 
 		case ID_PROJECT_ADDFILE:
+		{
 			AddFileToProject();
 			break;
+		}
 
 		case ID_PROJECT_REMOVEFILE:
+		{
 			RemoveFileFromProject();
 			break;
+		}
 
 		case ID_PROJECT_EXCLUDE_FILE:
 		case ID_PROJECT_INCLUDE_FILE:
 		{
-		
-			bool include = (id == ID_PROJECT_INCLUDE_FILE);
-			FileNameTreeData* data = static_cast <FileNameTreeData* > (m_projectTree->GetItemData(m_clickedTreeItem));
-			m_projMultiFiles->SetFileBuildInclusion(data->filename, m_projectSelectedFolderType, include);
-
-			wxString extension = wxFileName(data->filename).GetExt();
-			int iconIndex;
-			if(include)
-			{
-				iconIndex = m_extensionMappings[extension];
-			}
-			else
-			{
-				extension += "_disabled";
-				iconIndex = m_extensionMappings[extension];
-			}
-			m_projectTree->SetItemImage(m_clickedTreeItem, iconIndex);
+			OnProjectIncludeExcludeFile(id);
 			break;
 		}
 
 		case ID_PRINT_PAGE:
 		{
-			m_currentEd->SetPrintColourMode(m_options->GetPrintStyle());
-			wxPrintDialogData printDialogData( *g_printData);
-			wxPrinter printer (&printDialogData);
-			ChameleonPrintout printout (m_currentEd, m_options);
-			if (!printer.Print (this, &printout, true)) 
-			{
-				if (wxPrinter::GetLastError() == wxPRINTER_ERROR) 
-				{
-					wxMessageBox ("There was a problem with printing.\nPlease check your printer setup and try again.",
-									"Print failed", wxOK | wxICON_WARNING);
-					return;
-				}
-			}
-			(*g_printData) = printer.GetPrintDialogData().GetPrintData();
+			OnPrintPage();
 			break;
 		}
 
 		case ID_PRINT_PREVIEW:
 		{
-			m_currentEd->SetPrintColourMode(m_options->GetPrintStyle());
-			wxPrintDialogData printDialogData( *g_printData);
-			printDialogData.SetToPage(999);
-			wxPrintPreview *preview = new wxPrintPreview (new ChameleonPrintout (m_currentEd, m_options),
-				new ChameleonPrintout (m_currentEd, m_options),
-				&printDialogData);
-			if (!preview->Ok()) 
-			{
-				delete preview;
-				wxMessageBox ("There was a problem with previewing.\nPlease check your printer setup and try again.",
-								"Preview failed", wxOK | wxICON_WARNING);
-				return;
-			}
-			wxRect rect = DeterminePrintSize();
-			wxPreviewFrame *frame = new wxPreviewFrame (preview, this, _("Print Preview"));
-			frame->SetSize (rect);
-			frame->Centre(wxBOTH);
-			frame->Initialize();
-			frame->Show(true);
+			OnPrintPreview();
 			break;
 		}
 
 		case ID_PRINT_SETUP:
 		{
-			(*g_pageSetupData) = * g_printData;
-			wxPageSetupDialog pageSetupDialog(this, g_pageSetupData);
-			pageSetupDialog.ShowModal();
-			(*g_printData) = pageSetupDialog.GetPageSetupData().GetPrintData();
-			(*g_pageSetupData) = pageSetupDialog.GetPageSetupData();
+			OnPrintSetup();
 			break;
 		}
 
 		case ID_HELP:
 		{
-			wxString helpFile = "chameleon.chm";
-			wxString ext = "chm";
-			wxFileType *ft = wxTheMimeTypesManager->GetFileTypeFromExtension(ext);
-			if ( !ft )
-			{
-				return;
-			}
-
-			wxString cmd;
-			bool ok = ft->GetOpenCommand(&cmd,
-				wxFileType::MessageParameters(helpFile, _T("")));
-			delete ft;
-			if ( !ok )
-			{
-				return;
-			}
-
-			wxProcess *process = new wxProcess();
-			long pidLast = wxExecute(cmd, wxEXEC_ASYNC, process);
-			if ( !pidLast )
-			{
-				delete process;
-			}
+			OnHelp();
+			break;
 		}
 	}
 }
@@ -3754,6 +3584,256 @@ bool ChameleonWindow::AskUserForPassword()
 
 	return false;
 }
+
+void ChameleonWindow::OnOpenSourceFile(int id )
+{
+	if( id == ID_OPEN_SOURCE_LOCAL)
+	{
+		m_remoteMode = false;
+	}
+	else if(id == ID_OPEN_SOURCE_REMOTE)
+	{
+		m_remoteMode = true;
+	}
+
+	wxArrayString fnames = OpenFile(FILE_ALLSOURCETYPES);
+
+	if(fnames.Count() > 0)
+	{
+		OpenSourceFile (fnames);
+	}
+}
+
+void ChameleonWindow::OnSaveSourceFile( int id )
+{
+	if( id == ID_SAVE_SOURCE_LOCAL)
+	{
+		m_remoteMode = false;
+	}
+	else if(id == ID_SAVE_SOURCE_REMOTE)
+	{
+		m_remoteMode = true;
+	}
+	SaveFile(true, false, FILE_ALLSOURCETYPES);
+}
+
+void ChameleonWindow::OnStartConnect()
+{
+	if(!CheckForBlankPassword())
+	{
+		return;
+	}
+restartConnection:
+	NetworkStatus isok = m_network->GetStatus();
+	if(isok == NET_GOOD) 
+	{ 
+
+		m_terminal->Connect();
+		wxLogDebug("Connected: %d", m_terminal->IsConnected());
+
+		// Focus on the terminal
+		int terminalIndex = m_noteTerm->FindPagePosition(m_termContainer);
+		m_noteTerm->SetSelection(terminalIndex);
+		m_terminal->SetFocus();
+	}
+	else 
+	{
+		wxLogDebug("Tried to start Terminal with invalid networking status: %d", isok);
+		if(CheckNetworkStatus() == NETCALL_REDO)
+		{
+			goto restartConnection;
+		}
+	}
+}
+
+void ChameleonWindow::OnCopy()
+{
+	/* HACK!!! 
+	* Okay, here's the problem.  When keyboard shortcuts like CTRL-C are listed in the text
+	* of a menu item, that shortcut is automatically assigned.  But, this means that the menu's
+	* enclosing frame will always capture that shortcut.
+	*
+	* I'd really like to have CTRL-C available to the editor for "Copy", but also available to 
+	* the terminal for killing programs.  My initial experiments didn't come up with anything,
+	* but I did come up with this workaround.  It'll do for now.  Basically, if we detect a
+	* CTRL-C, we check to see if a terminal is active.  If it is, we fake a CTRL-C keyboard
+	* event, and pass it on to the terminal.  Otherwise, we just copy text as usual.
+	*/
+	wxWindow* focusedWindow = wxWindow::FindFocus();
+
+	if(focusedWindow == m_terminal || focusedWindow == m_debugTerminal)
+	{
+		wxSSH* focusedTerminal = (focusedWindow == m_terminal) ? m_terminal : m_debugTerminal;
+
+		// magic codes copied from a real CTRL-C event.
+		wxKeyEvent ctrlCEvent(wxEVT_CHAR);
+		ctrlCEvent.m_controlDown = true;
+		ctrlCEvent.m_keyCode = 3;
+		ctrlCEvent.m_rawCode = 3;
+		ctrlCEvent.m_rawFlags = 3014657;
+
+		focusedTerminal->ProcessEvent(ctrlCEvent);
+	}
+	else
+	{
+		m_currentEd->Copy();
+	}
+}
+
+void ChameleonWindow::OnFindReplace(int id)
+{
+	if(m_findReplace != NULL)
+	{
+		bool isReplaceDialog = m_findReplace->GetWindowStyle() & wxFR_REPLACEDIALOG;
+
+		if( (isReplaceDialog && (id == ID_REPLACE)) ||
+			(!isReplaceDialog && (id == ID_FIND)) )
+		{
+			return;
+		}				
+		else
+		{
+			delete m_findReplace;
+		}
+	}
+
+	bool showFind = (id == ID_FIND);
+	int dialogFlags = showFind ? 0 : wxFR_REPLACEDIALOG;
+	wxString title = showFind ? "Find" : "Replace";
+
+	m_findData.SetFlags(wxFR_DOWN);
+
+	m_findReplace = new wxFindReplaceDialog(this,	&m_findData, title, dialogFlags);
+	m_findReplace->Show(TRUE);
+}
+
+void ChameleonWindow::OnOptions()
+{
+	if(m_terminal->IsConnected())
+	{
+		m_optionsDialog->DisableServerSettings();
+	}
+	else
+	{
+		m_optionsDialog->EnableServerSettings();
+	}
+
+	m_optionsDialog->InitializeDialog();
+	int result = m_optionsDialog->ShowModal();
+
+	Permission* perms = m_options->GetPerms();
+	// because the authorization could be updated and followed by a cancel,
+	// go ahead and write the authcode out.  Odds are it hasn't changed, but
+	// it's worth doing anyway to make sure it's current.
+	m_config->Write("Permissions/authorized", perms->GetAuthCode());
+
+	// For the same reason, ALWAYS re-evaluate the options.  If the user canceled
+	// the dialog, things won't have changed.
+	EvaluateOptions();	
+
+	m_currentEd->SetFocus();
+}
+
+void ChameleonWindow::OnProjectIncludeExcludeFile( int id )
+{
+	bool include = (id == ID_PROJECT_INCLUDE_FILE);
+	FileNameTreeData* data = static_cast <FileNameTreeData* > (m_projectTree->GetItemData(m_clickedTreeItem));
+	m_projMultiFiles->SetFileBuildInclusion(data->filename, m_projectSelectedFolderType, include);
+
+	wxString extension = wxFileName(data->filename).GetExt();
+	int iconIndex;
+	if(include)
+	{
+		iconIndex = m_extensionMappings[extension];
+	}
+	else
+	{
+		extension += "_disabled";
+		iconIndex = m_extensionMappings[extension];
+	}
+	m_projectTree->SetItemImage(m_clickedTreeItem, iconIndex);
+}
+	
+void ChameleonWindow::OnPrintPage()
+{
+	m_currentEd->SetPrintColourMode(m_options->GetPrintStyle());
+	wxPrintDialogData printDialogData( *g_printData);
+	wxPrinter printer (&printDialogData);
+	ChameleonPrintout printout (m_currentEd, m_options);
+	if (!printer.Print (this, &printout, true)) 
+	{
+		if (wxPrinter::GetLastError() == wxPRINTER_ERROR) 
+		{
+			wxMessageBox ("There was a problem with printing.\nPlease check your printer setup and try again.",
+				"Print failed", wxOK | wxICON_WARNING);
+			return;
+		}
+	}
+	(*g_printData) = printer.GetPrintDialogData().GetPrintData();
+}
+
+
+void ChameleonWindow::OnPrintPreview()
+{
+	m_currentEd->SetPrintColourMode(m_options->GetPrintStyle());
+	wxPrintDialogData printDialogData( *g_printData);
+	printDialogData.SetToPage(999);
+	wxPrintPreview *preview = new wxPrintPreview (new ChameleonPrintout (m_currentEd, m_options),
+		new ChameleonPrintout (m_currentEd, m_options),
+		&printDialogData);
+	if (!preview->Ok()) 
+	{
+		delete preview;
+		wxMessageBox ("There was a problem with previewing.\nPlease check your printer setup and try again.",
+			"Preview failed", wxOK | wxICON_WARNING);
+		return;
+	}
+	wxRect rect = DeterminePrintSize();
+	wxPreviewFrame *frame = new wxPreviewFrame (preview, this, _("Print Preview"));
+	frame->SetSize (rect);
+	frame->Centre(wxBOTH);
+	frame->Initialize();
+	frame->Show(true);
+}
+
+void ChameleonWindow::OnPrintSetup()
+{
+	(*g_pageSetupData) = * g_printData;
+	wxPageSetupDialog pageSetupDialog(this, g_pageSetupData);
+	pageSetupDialog.ShowModal();
+	(*g_printData) = pageSetupDialog.GetPageSetupData().GetPrintData();
+	(*g_pageSetupData) = pageSetupDialog.GetPageSetupData();
+}
+
+void ChameleonWindow::OnHelp()
+{
+	wxString helpFile = "chameleon.chm";
+	wxString ext = "chm";
+	wxFileType *ft = wxTheMimeTypesManager->GetFileTypeFromExtension(ext);
+	if ( !ft )
+	{
+		return;
+	}
+
+	wxString cmd;
+	bool ok = ft->GetOpenCommand(&cmd,
+		wxFileType::MessageParameters(helpFile, _T("")));
+	delete ft;
+	if ( !ok )
+	{
+		return;
+	}
+
+	wxProcess *process = new wxProcess();
+	long pidLast = wxExecute(cmd, wxEXEC_ASYNC, process);
+	if ( !pidLast )
+	{
+		delete process;
+	}
+
+	return;
+}
+
 
 
 /*
