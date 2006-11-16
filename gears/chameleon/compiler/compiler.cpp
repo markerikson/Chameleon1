@@ -129,7 +129,8 @@ void Compiler::StartNextFile()
 	//wxLogDebug("Starting to Compile with cmd= \"%s\"", cmd);
 	m_compilerStdIn = m_network->StartCommand(isRemote, cmd, this);
 
-	m_intermediateFiles.Add(outFile.GetFullPath(isRemote ? wxPATH_UNIX : wxPATH_DOS));
+	wxString fullFileName = outFile.GetFullPath(isRemote ? wxPATH_UNIX : wxPATH_DOS);
+	m_intermediateFiles.Add(fullFileName);
 
 	// Signal User
 	CompilerEvent e(chEVT_COMPILER_START);

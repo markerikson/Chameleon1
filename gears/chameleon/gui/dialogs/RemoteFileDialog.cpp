@@ -464,16 +464,15 @@ void RemoteFileDialog::SetNetworking(Networking* network)
 //////////////////////////////////////////////////////////////////////////////
 bool RemoteFileDialog::ShowDirectory(wxString dirname, bool refresh, bool showHidden)
 {
-	m_currentPath.AssignDir(dirname);
-	m_pathBox->SetValue(dirname);	
-
-	m_list->ClearAll();
-
 	DirListing dl;	
 	if(!m_network->GetDirListing(dirname, dl, refresh, showHidden))
 	{
 		return false;
 	}
+
+	m_list->ClearAll();
+	m_pathBox->SetValue(dirname);	
+	m_currentPath.AssignDir(dirname);
 
 	m_currentDirListing = dl;
 	FillListView();
@@ -844,9 +843,19 @@ void RemoteFileDialog::ItemActivated()
 	else
 	{
 		// call ShowDirectory w/ new directory
-		m_currentPath.AppendDir(userFileName);
 
-		ShowDirectory(m_currentPath.GetPath(false, wxPATH_UNIX));
+		// m_currentPath gets overwritten in ShowDirectory iff the call succeeds
+		//m_currentPath.AppendDir(userFileName);
+
+		wxFileName tempDirName(m_currentPath);
+		tempDirName.AppendDir(userFileName);
+
+		if(!ShowDirectory(tempDirName.GetPath(false, wxPATH_UNIX)))
+		{
+			wxString errorMessage = wxString::Format("The operation failed.  Error message: \r\n%s", 
+				m_network->GetStatusDetails());
+			wxMessageBox(errorMessage, "Network Operation Failed", wxOK | wxCENTRE | wxICON_HAND);
+		}
 	}
 	m_txtFilename->Clear();
 }/*!
