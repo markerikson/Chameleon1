@@ -479,7 +479,8 @@ void ChameleonEditor::UpdateSyntaxHighlighting()
 	wxString filename = GetFileNameAndPath();
 
 	if( m_options->GetPerms()->isEnabled(PERM_SYNTAXHIGHLIGHT) &&
-		( m_bNewFile || m_project->GetFileType(filename) != FILE_NONSOURCE))
+		( m_bNewFile || (m_project->GetFileType(filename) != FILE_NONSOURCE) || !HasBeenSaved())
+		)
 	{
 		this->SetLexer(wxSTC_LEX_CPP);
 
