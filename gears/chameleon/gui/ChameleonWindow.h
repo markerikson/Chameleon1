@@ -155,7 +155,7 @@ private:
 	void CloseTab();
 	void PageHasChanged (int pageNr = -1);
 	int GetPageNum(wxFileName fn, bool compareWholePath = true, int startingTab = 0);
-	int HandleModifiedFile(int pageNr, bool closingFile); 
+	int HandleModifiedFile(int pageNr, ModifiedFileAction fileAction); 
 
 	void OpenProjectFile(bool isRemote);
 	void AddFileToProject();

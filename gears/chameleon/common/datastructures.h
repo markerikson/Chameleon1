@@ -320,4 +320,11 @@ enum FileFilterType
 	FILE_LASTTYPE,
 };
 
+enum ModifiedFileAction
+{
+	MODIFIEDFILE_CLOSE,
+	MODIFIEDFILE_RELOAD,
+	MODIFIEDFILE_COMPILE,
+};
+
 #endif

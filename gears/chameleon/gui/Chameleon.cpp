@@ -325,7 +325,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	int charWidth = GetCharWidth();
 
 	int fileNameChars = 55;
-	int locationChars = 6;	
+	int locationChars = 10;	
 	int readEditChars = 15;
 	//int networkStatusChars = 25;
 	int lineColChars = 15;
@@ -989,7 +989,7 @@ void ChameleonWindow::CloseFile (int pageNr)
 	}
 
 	// gives the user a chance to save if the file has been modified
-	int modifiedFileResult = HandleModifiedFile(pageNr, true);
+	int modifiedFileResult = HandleModifiedFile(pageNr, MODIFIEDFILE_CLOSE);
 
 	// a wxYES result is taken care of inside HandleModifiedFile, and a
 	// wxNO is handled implicitly by the fact that the file isn't saved.
@@ -1116,7 +1116,7 @@ void ChameleonWindow::OnPageChange (wxNotebookEvent &WXUNUSED(event))
 ///
 ///  @author Mark Erikson @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
-int ChameleonWindow::HandleModifiedFile(int pageNr, bool closingFile)
+int ChameleonWindow::HandleModifiedFile(int pageNr, ModifiedFileAction fileAction)
 {
 	ChameleonEditor *edit = static_cast <ChameleonEditor * > (m_book->GetPage (pageNr));
 
@@ -1151,8 +1151,9 @@ int ChameleonWindow::HandleModifiedFile(int pageNr, bool closingFile)
 		}
 		saveMessage += fileName;
 		
-		saveMessage << " has unsaved changes.  Do you want to save them before the file is ";
+		saveMessage << " has unsaved changes. ";  
 		
+		/*
 		if(closingFile)
 		{
 			saveMessage += "closed?";
@@ -1161,8 +1162,35 @@ int ChameleonWindow::HandleModifiedFile(int pageNr, bool closingFile)
 		{
 			saveMessage += "reloaded?";
 		}
+		*/
 
-		int result = wxMessageBox (saveMessage, "Close", wxYES_NO | wxCANCEL | wxICON_QUESTION);
+		switch(fileAction)
+		{
+			case MODIFIEDFILE_CLOSE:
+			{
+				saveMessage += "Do you want to save them before the file is closed?";
+				break;
+			}
+			case MODIFIEDFILE_RELOAD:
+			{
+				saveMessage += "Do you want to save them before the file is reloaded?";
+				break;
+			}
+			case MODIFIEDFILE_COMPILE:
+			{
+				saveMessage += "Do you want to save them and compile the file / project?";
+				break;
+			}
+		}
+
+		int options = wxYES_NO | wxICON_QUESTION;
+
+		if(fileAction != MODIFIEDFILE_COMPILE)
+		{
+			options |= wxCANCEL;
+		}
+
+		int result = wxMessageBox (saveMessage, "Save?", options);//wxYES_NO | wxCANCEL | wxICON_QUESTION);
 		if( result == wxYES) 
 		{
 			ChameleonEditor* tmpCurrentEd = m_currentEd;
@@ -1318,7 +1346,7 @@ void ChameleonWindow::OpenSourceFile (wxArrayString fnames)
 		// filename is already open
 		if (pageNr >= 0) 
 		{
-			int modifiedFileResult = HandleModifiedFile(pageNr, false);
+			int modifiedFileResult = HandleModifiedFile(pageNr, MODIFIEDFILE_RELOAD);
 
 			// user canceled the open request, skip the reload
 			if(modifiedFileResult == wxCANCEL)
@@ -3225,6 +3253,7 @@ void ChameleonWindow::Compile()
 
 	if(!m_compileProject)
 	{
+		/*
 		if(!m_currentEd->HasBeenSaved())
 		{
 			wxMessageBox("Please save this file before trying to compile it.", 
@@ -3240,6 +3269,18 @@ void ChameleonWindow::Compile()
 				wxOK | wxICON_INFORMATION);
 
 			doCompile = false;
+		}
+		*/
+
+		if(!m_currentEd->HasBeenSaved() || m_currentEd->Modified())
+		{
+			int tabNum = m_book->FindPagePosition(m_currentEd);
+			int result = HandleModifiedFile(tabNum, MODIFIEDFILE_COMPILE);
+
+			if(result == wxCANCEL || result == wxNO)
+			{
+				return;
+			}
 		}
 	}	
 
