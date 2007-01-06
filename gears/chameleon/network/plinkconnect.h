@@ -42,6 +42,8 @@ class PlinkConnect : public wxEvtHandler {
 		bool DoingSynchronousOperation();
 		wxString getMessage() { return m_message; }
 
+		ProcessInfo* FindProcess(wxTextOutputStream* w);
+
 	private:
 		// Methods:
 		void spawnConnection();

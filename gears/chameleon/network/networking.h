@@ -53,6 +53,8 @@ class Networking : public wxEvtHandler {
 		wxTextOutputStream* StartCommand(bool isRemote, wxString cmd, wxEvtHandler* owner);
 		void ForceKillProcess(wxTextOutputStream* w); // <-- ICKY ICKY ICKY
 
+		ProcessInfo* GetProcessInfo(wxTextOutputStream* w);
+
 	private:
 		// Events:
 		void onTerm(wxProcessEvent &e);

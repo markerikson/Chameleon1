@@ -889,6 +889,11 @@ void Networking::ForceKillProcess(wxTextOutputStream* w)
 	}
 }
 
+ProcessInfo* Networking::GetProcessInfo(wxTextOutputStream* w)
+{
+	return m_plinks->FindProcess(w);
+}
+
 
 //Private:
 void Networking::onTerm(wxProcessEvent &e) {
