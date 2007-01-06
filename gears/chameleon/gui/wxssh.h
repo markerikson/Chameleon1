@@ -41,6 +41,8 @@ class wxSSH : public wxTerm
 		virtual void Disconnect(bool clearDisplay = true);
 		virtual bool IsConnected(void);
 
+		virtual void UpdateRemoteSize(int width, int height);
+
 	private:
 		bool m_connected;
 		wxTextOutputStream* m_plinkStdIn;

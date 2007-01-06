@@ -189,6 +189,10 @@ public:
   virtual void SelectPrinter(char *PrinterName);
   virtual void PrintChars(int len, unsigned char *data);
 
+  virtual void UpdateRemoteSize(int width, int height);
+  int GetTermWidth(){return m_charsInLine;}
+  int GetTermHeight(){return m_linesDisplayed;}
+
 private:
   int MapKeyCode(int keyCode);
   void MarkSelection();

@@ -1667,6 +1667,14 @@ void wxTerm::UpdateSize()
 			m_linesDisplayed = numLinesShown;
 			// tell the GTerm core to resize itself
 			ResizeTerminal(numCharsInLine, numLinesShown);	
+
+			UpdateRemoteSize(m_charsInLine, m_linesDisplayed);
+			/*
+			wxString remoteResizeCommand = wxString::Format("stty rows %d cols %d", m_linesDisplayed, m_charsInLine);
+			wxLogDebug("Resizing terminal: %s", remoteResizeCommand);
+			wxStringBuffer tempBuffer(remoteResizeCommand, 256);
+			SendBack(tempBuffer);
+			*/
 		}
 	}
 
@@ -1983,4 +1991,9 @@ void wxTerm::ScrollTerminal(int numLines, bool scrollUp /* = true */)
 void wxTerm::OnSize(wxSizeEvent &event)
 {
 	UpdateSize();
+}
+
+void wxTerm::UpdateRemoteSize(int width, int height)
+{
+
 }

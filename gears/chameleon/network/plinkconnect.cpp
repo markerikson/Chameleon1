@@ -237,9 +237,9 @@ bool PlinkConnect::getIsConnected()
 
 	wxProgressDialog* progress = NULL;
 
-	wxProcessInfoListNode* first = m_processes.GetFirst();
+	wxProcessInfoListNode* first; //= m_processes.GetFirst();
 
-	while(first != NULL && first->GetData()->state == PC_STARTING) {
+	while( (first = m_processes.GetFirst()) != NULL && first->GetData()->state == PC_STARTING) {
 		// If the first connection is in the starting
 		//   state, wait till "the dust settles"
 		wxMilliSleep(250);
@@ -464,6 +464,17 @@ void PlinkConnect::parseOutput(ProcessInfo* p, wxString output, wxString errLog)
 			m_message += errLog;
 			terminateConnection(p);
 		}
+		else if(errLog.Contains("Unable to authenticate"))
+		{
+			// Obviously, the password was bad.  If we're here, we _should_
+			// have come through onTerminate(), so there's no need to kill
+			// the process.  Instead, we just need to let the world know that
+			// authentication failed.
+			p->state = PC_ENDING;
+			m_message += errLog;
+
+
+		}
 		else {
 			//*(p->stdinStream) << "echo \"Successful Login\"" << endl; <-- backup plan
 			// Do nothing.  Just continue waiting.
@@ -648,7 +659,7 @@ void PlinkConnect::PollTick() {
 //Private:
 void PlinkConnect::onTerminate(wxProcessEvent& event) {
 
-	PollTick(); // Catch any last Outputs
+	//PollTick(); // Catch any last Outputs
 
 	// Determine which process:
 	long pid = event.GetPid();
@@ -665,7 +676,9 @@ void PlinkConnect::onTerminate(wxProcessEvent& event) {
 	if(found) {
 		//Remove and Delete the process:
 		//wxLogDebug("A Plink Connection Terminated - pid(%d)", pid);
+		PollTick();
 		delete p->proc;
+
 		delete p->stdinStream;
 		m_processes.DeleteObject(p);
 		delete p;

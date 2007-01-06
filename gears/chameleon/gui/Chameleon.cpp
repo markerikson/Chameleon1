@@ -326,12 +326,12 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 	int fileNameChars = 55;
 	int locationChars = 6;	
-	int readEditChars = 9;
-	int networkStatusChars = 25;
+	int readEditChars = 15;
+	//int networkStatusChars = 25;
 	int lineColChars = 15;
 
 	const int widths[] = {fileNameChars * charWidth, locationChars * charWidth, readEditChars * charWidth, 
-							networkStatusChars * charWidth, lineColChars * charWidth};
+							/*networkStatusChars * charWidth,*/ lineColChars * charWidth};
 	m_statusBar = CreateStatusBar (WXSIZEOF(widths), wxST_SIZEGRIP);
 	m_statusBar->SetStatusWidths (WXSIZEOF(widths), widths);
 	SendSizeEvent();
@@ -1956,6 +1956,7 @@ void ChameleonWindow::UpdateStatusBar()
 		wxLogDebug("UI aware of synchronous op");
 	}
 
+	/*
 	wxString netStatus = m_network->GetStatusDetails();
 	wxString statusText;
 	if(netStatus == "NET_STARTING")
@@ -1985,15 +1986,15 @@ void ChameleonWindow::UpdateStatusBar()
 	}
 
 	SetStatusText(statusText, 3);
-
+	*/
 
 	int curLine = m_currentEd->GetCurrentLine();
-	int curPos = m_currentEd->GetCurrentPos() -m_currentEd->PositionFromLine (-curLine);
+	int curPos = m_currentEd->GetCurrentPos() - m_currentEd->PositionFromLine (-curLine);
 	wxString linecol;
 	linecol.Printf (_("Line: %d, Col: %d"), curLine, curPos);
-	if (linecol != m_statusBar->GetStatusText (4)) 
+	if (linecol != m_statusBar->GetStatusText (3)) 
 	{
-		SetStatusText (linecol, 4);
+		SetStatusText (linecol, 3);
 	}
 }
 
@@ -3619,6 +3620,7 @@ void ChameleonWindow::OnSaveSourceFile( int id )
 
 void ChameleonWindow::OnStartConnect()
 {
+checkPassword:
 	if(!CheckForBlankPassword())
 	{
 		return;
@@ -3635,6 +3637,16 @@ restartConnection:
 		int terminalIndex = m_noteTerm->FindPagePosition(m_termContainer);
 		m_noteTerm->SetSelection(terminalIndex);
 		m_terminal->SetFocus();
+	}
+	else if(isok == NET_AUTH_FAILED)
+	{
+		wxLogDebug("User gave us an invalid password");
+		wxMessageBox("Your password was not accepted.  Perhaps you typed it wrong?", "Invalid Password",
+		wxOK | wxICON_HAND);
+
+		// reset the password to blank so we go into CheckForBlankPassword()
+		m_options->SetPassphrase(wxEmptyString);
+		goto checkPassword;
 	}
 	else 
 	{

@@ -282,3 +282,79 @@ void wxSSH::OnPlinkTerm(ChameleonProcessEvent &e)
 
 	m_connected = false;
 }
+
+typedef struct
+{
+	int width;
+	int height;
+} ResizeData;
+
+void wxSSH::UpdateRemoteSize(int width, int height)
+{
+	ProcessInfo* p = m_networking->GetProcessInfo(m_plinkStdIn);
+
+	if(p == NULL)
+	{
+		return;
+	}
+	wxString eventName = wxString::Format("PRE%d", p->pid);
+	wxString sharedName = wxString::Format("PSM%d", p->pid);
+	int size = sizeof(ResizeData);
+
+	HANDLE hSharedData;
+
+	char buffer[128];
+	sprintf(buffer, "%s", sharedName.c_str());
+
+	hSharedData = CreateFileMapping (INVALID_HANDLE_VALUE, NULL, 
+		PAGE_READWRITE, 0, size, buffer);//(LPCTSTR )eventName.c_str());
+
+	if (hSharedData == NULL)
+	{
+		/*
+		//int err = GetLastError();
+
+		LPVOID lpMsgBuf;
+		LPVOID lpDisplayBuf;
+		LPCTSTR lpszFunction = "Null handle: ";
+
+		DWORD dw = GetLastError(); 
+
+		FormatMessage(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER | 
+		FORMAT_MESSAGE_FROM_SYSTEM |
+		FORMAT_MESSAGE_IGNORE_INSERTS,
+		NULL,
+		dw,
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		(LPTSTR) &lpMsgBuf,
+		0, NULL );
+
+		lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT, 
+		(lstrlen((LPCTSTR)lpMsgBuf)+lstrlen((LPCTSTR)lpszFunction)+40)*sizeof(TCHAR)); 
+		wsprintf((LPTSTR)lpDisplayBuf, 
+		TEXT("%s failed with error %d: %s"), 
+		lpszFunction, dw, lpMsgBuf); 
+		MessageBox(NULL, (LPCTSTR)lpDisplayBuf, TEXT("Error"), MB_OK); 
+
+		LocalFree(lpMsgBuf);
+		LocalFree(lpDisplayBuf);
+		*/
+
+		return;
+	}
+
+	ResizeData* pSharedData = (ResizeData *) MapViewOfFile( hSharedData, 
+		FILE_MAP_READ | FILE_MAP_WRITE, 0, 0, 0);
+
+	//CSharedStruct<ResizeData> rd((char *)eventName.c_str());
+	pSharedData->width = GetTermWidth();
+	pSharedData->height = GetTermHeight();
+
+	HANDLE hPlinkEvent = CreateEvent(NULL, FALSE, FALSE, eventName);
+
+	SetEvent(hPlinkEvent);
+
+	CloseHandle(hSharedData);
+
+}
