@@ -387,7 +387,9 @@ void GTerm::shift_text( int y, int start_x, int end_x, int num )
     while( num-- )
 	{
         color[x++] = c;
-		tm.SetColorAdjusted(y, x, c);
+
+		int colorIndex = end_x + num + 1;
+		tm.SetColorAdjusted(y, colorIndex,c);
 	}
     changed_line(y, start_x, end_x);
 }

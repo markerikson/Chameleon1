@@ -446,9 +446,9 @@ void TextManager::SetColorAdjusted(int y, int x, unsigned short value)
 {
 	int actualLine = AdjustIndex(y);
 
-	if( (actualLine > m_maxHeight) || (y >= m_viewportHeight))
+	if( (actualLine > m_maxHeight) || (y >= m_viewportHeight) || x > m_color[actualLine].size())
 	{
-		wxLogDebug("Bad Y value in TM::SCA.  y = %d, viewport height = %d", y, m_viewportHeight);
+		wxLogDebug("Bad Y value in TM::SCA.  y = %d, viewport height = %d, x = %d", y, m_viewportHeight, x);
 		return;
 	}
 
