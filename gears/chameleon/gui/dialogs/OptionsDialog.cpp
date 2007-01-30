@@ -116,7 +116,7 @@ bool OptionsDialog::Create( wxWindow* parent, wxWindowID id, const wxString& cap
 ////@end OptionsDialog member initialisation
 
 ////@begin OptionsDialog creation
-    SetExtraStyle(GetExtraStyle()|wxWS_EX_BLOCK_EVENTS);
+    SetExtraStyle(wxWS_EX_BLOCK_EVENTS);
     wxDialog::Create( parent, id, caption, pos, size, style );
 
     CreateControls();
@@ -141,7 +141,7 @@ void OptionsDialog::CreateControls()
     wxBoxSizer* itemBoxSizer2 = new wxBoxSizer(wxVERTICAL);
     itemDialog1->SetSizer(itemBoxSizer2);
 
-    m_optionsNotebook = new wxNotebook( itemDialog1, ID_NOTEBOOK, wxDefaultPosition, wxSize(400, 270), wxNB_TOP );
+    m_optionsNotebook = new wxNotebook( itemDialog1, ID_NOTEBOOK, wxDefaultPosition, wxSize(400, 270), wxNB_DEFAULT|wxNB_TOP );
 
     wxPanel* itemPanel4 = new wxPanel( m_optionsNotebook, ID_PANEL1, wxDefaultPosition, wxSize(100, 80), wxNO_BORDER|wxTAB_TRAVERSAL );
     wxBoxSizer* itemBoxSizer5 = new wxBoxSizer(wxVERTICAL);
@@ -233,34 +233,30 @@ void OptionsDialog::CreateControls()
     m_cbPrintLineNumbers->SetValue(false);
     itemBoxSizer30->Add(m_cbPrintLineNumbers, 0, wxALIGN_LEFT|wxALL, 5);
 
-    wxStaticBox* itemStaticBoxSizer34Static = new wxStaticBox(itemPanel28, wxID_ANY, _("Static"));
-    wxStaticBoxSizer* itemStaticBoxSizer34 = new wxStaticBoxSizer(itemStaticBoxSizer34Static, wxHORIZONTAL);
-    itemBoxSizer30->Add(itemStaticBoxSizer34, 1, wxGROW|wxALL, 0);
-
     m_showToolbarText = new wxCheckBox( itemPanel28, ID_CHECKBOX, _("Show text on toolbar buttons"), wxDefaultPosition, wxDefaultSize, 0 );
     m_showToolbarText->SetValue(false);
     itemBoxSizer30->Add(m_showToolbarText, 1, wxGROW|wxALL, 5);
 
-    wxBoxSizer* itemBoxSizer36 = new wxBoxSizer(wxHORIZONTAL);
-    itemBoxSizer30->Add(itemBoxSizer36, 0, wxALIGN_LEFT|wxALL, 0);
-    wxStaticText* itemStaticText37 = new wxStaticText( itemPanel28, wxID_STATIC, _("Maximum history lines in the terminal:"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer36->Add(itemStaticText37, 0, wxALIGN_CENTER_VERTICAL|wxALL|wxADJUST_MINSIZE, 5);
+    wxBoxSizer* itemBoxSizer35 = new wxBoxSizer(wxHORIZONTAL);
+    itemBoxSizer30->Add(itemBoxSizer35, 0, wxALIGN_LEFT|wxALL, 0);
+    wxStaticText* itemStaticText36 = new wxStaticText( itemPanel28, wxID_STATIC, _("Maximum history lines in the terminal:"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer35->Add(itemStaticText36, 0, wxALIGN_CENTER_VERTICAL|wxALL|wxADJUST_MINSIZE, 5);
 
     m_termHistory = new wxSpinCtrl( itemPanel28, ID_SPINCTRL, _T("0"), wxDefaultPosition, wxSize(60, -1), wxSP_ARROW_KEYS, 25, 2500, 0 );
-    itemBoxSizer36->Add(m_termHistory, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    itemBoxSizer35->Add(m_termHistory, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     m_optionsNotebook->AddPage(itemPanel28, _("Miscellaneous"));
 
     itemBoxSizer2->Add(m_optionsNotebook, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
-    wxBoxSizer* itemBoxSizer39 = new wxBoxSizer(wxHORIZONTAL);
-    itemBoxSizer2->Add(itemBoxSizer39, 0, wxALIGN_RIGHT|wxALL, 0);
+    wxBoxSizer* itemBoxSizer38 = new wxBoxSizer(wxHORIZONTAL);
+    itemBoxSizer2->Add(itemBoxSizer38, 0, wxALIGN_RIGHT|wxALL, 0);
 
-    wxButton* itemButton40 = new wxButton( itemDialog1, ID_BUTTON_OK, _("OK"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer39->Add(itemButton40, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxButton* itemButton39 = new wxButton( itemDialog1, ID_BUTTON_OK, _("OK"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer38->Add(itemButton39, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxButton* itemButton41 = new wxButton( itemDialog1, ID_BUTTON_CANCEL, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer39->Add(itemButton41, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxButton* itemButton40 = new wxButton( itemDialog1, ID_BUTTON_CANCEL, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer38->Add(itemButton40, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
 ////@end OptionsDialog content construction
 }

@@ -170,7 +170,7 @@ void AboutChameleonDialog::CreateControls()
     itemStaticBitmap13->SetBackgroundColour(wxColour(255, 255, 255));
     itemBoxSizer11->Add(itemStaticBitmap13, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
-    wxStaticText* itemStaticText14 = new wxStaticText( itemPanel10, wxID_STATIC, _("Ben Carhart\n - Requirements Lead, Quality Assurance, Testing Lead\n - Debugger, Permissions\nDavid Czechowski\n - Design Lead, Configuration Management \n - Networking, Compiler\nMark Erikson\n - Team Lead, Project Lead\n - GUI, Editor, Terminal"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT );
+    wxStaticText* itemStaticText14 = new wxStaticText( itemPanel10, wxID_STATIC, _("Ben Carhart\n - Requirements, Quality Assurance, Testing Lead\n - Debugger, Permissions\nDavid Czechowski\n - Design Lead, Configuration Management \n - Networking, Compiler\nMark Erikson\n - Team Lead, Project Lead\n - GUI, Editor, Terminal"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT );
     itemStaticText14->SetForegroundColour(wxColour(0, 0, 0));
     itemStaticText14->SetBackgroundColour(wxColour(255, 255, 255));
     itemStaticText14->SetFont(wxFont(10, wxSWISS, wxNORMAL, wxNORMAL, false, _T("Verdana")));
