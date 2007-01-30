@@ -1,0 +1,40 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>Chameleon:Tutorial Tutorial</title>
+<style TYPE="text/css">
+  .code { font-family: Courier New }
+</style>
+  </head>
+<body style="font-family: Arial, Lucida, Helvetica">
+<h2>Tutorial</h2>
+    <h3>Part 2: Using the Terminal</h3>
+        <p>You've probably spent the vast majority of your life using computers that run Windows.  Windows is an example of a Graphical User Interface, or GUI.  That basically means that there's a mouse pointer and icons and windows and buttons and lots of stuff like that.  However, the other main way of interacting with a computer is through what's called a Command Line Interface.  If you've ever used the Windows Command Prompt or had experience with DOS, those are command lines.  Instead of pointing and clicking on things, you type in commands for the computer to execute.  There's another operating system called Linux, in which nearly everything is done using a command line.  In fact, you can actually be sitting at one computer and be running commands on a Linux computer on the other side of the world, using what's called a <em>terminal program</em>.  Chameleon has a built-in terminal, which you'll be using quite a bit in the near future.</p>
+        <p>In order to use the terminal, you must have the network settings properly filled in in the Options dialog, particularly your password for the other computer.  Without those, Chameleon can't connect properly.  If you've already been opening and saving files to the remote server, then you're ready to go.</p>
+        <p>To begin a terminal session, click the tools menu and select <em>Connect to server</em>.  Some text should appear in the bottom portion of the screen (the area with the black background).  That's the <em>terminal window</em>.  It's where you'll type in commands to be run on the remote server.  The text on the screen right now is the <em>command prompt</em>.  It just says what your username is, what computer you're connected to, and what directory you're in.  For example, if my username was s1234567, and the computer I was connected to was james.myschool.edu, the prompt might read:
+
+<pre class="code">
+[s1234567@james ~]$
+</pre>
+
+or
+<pre class="code">
+james%home/s1234567>
+</pre>
+
+One key thing you'll want to do while using a terminal is see what files are in a directory.  If you've ever used DOS, you know about the <span class="code">dir</span> command.  In Linux, there's a similar command called <span class="code">ls</span>.  If you type that in and press Enter, you should see a list of files in the current directory appear on the screen.  Odds are there aren't too many files in your directory at the moment, but you should see tutorial1.cpp listed.  Now it's time to actually run the "Hello World" program you wrote earlier.</p>
+        <p>Right now, the computer has no way of understanding what you wrote.  It's just a text file.  It needs a special program called a <em>compiler</em> to translate what you wrote into the instructions it understands.  There are lots of different compilers out there for lots of different programming languages.  The one you'll be using is called the GNU C++ Compiler, or g++.</p>
+        <p>Compiling your program is pretty simple.  You just need to type g++, followed by a list of files you want to compile, as well as any options you want to include.  Here's an example:
+<pre class="code">
+g++ tutorial1.cpp
+</pre>
+This tells g++ to compile the file tutorial1.cpp.  Try typing that into the terminal and press Enter.  If everything was typed in correctly, then you should see a second prompt appear.  By default, g++ turns your program into a file called <span class="code">a.out</span>.  Unlike Windows, where a program needs to end with <span class="code">.exe</span> in order to be run, any file in Linux can be marked as an executable file.  To run your program, just type <span class="code">a.out</span> at the prompt and press Enter.  If it prints "Hello World", congratulations.  You've just created your first C++ program!</p>
+        <p>I already mentioned that you can use various options with g++.  One useful option is the <span class="code">-o filename</span> option.  This tells g++ to save the executable it creates using the filename you gave it.  For example:
+<pre class="code">
+g++ tutorial1.cpp -o tutorial1.exe
+</pre>
+          This tells g++ to compile the file tutorial1.cpp, and save the output as tutorial1.exe.  As I said previously, file extensions don't really matter in Linux, but it can be helpful to save executables with the .exe extension if you're used to Windows.</p>
+        <p>When you're programming, it's a good idea to exit the terminal.  Go to the Tools menu and select <em>Disconnect from server</em>.  That's all for this portion of the tutorial.</p>
+
+</body>
+</html>

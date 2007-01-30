@@ -6,7 +6,7 @@
 	dt { font-weight: bold; }
 	</style>
   </head>
-<body>
+<body style="font-family: Arial, Lucida, Helvetica">
 
 <h2>Menus and Toolbar</h2>
 <h3><a name="menus">Menus</a></h3>

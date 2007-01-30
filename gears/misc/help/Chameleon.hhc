@@ -1,18 +1,42 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <HTML>
 <HEAD>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <meta name="GENERATOR" content="HelpBlocks">
 <!-- Sitemap 1.0 -->
 </HEAD><BODY>
+<OBJECT type="text/site properties">
+<param name="Font" value="MS Sans Serif,8,0">
+</OBJECT>
 <UL>
   <LI><OBJECT type="text/sitemap">
-      <param name="Name" value="Introduction">
-      <param name="Local" value="um-intro.htm">
+      <param name="Name" value="Welcome to Chameleon">
+      <param name="Local" value="um-welcome.htm">
       </OBJECT>
-  <LI><OBJECT type="text/sitemap">
-      <param name="Name" value="Tutorial">
-      <param name="Local" value="um-tut.htm">
-      </OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap">
+        <param name="Name" value="Introduction">
+        <param name="Local" value="um-intro.htm">
+        </OBJECT>
+    <LI><OBJECT type="text/sitemap">
+        <param name="Name" value="Version History">
+        <param name="Local" value="um-history.htm">
+        </OBJECT>
+    <LI><OBJECT type="text/sitemap">
+        <param name="Name" value="Tutorial">
+        <param name="Local" value="um-tutfolder.htm">
+        </OBJECT>
+    <UL>
+      <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Part 1: Introduction to Chameleon">
+          <param name="Local" value="um-tut.htm">
+          </OBJECT>
+      <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Part 2: Using the Terminal">
+          <param name="Local" value="um-tutorial2.htm">
+          </OBJECT>
+    </UL>
+  </UL>
   <LI><OBJECT type="text/sitemap">
       <param name="Name" value="Chameleon Reference">
       </OBJECT>

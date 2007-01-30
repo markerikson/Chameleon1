@@ -4,7 +4,7 @@
     <title>Chameleon: User Interface</title>
 
   </head>
-<body>
+<body style="font-family: Arial, Lucida, Helvetica">
 <h2>Main Window</h2>
 <IMG SRC="screen-chameleon.png" BORDER="0">
 
