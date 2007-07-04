@@ -295,7 +295,7 @@ void Compiler::OnProcessTerm(ChameleonProcessEvent& e)
 			e.SetFile(m_intermediateFiles.Last());
 		}
 
-		m_intermediateFiles.Remove(m_intermediateFiles.Count()-1); // remove the executable
+		m_intermediateFiles.RemoveAt(m_intermediateFiles.Count() - 1);
 
 		// End
 		AddPendingEvent(e);
@@ -352,7 +352,8 @@ void Compiler::OnProcessOut(ChameleonProcessEvent& e)
 		else if(s.Contains("C_O_M_P_I_L_E_FAILED")) {
 			s.Remove(s.Find("C_O_M_P_I_L_E_FAILED"));
 			//remove this filename from the intermediate list
-			m_intermediateFiles.Remove(m_intermediateFiles.Count()-1);
+			//m_intermediateFiles.Remove(m_intermediateFiles.Count()-1);
+			m_intermediateFiles.RemoveAt(m_intermediateFiles.Count()-1);
 			m_compilingStatus = CR_ERROR;
 		}
 

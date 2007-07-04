@@ -191,7 +191,7 @@ enum CompileResult {
 
 WX_DEFINE_ARRAY(wxWindow*, WindowPointerArray);
 WX_DEFINE_ARRAY(ChameleonEditor*, EditorPointerArray);
-WX_DEFINE_ARRAY(bool, BoolArray);
+WX_DEFINE_ARRAY_INT(bool, BoolArray);
 
 #pragma warning(pop)
 

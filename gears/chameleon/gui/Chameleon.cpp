@@ -36,6 +36,8 @@
 #include "../compiler/compilerevent.h"
 #include "IconManager.h"
 #include "wxProportionalSplitterWindow.h"
+
+#include <wx/msw/helpchm.h>
 //#include "mmDropMenu.h"
 
 #include "newfile.xpm"
@@ -381,6 +383,17 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 	m_appStarting = false;
 	m_compileProject = false;
+
+	HINSTANCE hInstance = wxGetInstance();
+	char *pStr, szPath[_MAX_PATH];
+	GetModuleFileName(hInstance, szPath, _MAX_PATH);
+	pStr = strrchr(szPath, '\\');
+	if (pStr != NULL)
+		*(++pStr)='\0'; 
+
+	wxFileName helpFile(szPath, "Chameleon.chm");
+	m_helpController = new wxCHMHelpController();
+	m_helpController->Initialize(helpFile.GetFullPath());
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -2584,7 +2597,7 @@ void ChameleonWindow::UpdateTerminalNotebook()
 		m_watchPanel->Show();
 		m_debugTermContainer->Show();
 		m_noteTerm->AddPage(m_watchPanel, "Variable Watches");
-		m_noteTerm->AddPage(m_debugTermContainer, "Debug I/O");
+		m_noteTerm->AddPage(m_debugTermContainer, "Debug Console");
 	}
 	else
 	{
@@ -3860,7 +3873,13 @@ void ChameleonWindow::OnPrintSetup()
 
 void ChameleonWindow::OnHelp()
 {
+	m_helpController->DisplayContents();
+	/*
+	wxTheApp->
 	wxString helpFile = "chameleon.chm";
+	wxFileName helpPath(wxGetCwd(), helpFile);
+	
+	
 	wxString ext = "chm";
 	wxFileType *ft = wxTheMimeTypesManager->GetFileTypeFromExtension(ext);
 	if ( !ft )
@@ -3870,7 +3889,7 @@ void ChameleonWindow::OnHelp()
 
 	wxString cmd;
 	bool ok = ft->GetOpenCommand(&cmd,
-		wxFileType::MessageParameters(helpFile, _T("")));
+		wxFileType::MessageParameters(helpPath.GetFullPath(), _T("")));
 	delete ft;
 	if ( !ok )
 	{
@@ -3885,6 +3904,7 @@ void ChameleonWindow::OnHelp()
 	}
 
 	return;
+	*/
 }
 
 

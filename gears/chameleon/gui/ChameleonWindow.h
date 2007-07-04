@@ -57,6 +57,7 @@ class wxListCtrl;
 class CompilerOutputPanel;
 class IconManager;
 class wxProportionalSplitterWindow;
+class wxCHMHelpController;
 
 
 //----------------------------------------------------------------------
@@ -274,6 +275,8 @@ private:
 	wxString m_filterProjectFiles;
 	wxString m_filterLibraryFiles;
 	wxString m_filterAllFiles;
+
+	wxCHMHelpController* m_helpController;
 	
 
 	DECLARE_EVENT_TABLE()

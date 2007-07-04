@@ -68,7 +68,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="wxbase26d.lib wxbase26d_net.lib wxbase26d_xml.lib wxmsw26d_core.lib wxmsw26d_adv.lib wxmsw26d_gl.lib wxmsw26d_html.lib wxmsw26d_stc.lib wxjpegd.lib wxregexd.lib wxpngd.lib wxtiffd.lib wxzlibd.lib comctl32.lib rpcrt4.lib winmm.lib advapi32.lib wsock32.lib msvcrtd.lib oldnames.lib"
+				AdditionalDependencies="wxbase28d.lib wxbase28d_net.lib wxbase28d_xml.lib wxmsw28d_core.lib wxmsw28d_adv.lib wxmsw28d_gl.lib wxmsw28d_html.lib wxmsw28d_stc.lib wxjpegd.lib wxregexd.lib wxpngd.lib wxtiffd.lib wxzlibd.lib comctl32.lib rpcrt4.lib winmm.lib advapi32.lib wsock32.lib msvcrtd.lib oldnames.lib"
 				OutputFile="$(OutDir)/Chameleon.exe"
 				LinkIncremental="2"
 				IgnoreAllDefaultLibraries="false"
@@ -343,6 +343,14 @@
 				<File
 					RelativePath=".\common\ProjectInfo.cpp"
 					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							GeneratePreprocessedFile="0"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\common\verinfo.cpp"
