@@ -209,6 +209,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\gui\ChameleonProjectManager.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\gui\dialogs\CompilerOutputPanel.cpp"
 					>
 				</File>
@@ -333,6 +337,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\debugger\DebugManager.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\common\options.cpp"
 					>
 				</File>
@@ -368,6 +376,10 @@
 				>
 				<File
 					RelativePath=".\gui\ChameleonNotebook.h"
+					>
+				</File>
+				<File
+					RelativePath=".\gui\ChameleonProjectManager.h"
 					>
 				</File>
 				<File
@@ -476,6 +488,10 @@
 				</File>
 				<File
 					RelativePath=".\common\DebugEvent.h"
+					>
+				</File>
+				<File
+					RelativePath=".\debugger\DebugManager.h"
 					>
 				</File>
 				<File

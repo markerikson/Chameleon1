@@ -28,6 +28,9 @@ class wxDebugEvent : public wxEvent
 		void SetFileBreakpoints(FileBreakpointHash filebreakpoints);
 		void SetProject(ProjectInfo* project);
 		void SetTTYString(wxString tty);
+		void SingleItemRequested(bool val) { m_singleItemRequested = val; }
+		
+		
 
 		int GetLineNumber() { return m_lineNumber;}
 		wxArrayString GetVariableNames() { return m_variableNames; }
@@ -42,8 +45,9 @@ class wxDebugEvent : public wxEvent
 		FileBreakpointHash GetFileBreakpoints() { return m_filebreakpoints; }
 		ProjectInfo* GetProject() { return m_project; }
 		wxString GetTTYString() { return m_ttyString; }
+		bool GetSingleItemRequested() const { return m_singleItemRequested; }
 
-public:
+private:
 		int m_lineNumber;
 		wxArrayString m_variableNames;
 		wxArrayString m_variableValues;
@@ -59,6 +63,8 @@ public:
 		FileBreakpointHash m_filebreakpoints;
 		ProjectInfo* m_project;
 
+		bool m_singleItemRequested;
+		
 
 };
 

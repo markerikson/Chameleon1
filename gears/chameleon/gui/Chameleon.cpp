@@ -31,11 +31,13 @@
 #include "../compiler/compiler.h"
 #include "../common/Options.h"
 #include "../debugger/cham_db.h"
+#include "../debugger/DebugManager.h"
 #include "../common/DebugEvent.h"
 #include "wxssh.h"
 #include "../compiler/compilerevent.h"
 #include "IconManager.h"
 #include "wxProportionalSplitterWindow.h"
+#include "ChameleonProjectManager.h"
 
 #include <wx/msw/helpchm.h>
 //#include "mmDropMenu.h"
@@ -259,10 +261,24 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	}
 	
 	wxFileName plinkPath(wxGetCwd(), "plink.exe");
+
+	if (!plinkPath.FileExists())
+	{
+		wxLogDebug("Plink.exe not found! Path used: %s", plinkPath.GetFullPath());
+	} 
+	
 	m_options->SetPlinkApp(plinkPath.GetFullPath());
+	
 
 	wxFileName pscpPath(wxGetCwd(), "pscp.exe");  
+
+	if (!pscpPath.FileExists())
+	{
+		wxLogDebug("PSCP.exe not found! Path used: %s", pscpPath.GetFullPath());
+	} 
+
 	m_options->SetPscpApp(pscpPath.GetFullPath());
+
 
 	m_network = new Networking(m_options);
 	m_compiler = new Compiler(m_options, m_network);
@@ -290,6 +306,16 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	m_outputPanel->SetAdvanced(perms->isEnabled(PERM_ADVANCEDCOMPILE));
 
 	m_watchPanel = new VariableWatchPanel(m_noteTerm, this, ID_VARWATCHPANEL);
+
+	m_projectManager = new ChameleonProjectManager(m_book);
+
+	m_debugManager = new DebugManager(m_debugger, m_debugTerminal, m_projectManager, this, m_watchPanel);
+	// TODO Go ahead and activate the DebugManager here
+	m_debugger->SetEventHandler(m_debugManager);
+	m_watchPanel->SetEventHandler(m_debugManager);
+
+
+	
 
 	// project setup
 	m_projMultiFiles = NULL;
@@ -414,6 +440,8 @@ ChameleonWindow::~ChameleonWindow()
 	delete g_printData;
 	delete g_pageSetupData;
 
+	delete m_helpController;
+
 	if(m_findReplace != NULL)
 	{
 		delete m_findReplace;
@@ -438,6 +466,8 @@ ChameleonWindow::~ChameleonWindow()
 	delete m_debugger;
 	delete m_network;	
 	delete m_iconManager;
+	delete m_debugManager;
+	delete m_projectManager;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -750,60 +780,29 @@ void ChameleonWindow::OnDebugBreakpointCommand(wxCommandEvent &event)
 ///  @return void
 ///
 ///  @remarks Basically just creates a debug event with the same ID and passes it to
-///  @remarks the debugger.  Sets up the start debug information if necesssary.
+///  @remarks the debugger.  Sets up the start debug information if necessary.
 ///  @author Mark Erikson @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
 void ChameleonWindow::OnDebugCommand(wxCommandEvent &event)
 {
 	int eventID = event.GetId();
 
-	wxDebugEvent debugEvent;
-
-	debugEvent.SetId(eventID);
+	ProjectInfo* currentProject = NULL;
 
 	if(eventID == ID_DEBUG_START)
 	{
-		ProjectInfo* debugProject;
-		FileBreakpointHash bphash;
 		if(m_projMultiFiles != NULL)
 		{
-			debugProject = m_projMultiFiles;
-			EditorPointerArray edList = m_projMultiFiles->GetEditors();
-			int numOpenProjEds = edList.GetCount();
-			for(int i = 0; i < numOpenProjEds; i++)
-			{
-				ChameleonEditor* ed = edList[i];
-				wxArrayInt breaks = ed->GetBreakpoints();
-				if(breaks.GetCount() > 0)
-				{
-					wxFileName fn = ed->GetFileName();
-					wxString filename = fn.GetFullPath(wxPATH_UNIX);
-
-					bphash[filename] = breaks;
-				}
-			}
+			currentProject = m_projMultiFiles;
 		}
 		else
-		{				
-			debugProject = m_currentEd->GetProject();
-			wxFileName sourceFile = m_currentEd->GetFileName();
-			wxString sourceFileName = sourceFile.GetFullPath(wxPATH_UNIX);
-			wxArrayInt linenumbers = m_currentEd->GetBreakpoints();
-			bphash[sourceFileName] = linenumbers;
-		}
-		debugEvent.SetProject(debugProject);
-
-		// set up the debug I/O panel connection
-		if(debugProject->IsRemote())
 		{
-			wxString tty = m_debugTerminal->ConnectForDebug();
-			debugEvent.SetTTYString("/dev/" + tty);
-		}
-		debugEvent.SetFileBreakpoints(bphash);
-		debugEvent.SetId(ID_DEBUG_START);
+			currentProject = m_currentEd->GetProject();
+		}		
 	}
 
-	m_debugger->AddPendingEvent(debugEvent);
+	m_debugManager->OnDebugCommand(eventID, currentProject, m_currentEd);
+
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -820,62 +819,7 @@ void ChameleonWindow::OnDebugEvent(wxDebugEvent &event)
 {
 	int eventID = event.GetId();
 
-	switch(eventID)
-	{
-	case ID_DEBUG_EXIT_ERROR:
-	case ID_DEBUG_EXIT_NORMAL:
-		{
-			// This is an absurdly naive way to handle removing the focused line
-			// marker, but it's easy and shouldn't take up much time
-			int numPages = m_book->GetPageCount();
-			for(int i = 0; i < numPages; i++)
-			{
-				ChameleonEditor* pEdit = static_cast <ChameleonEditor* >(m_book->GetPage(i));
-				pEdit->MarkerDeleteAll(MARKER_FOCUSEDLINE);
-			}
-			wxLogDebug("Debugger exit");
-			m_debugTerminal->Disconnect(false);
-
-			break;
-		}
-	case ID_DEBUG_BREAKPOINT:
-		{	
-			wxString file = event.GetSourceFilename();
-			int linenumber = event.GetLineNumber();
-
-			FocusOnLine(file, linenumber);
-
-			if(event.GetVariableNames().GetCount() > 0)
-			{
-				m_watchPanel->UpdateVariableInfo(event);
-			}
-			break;
-		}
-	case ID_DEBUG_ADD_BREAKPOINT:
-	case ID_DEBUG_REMOVE_BREAKPOINT:
-		{
-			if(m_debugger->isDebugging() && m_debugger->isPaused())
-			{
-				m_debugger->AddPendingEvent(event);
-			}			
-			break;
-		}
-	case ID_DEBUG_ADD_WATCH:
-	case ID_DEBUG_REMOVE_WATCH:
-		{
-			m_debugger->AddPendingEvent(event);
-			break;
-		}
-	case ID_DEBUG_VARINFO:
-		m_watchPanel->UpdateVariableInfo(event);
-		break;
-	case ID_DEBUG_RUNTOCURSOR:
-		m_debugger->AddPendingEvent(event);
-		break;
-	default:
-		wxLogDebug("Default DebugEvent.  Value: %d", eventID);
-		break;
-	}
+	wxLogDebug("ChameleonWindow:OnDebugEvent - shouldn't be here any more!  Event ID: %d", eventID);
 }
 
 // File and editor manipulation code begins here
@@ -896,7 +840,7 @@ void ChameleonWindow::NewFile()
 
 	wxString noname = locationPrefix + "<untitled> " + wxString::Format ("%d", m_fileNum);
 	ProjectInfo* singleFileProject = new ProjectInfo();
-	ChameleonEditor* edit = new ChameleonEditor (this, m_options, singleFileProject, m_book, -1);
+	ChameleonEditor* edit = new ChameleonEditor (this, m_debugManager, m_options, singleFileProject, m_book, -1);
 	m_currentEd = edit;
 	m_currentPage = m_book->GetPageCount();
 	m_book->AddPage (edit, noname, true);
@@ -1400,7 +1344,7 @@ void ChameleonWindow::OpenSourceFile (wxArrayString fnames)
 			// need to create a new buffer for the file
 			else
 			{
-				ChameleonEditor *edit = new ChameleonEditor (this, m_options, proj, m_book, -1);
+				ChameleonEditor *edit = new ChameleonEditor (this, m_debugManager, m_options, proj, m_book, -1);
 
 				m_currentEd = edit;
 				m_currentPage = m_book->GetPageCount();

@@ -119,6 +119,8 @@ class Debugger : public wxEvtHandler
 		void sendCustomCommand(wxString cust);	//send a custom command to the process
 		wxString getProcOutput(int numEntries);	//get the process's output to X entries back
 
+		void SetEventHandler(wxEvtHandler* handler) { m_parentEventHandler = handler; }
+
 	private:
 		void startProcess(bool fullRestart, bool mode, wxString fName, wxString execThis);
 
@@ -130,6 +132,8 @@ class Debugger : public wxEvtHandler
 
 		void sendWhat();					//for use with snoopVar
 		void sendPrint(wxString fromGDB);	//for use with snoopVar as well
+
+		bool ParseVariableTypes(wxString& fromGDB);
 		bool parsePrintOutput(wxString fromGDB, wxArrayString &varValue);
 		int findBreakpoint(wxString fName, int lineNum, bool andRemove = false);
 		bool checkOutputStream(wxString stream);	//true = okay to parse further
@@ -145,48 +149,53 @@ class Debugger : public wxEvtHandler
 		void onProcessTermEvent(ChameleonProcessEvent &e);
 
 		//private elements [grouped according to function]
-		bool isRemote;				//stores current mode: false = local
-		bool procLives;				//stores status of async process
-		bool fileIsSet;				//stores whether a file is loaded
-		wxString currFile;			//stores current filename for debugging
+		bool m_isRemote;				//stores current mode: false = local
+		bool m_procLives;				//stores status of async process
+		bool m_fileIsSet;				//stores whether a file is loaded
+		wxString m_currFile;			//stores current filename for debugging
 
-		int status;					//status of debugger
-		int classStatus;			//holds the last function called
-		long pid;					//process ID of GDB (if running)
+		int m_status;					//status of debugger
+		int m_classStatus;			//holds the last function called
+		long m_pid;					//process ID of GDB (if running)
 				
-		int gdbBreakpointNum;		//keeps track of GDB's #ing system
-		int numBreakpoints;			//keeps track of actual number of live ones
-		DebugBreakHash lineToNum;
+		int m_gdbBreakpointNum;		//keeps track of GDB's #ing system
+		int m_numBreakpoints;			//keeps track of actual number of live ones
+		DebugBreakHash m_lineToNum;
 		
-		wxArrayString commandHistory;	//stores command history
-		int histCount;				//points to current top command
+		wxArrayString m_commandHistory;	//stores command history
+		int m_histCount;				//points to current top command
 		
-		wxString error;				//holds error messages
+		wxString m_error;				//holds error messages
 		wxArrayString errorHist;	//holds ALL error messages ^_^
-		int errorCount;				//counts the errors
+		int m_errorCount;				//counts the errors
 		
-		wxString command;			//holds current / last GDB command
-		wxString returnChar;		//contains the \n or \r for each command
-		wxArrayString data;			//holds data from GDB
-		wxArrayString fullOutput;	//holds ALL data back from the process
+		wxString m_command;			//holds current / last GDB command
+		wxString m_returnChar;		//contains the \n or \r for each command
+		wxArrayString m_data;			//holds data from GDB
+		wxArrayString m_fullOutput;	//holds ALL data back from the process
 
-		StringStringHashmap varRegExes;
-		wxString Filename, Linenumber, FuncName;	//globals for use in parse
+		StringStringHashmap m_varRegExes;
 
-		int varCount;				//holds array position to insert next var
+		//globals for use in parse
+		wxString m_Filename; 
+		wxString m_Linenumber;
+		wxString m_FuncName;	
+
+		int m_varCount;				//holds array position to insert next var
 
 		VariableInfoArray m_varInfo;//same as VariableInfoHash... only an array
+		VariableInfoArray m_oneShotWatches;
 
-		wxString firstExecString;	//holds the first executed string
-		wxString currentSourceName;	//holds filename source
+		wxString m_firstExecString;	//holds the first executed string
+		wxString m_currentSourceName;	//holds filename source
 
-		Networking *myConnection;	//the networking object for remote
-		wxTextOutputStream* streamOut;	//output to GDB
-		wxDebugEvent* myEvent;		//how i communicate
+		Networking *m_myConnection;	//the networking object for remote
+		wxTextOutputStream* m_streamOut;	//output to GDB
+		wxDebugEvent* m_myEvent;		//how i communicate
 
 		//GUI connectivity
-		wxEvtHandler* guiPointer;
-		ProjectInfo* projectBeingDebugged;
+		wxEvtHandler* m_parentEventHandler;
+		ProjectInfo* m_projectBeingDebugged;
 
 		int m_numberOfDebugEvents;
 

@@ -58,6 +58,8 @@ class CompilerOutputPanel;
 class IconManager;
 class wxProportionalSplitterWindow;
 class wxCHMHelpController;
+class DebugManager;
+class ChameleonProjectManager;
 
 
 //----------------------------------------------------------------------
@@ -252,7 +254,9 @@ private:
 	/*! The currently open multi-file project */
 	ProjectInfo* m_projMultiFiles;
 	Debugger* m_debugger;
+	DebugManager* m_debugManager;
 	IconManager* m_iconManager;
+	ChameleonProjectManager* m_projectManager;
 
 	int m_numPages;
 	/*! Tracks the active editor tab */

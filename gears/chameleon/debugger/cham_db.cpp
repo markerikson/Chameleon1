@@ -72,48 +72,51 @@ END_EVENT_TABLE()
 Debugger::Debugger(Networking* networking, wxEvtHandler* pointer)
 {
 	flushPrivateVar();
-	varCount = 0;
+	m_varCount = 0;
 	m_numberOfDebugEvents = 0;
 
-	myEvent = NULL;
+	m_myEvent = NULL;
 
-	guiPointer = pointer;
-	procLives = false;
-	status = DEBUG_DEAD;
-	classStatus = STOP;
-	myConnection = networking;
+	m_parentEventHandler = pointer;
+	m_procLives = false;
+	m_status = DEBUG_DEAD;
+	m_classStatus = STOP;
+	m_myConnection = networking;
 
 	//reg-Ex for Variable watching
 	//------
 	// ints - "$n = val"
 	// look for a space first, to make sure we don't grab the GDB print number instead
-	varRegExes["int"] = " ([[:digit:]]+)";
+	m_varRegExes["int"] = " ([[:digit:]]+)";
 
 	// ints & - "$n = (int &) val"
 	//note: is this even needed??
-	varRegExes["&"] = ".+ ([[:digit:]]+)";
+	m_varRegExes["&"] = ".+ ([[:digit:]]+)";
 
 	// ints * - "$n = val"
 	//TODO: Eliminate this
-	varRegExes["int*"] = " ([[:digit:]]+)";
+	m_varRegExes["int*"] = " ([[:digit:]]+)";
 	
 	// double-"$n = val.val"
-	varRegExes["double"] = " ([[:digit:]]+(\\.[[:digit:]]+)?)";
+	m_varRegExes["double"] = " ([[:digit:]]+(\\.[[:digit:]]+)?)";
+	m_varRegExes["float"] = " ([[:digit:]]+(\\.[[:digit:]]+)?)";
 
 	// char[]-"$n = val 'char'"
-	varRegExes["char"] = "[[:digit:]]+ '(.*?)'";
+	m_varRegExes["char"] = "[[:digit:]]+ '(.*?)'";
 	
 	// char - "$n = "text""
-	varRegExes["char[]"] = "\"(.*)\"";//"[[:digit:]]+ '([[:alnum:]]+)'";
+	m_varRegExes["char[]"] = "\"(.*)\"";//"[[:digit:]]+ '([[:alnum:]]+)'";
 	
 	// array- "$n = {val, val...}"
-	varRegExes["array"] = "({.*})\\r\\n$";
+	m_varRegExes["array"] = "({.*})\\r\\n$";
 	
 	// str#2- "$n = "text"" (same as [char])
-	varRegExes["string"] = "\"(.*)\"";
+	m_varRegExes["string"] = "\"(.*)\"";
+
+	
 
 	// obj -  "$n = {varName = val, varName = val, ..} (varName can be of any listed type...)
-	varRegExes["class"] = "({.*})\\r\\n$";
+	m_varRegExes["class"] = "({.*})\\r\\n$";
 }
 //end constructors
 
@@ -129,9 +132,9 @@ Debugger::~Debugger()
 	//initial stuff to cleanly exit (sorta)
 	stop(false);
 
-	if(myEvent != NULL)
+	if(m_myEvent != NULL)
 	{
-		delete myEvent;
+		delete m_myEvent;
 	}
 
 	flushPrivateVar();
@@ -165,8 +168,8 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 		eventCommand != ID_DEBUG_ADD_WATCH &&
 		eventCommand != ID_DEBUG_REMOVE_WATCH)
 	{
-		if(status != DEBUG_WAIT &&
-			status != DEBUG_BREAK)
+		if(m_status != DEBUG_WAIT &&
+			m_status != DEBUG_BREAK)
 		{
 			if(m_numberOfDebugEvents < 50)
 			{
@@ -179,11 +182,11 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 	}
 	m_numberOfDebugEvents = 0;
 
-	if(myEvent != NULL)
+	if(m_myEvent != NULL)
 	{
-		delete myEvent;
+		delete m_myEvent;
 	}
-	myEvent = (wxDebugEvent*)event.Clone();
+	m_myEvent = (wxDebugEvent*)event.Clone();
 	//all the variables i need here:
 	
 	int eventLineNum;
@@ -212,8 +215,9 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 		breakpointList = event.GetFileBreakpoints();
 	}
 
-	if( eventCommand == ID_DEBUG_ADD_WATCH ||
-		eventCommand == ID_DEBUG_REMOVE_WATCH)
+	if( eventCommand == ID_DEBUG_ADD_WATCH 
+		|| eventCommand == ID_DEBUG_REMOVE_WATCH
+		|| eventCommand == ID_DEBUG_DISPLAY_SELECTION)
 	{
 		gui_var_names = event.GetVariableNames();
 		varName = gui_var_names[0];
@@ -234,7 +238,7 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 
 		wxArrayString srcFiles = proj->GetSources();
 		wxString execFile = proj->GetExecutableFileName();
-		projectBeingDebugged = proj;
+		m_projectBeingDebugged = proj;
 
 		startProcess(true, event.IsRemote(), execFile, "gdb -q");
 
@@ -248,13 +252,13 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 
 				for(j = 0; j < (int)breakpointLines.GetCount(); j++)
 				{
-					sendAllBreakpoints<<"break \""<<tmp<<":"<<breakpointLines[j]<<"\""<<returnChar;
+					sendAllBreakpoints<<"break \""<<tmp<<":"<<breakpointLines[j]<<"\""<<m_returnChar;
 
-					lineToNum[tmp].lineNumbers.Add(breakpointLines[j]);
-					lineToNum[tmp].gdbNumbers.Add(gdbBreakpointNum);
+					m_lineToNum[tmp].lineNumbers.Add(breakpointLines[j]);
+					m_lineToNum[tmp].gdbNumbers.Add(m_gdbBreakpointNum);
 
-					numBreakpoints++;
-					gdbBreakpointNum++;	
+					m_numBreakpoints++;
+					m_gdbBreakpointNum++;	
 					
 					//~~DEBUG CODE~~//
 					//wxLogDebug("--STARTUP: make breakpoint: num=%d, gdb_num=%d--",numBreakpoints, gdbBreakpointNum);
@@ -266,9 +270,9 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 		//wxLogDebug("--STARTUP: breakpoint string:\n------\n" + sendAllBreakpoints + "\n\n");
 
 
-		sendCommand("list"+returnChar);
+		sendCommand("list"+m_returnChar);
 		sendCommand(sendAllBreakpoints);
-		sendCommand("done"+returnChar);	//tag... not really a command
+		sendCommand("done"+m_returnChar);	//tag... not really a command
 		break;
 	}
 
@@ -277,7 +281,7 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 		stop(false);
 		wxDebugEvent dbg;
 		dbg.SetId(ID_DEBUG_EXIT_NORMAL);
-		guiPointer->AddPendingEvent(dbg);
+		m_parentEventHandler->AddPendingEvent(dbg);
 		break;
 	}
 
@@ -317,12 +321,12 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 		break;
 
 	default:
-		tmp = error;
-		eventLineNum = status;
-		error = "Unrecognized Debug Event";
+		tmp = m_error;
+		eventLineNum = m_status;
+		m_error = "Unrecognized Debug Event";
 		makeGenericError("onDebugEvent: ");
-		error = tmp;
-		status = eventLineNum;
+		m_error = tmp;
+		m_status = eventLineNum;
 		break;
 	}
 }
@@ -344,7 +348,7 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 //////////////////////////////////////////////////////////////////////////////
 bool Debugger::getMode()
 {
-	return(isRemote);
+	return(m_isRemote);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -357,7 +361,7 @@ bool Debugger::getMode()
 //////////////////////////////////////////////////////////////////////////////
 bool Debugger::isDebugging()
 {
-	return((status == DEBUG_RUNNING) || (status == DEBUG_WAIT) || (status == DEBUG_BREAK));
+	return((m_status == DEBUG_RUNNING) || (m_status == DEBUG_WAIT) || (m_status == DEBUG_BREAK));
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -370,7 +374,7 @@ bool Debugger::isDebugging()
 //////////////////////////////////////////////////////////////////////////////
 bool Debugger::isPaused()
 {
-	return(status == DEBUG_WAIT || status == DEBUG_BREAK);
+	return(m_status == DEBUG_WAIT || m_status == DEBUG_BREAK);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -383,7 +387,7 @@ bool Debugger::isPaused()
 //////////////////////////////////////////////////////////////////////////////
 ProjectInfo* Debugger::getCurrentProject()
 {
-	return projectBeingDebugged;
+	return m_projectBeingDebugged;
 }
 //--//
 
@@ -397,7 +401,7 @@ ProjectInfo* Debugger::getCurrentProject()
 //////////////////////////////////////////////////////////////////////////////
 wxString Debugger::getFile()
 {
-	return(currFile);
+	return(m_currFile);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -410,7 +414,7 @@ wxString Debugger::getFile()
 //////////////////////////////////////////////////////////////////////////////
 int Debugger::programStatus()
 {
-	return(classStatus);
+	return(m_classStatus);
 }
 
 //genericStatus(): returns the generic debugger status
@@ -424,7 +428,7 @@ int Debugger::programStatus()
 //////////////////////////////////////////////////////////////////////////////
 int Debugger::genericStatus()
 {
-	return(status);
+	return(m_status);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -437,7 +441,7 @@ int Debugger::genericStatus()
 //////////////////////////////////////////////////////////////////////////////
 wxString Debugger::errorMsg()
 {
-	return(error);
+	return(m_error);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -450,57 +454,57 @@ wxString Debugger::errorMsg()
 //////////////////////////////////////////////////////////////////////////////
 bool Debugger::resetStatus()
 {
-	if(status == DEBUG_RUNNING)
+	if(m_status == DEBUG_RUNNING)
 	{
 		//if it's running, kill it...
 		stop(true);
 		
-		status = DEBUG_STOPPED;
+		m_status = DEBUG_STOPPED;
 	}
 
 	//i figure that if someone wants to reset the Debugger, then
 	//darn it EVERYTHING is gonna get reset. so....
 	//do a full reset of GDB
 
-	if(status != DEBUG_DEAD)
+	if(m_status != DEBUG_DEAD)
 	{
 		wxArrayString debugReset;
 
 		if(numBreak() > 0)
 		{
-			debugReset.Add("delete breakpoint" + returnChar);
-			gdbBreakpointNum = 0;
-			numBreakpoints = 0;
-			lineToNum.empty();
+			debugReset.Add("delete breakpoint" + m_returnChar);
+			m_gdbBreakpointNum = 0;
+			m_numBreakpoints = 0;
+			m_lineToNum.empty();
 		}
 
 		//if the file was just loaded... no need to kill something not
 		//running.  ^_^  + it generates an error
-		if(fileIsSet)
+		if(m_fileIsSet)
 		{
-			if(status != DEBUG_STOPPED)
+			if(m_status != DEBUG_STOPPED)
 			{
-				debugReset.Add("kill" + returnChar);
+				debugReset.Add("kill" + m_returnChar);
 			}
 
-			debugReset.Add("file" + returnChar);
-			debugReset.Add("file " + currFile + returnChar);
+			debugReset.Add("file" + m_returnChar);
+			debugReset.Add("file " + m_currFile + m_returnChar);
 
 			//now change the status
-			status = DEBUG_STOPPED;
+			m_status = DEBUG_STOPPED;
 		}
 
 		//end reset commands...
-		classStatus = HARD_RESET;
+		m_classStatus = HARD_RESET;
 
 		for(int c = 0; c < int(debugReset.GetCount()); c++)
 		{
 			sendCommand(debugReset[c]);
 		}
 	
-		error = "";
-		command = "";
-		data.Empty();
+		m_error = "";
+		m_command = "";
+		m_data.Empty();
 		
 		return(true);
 	}
@@ -519,23 +523,23 @@ bool Debugger::resetStatus()
 //////////////////////////////////////////////////////////////////////////////
 void Debugger::clearError()
 {
-	if(fileIsSet)
+	if(m_fileIsSet)
 	{
-		if(classStatus == START || classStatus == HARD_RESET)
+		if(m_classStatus == START || m_classStatus == HARD_RESET)
 		{
-			status = DEBUG_STOPPED;
+			m_status = DEBUG_STOPPED;
 		}
 		else
 		{
-			status = DEBUG_WAIT;
+			m_status = DEBUG_WAIT;
 		}
 	}
 	else
 	{
-		status = DEBUG_NEED_FILE;
+		m_status = DEBUG_NEED_FILE;
 	}
 
-	classStatus = SOFT_RESET;
+	m_classStatus = SOFT_RESET;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -580,64 +584,64 @@ void Debugger::startProcess(bool fullRestart, bool mode, wxString fName, wxStrin
 	{
 
 		//generic initialization
-		isRemote = mode;			//false = local
-		currFile = fName;
+		m_isRemote = mode;			//false = local
+		m_currFile = fName;
 	
-		histCount = 0;
+		m_histCount = 0;
 	
-		numBreakpoints = 0;
-		gdbBreakpointNum = 1;
+		m_numBreakpoints = 0;
+		m_gdbBreakpointNum = 1;
 	
-		errorCount = 0;
+		m_errorCount = 0;
 	
-		firstExecString = execThis;
+		m_firstExecString = execThis;
 	}
 
-	if(isRemote)
-	{returnChar = "\r";}
+	if(m_isRemote)
+	{m_returnChar = "\r";}
 	else
-	{returnChar = "\n";}
+	{m_returnChar = "\n";}
 
 	if(fName != "")
 	{
-		status = DEBUG_STOPPED;
-		fileIsSet = true;
+		m_status = DEBUG_STOPPED;
+		m_fileIsSet = true;
 	}
 	else
 	{
-		status = DEBUG_NEED_FILE;
-		fileIsSet = false;
+		m_status = DEBUG_NEED_FILE;
+		m_fileIsSet = false;
 	}
 	
-	procLives = true;
-	classStatus = NEW_PROC;
+	m_procLives = true;
+	m_classStatus = NEW_PROC;
 	
 
-	streamOut = myConnection->StartCommand(isRemote, execThis, this);
+	m_streamOut = m_myConnection->StartCommand(m_isRemote, execThis, this);
 
-	command = execThis;
-	updateHistory(command);
+	m_command = execThis;
+	updateHistory(m_command);
 
 	//initial commands to GDB
 	
 	wxArrayString initString;
 	wxString tmp;
 
-	classStatus = START;
+	m_classStatus = START;
 
 	//initialize GDB
-	tmp.Printf("set prompt %s%s", PROMPT_CHAR.c_str(), returnChar.c_str());
+	tmp.Printf("set prompt %s%s", PROMPT_CHAR.c_str(), m_returnChar.c_str());
 	initString.Add(tmp);
-	initString.Add("set print array off" + returnChar);
-	initString.Add("set print pretty off" + returnChar);
-	initString.Add("set print address off" + returnChar);
-	initString.Add("set confirm off" + returnChar);
-	initString.Add("set print repeats 10000" + returnChar);
+	initString.Add("set print array off" + m_returnChar);
+	initString.Add("set print pretty off" + m_returnChar);
+	initString.Add("set print address off" + m_returnChar);
+	initString.Add("set confirm off" + m_returnChar);
+	initString.Add("set print repeats 10000" + m_returnChar);
 
-	if(isRemote)
+	if(m_isRemote)
 	{
-		wxString ttyString = myEvent->GetTTYString();
-		initString.Add("tty " + ttyString + returnChar);
+		wxString ttyString = m_myEvent->GetTTYString();
+		initString.Add("tty " + ttyString + m_returnChar);
 	}
 
 	//send all initlization commands to GDB
@@ -646,10 +650,10 @@ void Debugger::startProcess(bool fullRestart, bool mode, wxString fName, wxStrin
 		sendCommand(initString.Item(currInit));
 	}
 		
-	if(fileIsSet)
+	if(m_fileIsSet)
 	{
-		command = "file " + currFile + returnChar;
-		sendCommand(command);
+		m_command = "file " + m_currFile + m_returnChar;
+		sendCommand(m_command);
 	}//end set-file conditional
 }
 //END PROGRAM STATUS
@@ -673,29 +677,29 @@ void Debugger::startProcess(bool fullRestart, bool mode, wxString fName, wxStrin
 //////////////////////////////////////////////////////////////////////////////
 void Debugger::setBreak(wxString srcFile, int lineNum)
 {
-	if(fileIsSet &&
-		(status == DEBUG_WAIT || status == DEBUG_BREAK))
+	if(m_fileIsSet &&
+		(m_status == DEBUG_WAIT || m_status == DEBUG_BREAK))
 	{
 
 		//this if{} should never be run...
-		if(numBreak() == 0 && gdbBreakpointNum == 1)
+		if(numBreak() == 0 && m_gdbBreakpointNum == 1)
 		{
-			classStatus = START;	//ignore the output
+			m_classStatus = START;	//ignore the output
 
-			gdbBreakpointNum = 1;
+			m_gdbBreakpointNum = 1;
 		}
 		
-		classStatus = S_BREAK;
-		command.Printf("break \"%s:%d\"%s", srcFile, lineNum, returnChar.c_str());
-		sendCommand(command);
+		m_classStatus = S_BREAK;
+		m_command.Printf("break \"%s:%d\"%s", srcFile, lineNum, m_returnChar.c_str());
+		sendCommand(m_command);
 
 		//~~DEBUG CODE~~//
 		//wxLogDebug("--make breakpoint:(+1 to follow) num=%d, gdb_num=%d--",numBreakpoints, gdbBreakpointNum);
 
-		lineToNum[srcFile].lineNumbers.Add(lineNum);
-		lineToNum[srcFile].gdbNumbers.Add(gdbBreakpointNum);
-		numBreakpoints++;
-		gdbBreakpointNum++;
+		m_lineToNum[srcFile].lineNumbers.Add(lineNum);
+		m_lineToNum[srcFile].gdbNumbers.Add(m_gdbBreakpointNum);
+		m_numBreakpoints++;
+		m_gdbBreakpointNum++;
 	}
 }
 
@@ -716,21 +720,21 @@ void Debugger::enableBreak(wxString srcFile, int lineNum)
 
 	if(equivNum == -1)
 	{
-		wxString baka = error;
-		int suBaka = status;
+		wxString baka = m_error;
+		int suBaka = m_status;
 
-		error.Printf("Failed to locate breakpoint in %s at %d", srcFile.c_str(), lineNum);
+		m_error.Printf("Failed to locate breakpoint in %s at %d", srcFile.c_str(), lineNum);
 		makeGenericError("enableBreak: ");
 
-		error = baka;
-		status = suBaka;
+		m_error = baka;
+		m_status = suBaka;
 	}
 	else
 	{
-		command.Printf("enable %d%s", equivNum, returnChar.c_str());
-		sendCommand(command);
+		m_command.Printf("enable %d%s", equivNum, m_returnChar.c_str());
+		sendCommand(m_command);
 
-		classStatus = E_BREAK;
+		m_classStatus = E_BREAK;
 	}
 }
 
@@ -751,21 +755,21 @@ void Debugger::disableBreak(wxString srcFile, int lineNum)
 
 	if(equivNum == -1)
 	{
-		wxString baka = error;
-		int suBaka = status;
+		wxString baka = m_error;
+		int suBaka = m_status;
 
-		error.Printf("Failed to locate breakpoint in %s at %d", srcFile.c_str(), lineNum);
+		m_error.Printf("Failed to locate breakpoint in %s at %d", srcFile.c_str(), lineNum);
 		makeGenericError("disableBreak: ");
 
-		error = baka;
-		status = suBaka;
+		m_error = baka;
+		m_status = suBaka;
 	}
 	else
 	{
-		command.Printf("disable %d%s", equivNum, returnChar.c_str());
-		sendCommand(command);
+		m_command.Printf("disable %d%s", equivNum, m_returnChar.c_str());
+		sendCommand(m_command);
 
-		classStatus = D_BREAK;
+		m_classStatus = D_BREAK;
 	}
 }
 
@@ -785,17 +789,17 @@ void Debugger::killBreak(wxString srcFile, int lineNum)
 	int equivNum = findBreakpoint(srcFile, lineNum, true);
 	if(equivNum == -1)
 	{
-		wxString baka = error;
-		int suBaka = status;
+		wxString baka = m_error;
+		int suBaka = m_status;
 
-		error.Printf("Failed to locate breakpoint in %s at %d", srcFile.c_str(), lineNum);
+		m_error.Printf("Failed to locate breakpoint in %s at %d", srcFile.c_str(), lineNum);
 		makeGenericError("killBreak: ");
 
-		error = baka;
-		status = suBaka;
+		m_error = baka;
+		m_status = suBaka;
 	}
 
-	classStatus = K_BREAK;
+	m_classStatus = K_BREAK;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -816,8 +820,8 @@ int Debugger::findBreakpoint(wxString fName, int lineNum, bool andRemove)
 	//altered... added wxArrayInt & took (lineToNum[fName].lineNumbers) out
 	bool found = false;
 	int equivNum = 0;
-	int arrayCount = lineToNum[fName].lineNumbers.GetCount();
-	wxArrayInt tmp = lineToNum[fName].lineNumbers;
+	int arrayCount = m_lineToNum[fName].lineNumbers.GetCount();
+	wxArrayInt tmp = m_lineToNum[fName].lineNumbers;
 
 	int lineIndex = tmp.Index(lineNum);
 	if(lineIndex != wxNOT_FOUND)
@@ -827,18 +831,18 @@ int Debugger::findBreakpoint(wxString fName, int lineNum, bool andRemove)
 			//~~DEBUG CODE~~//
 			//wxLogDebug("--find breakpoint: i=%d, equivNum=%d, ltn[fn].gn.remove(i-1): %d--", i, equivNum, lineToNum[fName].gdbNumbers[i - 1]);
 			
-			int equivNum = lineToNum[fName].gdbNumbers[lineIndex];
+			int equivNum = m_lineToNum[fName].gdbNumbers[lineIndex];
 			
 			//~~DEBUG CODE~~//
 			//wxLogDebug("--find breakpoint: index=%d, equivNum=%d--", lineIndex, equivNum);
 
-			lineToNum[fName].lineNumbers.Remove(lineNum);
-			lineToNum[fName].gdbNumbers.Remove(equivNum);
+			m_lineToNum[fName].lineNumbers.Remove(lineNum);
+			m_lineToNum[fName].gdbNumbers.Remove(equivNum);
 
-			command.Printf("delete break %d%s", equivNum, returnChar.c_str());
-			sendCommand(command);
+			m_command.Printf("delete break %d%s", equivNum, m_returnChar.c_str());
+			sendCommand(m_command);
 
-			numBreakpoints--;
+			m_numBreakpoints--;
 		}
 
 		return(equivNum);
@@ -856,7 +860,7 @@ int Debugger::findBreakpoint(wxString fName, int lineNum, bool andRemove)
 //////////////////////////////////////////////////////////////////////////////
 int Debugger::numBreak()
 {
-	return(numBreakpoints);
+	return(m_numBreakpoints);
 }
 //END BREAKPOINT SECTION
 
@@ -878,20 +882,20 @@ void Debugger::step()
 {
 
 	//check program status
-	if(status == DEBUG_STOPPED)
+	if(m_status == DEBUG_STOPPED)
 	{
-		command = "run" + returnChar;
-		status = DEBUG_RUNNING;
-		classStatus = GO;
-		sendCommand(command);
+		m_command = "run" + m_returnChar;
+		m_status = DEBUG_RUNNING;
+		m_classStatus = GO;
+		sendCommand(m_command);
 
 	}
-	else if(status == DEBUG_WAIT || status == DEBUG_BREAK)
+	else if(m_status == DEBUG_WAIT || m_status == DEBUG_BREAK)
 	{
-		command = "step" + returnChar;
-		status = DEBUG_RUNNING;
-		classStatus = STEP;
-		sendCommand(command);
+		m_command = "step" + m_returnChar;
+		m_status = DEBUG_RUNNING;
+		m_classStatus = STEP;
+		sendCommand(m_command);
 	}
 	//if not stopped or waiting, then program status = error
 }
@@ -908,12 +912,12 @@ void Debugger::step()
 void Debugger::stepOver()
 {
 	//check program status
-	if(status == DEBUG_WAIT || status == DEBUG_BREAK)
+	if(m_status == DEBUG_WAIT || m_status == DEBUG_BREAK)
 	{
-		command = "next" + returnChar;
-		status = DEBUG_RUNNING;
-		classStatus = STEP_OVER;
-		sendCommand(command);
+		m_command = "next" + m_returnChar;
+		m_status = DEBUG_RUNNING;
+		m_classStatus = STEP_OVER;
+		sendCommand(m_command);
 	}
 	//if not waiting, then program status is not good for a step-over
 }
@@ -930,12 +934,12 @@ void Debugger::stepOver()
 void Debugger::stepOut()
 {
 	//check program status
-	if(status == DEBUG_WAIT || status == DEBUG_BREAK)
+	if(m_status == DEBUG_WAIT || m_status == DEBUG_BREAK)
 	{
-		command = "finish" + returnChar;
-		status = DEBUG_RUNNING;
-		classStatus = STEP_OUT;
-		sendCommand(command);
+		m_command = "finish" + m_returnChar;
+		m_status = DEBUG_RUNNING;
+		m_classStatus = STEP_OUT;
+		sendCommand(m_command);
 	}
 
 	//if not stopped or waiting, then program status is not good for stepOut
@@ -955,17 +959,17 @@ void Debugger::stepOut()
 //////////////////////////////////////////////////////////////////////////////
 void Debugger::runToCursor(wxString srcFile, int lineNum)
 {
-	if(status == DEBUG_WAIT || status == DEBUG_BREAK)
+	if(m_status == DEBUG_WAIT || m_status == DEBUG_BREAK)
 	{
 		//GDB automatically sets & kills the breakpoint, but the number is incremented
-		gdbBreakpointNum++;
+		m_gdbBreakpointNum++;
 
-		command.Printf("tbreak \"%s:%d\"%s", srcFile, lineNum, returnChar);
-		sendCommand(command);
+		m_command.Printf("tbreak \"%s:%d\"%s", srcFile, lineNum, m_returnChar);
+		sendCommand(m_command);
 
 		cont();
 
-		classStatus = RUN_TO_CURSOR;
+		m_classStatus = RUN_TO_CURSOR;
 	}
 
 	//if not stopped or waiting, then program status is not good for stepOut
@@ -982,16 +986,16 @@ void Debugger::runToCursor(wxString srcFile, int lineNum)
 void Debugger::go()
 {
 	//check to make sure the program is suitable to BE run...
-	if(status != DEBUG_ERROR ||
-		status != DEBUG_RUNNING ||
-		status != DEBUG_NEED_FILE ||
-		status != DEBUG_DEAD)
+	if(m_status != DEBUG_ERROR ||
+		m_status != DEBUG_RUNNING ||
+		m_status != DEBUG_NEED_FILE ||
+		m_status != DEBUG_DEAD)
 	{
-		classStatus = GO;
-		status = DEBUG_RUNNING;
+		m_classStatus = GO;
+		m_status = DEBUG_RUNNING;
 
-		command = "run" + returnChar;
-		sendCommand(command);
+		m_command = "run" + m_returnChar;
+		sendCommand(m_command);
 	}//end status check
 }//wow, tough
 
@@ -1007,68 +1011,68 @@ void Debugger::go()
 //////////////////////////////////////////////////////////////////////////////
 void Debugger::stop(bool pleaseRestart)
 {
-	int statBackup = status;
-	int classStatB = classStatus;
+	int statBackup = m_status;
+	int classStatB = m_classStatus;
 
-	if(status == DEBUG_RUNNING || status == DEBUG_ERROR)
+	if(m_status == DEBUG_RUNNING || m_status == DEBUG_ERROR)
 	{
-		myConnection->ForceKillProcess(streamOut);
+		m_myConnection->ForceKillProcess(m_streamOut);
 	} 
-	else if(status == DEBUG_DEAD)
+	else if(m_status == DEBUG_DEAD)
 	{
-		error = "tried to stop dead process";
+		m_error = "tried to stop dead process";
 		makeGenericError("stop(): ");
-		status = DEBUG_DEAD;
+		m_status = DEBUG_DEAD;
 	}
 	else
 	{
 		//try to stop as cleanly as possible?
 		if(numBreak() > 0)
 		{
-			command = "delete breakpoint" + returnChar;
-			sendCommand(command);
+			m_command = "delete breakpoint" + m_returnChar;
+			sendCommand(m_command);
 		}
 
-		if(varCount > 0)
+		if(m_varCount > 0)
 		{
-			command = "delete display" + returnChar;
-			sendCommand(command);
+			m_command = "delete display" + m_returnChar;
+			sendCommand(m_command);
 		}
 
-		if(fileIsSet)
+		if(m_fileIsSet)
 		{
-			command = "file" + returnChar;
-			sendCommand(command);
+			m_command = "file" + m_returnChar;
+			sendCommand(m_command);
 		}
 
-		command = "quit" + returnChar;
-		sendCommand(command);
+		m_command = "quit" + m_returnChar;
+		sendCommand(m_command);
 
 	}
 
 	//is this appropriate for me???
-	if(isRemote)
+	if(m_isRemote)
 	{
 		if(statBackup != DEBUG_RUNNING &&
 			statBackup != DEBUG_ERROR &&
 			statBackup != DEBUG_DEAD)
 		{
-			command = "exit" + returnChar;
-			sendCommand(command);
+			m_command = "exit" + m_returnChar;
+			sendCommand(m_command);
 		}
 	}
 
 	flushPrivateVar();
 
-	classStatus = STOP;
-	status = DEBUG_DEAD;
+	m_classStatus = STOP;
+	m_status = DEBUG_DEAD;
 	resetStatus();
 
-	procLives = false;
+	m_procLives = false;
 
 	if(pleaseRestart)
 	{	
-		startProcess(true, isRemote, currFile, firstExecString);
+		startProcess(true, m_isRemote, m_currFile, m_firstExecString);
 	}//end pleaseRestart conditional
 }
 
@@ -1082,12 +1086,12 @@ void Debugger::stop(bool pleaseRestart)
 //////////////////////////////////////////////////////////////////////////////
 void Debugger::kill()
 {
-	classStatus = STOP;
-	status = DEBUG_DEAD;
+	m_classStatus = STOP;
+	m_status = DEBUG_DEAD;
 
-	procLives = false;
+	m_procLives = false;
 
-	myConnection->ForceKillProcess(streamOut);
+	m_myConnection->ForceKillProcess(m_streamOut);
 
 	flushBuffer();
 	flushPrivateVar();
@@ -1104,12 +1108,12 @@ void Debugger::kill()
 void Debugger::cont()
 {
 	//continue will only work correctly on these two status items
-	if(status == DEBUG_WAIT || status == DEBUG_BREAK)
+	if(m_status == DEBUG_WAIT || m_status == DEBUG_BREAK)
 	{
-		command = "continue" + returnChar;
-		classStatus = CONTINUE;
-		status = DEBUG_RUNNING;
-		sendCommand(command);
+		m_command = "continue" + m_returnChar;
+		m_classStatus = CONTINUE;
+		m_status = DEBUG_RUNNING;
+		sendCommand(m_command);
 	}
 }
 //END STEP FUNCTIONALITY
@@ -1139,7 +1143,7 @@ void Debugger::snoopVar(wxString varName, wxString funcName, wxString className,
 	combinedFunction<<className<<"::"<<funcName;
 
 	//Step 1: See if the variable & function/class exists in the structure array
-	if(varCount == 0)
+	if(m_varCount == 0)
 	{	
 		//we're adding the first item to the array
 		variableStruct.name = varName;
@@ -1149,12 +1153,12 @@ void Debugger::snoopVar(wxString varName, wxString funcName, wxString className,
 
 		m_varInfo.Add(variableStruct);
 
-		varCount++;
+		m_varCount++;
 	}
 	else
 	{
 		//check to see if the variable is already in the array
-		for(int i = 0; (i < varCount) && (notFound); i++)
+		for(int i = 0; (i < m_varCount) && (notFound); i++)
 		{
 			if(m_varInfo[i].name == varName)
 			{
@@ -1171,17 +1175,17 @@ void Debugger::snoopVar(wxString varName, wxString funcName, wxString className,
 
 			m_varInfo.Add(variableStruct);
 
-			varCount++;
+			m_varCount++;
 		}
 	}
 
 	//Step 2: if GDB is running, send a "whatis" command to get the type.
 	if( notFound &&
-		(status == DEBUG_BREAK || status == DEBUG_WAIT))
+		(m_status == DEBUG_BREAK || m_status == DEBUG_WAIT))
 	{
 		sendWhat();
 
-		classStatus = GET_WHAT;
+		m_classStatus = GET_WHAT;
 	}
 }
 
@@ -1213,19 +1217,19 @@ void Debugger::setVar(wxString varName, wxString newValue, wxString funcName, wx
 //////////////////////////////////////////////////////////////////////////////
 void Debugger::sendWhat()
 {
-	if(varCount > 0)
+	if(m_varCount > 0)
 	{
 		wxString tmp;
-		command.Clear();
-		for(int i = 0; i < varCount; i++)
+		m_command.Clear();
+		for(int i = 0; i < m_varCount; i++)
 		{
-			tmp.Printf("whatis %s%s", m_varInfo[i].name.c_str(), returnChar.c_str());
-			command.Append(tmp);
+			tmp.Printf("whatis %s%s", m_varInfo[i].name.c_str(), m_returnChar.c_str());
+			m_command.Append(tmp);
 		}
 
-		sendCommand(command);
+		sendCommand(m_command);
 
-		classStatus = GET_WHAT;
+		m_classStatus = GET_WHAT;
 	}
 }
 
@@ -1243,6 +1247,42 @@ void Debugger::sendWhat()
 ///  @author Ben Carhart @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
 void Debugger::sendPrint(wxString fromGDB)
+{
+	bool watchStatus = ParseVariableTypes(fromGDB);
+
+
+	if(!watchStatus)
+	{
+		wxString tmp;
+		m_command.Clear();
+		for(int i = 0; i < m_varCount; i++)
+		{
+			wxString name = m_varInfo[i].name;
+
+			//special cases:
+			// type==string: append "._M_dataplus._M_p" to format the string
+			// type==[xxx]*: pre-pend "*" to de-reference the pointer type
+			
+			if(m_varInfo[i].type == "string")
+			{
+				name += "._M_dataplus._M_p";
+			}
+			if(m_varInfo[i].type.Find("*") != -1)
+			{	
+				name.Prepend("*");
+			}
+
+			tmp.Printf("print %s%s", name, m_returnChar);
+			m_command.Append(tmp);
+		}
+
+		sendCommand(m_command);
+
+		m_classStatus = GET_PRINT;
+	}
+}
+
+bool Debugger::ParseVariableTypes( wxString &fromGDB )
 {
 	wxString singleLine;
 	wxArrayString fromWatch, ignoreVars;
@@ -1310,7 +1350,7 @@ void Debugger::sendPrint(wxString fromGDB)
 
 	if(!fromWatch.IsEmpty())
 	{
-		for(int i = 0; i < varCount; i++)
+		for(int i = 0; i < m_varCount; i++)
 		{
 			if(ignoreVars.Index(m_varInfo[i].name) == wxNOT_FOUND)
 			{
@@ -1328,7 +1368,7 @@ void Debugger::sendPrint(wxString fromGDB)
 					if(m_varInfo[i].type == "error")
 					{
 						m_varInfo.RemoveAt(i);
-						varCount--;
+						m_varCount--;
 					}
 				}//testing "fromWatchIndex"
 				else
@@ -1342,35 +1382,7 @@ void Debugger::sendPrint(wxString fromGDB)
 		}//end for
 	}
 
-	if(!watchStatus)
-	{
-		wxString tmp;
-		command.Clear();
-		for(int i = 0; i < varCount; i++)
-		{
-			wxString name = m_varInfo[i].name;
-
-			//special cases:
-			// type==string: append "._M_dataplus._M_p" to format the string
-			// type==[xxx]*: pre-pend "*" to de-reference the pointer type
-			
-			if(m_varInfo[i].type == "string")
-			{
-				name += "._M_dataplus._M_p";
-			}
-			if(m_varInfo[i].type.Find("*") != -1)
-			{	
-				name.Prepend("*");
-			}
-
-			tmp.Printf("print %s%s", name, returnChar);
-			command.Append(tmp);
-		}
-
-		sendCommand(command);
-
-		classStatus = GET_PRINT;
-	}
+	return watchStatus;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1391,10 +1403,10 @@ void Debugger::removeVar(wxString varName, wxString funcName, wxString className
 	bool notFound = true,
 		 found = false;
 
-	if(varCount != 0)
+	if(m_varCount != 0)
 	{
 		int index = 0;
-		for(index = 0; (index < varCount) && (notFound); index++)
+		for(index = 0; (index < m_varCount) && (notFound); index++)
 		{
 			if(m_varInfo[index].name == varName)
 			{
@@ -1406,7 +1418,7 @@ void Debugger::removeVar(wxString varName, wxString funcName, wxString className
 		if(found)
 		{
 			m_varInfo.RemoveAt(index - 1);
-			varCount--;
+			m_varCount--;
 		}
 	}//end varCount if
 }
@@ -1431,7 +1443,7 @@ bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 	int lineBreak = 0, endQuote = 0, fromWatchIndex = 0;
 	bool parseError = false, stayIn = true;
 
-	for(int i = 0; (i < varCount) && !parseError; i++)
+	for(int i = 0; (i < m_varCount) && !parseError; i++)
 	{
 		lineBreak = fromGDB.Find("\n");
 
@@ -1490,15 +1502,15 @@ bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 					if( m_varInfo[i].type.Find("&") == -1 &&
 						m_varInfo[i].type.Find("*") == -1)
 					{
-						VariableInfo varInfo = m_varInfo[i];
-						wxString type = varInfo.type;
-						if(varRegExes.find(type) != varRegExes.end())
+						//VariableInfo varInfo = m_varInfo[i];
+						wxString type = m_varInfo[i].type;
+						if(m_varRegExes.find(type) != m_varRegExes.end())
 						{
-							regexString = varRegExes[type];
+							regexString = m_varRegExes[type];
 						}
 						else
 						{
-							regexString = varRegExes["class"];
+							regexString = m_varRegExes["class"];
 						}
 					}
 					else
@@ -1507,13 +1519,13 @@ bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 						if(m_varInfo[i].type.Find("&") > 0)
 						{
 							wxString tmp = m_varInfo[i].type.BeforeLast('&');
-							regexString = varRegExes[tmp];
+							regexString = m_varRegExes[tmp];
 						}
 						else
 						{
 							//we're assuming it's a dereferenced pointer
 							wxString tmp = m_varInfo[i].type.BeforeLast('*');
-							regexString = varRegExes[tmp];
+							regexString = m_varRegExes[tmp];
 						}
 					}//end referenced variable test
 				}
@@ -1522,12 +1534,12 @@ bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 					//we have an array of some type...
 					if(m_varInfo[i].type.Find("char") != -1)
 					{
-						regexString = varRegExes["char[]"];
+						regexString = m_varRegExes["char[]"];
 						//it's a char string.  Parse as regular string
 					}
 					else
 					{
-						regexString = varRegExes["array"];
+						regexString = m_varRegExes["array"];
 					}
 				}//end array-test
 
@@ -1621,9 +1633,9 @@ bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 //////////////////////////////////////////////////////////////////////////////
 void Debugger::sendCustomCommand(wxString cust)
 {
-	if(procLives == true)
+	if(m_procLives == true)
 	{
-		cust.Append(returnChar);
+		cust.Append(m_returnChar);
 		sendCommand(cust);
 	}
 }
@@ -1641,7 +1653,7 @@ void Debugger::sendCustomCommand(wxString cust)
 wxString Debugger::getProcOutput(int numEntries = -1)
 {
 	wxString tmp = "";
-	int outputCount = (int)fullOutput.GetCount();
+	int outputCount = (int)m_fullOutput.GetCount();
 	int loopStop = numEntries;
 	if(outputCount > 0)
 	{
@@ -1649,7 +1661,7 @@ wxString Debugger::getProcOutput(int numEntries = -1)
 		{loopStop = outputCount;}
 
 		for(int i = 0; i < loopStop; i++)
-		{tmp.Append(fullOutput[i]);}
+		{tmp.Append(m_fullOutput[i]);}
 	}
 
 	return(tmp);
@@ -1708,7 +1720,7 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 
 	//data now has the output...
 	tempHold = e.GetString();
-	data.Add(tempHold);
+	m_data.Add(tempHold);
 	
 	//~~DEBUG CODE~~//
 	wxLogDebug("DB output: %s", tempHold);
@@ -1719,19 +1731,17 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 	//1) See if the captured string has a [$] all by itself at the end
 	//2) If so, begin parsing.
 	//3) If not, wait for another output
-	if(classStatus != START)
+	if(m_classStatus != START)
 	{
-		for(int i = 0; 
-		    i < (int)data.GetCount() && skipThrough; 
-			i++)
+		for(int i = 0; i < (int)m_data.GetCount() && skipThrough; i++)
 		{
-			tempHold = data[i];
+			tempHold = m_data[i];
 			if(tempHold.Last() == PROMPT_CHAR)
 			{
 				tempHold.Empty();
 
 				for(int j = 0; j <= i; j++)
-				{tempHold << data[j];}
+				{tempHold << m_data[j];}
 
 				skipThrough = false;
 			}
@@ -1745,16 +1755,16 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 	//check to see if something good was found.
 	if(skipThrough)
 	{
-		classStatusBackup = classStatus;
-		classStatus = WAITING;
+		classStatusBackup = m_classStatus;
+		m_classStatus = WAITING;
 	}
 	//--//
 	
-	switch(classStatus)
+	switch(m_classStatus)
 	{
 		case START:			//program start
 			//this re-directs to where the output actually is that we want
-			if(isRemote)
+			if(m_isRemote)
 			{tempString = tempHold;}
 			else
 			{tempString = errorMsg();}
@@ -1766,19 +1776,19 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 					//the dope command "done" sent to GDB returns an error.
 					//this means that all init. commands have gone through,
 					//and we can start the program.
-					status = DEBUG_STOPPED;
+					m_status = DEBUG_STOPPED;
 					go();
 				}
 			}
 
-			data.Empty();
+			m_data.Empty();
 			break;
 
 		case E_BREAK:		//enable break
 		case D_BREAK:		//disable break
 		case K_BREAK:		//kill break
 			//nothing to parse...
-			data.Empty();
+			m_data.Empty();
 			break;
 
 		case S_BREAK:		//set break
@@ -1792,18 +1802,18 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 				//~~DEBUG CODE~~//
 				//wxLogDebug("--output_parse: setbreak: caught num=%d, gdb_num=%d--", gdbNum, (gdbBreakpointNum - 1));
 
-				if(gdbNum != (gdbBreakpointNum - 1))
+				if(gdbNum != (m_gdbBreakpointNum - 1))
 				{
-					error.Printf("#s don't match: caught=%d internal=%d", gdbNum, (gdbBreakpointNum - 1));
+					m_error.Printf("#s don't match: caught=%d internal=%d", gdbNum, (m_gdbBreakpointNum - 1));
 					makeGenericError("Set_Break parse: ");
 
 					
 					outputEvent.SetId(ID_DEBUG_EXIT_ERROR);
-					guiPointer->AddPendingEvent(outputEvent);
+					m_parentEventHandler->AddPendingEvent(outputEvent);
 					stop(false);
 				}
 			}
-			data.Empty();
+			m_data.Empty();
 			break;
 
 		case RUN_TO_CURSOR:
@@ -1814,36 +1824,36 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 
 			if(keepParsing)
 			{
-				if(classStatus == STOP)
+				if(m_classStatus == STOP)
 				{
 					outputEvent.SetId(ID_DEBUG_EXIT_NORMAL);
-					guiPointer->AddPendingEvent(outputEvent);
+					m_parentEventHandler->AddPendingEvent(outputEvent);
 					stop(false);
 					break;
 				}
 
-				if(classStatus == RUN_TO_CURSOR || reGoCase.Matches(tempHold))
+				if(m_classStatus == RUN_TO_CURSOR || reGoCase.Matches(tempHold))
 				{
-					if(classStatus != RUN_TO_CURSOR)
+					if(m_classStatus != RUN_TO_CURSOR)
 					{
 						goBreakpoint = reGoCase.GetMatch(tempHold, 1);
 					}
 
 					if(reCase1.Matches(tempHold))
 					{
-						Filename = reCase1.GetMatch(tempHold, 1);
-						Linenumber = reCase1.GetMatch(tempHold, 3);
+						m_Filename = reCase1.GetMatch(tempHold, 1);
+						m_Linenumber = reCase1.GetMatch(tempHold, 3);
 
-						status = DEBUG_BREAK;
+						m_status = DEBUG_BREAK;
 
-						Linenumber.ToLong(&tmpLong);
+						m_Linenumber.ToLong(&tmpLong);
 	
 						outputEvent.SetLineNumber((int)tmpLong);
-						outputEvent.SetSourceFilename(Filename);
+						outputEvent.SetSourceFilename(m_Filename);
 						outputEvent.SetId(ID_DEBUG_BREAKPOINT);
-						guiPointer->AddPendingEvent(outputEvent);
+						m_parentEventHandler->AddPendingEvent(outputEvent);
 
-						data.Empty();
+						m_data.Empty();
 
 						sendWhat();
 					}
@@ -1856,10 +1866,10 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 			{
 				//something bad this way comes... aka Keeparsing = false
 				outputEvent.SetId(ID_DEBUG_EXIT_ERROR);
-				guiPointer->AddPendingEvent(outputEvent);
+				m_parentEventHandler->AddPendingEvent(outputEvent);
 				stop(false);
 			}
-			data.Empty();
+			m_data.Empty();
 			break;
 		}
 
@@ -1887,7 +1897,7 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 
 		case GET_WHAT:
 			sendPrint(tempHold);
-			data.Empty();
+			m_data.Empty();
 			break;
 
 		case GET_PRINT:
@@ -1898,25 +1908,25 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 
 			if(dontskip)
 			{
-				for(int i = 0; i < varCount; i++)
+				for(int i = 0; i < m_varCount; i++)
 				{
 					varNames.Add(m_varInfo[i].name);
 					varType.Add(m_varInfo[i].type);
 				}
 
-				classStatus = WAITING;
+				m_classStatus = WAITING;
 
-				if(varCount > 0)
+				if(m_varCount > 0)
 				{
 					outputEvent.SetVariableNames(varNames);
 					outputEvent.SetVariableTypes(varType);
 					outputEvent.SetVariableValues(varValue);
 					outputEvent.SetId(ID_DEBUG_VARINFO);
-					guiPointer->AddPendingEvent(outputEvent);
+					m_parentEventHandler->AddPendingEvent(outputEvent);
 				}
 			}
 
-			data.Empty();
+			m_data.Empty();
 			break;
 		}
 
@@ -1945,54 +1955,54 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 			//begin testing cases
 			if(keepParsing)
 			{
-				if(classStatus == STOP)
+				if(m_classStatus == STOP)
 				{
 					outputEvent.SetId(ID_DEBUG_EXIT_NORMAL);
-					guiPointer->AddPendingEvent(outputEvent);
+					m_parentEventHandler->AddPendingEvent(outputEvent);
 					stop(false);
 					break;
 				}
-				status = DEBUG_WAIT;
+				m_status = DEBUG_WAIT;
 				if(reCase1.Matches(tempHold))
 				{
-					Filename = reCase1.GetMatch(tempHold, 1);
-					Linenumber = reCase1.GetMatch(tempHold, 3);
+					m_Filename = reCase1.GetMatch(tempHold, 1);
+					m_Linenumber = reCase1.GetMatch(tempHold, 3);
 
-					Linenumber.ToLong(&tmpLong);
+					m_Linenumber.ToLong(&tmpLong);
 					
 					outputEvent.SetLineNumber((int)tmpLong);
-					outputEvent.SetSourceFilename(Filename);
+					outputEvent.SetSourceFilename(m_Filename);
 					outputEvent.SetId(ID_DEBUG_BREAKPOINT);
-					guiPointer->AddPendingEvent(outputEvent);
+					m_parentEventHandler->AddPendingEvent(outputEvent);
 
-					data.Empty();
+					m_data.Empty();
 
 					sendWhat();
 
 					noNewWhats = false;
-					status = DEBUG_BREAK;
+					m_status = DEBUG_BREAK;
 				}
 				else if(reCase2.Matches(tempHold))
 				{
-					Linenumber = reCase2.GetMatch(tempHold, 2);
+					m_Linenumber = reCase2.GetMatch(tempHold, 2);
 	
-					Linenumber.ToLong(&tmpLong);
+					m_Linenumber.ToLong(&tmpLong);
 					
 					outputEvent.SetLineNumber((int)tmpLong);
-					outputEvent.SetSourceFilename(Filename);
+					outputEvent.SetSourceFilename(m_Filename);
 					outputEvent.SetId(ID_DEBUG_BREAKPOINT);
-					guiPointer->AddPendingEvent(outputEvent);
+					m_parentEventHandler->AddPendingEvent(outputEvent);
 				}
 				//since we can pull right through, an "else" here is no good
 			}
 			else
 			{
 				outputEvent.SetId(ID_DEBUG_EXIT_ERROR);
-				guiPointer->AddPendingEvent(outputEvent);
+				m_parentEventHandler->AddPendingEvent(outputEvent);
 				stop(false);
 			}
 
-			data.Empty();
+			m_data.Empty();
 
 			if(noNewWhats)
 			{
@@ -2001,37 +2011,37 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 			break;
 		}
 		case WAITING:		//i'm waiting...
-			classStatus = classStatusBackup;
+			m_classStatus = classStatusBackup;
 			break;
 
 		case STOP:
 		{
-			if(procLives)
+			if(m_procLives)
 			{
-				status = DEBUG_ERROR;
-				classStatus = STOP;
-				error = "Extreme debug error OR quit-command sent before output finished: received output with ClassStatus=STOP.";
+				m_status = DEBUG_ERROR;
+				m_classStatus = STOP;
+				m_error = "Extreme debug error OR quit-command sent before output finished: received output with ClassStatus=STOP.";
 				makeGenericError("See previous error messages (if any)");
 
 				outputEvent.SetId(ID_DEBUG_EXIT_ERROR);
-				guiPointer->AddPendingEvent(outputEvent);
+				m_parentEventHandler->AddPendingEvent(outputEvent);
 				stop(false);
 			}
-			data.Empty();
+			m_data.Empty();
 			break;
 		}
 
 		default:
-			status = DEBUG_ERROR;
-			classStatus = STOP;
-			error = "[classStatus] value not recognized";
+			m_status = DEBUG_ERROR;
+			m_classStatus = STOP;
+			m_error = "[classStatus] value not recognized";
 			makeGenericError("failure on output parse:");
 
 			outputEvent.SetId(ID_DEBUG_EXIT_ERROR);
-			guiPointer->AddPendingEvent(outputEvent);
+			m_parentEventHandler->AddPendingEvent(outputEvent);
 			stop(false);
 
-			data.Empty();
+			m_data.Empty();
 	}
 }
 
@@ -2067,13 +2077,13 @@ bool Debugger::checkOutputStream(wxString stream)
 			//either way, not good for further parsing.
 			if(reCase1.Matches(thirdCase))
 			{
-				error = "Received bad program signal.  RegEx: " + reCase1.GetMatch(thirdCase, 1) + ", " + reCase1.GetMatch(thirdCase, 3);
+				m_error = "Received bad program signal.  RegEx: " + reCase1.GetMatch(thirdCase, 1) + ", " + reCase1.GetMatch(thirdCase, 3);
 				makeGenericError("checkOutputStream:  ");
 				return(false);
 			}
 			else
 			{
-				error = "Received bad program signal.  No RegEx.";
+				m_error = "Received bad program signal.  No RegEx.";
 				makeGenericError("checkOutputStream:  ");
 				return(false);
 			}
@@ -2083,20 +2093,20 @@ bool Debugger::checkOutputStream(wxString stream)
 			thirdCase.Remove(0,7);
 			if(thirdCase.Matches("normal*"))
 			{
-				status = DEBUG_STOPPED;
-				classStatus = STOP;
+				m_status = DEBUG_STOPPED;
+				m_classStatus = STOP;
 				return(true);
 			}
 			else
 			{
-				error.Printf("Program terminated abnormally.  ClassStatus %d", classStatus);
+				m_error.Printf("Program terminated abnormally.  ClassStatus %d", m_classStatus);
 				makeGenericError("checkOutputStream: ");
 				return(false);
 			}
 		}
 		else
 		{
-			error.Printf("Unknown program signal. ClassStatus %d", classStatus);
+			m_error.Printf("Unknown program signal. ClassStatus %d", m_classStatus);
 			makeGenericError("checkOutputStream: ");
 			return(false);
 		}
@@ -2117,10 +2127,10 @@ bool Debugger::checkOutputStream(wxString stream)
 //////////////////////////////////////////////////////////////////////////////
 void Debugger::onProcessErrOutEvent(ChameleonProcessEvent &e)
 {
-	status = DEBUG_ERROR;
+	m_status = DEBUG_ERROR;
 
 	//error now has the output
-	error = e.GetString();
+	m_error = e.GetString();
 	addErrorHist("Event-Generated error");
 
 	//DEBUG CODE//
@@ -2140,9 +2150,9 @@ void Debugger::onProcessErrOutEvent(ChameleonProcessEvent &e)
 void Debugger::onProcessTermEvent(ChameleonProcessEvent &e) 
 {
 	//the process has been killed (aka GDB quit for some reason)
-	status = DEBUG_DEAD;
-	classStatus = STOP;
-	procLives = false;
+	m_status = DEBUG_DEAD;
+	m_classStatus = STOP;
+	m_procLives = false;
 
 	flushBuffer();
 	flushPrivateVar();
@@ -2159,7 +2169,7 @@ void Debugger::onProcessTermEvent(ChameleonProcessEvent &e)
 //////////////////////////////////////////////////////////////////////////////
 void Debugger::flushBuffer()
 {
-	data.Clear();
+	m_data.Clear();
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -2172,23 +2182,23 @@ void Debugger::flushBuffer()
 //////////////////////////////////////////////////////////////////////////////
 void Debugger::flushPrivateVar()
 {
-	isRemote = false;
-	procLives = false;
-	fileIsSet = false;
-	currFile = "";
-	pid = 0;
-	numBreakpoints = 0;
-	gdbBreakpointNum = 1;
-	lineToNum.empty();
+	m_isRemote = false;
+	m_procLives = false;
+	m_fileIsSet = false;
+	m_currFile = "";
+	m_pid = 0;
+	m_numBreakpoints = 0;
+	m_gdbBreakpointNum = 1;
+	m_lineToNum.empty();
 
-	commandHistory.Empty();
-	histCount = 0;
-	error = "";
+	m_commandHistory.Empty();
+	m_histCount = 0;
+	m_error = "";
 	errorHist.Empty();
-	errorCount = 0;
-	command = "";
-	returnChar = "";
-	data.Empty();
+	m_errorCount = 0;
+	m_command = "";
+	m_returnChar = "";
+	m_data.Empty();
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -2204,9 +2214,9 @@ void Debugger::flushPrivateVar()
 //////////////////////////////////////////////////////////////////////////////
 void Debugger::sendCommand(wxString send)
 {
-	if(procLives)
+	if(m_procLives)
 	{
-		streamOut->WriteString(send);
+		m_streamOut->WriteString(send);
 		send = send + "<- sent";
 		
 		//DEBUG CODE//
@@ -2232,7 +2242,7 @@ void Debugger::sendCommand(wxString send)
 //////////////////////////////////////////////////////////////////////////////
 void Debugger::makeGenericError(wxString comment)
 {
-	status = DEBUG_ERROR;	//if not already set...
+	m_status = DEBUG_ERROR;	//if not already set...
 	addErrorHist(comment);
 }
 
@@ -2251,8 +2261,8 @@ void Debugger::makeGenericError(wxString comment)
 //////////////////////////////////////////////////////////////////////////////
 void Debugger::addErrorHist(wxString comment)
 {
-	errorCount++;
-	errorHist.Add(comment + "-> " + error);
+	m_errorCount++;
+	errorHist.Add(comment + "-> " + m_error);
 }
 
 //updateHistory: updates the history storage and pointer
@@ -2269,8 +2279,8 @@ void Debugger::addErrorHist(wxString comment)
 //////////////////////////////////////////////////////////////////////////////
 void Debugger::updateHistory(wxString addMe)
 {
-	commandHistory.Add(addMe);
-	histCount++;
+	m_commandHistory.Add(addMe);
+	m_histCount++;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -2285,10 +2295,10 @@ void Debugger::updateHistory(wxString addMe)
 //////////////////////////////////////////////////////////////////////////////
 wxString Debugger::getHistoryItem(int offset = 0)
 {
-	if(offset > histCount)
+	if(offset > m_histCount)
 	{
-		offset = histCount;
+		offset = m_histCount;
 	}
-	return(commandHistory[offset]);
+	return(m_commandHistory[offset]);
 }
 //eof

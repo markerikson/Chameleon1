@@ -13,12 +13,13 @@ class ChameleonNotebook;
 class wxFileName;
 class Options;
 class ProjectInfo;
+class DebugManager;
 
 
 class ChameleonEditor : public wxStyledTextCtrl
 {
 public:
-	ChameleonEditor(ChameleonWindow* mframe, Options* options, ProjectInfo* project, 
+	ChameleonEditor(ChameleonWindow* mframe, DebugManager* debugManager, Options* options, ProjectInfo* project, 
 					wxWindow *parent, wxWindowID id, const wxPoint& pos = wxDefaultPosition,
 					const wxSize& size = wxDefaultSize, long style = 0,
 					const wxString& name = wxSTCNameStr);
@@ -40,6 +41,7 @@ public:
 
 	void OnChar(wxStyledTextEvent &event);
 	void OnRightClick(wxMouseEvent &event);
+	
 
 	void UpdateSyntaxHighlighting();
 	void FocusOnLine(int linenumber, bool showMarker = true);
@@ -64,6 +66,8 @@ public:
 	void OnAddBreakpoint(wxCommandEvent &event);
 	void OnRemoveBreakpoint(wxCommandEvent &event);
 	void OnClearBreakpoints(wxCommandEvent &event);
+	void OnAddWatch(wxCommandEvent &event);
+	void OnDisplayVariable(wxCommandEvent &event);
 
 private:
 
@@ -75,13 +79,15 @@ private:
 
 	int GetLineForBreakpointOperation();
 	void ResetRightClickLocation();
+	wxString FindClickedWord();
 
 	void CreateBreakpointEvent(int linenumber, bool addBreakpoint);
 	
 
 	ChameleonWindow* m_mainFrame;
-	ChameleonNotebook* m_parentNotebook;	
+	//ChameleonNotebook* m_parentNotebook;	
 	Options* m_options;
+	DebugManager* m_debugManager;
 	ProjectInfo* m_project;
 
 	wxFileName m_fileNameAndPath;
@@ -93,11 +99,16 @@ private:
 
 	wxArrayInt m_breakpoints;
 	wxPoint m_lastRightClick;
+	wxString m_clickedWord;
+	wxMenuItem* m_menuAddWatch;
+	wxMenuItem* m_menuShowValue;
 
 	bool m_bLoadingFile;
 	bool m_bLastSavedRemotely;
 	bool m_bHasBeenCompiled;
 	bool m_bNewFile;
+
+
 	wxMenu m_popupMenu;
 
 

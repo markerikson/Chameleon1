@@ -75,7 +75,7 @@ class VariableWatchPanel: public wxPanel
 public:
     /// Constructors
     VariableWatchPanel( );
-    VariableWatchPanel( wxWindow* parent, ChameleonWindow* mainframe, wxWindowID id = SYMBOL_VARIABLEWATCHPANEL_IDNAME, const wxPoint& pos = SYMBOL_VARIABLEWATCHPANEL_POSITION, const wxSize& size = SYMBOL_VARIABLEWATCHPANEL_SIZE, long style = SYMBOL_VARIABLEWATCHPANEL_STYLE );
+    VariableWatchPanel( wxWindow* parent, wxEvtHandler* mainframe, wxWindowID id = SYMBOL_VARIABLEWATCHPANEL_IDNAME, const wxPoint& pos = SYMBOL_VARIABLEWATCHPANEL_POSITION, const wxSize& size = SYMBOL_VARIABLEWATCHPANEL_SIZE, long style = SYMBOL_VARIABLEWATCHPANEL_STYLE );
 
     /// Creation
     bool Create( wxWindow* parent, wxWindowID id = SYMBOL_VARIABLEWATCHPANEL_IDNAME, const wxPoint& pos = SYMBOL_VARIABLEWATCHPANEL_POSITION, const wxSize& size = SYMBOL_VARIABLEWATCHPANEL_SIZE, long style = SYMBOL_VARIABLEWATCHPANEL_STYLE );
@@ -106,12 +106,19 @@ public:
 	void UpdateVariableInfo(wxDebugEvent event);
     /// Should we show tooltips?
     static bool ShowToolTips();
+	void AddWatchedVariables(wxDebugEvent debug);
+
+	void SetEventHandler(wxEvtHandler* eventHandler) { m_parentEventHandler = eventHandler; }
+
+
 
 ////@begin VariableWatchPanel member variables
     wxListCtrl* m_list;
 ////@end VariableWatchPanel member variables
 
-	ChameleonWindow* m_mainFrame;
+private:
+	wxEvtHandler* m_parentEventHandler;
+
 	IntIntHashmap m_gdbVariableMappings;
 
 	//wxArrayString 

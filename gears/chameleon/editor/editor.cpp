@@ -14,8 +14,10 @@
 #include "../common/Options.h"
 #include "../common/DebugEvent.h"
 #include "../common/ProjectInfo.h"
+#include "../debugger/DebugManager.h"
 #include "../common/debug.h"
 #include "../common/fixvsbug.h"
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -29,6 +31,8 @@ BEGIN_EVENT_TABLE(ChameleonEditor, wxStyledTextCtrl)
 	EVT_MENU			(ID_DEBUG_ADD_BREAKPOINT, ChameleonEditor::OnAddBreakpoint)
 	EVT_MENU			(ID_DEBUG_REMOVE_BREAKPOINT, ChameleonEditor::OnRemoveBreakpoint)
 	EVT_MENU			(ID_DEBUG_CLEAR_ALL_BREAKPOINTS, ChameleonEditor::OnClearBreakpoints)
+	EVT_MENU			(ID_DEBUG_WATCH_SELECTION, ChameleonEditor::OnAddWatch)
+	EVT_MENU			(ID_DEBUG_DISPLAY_SELECTION, ChameleonEditor::OnDisplayVariable)
 	//EVT_COMPILER_END	(ChameleonEditor::OnCompilerEnded)
 	EVT_MENU			(ID_DEBUG_RUNTOCURSOR, ChameleonEditor::OnRunToCursor)
 END_EVENT_TABLE()
@@ -55,6 +59,7 @@ int CompareInts(int n1, int n2)
 ///  @author Mark Erikson @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
 ChameleonEditor::ChameleonEditor( ChameleonWindow *mframe,
+								 DebugManager* debugManager,
 								 Options* options,
 								 ProjectInfo* project,
                                   wxWindow *parent,     wxWindowID id, const
@@ -65,7 +70,8 @@ ChameleonEditor::ChameleonEditor( ChameleonWindow *mframe,
     wxStyledTextCtrl(parent, id, pos, size, style, name)
 {
     m_mainFrame = mframe;
-	m_parentNotebook = (ChameleonNotebook*)parent;
+	m_debugManager = debugManager;
+	//m_parentNotebook = (ChameleonNotebook*)parent;
 	m_options = options;
 	m_project = project;
 	m_project->AddEditor(this);
@@ -169,6 +175,12 @@ ChameleonEditor::ChameleonEditor( ChameleonWindow *mframe,
 
 	m_popupMenu.Append(ID_DEBUG_RUNTOCURSOR, "Run to cursor");
 
+	m_popupMenu.AppendSeparator();
+
+	m_menuAddWatch = m_popupMenu.Append(ID_DEBUG_WATCH_SELECTION, "Watch selection");
+	m_menuShowValue = m_popupMenu.Append(ID_DEBUG_DISPLAY_SELECTION, "Display selection");
+
+
 	int modmask =	wxSTC_MOD_INSERTTEXT 
 					| wxSTC_MOD_DELETETEXT
 					//| wxSTC_MOD_CHANGESTYLE
@@ -176,6 +188,9 @@ ChameleonEditor::ChameleonEditor( ChameleonWindow *mframe,
 					| wxSTC_PERFORMED_REDO;
 
 	this->SetModEventMask(modmask);
+
+
+
 
 }
 
@@ -478,9 +493,9 @@ void ChameleonEditor::UpdateSyntaxHighlighting()
 {
 	wxString filename = GetFileNameAndPath();
 
-	if( m_options->GetPerms()->isEnabled(PERM_SYNTAXHIGHLIGHT) &&
-		( m_bNewFile || (m_project->GetFileType(filename) != FILE_NONSOURCE) || !HasBeenSaved())
-		)
+	bool highlightingEnabled = m_options->GetPerms()->isEnabled(PERM_SYNTAXHIGHLIGHT);
+	bool isSourceFile = m_project->GetFileType(filename) != FILE_NONSOURCE;
+	if(  highlightingEnabled && ( m_bNewFile || isSourceFile || !HasBeenSaved()) )
 	{
 		this->SetLexer(wxSTC_LEX_CPP);
 
@@ -680,11 +695,17 @@ void ChameleonEditor::OnRightClick(wxMouseEvent &event)
 	bool breakpointOnLine = (markerLineBitmask & (1 << MARKER_BREAKPOINT));
 
 	bool breakpointsAllowed = true;
-	bool isDebugging = m_mainFrame->IsDebugging();
+	bool isDebugging = m_debugManager->IsDebugging();//m_mainFrame->IsDebugging();
+
+	if(m_popupMenu.FindItem(ID_DEBUG_WATCH_SELECTION) != NULL)
+	{
+		m_popupMenu.Remove(ID_DEBUG_WATCH_SELECTION);
+		m_popupMenu.Remove(ID_DEBUG_DISPLAY_SELECTION);
+	}
 	
 	if(isDebugging)
 	{
-		breakpointsAllowed = m_mainFrame->IsDebuggerPaused();
+		breakpointsAllowed = m_debugManager->IsDebuggerPaused();//m_mainFrame->IsDebuggerPaused();
 	}
 
 	m_popupMenu.Enable(ID_DEBUG_ADD_BREAKPOINT, breakpointsAllowed && !breakpointOnLine);
@@ -699,6 +720,23 @@ void ChameleonEditor::OnRightClick(wxMouseEvent &event)
 
 	m_popupMenu.Enable(ID_DEBUG_CLEAR_ALL_BREAKPOINTS, canClearBreakpoints);
 
+
+	if(!isDebugging || isDebugging && breakpointsAllowed)
+	{
+		wxString clickedWord = FindClickedWord();
+
+		if(clickedWord.Length() > 0)
+		{
+			wxString watchWord = wxString::Format("Watch \"%s\"", clickedWord);
+			wxString displayWord = wxString::Format("Display \"%s\"", clickedWord);
+
+			m_popupMenu.Append(m_menuAddWatch);
+			m_popupMenu.Append(m_menuShowValue);
+
+			m_menuAddWatch->SetText(watchWord);
+			m_menuShowValue->SetText(displayWord);
+		}
+	}
 	
 	PopupMenu(&m_popupMenu, m_lastRightClick);
 }
@@ -904,7 +942,7 @@ void ChameleonEditor::CreateBreakpointEvent(int linenumber, bool addBreakpoint)
 	dbg.SetId(type);
 	dbg.SetId(type);
 	dbg.SetProject(m_project);
-	m_mainFrame->AddPendingEvent(dbg);
+	//m_mainFrame->AddPendingEvent(dbg);
 }
 
 
@@ -953,7 +991,7 @@ void ChameleonEditor::OnRunToCursor(wxCommandEvent &event)
 	debugEvent.SetId(ID_DEBUG_RUNTOCURSOR);	
 	debugEvent.SetSourceFilename(GetFilenameString());
 	debugEvent.SetLineNumber(linenum);
-	m_mainFrame->AddPendingEvent(debugEvent);
+	m_debugManager->AddPendingEvent(debugEvent);//m_mainFrame->AddPendingEvent(debugEvent);
 
 	ResetRightClickLocation();
 }
@@ -970,7 +1008,7 @@ int ChameleonEditor::GetLineForBreakpointOperation()
 	{
 		int charpos = PositionFromPoint(m_lastRightClick);
 		lineNum = LineFromPosition(charpos);
-		lineNum++;
+		//lineNum++;
 	}
 
 	
@@ -981,4 +1019,57 @@ void ChameleonEditor::ResetRightClickLocation()
 {
 	m_lastRightClick.x = -1;
 	m_lastRightClick.y = -1;
+}
+
+wxString ChameleonEditor::FindClickedWord()
+{
+	int charpos = PositionFromPoint(m_lastRightClick);
+	int startPosition = WordStartPosition(charpos, true);
+	int endPosition = WordEndPosition(charpos, true);
+
+	wxString clickedWord = this->GetTextRange(startPosition, endPosition);
+
+	m_clickedWord = clickedWord;
+	return clickedWord;
+}
+
+void ChameleonEditor::OnAddWatch(wxCommandEvent &event)
+{
+	wxDebugEvent dbg;
+
+	dbg.SetId(ID_DEBUG_ADD_WATCH);
+
+	/*
+	//wxString varName = avwd.GetVariableName();
+	//wxString funcName = avwd.GetFunctionName();
+	//wxString className = wxEmptyString;
+
+	if(avwd.FunctionInClass())
+	{
+	className = avwd.GetClassName();
+	}
+	*/
+
+	wxArrayString vars;
+	vars.Add(m_clickedWord);
+	dbg.SetVariableNames(vars);
+
+	m_debugManager->AddPendingEvent(dbg);//m_mainFrame->AddPendingEvent(dbg);
+}
+
+void ChameleonEditor::OnDisplayVariable(wxCommandEvent &event)
+{
+	wxDebugEvent dbg;
+
+	dbg.SetId(ID_DEBUG_DISPLAY_SELECTION);
+
+	wxArrayString vars;
+	vars.Add(m_clickedWord);
+	dbg.SetVariableNames(vars);
+
+	m_debugManager->AddPendingEvent(dbg);//m_mainFrame->AddPendingEvent(dbg);
+
+
+	// TODO Need to signal that it's a one-shot, which needs to be 
+	// handled appropriately in the debugger.
 }

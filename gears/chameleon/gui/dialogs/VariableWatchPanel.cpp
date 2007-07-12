@@ -66,11 +66,11 @@ VariableWatchPanel::VariableWatchPanel( )
 {
 }
 
-VariableWatchPanel::VariableWatchPanel( wxWindow* parent, ChameleonWindow* mainframe, wxWindowID id, const wxPoint& pos, const wxSize& size, long style )
+VariableWatchPanel::VariableWatchPanel( wxWindow* parent, wxEvtHandler* mainframe, wxWindowID id, const wxPoint& pos, const wxSize& size, long style )
 {
     Create(parent, id, pos, size, style);
 
-	m_mainFrame = mainframe;
+	m_parentEventHandler = mainframe;
 
 	wxListItem itemCol;
 	itemCol.m_mask = wxLIST_MASK_TEXT | wxLIST_MASK_WIDTH;
@@ -214,8 +214,19 @@ void VariableWatchPanel::AddWatch()
 		dbg.SetVariableNames(vars);
 		//dbg.SetFunctionName(funcName);
 		//dbg.SetClassName(className);
-		m_mainFrame->AddPendingEvent(dbg);		
+		m_parentEventHandler->AddPendingEvent(dbg);		
 
+		
+	}
+}
+
+void VariableWatchPanel::AddWatchedVariables(wxDebugEvent debug)
+{	
+	wxArrayString variableNames = debug.GetVariableNames();
+	
+	for(int i = 0; i < variableNames.size(); i++)
+	{
+		wxString varName = variableNames[i];
 		m_list->InsertItem(m_list->GetItemCount(), varName);
 	}
 }
@@ -249,7 +260,7 @@ void VariableWatchPanel::RemoveWatch()
 		wxArrayString vars;
 		vars.Add(name);
 		dbg.SetVariableNames(vars);
-		m_mainFrame->AddPendingEvent(dbg);
+		m_parentEventHandler->AddPendingEvent(dbg);
 
 		m_list->DeleteItem(index);
 	}
