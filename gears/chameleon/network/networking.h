@@ -18,6 +18,8 @@ class wxProcessEvent;
 class PlinkConnect;
 class Options;
 class wxTextOutputStream;
+class PipedProcess;
+class LocalProcessManager;
 
 #define POLL_RATE 10 //milliseconds
 
@@ -74,7 +76,10 @@ class Networking : public wxEvtHandler {
 
 		// Data:
 		PlinkConnect* m_plinks;
+		LocalProcessManager* m_processManager;
+
 		Options* m_options;
+
 		wxString m_currHost, m_currUser, m_currPass;
 		NetworkStatus m_status;
 		wxString m_statusDetails;

@@ -47,6 +47,8 @@ Compiler::Compiler(Options* options, Networking* network)
 	m_compilerStdIn = NULL; // used only for forced terminations
 	m_currProj = NULL;
 	m_currFileNum = -2;
+
+	m_mingwPath = "d:\\toolkits\\MinGW513\\";
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -117,14 +119,28 @@ void Compiler::StartNextFile()
 		cmd +=  " && echo C_O_M_P_I_L_E_SUCCESS || echo C_O_M_P_I_L_E_FAILED";
 	}
 	else {
-		/*
-		cmd +=  "\"" + m_options->GetMingwPath() + "/bin/g++.exe\" "; // compiler
-		cmd +=  " -g -c -fmessage-length=0 ";
-		cmd +=  " -o " + outFile.GetFullPath(wxPATH_DOS) + " ";
-		cmd +=  inFile.GetFullPath(wxPATH_DOS);
-		cmd +=  " && echo C_O_M_P_I_L_E_SUCCESS || echo C_O_M_P_I_L_E_FAILED";
-		*/
-		wxLogDebug("Error: compiling local projects not supported yet!");
+
+		//cmd = "cmd /c";
+		//cmd += " set PATH=%PATH%;D:\\toolkits\\MinGW513\\libexec\\gcc\\mingw32\\3.4.2;D:\\toolkits\\MinGW513\\bin; && ";
+
+		wxString compileCommand;
+
+		wxFileName compilerPath(m_mingwPath);
+		compilerPath.AppendDir("bin");
+		compilerPath.SetFullName("g++.exe");
+
+		//cmd +=  m_mingwPath + "/bin/g++.exe\" "; // compiler
+		
+		compileCommand += compilerPath.GetFullPath();
+		compileCommand +=  " -g -c -fmessage-length=0 ";
+		compileCommand +=  " -o " + outFile.GetFullPath(wxPATH_DOS) + " ";
+		compileCommand +=  inFile.GetFullPath(wxPATH_DOS);
+		//cmd +=  " && echo C_O_M_P_I_L_E_SUCCESS || echo C_O_M_P_I_L_E_FAILED";
+		
+
+		cmd = CreateLocalCommand(compileCommand);
+
+		//wxLogDebug("Error: compiling local projects not supported yet!");
 	}
 	//wxLogDebug("Starting to Compile with cmd= \"%s\"", cmd);
 	m_compilerStdIn = m_network->StartCommand(isRemote, cmd, this);
@@ -156,11 +172,13 @@ void Compiler::StartLinking() {
 
 	// Create outfile name:
 	wxString name = m_currProj->GetProjectBasePath();
+
+
 	if(isRemote) {
-		name += "/" + m_currProj->GetProjectName() + ".out";
+		name += "/" + name + ".out";
 	}
 	else {
-		name += "\\" + m_currProj->GetProjectName() + ".exe";
+		name += "\\" + name + ".exe";
 	}
 	wxFileName outFile(name);
 
@@ -181,13 +199,24 @@ void Compiler::StartLinking() {
 		cmd +=  " && echo C_O_M_P_I_L_E_SUCCESS || echo C_O_M_P_I_L_E_FAILED";
 	}
 	else {
-		/*
-		cmd +=  "\"" + m_options->GetMingwPath() + "/bin/g++.exe\" ";
-		cmd +=  " -g -fmessage-length=0 -o " + outFile.GetFullPath(wxPATH_DOS);
-		cmd +=  inFiles;
-		cmd +=  " && echo C_O_M_P_I_L_E_SUCCESS || echo C_O_M_P_I_L_E_FAILED";
-		*/
-		wxLogDebug("Error: seriously, you can't compile anything locally yet!");
+		
+		wxString linkCommand;
+		
+		wxFileName compilerPath(m_mingwPath);
+		compilerPath.AppendDir("bin");
+		compilerPath.SetFullName("g++.exe");
+
+		//cmd +=  m_mingwPath + "/bin/g++.exe\" "; // compiler
+		
+		linkCommand += compilerPath.GetFullPath();
+
+		linkCommand +=  " -g -fmessage-length=0 -o " + outFile.GetFullPath(wxPATH_DOS);
+		linkCommand +=  inFiles;
+		//cmd +=  " && echo C_O_M_P_I_L_E_SUCCESS || echo C_O_M_P_I_L_E_FAILED";
+
+		cmd = CreateLocalCommand(linkCommand);
+		
+		//wxLogDebug("Error: seriously, you can't compile anything locally yet!");
 	}
 	//wxLogDebug("Starting to Link with cmd= \"%s\"", + cmd);
 	m_compilerStdIn = m_network->StartCommand(isRemote, cmd, this);
@@ -225,7 +254,10 @@ void Compiler::RemoveIntermediateFiles() {
 		m_network->StartRemoteCommand("rm " + files, this); //pehaps NULL (instead of this)
 	}
 	else {
-		m_network->StartLocalCommand("del " + files, this);
+
+		wxString deleteCommand = "del " + files;
+		wxString finalCommand = CreateLocalCommand(deleteCommand);
+		m_network->StartLocalCommand(finalCommand, this);
 	}
 
 	m_intermediateFiles.Clear();
@@ -341,7 +373,7 @@ void Compiler::HaltCompiling()
 //////////////////////////////////////////////////////////////////////////////
 void Compiler::OnProcessOut(ChameleonProcessEvent& e)
 {
-	//wxLogDebug("Compiler Received: %s", e.GetString());
+	wxLogDebug("Compiler Received: %s", e.GetString());
 
 	if(m_isCompiling || m_isLinking) {
 		wxString s = e.GetString();
@@ -398,4 +430,16 @@ void Compiler::ParseCompilerMessages(wxString s)
 	CompilerEvent e(chEVT_COMPILER_PROBLEM);
 	e.SetGCCOutput(s);
 	AddPendingEvent(e);
+}
+
+wxString Compiler::CreateLocalCommand(wxString actualCommand )
+{
+	wxString cmd = "cmd /c";
+	cmd += " set PATH=%PATH%;D:\\toolkits\\MinGW513\\libexec\\gcc\\mingw32\\3.4.2;D:\\toolkits\\MinGW513\\bin; && ";
+
+	cmd += actualCommand;
+
+	cmd +=  " && echo C_O_M_P_I_L_E_SUCCESS || echo C_O_M_P_I_L_E_FAILED";
+
+	return cmd;
 }

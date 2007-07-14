@@ -17,6 +17,7 @@
 #include "../common/datastructures.h"
 #include "../common/Options.h"
 #include "../common/debug.h"
+#include "LocalProcessManager.h"
 
 #ifdef _DEBUG
 	#define new DEBUG_NEW
@@ -55,6 +56,8 @@ Networking::Networking(Options* options)
 	m_plinks = new PlinkConnect(m_options->GetPlinkApp(), m_currHost,
 								m_currUser, m_currPass);
 
+	m_processManager = new LocalProcessManager();
+
 	m_status = NET_STARTING;
 	//GetStatus(); <-- no need to be pre-emptive (here it's best not to be)
 }
@@ -70,6 +73,7 @@ Networking::Networking(Options* options)
 Networking::~Networking()
 {
 	delete m_plinks;
+	delete m_processManager;
 }
 
 
@@ -796,8 +800,9 @@ wxTextOutputStream* Networking::StartRemoteCommand(wxString cmd, wxEvtHandler* o
 //////////////////////////////////////////////////////////////////////////////
 wxTextOutputStream* Networking::StartLocalCommand(wxString cmd, wxEvtHandler* owner)
 {
-	wxLogDebug("Local Process Execution still missing.");
-	return NULL;
+	//wxLogDebug("Local Process Execution still missing.");
+	//return NULL;
+	return m_processManager->StartLocalCommand(cmd, owner);
 }
 
 

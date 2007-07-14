@@ -375,7 +375,27 @@ bool ProjectInfo::IsCompilable()
 
 FileFilterType ProjectInfo::GetFileType(wxString filename)
 {
+	wxFileName file(filename);
+
+	wxString extension = file.GetExt();
+
 	FileFilterType fileType = FILE_NONSOURCE;
+
+	if(extension == "h" || extension == "hpp")
+	{
+		fileType = FILE_HEADERS;
+	}
+	else if(extension == "c" || extension == "cpp")
+	{
+		fileType = FILE_SOURCES;
+	}
+	else if(extension == "lib" || extension == "so" || extension == "o")
+	{
+		fileType = FILE_LIBRARIES;
+	}
+
+	
+	/*
 
 	if(m_headerFiles.Index(filename) != -1)
 	{
@@ -393,6 +413,7 @@ FileFilterType ProjectInfo::GetFileType(wxString filename)
 	{
 		fileType = FILE_NONSOURCE;
 	}
+	*/
 
 	return fileType;
 }
@@ -403,7 +424,7 @@ bool ProjectInfo::IsSingleFile()
 
 	bool isSingleFile = true;
 
-	if(numSourceFiles == 1)
+	if(numSourceFiles != 1)
 	{
 		isSingleFile = false;
 	}

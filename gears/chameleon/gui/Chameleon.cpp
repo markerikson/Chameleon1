@@ -12,6 +12,7 @@
 #include <wx/print.h>
 #include <wx/printdlg.h>
 #include <wx/mimetype.h>
+#include <wx/stdpaths.h>
 
 #include <math.h>
 
@@ -417,7 +418,12 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	if (pStr != NULL)
 		*(++pStr)='\0'; 
 
-	wxFileName helpFile(szPath, "Chameleon.chm");
+	wxStandardPaths systemPaths;
+	wxString appPath = systemPaths.GetExecutablePath();
+	wxFileName fullProgramPath(appPath);
+	wxString programPath = fullProgramPath.GetPath();
+
+	wxFileName helpFile(programPath, "Chameleon.chm");
 	m_helpController = new wxCHMHelpController();
 	m_helpController->Initialize(helpFile.GetFullPath());
 }
@@ -1331,6 +1337,10 @@ void ChameleonWindow::OpenSourceFile (wxArrayString fnames)
 			{
 				proj = new ProjectInfo();
 				proj->SetRemote(m_remoteMode);
+
+				wxString fullFileName = newFileName.GetFullPath();
+				FileFilterType filterType = proj->GetFileType(fullFileName);
+				proj->AddFileToProject(fullFileName, filterType);
 			}
 			
 			// current buffer is empty and untouched, so load the file into it
@@ -1635,7 +1645,7 @@ bool ChameleonWindow::SaveFile(bool saveas, bool askLocalRemote, FileFilterType 
 
 		wxFileName projectFile(filename);
 		m_projMultiFiles->SetProjectFile(projectFile);
-		m_projMultiFiles->SetProjectName(projectFile.GetFullName());
+		m_projMultiFiles->SetProjectName(projectFile.GetName());
 
 		wxTreeItemId rootItem = m_projectTree->GetRootItem();
 		m_projectTree->SetItemText(rootItem, m_projMultiFiles->GetProjectName());
@@ -3253,12 +3263,16 @@ void ChameleonWindow::Compile()
 			projToCompile = m_currentEd->GetProject();
 		}
 
+		/*
 		if(!projToCompile->IsRemote())
 		{
 			wxMessageBox("Local compiling has not been implemented.\nPlease save this file to a network server\nand try again",
 						"Can't Compile Locally", wxOK | wxICON_WARNING);
 			return;
 		}
+		*/
+
+
 		m_outputPanel->ClearOutput();
 
 		m_compiler->CompileProject(projToCompile, m_outputPanel);

@@ -27,6 +27,8 @@ class Compiler : public wxEvtHandler
 		void ParseCompilerMessages(wxString s);
 		void RemoveIntermediateFiles();
 
+		wxString CreateLocalCommand(wxString actualCommand);
+
 		//Events:
 		void OnProcessTerm(ChameleonProcessEvent& e);
 		void OnProcessOut(ChameleonProcessEvent& e);
@@ -42,6 +44,8 @@ class Compiler : public wxEvtHandler
 		bool m_isCompiling;
 		bool m_isLinking;
 		CompileResult m_compilingStatus;
+
+		wxString m_mingwPath;
 
 
 	DECLARE_EVENT_TABLE()

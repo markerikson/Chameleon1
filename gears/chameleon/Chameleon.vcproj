@@ -269,7 +269,19 @@
 					>
 				</File>
 				<File
+					RelativePath=".\network\LocalProcessManager.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\network\LocalProcessManager.h"
+					>
+				</File>
+				<File
 					RelativePath=".\network\networking.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\network\PipedProcess.cpp"
 					>
 				</File>
 				<File
@@ -436,6 +448,10 @@
 				</File>
 				<File
 					RelativePath=".\network\networking.h"
+					>
+				</File>
+				<File
+					RelativePath=".\network\PipedProcess.h"
 					>
 				</File>
 				<File
