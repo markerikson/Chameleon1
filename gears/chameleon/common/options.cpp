@@ -2,6 +2,8 @@
 
 // Includes:
 #include <wx/filename.h>
+#include <wx/arrstr.h>
+#include <wx/dir.h>
 #include "../perms/p.h"
 #include "debug.h"
 
@@ -31,6 +33,7 @@ Options::Options()
 
 	m_mingwProgramNames.Add("g++.exe");
 	m_mingwProgramNames.Add("cc1plus.exe");
+	m_mingwProgramNames.Add("gdb.exe");
 }
 
 Options::~Options()
@@ -138,4 +141,62 @@ void Options::SetMingwBinPaths(wxArrayString paths)
 void Options::SetMingwExecutables(StringFilenameHash files)
 {
 	m_mingwExecutableNames = files;
+}
+
+wxString Options::VerifyMingwPath(wxString mingwPath)
+{
+	wxArrayString mingwFiles = GetMingwProgramNames();
+	wxArrayString mingwBinPaths;
+	StringFilenameHash mingwExecutables;
+
+	wxString errorMessage = wxEmptyString;
+	wxString messageBoxCaption = wxEmptyString;
+	int messageBoxOptions = wxOK;
+
+	if(!wxFileName::DirExists(mingwPath))
+	{
+		errorMessage = "The directory does not exist.";
+		goto Finished;
+	}
+
+
+
+	for(int i = 0; i < mingwFiles.GetCount(); i++)
+	{
+		wxString programName = mingwFiles[i];
+
+		wxString filePath = wxDir::FindFirst(mingwPath, programName);
+
+		wxString binPath = wxFileName(filePath).GetPath();
+
+		if(filePath == wxEmptyString)
+		{
+			errorMessage.Printf("Unable to find file: %s", programName);
+			goto Finished;
+		}
+		else
+		{
+			wxFileName executablePath(filePath);
+			mingwExecutables[programName] = executablePath;
+
+			if(mingwBinPaths.Index(binPath) == wxNOT_FOUND)
+			{
+				mingwBinPaths.Add(binPath);
+			}
+		}
+	}
+
+
+Finished:
+
+
+	if(errorMessage == wxEmptyString)
+	{
+		SetMingwBinPaths(mingwBinPaths);
+		SetMingwExecutables(mingwExecutables);
+
+		SetMingwBasePath(mingwPath);
+	}
+	
+	return errorMessage;
 }

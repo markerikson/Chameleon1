@@ -62,6 +62,8 @@ class Options
 		StringFilenameHash GetMingwExecutables() { return m_mingwExecutableNames; }
 		wxArrayString GetMingwBinPaths() { return m_mingwBinPaths; }
 
+		wxString VerifyMingwPath(wxString mingwPath);
+
 	private:
 		wxString m_pscpProg;
 		wxString m_plinkProg;

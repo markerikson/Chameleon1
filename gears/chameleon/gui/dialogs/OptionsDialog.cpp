@@ -820,9 +820,7 @@ void OptionsDialog::OnVerifyMingwClick( wxCommandEvent& event )
 bool OptionsDialog::VerifyMingwPath(bool showResults)
 {
 	wxString mingwPath = m_txtMingwPath->GetValue();
-	wxArrayString mingwFiles = m_options->GetMingwProgramNames();
-	wxArrayString mingwBinPaths;
-	StringFilenameHash mingwExecutables;
+
 
 	bool result = true;
 
@@ -831,54 +829,19 @@ bool OptionsDialog::VerifyMingwPath(bool showResults)
 		return true;
 	}
 
-	wxString errorMessage = wxEmptyString;
+	
+
+	wxString errorMessage = m_options->VerifyMingwPath(mingwPath);
 	wxString messageBoxCaption = wxEmptyString;
 	int messageBoxOptions = wxOK;
 
-	if(!wxFileName::DirExists(mingwPath))
-	{
-		errorMessage = "The directory does not exist.";
-		goto ValidationError;
-	}
-
-
-
-	for(int i = 0; i < mingwFiles.GetCount(); i++)
-	{
-		wxString programName = mingwFiles[i];
-
-		wxString filePath = wxDir::FindFirst(mingwPath, programName);
-
-		wxString binPath = wxFileName(filePath).GetPath();
-
-		if(filePath == wxEmptyString)
-		{
-			errorMessage.Printf("Unable to find file: %s", programName);
-			goto ValidationError;
-		}
-		else
-		{
-			wxFileName executablePath(filePath);
-			mingwExecutables[programName] = executablePath;
-
-			if(mingwBinPaths.Index(binPath) == wxNOT_FOUND)
-			{
-				mingwBinPaths.Add(binPath);
-			}
-		}
-	}
-
-
-
-
-ValidationError:
-
-	
 	if(errorMessage != wxEmptyString)
 	{
 		messageBoxCaption = "MinGW Validation Problem";
 		messageBoxOptions |= wxICON_ERROR;
 		result = false;
+
+
 	}
 	else
 	{
@@ -886,20 +849,16 @@ ValidationError:
 		messageBoxCaption = "MinGW Installation Found";
 		messageBoxOptions |= wxICON_INFORMATION;
 
-		m_options->SetMingwBinPaths(mingwBinPaths);
-		m_options->SetMingwExecutables(mingwExecutables);
-
-		m_options->SetMingwBasePath(mingwPath);
-
 		result = true;
 
-		m_mingwPathValidated = true;
 	}
 
 	if(showResults)
 	{
 		wxMessageBox(errorMessage, messageBoxCaption, messageBoxOptions);
 	}
+
+	m_mingwPathValidated = result;
 
 	return result;
 }

@@ -125,14 +125,16 @@ void Compiler::StartNextFile()
 
 		wxString compileCommand;
 
-		wxFileName compilerPath(m_mingwPath);
-		compilerPath.AppendDir("bin");
-		compilerPath.SetFullName("g++.exe");
+		//wxFileName compilerPath(m_mingwPath);
+		//compilerPath.AppendDir("bin");
+		//compilerPath.SetFullName("g++.exe");
+		StringFilenameHash executableNames = m_options->GetMingwExecutables();
+		wxFileName compilerPath = executableNames["g++.exe"];
 
 		//cmd +=  m_mingwPath + "/bin/g++.exe\" "; // compiler
-		
+		compileCommand += "\"";
 		compileCommand += compilerPath.GetFullPath();
-		compileCommand +=  " -g -c -fmessage-length=0 ";
+		compileCommand +=  "\" -g -c -fmessage-length=0 ";
 		compileCommand +=  " -o " + outFile.GetFullPath(wxPATH_DOS) + " ";
 		compileCommand +=  inFile.GetFullPath(wxPATH_DOS);
 		//cmd +=  " && echo C_O_M_P_I_L_E_SUCCESS || echo C_O_M_P_I_L_E_FAILED";
@@ -171,16 +173,23 @@ void Compiler::StartLinking() {
 	bool isRemote = m_currProj->IsRemote();
 
 	// Create outfile name:
-	wxString name = m_currProj->GetProjectBasePath();
+	wxString path = m_currProj->GetProjectBasePath();
+	wxString name = m_currProj->GetProjectName();
 
+	wxFileName outputFile;
+	outputFile.SetPath(path);
+	outputFile.SetName(name);
 
-	if(isRemote) {
-		name += "/" + name + ".out";
+	if(isRemote) 
+	{
+		//name += "/" + name + ".out";
+		outputFile.SetExt("out");
 	}
-	else {
-		name += "\\" + name + ".exe";
+	else 
+	{
+		//name += "\\" + name + ".exe";
+		outputFile.SetExt("exe");
 	}
-	wxFileName outFile(name);
 
 	// Assemble inFiles list:
 	wxString inFiles = wxEmptyString;
@@ -194,7 +203,7 @@ void Compiler::StartLinking() {
 	// Start the linking:
 	wxString cmd = wxEmptyString;
 	if(isRemote) {
-		cmd += "g++ -g -fmessage-length=0 -o " + outFile.GetFullPath(wxPATH_UNIX);
+		cmd += "g++ -g -fmessage-length=0 -o " + outputFile.GetFullPath(wxPATH_UNIX);
 		cmd +=  inFiles;
 		cmd +=  " && echo C_O_M_P_I_L_E_SUCCESS || echo C_O_M_P_I_L_E_FAILED";
 	}
@@ -202,15 +211,18 @@ void Compiler::StartLinking() {
 		
 		wxString linkCommand;
 		
-		wxFileName compilerPath(m_mingwPath);
-		compilerPath.AppendDir("bin");
-		compilerPath.SetFullName("g++.exe");
+		//wxFileName compilerPath(m_mingwPath);
+		//compilerPath.AppendDir("bin");
+		//compilerPath.SetFullName("g++.exe");
+		StringFilenameHash executableNames = m_options->GetMingwExecutables();
+		wxFileName compilerPath = executableNames["g++.exe"];
 
 		//cmd +=  m_mingwPath + "/bin/g++.exe\" "; // compiler
 		
+		linkCommand += "\"";
 		linkCommand += compilerPath.GetFullPath();
 
-		linkCommand +=  " -g -fmessage-length=0 -o " + outFile.GetFullPath(wxPATH_DOS);
+		linkCommand +=  "\" -g -fmessage-length=0 -o " + outputFile.GetFullPath(wxPATH_DOS);
 		linkCommand +=  inFiles;
 		//cmd +=  " && echo C_O_M_P_I_L_E_SUCCESS || echo C_O_M_P_I_L_E_FAILED";
 
@@ -221,7 +233,7 @@ void Compiler::StartLinking() {
 	//wxLogDebug("Starting to Link with cmd= \"%s\"", + cmd);
 	m_compilerStdIn = m_network->StartCommand(isRemote, cmd, this);
 
-	m_intermediateFiles.Add(outFile.GetFullPath(isRemote ? wxPATH_UNIX : wxPATH_DOS));
+	m_intermediateFiles.Add(outputFile.GetFullPath(isRemote ? wxPATH_UNIX : wxPATH_DOS));
 
 	// Signal User
 	CompilerEvent e(chEVT_COMPILER_START);
@@ -435,7 +447,19 @@ void Compiler::ParseCompilerMessages(wxString s)
 wxString Compiler::CreateLocalCommand(wxString actualCommand )
 {
 	wxString cmd = "cmd /c";
-	cmd += " set PATH=%PATH%;D:\\toolkits\\MinGW513\\libexec\\gcc\\mingw32\\3.4.2;D:\\toolkits\\MinGW513\\bin; && ";
+	cmd += " set PATH=%PATH%;"; //D:\\toolkits\\MinGW513\\libexec\\gcc\\mingw32\\3.4.2;D:\\toolkits\\MinGW513\\bin; && ";
+
+	wxArrayString mingwBinPaths = m_options->GetMingwBinPaths();
+
+	for(int i = 0; i < mingwBinPaths.GetCount(); i++)
+	{
+		wxString binPath = mingwBinPaths[i];
+		cmd += "\"";
+		cmd += binPath;
+		cmd += "\";";
+	}
+
+	cmd += " && ";
 
 	cmd += actualCommand;
 

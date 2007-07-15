@@ -308,6 +308,8 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	m_splitProjectEditor->Show();
 	m_splitEditorOutput->Show();
 	m_book->Show();
+
+
 	EvaluateOptions();
 	
 	// create the initial blank open file
@@ -2316,6 +2318,8 @@ void ChameleonWindow::EvaluateOptions()
 		keyName.Printf("MinGW Programs/%s", programName);
 		m_config->Write(keyName, programPath.GetFullPath());
 	}
+
+	m_options->VerifyMingwPath(m_options->GetMingwBasePath());
 
 	m_config->Flush();
 }
