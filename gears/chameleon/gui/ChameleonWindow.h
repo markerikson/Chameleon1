@@ -84,6 +84,7 @@ class ChameleonWindow : public wxFrame
 {
 public:
 	ChameleonWindow(const wxString& title, const wxPoint& pos, const wxSize& size);
+
 	~ChameleonWindow();
 
 	void SetIntVar(int variableName, int value);
@@ -105,6 +106,8 @@ public:
 	void PassImageList(wxImageList* imagelist);
 
 private:
+	void InitializeProgramOptions();
+
 	void CheckSize();
 
 	void OnMenuEvent(wxCommandEvent &event);

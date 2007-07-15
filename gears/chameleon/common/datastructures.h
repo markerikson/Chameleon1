@@ -7,6 +7,7 @@
 #include <wx/hashmap.h>
 #include <wx/string.h>
 #include <wx/dynarray.h>
+#include <wx/filename.h>
 //#include <wx/treectrl.h>
 
 class wxWindow;
@@ -264,6 +265,8 @@ WX_DECLARE_HASH_MAP(int,
 
 WX_DECLARE_STRING_HASH_MAP(wxString, 
 						   StringStringHashmap);
+
+WX_DECLARE_STRING_HASH_MAP(wxFileName, StringFilenameHash);
 
 WX_DECLARE_OBJARRAY(VariableInfo, VariableInfoArray);
 

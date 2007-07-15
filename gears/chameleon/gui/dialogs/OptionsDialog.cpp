@@ -29,6 +29,9 @@
 
 #include <wx/checklst.h>
 #include <wx/valtext.h>
+#include <wx/dirdlg.h>
+#include <wx/dir.h>
+
 #include "OptionsDialog.h"
 #include "../ChameleonWindow.h"
 
@@ -57,6 +60,12 @@ BEGIN_EVENT_TABLE( OptionsDialog, wxDialog )
 
 ////@begin OptionsDialog event table entries
     EVT_BUTTON( ID_SETAUTHCODE, OptionsDialog::OnUpdateAuthCode )
+
+    EVT_TEXT( ID_TEXTMINGWPATH, OptionsDialog::OnTextmingwpathUpdated )
+
+    EVT_BUTTON( ID_BTNFINDMINGW, OptionsDialog::OnFindMingwClick )
+
+    EVT_BUTTON( ID_BUTTON1, OptionsDialog::OnVerifyMingwClick )
 
     EVT_BUTTON( ID_BUTTON_OK, OptionsDialog::OnButtonOkClick )
 
@@ -109,6 +118,7 @@ bool OptionsDialog::Create( wxWindow* parent, wxWindowID id, const wxString& cap
     m_username = NULL;
     m_password1 = NULL;
     m_password2 = NULL;
+    m_txtMingwPath = NULL;
     m_printStyle = NULL;
     m_cbPrintLineNumbers = NULL;
     m_showToolbarText = NULL;
@@ -143,7 +153,7 @@ void OptionsDialog::CreateControls()
 
     m_optionsNotebook = new wxNotebook( itemDialog1, ID_NOTEBOOK, wxDefaultPosition, wxSize(400, 270), wxNB_DEFAULT|wxNB_TOP );
 
-    wxPanel* itemPanel4 = new wxPanel( m_optionsNotebook, ID_PANEL1, wxDefaultPosition, wxSize(100, 80), wxNO_BORDER|wxTAB_TRAVERSAL );
+    wxPanel* itemPanel4 = new wxPanel( m_optionsNotebook, ID_PANELFEATURES, wxDefaultPosition, wxSize(100, 80), wxNO_BORDER|wxTAB_TRAVERSAL );
     wxBoxSizer* itemBoxSizer5 = new wxBoxSizer(wxVERTICAL);
     itemPanel4->SetSizer(itemBoxSizer5);
 
@@ -157,8 +167,8 @@ void OptionsDialog::CreateControls()
     wxStaticText* itemStaticText9 = new wxStaticText( itemPanel4, wxID_STATIC, _("Current authorized features:"), wxDefaultPosition, wxDefaultSize, 0 );
     itemBoxSizer8->Add(itemStaticText9, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
 
-    wxString* m_checkListStrings = NULL;
-    m_checkList = new wxCheckListBox( itemPanel4, ID_CHECKLISTBOX, wxDefaultPosition, wxSize(180, 175), 0, m_checkListStrings, wxLB_SINGLE );
+    wxArrayString m_checkListStrings;
+    m_checkList = new wxCheckListBox( itemPanel4, ID_CHECKLISTBOX, wxDefaultPosition, wxSize(180, 175), m_checkListStrings, wxLB_SINGLE );
     itemBoxSizer8->Add(m_checkList, 1, wxGROW|wxALL, 5);
 
     wxBoxSizer* itemBoxSizer11 = new wxBoxSizer(wxVERTICAL);
@@ -180,7 +190,7 @@ void OptionsDialog::CreateControls()
 
     m_optionsNotebook->AddPage(itemPanel4, _("Features"));
 
-    wxPanel* itemPanel17 = new wxPanel( m_optionsNotebook, ID_PANEL, wxDefaultPosition, wxSize(100, 80), wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
+    wxPanel* itemPanel17 = new wxPanel( m_optionsNotebook, ID_PANELNETWORK, wxDefaultPosition, wxSize(100, 80), wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
     wxBoxSizer* itemBoxSizer18 = new wxBoxSizer(wxHORIZONTAL);
     itemPanel17->SetSizer(itemBoxSizer18);
 
@@ -212,51 +222,72 @@ void OptionsDialog::CreateControls()
 
     m_optionsNotebook->AddPage(itemPanel17, _("Network"));
 
-    wxPanel* itemPanel28 = new wxPanel( m_optionsNotebook, ID_PANEL3, wxDefaultPosition, wxSize(100, 80), wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
+    wxPanel* itemPanel28 = new wxPanel( m_optionsNotebook, ID_PANELCOMPILER, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
     wxBoxSizer* itemBoxSizer29 = new wxBoxSizer(wxHORIZONTAL);
     itemPanel28->SetSizer(itemBoxSizer29);
 
     wxBoxSizer* itemBoxSizer30 = new wxBoxSizer(wxVERTICAL);
-    itemBoxSizer29->Add(itemBoxSizer30, 1, wxALIGN_TOP, 5);
-    wxStaticText* itemStaticText31 = new wxStaticText( itemPanel28, wxID_STATIC, _("Print text in:"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer30->Add(itemStaticText31, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
+    itemBoxSizer29->Add(itemBoxSizer30, 0, wxALIGN_TOP|wxALL, 5);
+    wxStaticText* itemStaticText31 = new wxStaticText( itemPanel28, wxID_STATIC, _("MinGW installation path:"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer30->Add(itemStaticText31, 0, wxALIGN_LEFT|wxALL, 5);
 
-    wxString m_printStyleStrings[] = {
-        _("Black and white"),
-        _("Color")
-    };
-    m_printStyle = new wxComboBox( itemPanel28, ID_PRINTSTYLE, _("Black and white"), wxDefaultPosition, wxDefaultSize, 2, m_printStyleStrings, wxCB_READONLY );
+    wxBoxSizer* itemBoxSizer32 = new wxBoxSizer(wxHORIZONTAL);
+    itemBoxSizer30->Add(itemBoxSizer32, 0, wxALIGN_LEFT|wxALL, 5);
+    m_txtMingwPath = new wxTextCtrl( itemPanel28, ID_TEXTMINGWPATH, _T(""), wxDefaultPosition, wxSize(200, -1), 0 );
+    itemBoxSizer32->Add(m_txtMingwPath, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+
+    wxButton* itemButton34 = new wxButton( itemPanel28, ID_BTNFINDMINGW, _("Select"), wxDefaultPosition, wxSize(50, -1), 0 );
+    itemBoxSizer32->Add(itemButton34, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+
+    wxButton* itemButton35 = new wxButton( itemPanel28, ID_BUTTON1, _("Verify"), wxDefaultPosition, wxSize(50, -1), 0 );
+    itemBoxSizer32->Add(itemButton35, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+
+    m_optionsNotebook->AddPage(itemPanel28, _("Compiler"));
+
+    wxPanel* itemPanel36 = new wxPanel( m_optionsNotebook, ID_PANELMISC, wxDefaultPosition, wxSize(100, 80), wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
+    wxBoxSizer* itemBoxSizer37 = new wxBoxSizer(wxHORIZONTAL);
+    itemPanel36->SetSizer(itemBoxSizer37);
+
+    wxBoxSizer* itemBoxSizer38 = new wxBoxSizer(wxVERTICAL);
+    itemBoxSizer37->Add(itemBoxSizer38, 1, wxALIGN_TOP, 5);
+    wxStaticText* itemStaticText39 = new wxStaticText( itemPanel36, wxID_STATIC, _("Print text in:"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer38->Add(itemStaticText39, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
+
+    wxArrayString m_printStyleStrings;
+    m_printStyleStrings.Add(_("Black and white"));
+    m_printStyleStrings.Add(_("Color"));
+    m_printStyle = new wxComboBox( itemPanel36, ID_PRINTSTYLE, _("Black and white"), wxDefaultPosition, wxDefaultSize, m_printStyleStrings, wxCB_READONLY );
     m_printStyle->SetStringSelection(_("Black and white"));
-    itemBoxSizer30->Add(m_printStyle, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxBOTTOM, 5);
+    itemBoxSizer38->Add(m_printStyle, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxBOTTOM, 5);
 
-    m_cbPrintLineNumbers = new wxCheckBox( itemPanel28, ID_CHECKBOX1, _("Print line numbers"), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE );
+    m_cbPrintLineNumbers = new wxCheckBox( itemPanel36, ID_CHECKBOX1, _("Print line numbers"), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE );
     m_cbPrintLineNumbers->SetValue(false);
-    itemBoxSizer30->Add(m_cbPrintLineNumbers, 0, wxALIGN_LEFT|wxALL, 5);
+    itemBoxSizer38->Add(m_cbPrintLineNumbers, 0, wxALIGN_LEFT|wxALL, 5);
 
-    m_showToolbarText = new wxCheckBox( itemPanel28, ID_CHECKBOX, _("Show text on toolbar buttons"), wxDefaultPosition, wxDefaultSize, 0 );
+    m_showToolbarText = new wxCheckBox( itemPanel36, ID_CHECKBOX, _("Show text on toolbar buttons"), wxDefaultPosition, wxDefaultSize, 0 );
     m_showToolbarText->SetValue(false);
-    itemBoxSizer30->Add(m_showToolbarText, 1, wxGROW|wxALL, 5);
+    itemBoxSizer38->Add(m_showToolbarText, 1, wxGROW|wxALL, 5);
 
-    wxBoxSizer* itemBoxSizer35 = new wxBoxSizer(wxHORIZONTAL);
-    itemBoxSizer30->Add(itemBoxSizer35, 0, wxALIGN_LEFT|wxALL, 0);
-    wxStaticText* itemStaticText36 = new wxStaticText( itemPanel28, wxID_STATIC, _("Maximum history lines in the terminal:"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer35->Add(itemStaticText36, 0, wxALIGN_CENTER_VERTICAL|wxALL|wxADJUST_MINSIZE, 5);
+    wxBoxSizer* itemBoxSizer43 = new wxBoxSizer(wxHORIZONTAL);
+    itemBoxSizer38->Add(itemBoxSizer43, 0, wxALIGN_LEFT|wxALL, 0);
+    wxStaticText* itemStaticText44 = new wxStaticText( itemPanel36, wxID_STATIC, _("Maximum history lines in the terminal:"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer43->Add(itemStaticText44, 0, wxALIGN_CENTER_VERTICAL|wxALL|wxADJUST_MINSIZE, 5);
 
-    m_termHistory = new wxSpinCtrl( itemPanel28, ID_SPINCTRL, _T("0"), wxDefaultPosition, wxSize(60, -1), wxSP_ARROW_KEYS, 25, 2500, 0 );
-    itemBoxSizer35->Add(m_termHistory, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    m_termHistory = new wxSpinCtrl( itemPanel36, ID_SPINCTRL, _T("0"), wxDefaultPosition, wxSize(60, -1), wxSP_ARROW_KEYS, 25, 2500, 0 );
+    itemBoxSizer43->Add(m_termHistory, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    m_optionsNotebook->AddPage(itemPanel28, _("Miscellaneous"));
+    m_optionsNotebook->AddPage(itemPanel36, _("Miscellaneous"));
 
     itemBoxSizer2->Add(m_optionsNotebook, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
-    wxBoxSizer* itemBoxSizer38 = new wxBoxSizer(wxHORIZONTAL);
-    itemBoxSizer2->Add(itemBoxSizer38, 0, wxALIGN_RIGHT|wxALL, 0);
+    wxBoxSizer* itemBoxSizer46 = new wxBoxSizer(wxHORIZONTAL);
+    itemBoxSizer2->Add(itemBoxSizer46, 0, wxALIGN_RIGHT|wxALL, 0);
 
-    wxButton* itemButton39 = new wxButton( itemDialog1, ID_BUTTON_OK, _("OK"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer38->Add(itemButton39, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxButton* itemButton47 = new wxButton( itemDialog1, ID_BUTTON_OK, _("OK"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer46->Add(itemButton47, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxButton* itemButton40 = new wxButton( itemDialog1, ID_BUTTON_CANCEL, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer38->Add(itemButton40, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxButton* itemButton48 = new wxButton( itemDialog1, ID_BUTTON_CANCEL, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer46->Add(itemButton48, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
 ////@end OptionsDialog content construction
 }
@@ -382,6 +413,11 @@ void OptionsDialog::OnEnter( wxCommandEvent& event )
 //////////////////////////////////////////////////////////////////////////////
 void OptionsDialog::ExitDialog()
 {
+	if(!m_mingwPathValidated && !VerifyMingwPath())
+	{
+		return;
+	}
+
 	m_txtProfCode->Clear();
 
 	wxString pwd1 = m_password1->GetValue();
@@ -689,6 +725,10 @@ void OptionsDialog::InitializeDialog()
 	m_showToolbarText->SetValue(m_options->GetShowToolbarText());
 	m_cbPrintLineNumbers->SetValue(m_options->GetLineNumberPrinting());
 
+	m_txtMingwPath->SetValue(m_options->GetMingwBasePath());
+
+	VerifyMingwPath(false);
+
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -749,3 +789,128 @@ wxIcon OptionsDialog::GetIconResource( const wxString& name )
     return wxNullIcon;
 ////@end OptionsDialog icon retrieval
 }
+
+
+/*!
+ * wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BTNFINDMINGW
+ */
+
+void OptionsDialog::OnFindMingwClick( wxCommandEvent& event )
+{
+	const wxString& dir = wxDirSelector("Choose the MinGW installation folder:");
+	if ( !dir.empty() )
+	{
+		m_txtMingwPath->SetValue(dir);
+	}
+
+}
+
+
+/*!
+ * wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON1
+ */
+
+void OptionsDialog::OnVerifyMingwClick( wxCommandEvent& event )
+{
+	VerifyMingwPath(true);
+	return;
+
+}
+
+bool OptionsDialog::VerifyMingwPath(bool showResults)
+{
+	wxString mingwPath = m_txtMingwPath->GetValue();
+	wxArrayString mingwFiles = m_options->GetMingwProgramNames();
+	wxArrayString mingwBinPaths;
+	StringFilenameHash mingwExecutables;
+
+	bool result = true;
+
+	if(mingwPath.IsEmpty())
+	{
+		return true;
+	}
+
+	wxString errorMessage = wxEmptyString;
+	wxString messageBoxCaption = wxEmptyString;
+	int messageBoxOptions = wxOK;
+
+	if(!wxFileName::DirExists(mingwPath))
+	{
+		errorMessage = "The directory does not exist.";
+		goto ValidationError;
+	}
+
+
+
+	for(int i = 0; i < mingwFiles.GetCount(); i++)
+	{
+		wxString programName = mingwFiles[i];
+
+		wxString filePath = wxDir::FindFirst(mingwPath, programName);
+
+		wxString binPath = wxFileName(filePath).GetPath();
+
+		if(filePath == wxEmptyString)
+		{
+			errorMessage.Printf("Unable to find file: %s", programName);
+			goto ValidationError;
+		}
+		else
+		{
+			wxFileName executablePath(filePath);
+			mingwExecutables[programName] = executablePath;
+
+			if(mingwBinPaths.Index(binPath) == wxNOT_FOUND)
+			{
+				mingwBinPaths.Add(binPath);
+			}
+		}
+	}
+
+
+
+
+ValidationError:
+
+	
+	if(errorMessage != wxEmptyString)
+	{
+		messageBoxCaption = "MinGW Validation Problem";
+		messageBoxOptions |= wxICON_ERROR;
+		result = false;
+	}
+	else
+	{
+		errorMessage = "MinGW successfully detected!";
+		messageBoxCaption = "MinGW Installation Found";
+		messageBoxOptions |= wxICON_INFORMATION;
+
+		m_options->SetMingwBinPaths(mingwBinPaths);
+		m_options->SetMingwExecutables(mingwExecutables);
+
+		m_options->SetMingwBasePath(mingwPath);
+
+		result = true;
+
+		m_mingwPathValidated = true;
+	}
+
+	if(showResults)
+	{
+		wxMessageBox(errorMessage, messageBoxCaption, messageBoxOptions);
+	}
+
+	return result;
+}
+
+
+/*!
+ * wxEVT_COMMAND_TEXT_UPDATED event handler for ID_TEXTMINGWPATH
+ */
+
+void OptionsDialog::OnTextmingwpathUpdated( wxCommandEvent& event )
+{
+	m_mingwPathValidated = false;
+}
+

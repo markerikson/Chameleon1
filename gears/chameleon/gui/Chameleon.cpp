@@ -190,76 +190,10 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	
 	m_remoteMode = true;
 
-	// Open up the configuration file, assumed to be in the user's home directory
-
-	wxString authorizedCode = "0";
-	wxString enabledCode = "0";
-
-	// by default, enable nothing
-	wxString defaultAuthorizedCode = "10A80000000";
-	wxString defaultEnableCode = "0";
-
 	m_options = new Options();
 
-	Permission* perms = m_options->GetPerms();
+	InitializeProgramOptions();
 
-	wxFileName configName(wxGetHomeDir(), "chameleon.ini");
-
-	m_config = new wxFileConfig("Chameleon", wxEmptyString, configName.GetFullPath());
-
-	if(configName.FileExists())
-	{
-		m_options->SetHostname(m_config->Read("Network/hostname"));
-		m_options->SetUsername(m_config->Read("Network/username"));
-		//m_options->SetMingwPath(m_config->Read("Compiler/mingwpath"));
-
-		bool printInColor = (m_config->Read("Miscellaneous/PrintInColor", "true") == "true");
-		int printStyle = printInColor ? wxSTC_PRINT_COLOURONWHITE : wxSTC_PRINT_BLACKONWHITE;
-		m_options->SetPrintStyle(printStyle);
-
-		bool showToolbarText = (m_config->Read("Interface/ShowToolbarText", "true") == "true");
-		m_options->SetShowToolbarText(showToolbarText);
-
-		bool printLineNumbers = (m_config->Read("Miscellaneous/PrintLineNumbers", "false") == "true");
-		m_options->SetLineNumberPrinting(printLineNumbers);
-
-
-		int terminalHistory = m_config->Read("Miscellaneous/TerminalHistory", 100);
-		
-		authorizedCode = m_config->Read("Permissions/authorized", defaultAuthorizedCode);
-		enabledCode = m_config->Read("Permissions/enabled", defaultEnableCode);
-		
-				
-	}
-	else
-	{
-		wxLogDebug("Failed to locate config file, loading default permissions");
-		authorizedCode = defaultAuthorizedCode;
-		enabledCode = defaultEnableCode;
-
-		m_config->Write("Network/hostname", wxEmptyString);
-		m_config->Write("Network/username", wxEmptyString);
-		m_config->Write("Permissions/authorized", defaultAuthorizedCode);
-		m_config->Write("Permissions/enabled", defaultEnableCode);
-	}
-
-	if(authorizedCode == wxEmptyString)
-	{
-		authorizedCode = defaultAuthorizedCode;
-	}
-	if(enabledCode == wxEmptyString)
-	{
-		enabledCode = defaultEnableCode;
-	}
-
-	if(!perms->setGlobalAuthorized(authorizedCode))
-	{
-		wxLogDebug("Authcode initialization failed!  Code: %s", authorizedCode.c_str());
-	}
-	else
-	{
-		perms->setGlobalEnabled(enabledCode);
-	}
 	
 	wxFileName plinkPath(wxGetCwd(), "plink.exe");
 
@@ -303,6 +237,8 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	m_debugTerminal->set_mode_flag(GTerm::CURSORINVISIBLE);
 	m_debugTermContainer->SetTerminal(m_debugTerminal);
 
+
+	Permission* perms = m_options->GetPerms();
 	m_outputPanel = new CompilerOutputPanel(m_noteTerm, this, ID_COMPILEROUTPUT);
 	m_outputPanel->SetAdvanced(perms->isEnabled(PERM_ADVANCEDCOMPILE));
 
@@ -474,6 +410,110 @@ ChameleonWindow::~ChameleonWindow()
 	delete m_iconManager;
 	delete m_debugManager;
 	delete m_projectManager;
+}
+
+void ChameleonWindow::InitializeProgramOptions()
+{
+	// Open up the configuration file, assumed to be in the user's home directory
+
+	wxString authorizedCode = "0";
+	wxString enabledCode = "0";
+
+	// by default, enable nothing
+	wxString defaultAuthorizedCode = "10A80000000";
+	wxString defaultEnableCode = "0";
+
+
+
+	Permission* perms = m_options->GetPerms();
+
+	wxFileName configName(wxGetHomeDir(), "chameleon.ini");
+
+	m_config = new wxFileConfig("Chameleon", wxEmptyString, configName.GetFullPath());
+
+	if(configName.FileExists())
+	{
+		m_options->SetHostname(m_config->Read("Network/hostname"));
+		m_options->SetUsername(m_config->Read("Network/username"));
+		//m_options->SetMingwPath(m_config->Read("Compiler/mingwpath"));
+
+		bool printInColor = (m_config->Read("Miscellaneous/PrintInColor", "true") == "true");
+		int printStyle = printInColor ? wxSTC_PRINT_COLOURONWHITE : wxSTC_PRINT_BLACKONWHITE;
+		m_options->SetPrintStyle(printStyle);
+
+		bool showToolbarText = (m_config->Read("Interface/ShowToolbarText", "true") == "true");
+		m_options->SetShowToolbarText(showToolbarText);
+
+		bool printLineNumbers = (m_config->Read("Miscellaneous/PrintLineNumbers", "false") == "true");
+		m_options->SetLineNumberPrinting(printLineNumbers);
+
+
+		int terminalHistory = m_config->Read("Miscellaneous/TerminalHistory", 100);
+
+		authorizedCode = m_config->Read("Permissions/authorized", defaultAuthorizedCode);
+		enabledCode = m_config->Read("Permissions/enabled", defaultEnableCode);
+
+
+		wxString mingwBasePath = m_config->Read("Compiler/MingwBasePath", wxEmptyString);
+		m_options->SetMingwBasePath(mingwBasePath);
+
+		m_config->SetPath("/MinGW Bin Paths");
+		int numEntries = m_config->GetNumberOfEntries();
+
+		wxArrayString binPaths;
+		for(int i = 0; i < numEntries; i++)
+		{
+			wxString keyName;
+			keyName.Printf("BinPath%d", i + 1);
+			
+			wxString binPath = m_config->Read(keyName, wxEmptyString);
+			binPaths.Add(binPath);
+		}
+		m_options->SetMingwBinPaths(binPaths);
+
+		wxArrayString programNames = m_options->GetMingwProgramNames();
+		StringFilenameHash programPaths;
+
+		m_config->SetPath("/MinGW Program Names");
+		for(int i = 0; i < programNames.GetCount(); i++)
+		{
+			wxString programName = programNames[i];
+			wxString programPath = m_config->Read(programName, wxEmptyString);
+			programPaths[programName] = programPath;
+		}
+		m_options->SetMingwExecutables(programPaths);
+
+		m_config->SetPath("/");
+	}
+	else
+	{
+		wxLogDebug("Failed to locate config file, loading default permissions");
+		authorizedCode = defaultAuthorizedCode;
+		enabledCode = defaultEnableCode;
+
+		m_config->Write("Network/hostname", wxEmptyString);
+		m_config->Write("Network/username", wxEmptyString);
+		m_config->Write("Permissions/authorized", defaultAuthorizedCode);
+		m_config->Write("Permissions/enabled", defaultEnableCode);
+	}
+
+	if(authorizedCode == wxEmptyString)
+	{
+		authorizedCode = defaultAuthorizedCode;
+	}
+	if(enabledCode == wxEmptyString)
+	{
+		enabledCode = defaultEnableCode;
+	}
+
+	if(!perms->setGlobalAuthorized(authorizedCode))
+	{
+		wxLogDebug("Authcode initialization failed!  Code: %s", authorizedCode.c_str());
+	}
+	else
+	{
+		perms->setGlobalEnabled(enabledCode);
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -2252,6 +2292,30 @@ void ChameleonWindow::EvaluateOptions()
 	
 	bool printLineNumbers = m_options->GetLineNumberPrinting();
 	m_config->Write("Miscellaneous/PrintLineNumbers", printLineNumbers ? "true" : "false");
+
+	m_config->Write("Compiler/MingwBasePath", m_options->GetMingwBasePath());
+
+	wxArrayString mingwBinPaths = m_options->GetMingwBinPaths();
+
+	for(int i = 0; i < mingwBinPaths.GetCount(); i++)
+	{
+		wxString keyName;
+		keyName.Printf("MinGW Bin Paths/BinPath%d", i + 1);
+		m_config->Write(keyName, mingwBinPaths[i]);
+	}
+
+	wxArrayString programNames = m_options->GetMingwProgramNames();
+	StringFilenameHash programPaths = m_options->GetMingwExecutables();
+
+	for(int i = 0; i < programNames.GetCount(); i++)
+	{
+		wxString programName = programNames[i];
+		wxFileName programPath = programPaths[programName];
+
+		wxString keyName;
+		keyName.Printf("MinGW Programs/%s", programName);
+		m_config->Write(keyName, programPath.GetFullPath());
+	}
 
 	m_config->Flush();
 }

@@ -28,6 +28,9 @@ Options::Options()
 	
 	m_showToolbarText = true;
 	m_printLineNumbers = false;
+
+	m_mingwProgramNames.Add("g++.exe");
+	m_mingwProgramNames.Add("cc1plus.exe");
 }
 
 Options::~Options()
@@ -59,17 +62,21 @@ bool Options::SetPlinkApp(wxString path_and_prog) {
 }
 
 
-/*
-bool Options::SetMingwPath(wxString path) {
-	if(wxFileName::DirExists(path)) {
-		m_mingwPath = path;
+
+bool Options::SetMingwBasePath(wxString path) 
+{
+	if(wxFileName::DirExists(path)) 
+	{
+		m_mingwBasePath = path;
 		return true;
 	}
-	//else
+	else
+	{
 		wxLogDebug("\"" + path + "\" is an invalid path.");
 		return false;
+	}
 }
-*/
+
 
 bool Options::SetUsername(wxString user) {
 	m_username = user;
@@ -123,3 +130,12 @@ void Options::SetLineNumberPrinting(bool printLineNumbers)
 	m_printLineNumbers = printLineNumbers;
 }
 
+void Options::SetMingwBinPaths(wxArrayString paths)
+{
+	m_mingwBinPaths = paths;
+}
+
+void Options::SetMingwExecutables(StringFilenameHash files)
+{
+	m_mingwExecutableNames = files;
+}

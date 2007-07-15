@@ -44,16 +44,20 @@ class ChameleonWindow;
 ////@begin control identifiers
 #define ID_DIALOG 10000
 #define ID_NOTEBOOK 10001
-#define ID_PANEL1 10006
+#define ID_PANELFEATURES 10006
 #define ID_CHECKLISTBOX 10007
 #define ID_PROFCODE 10004
 #define ID_SETAUTHCODE 10012
-#define ID_PANEL 10005
+#define ID_PANELNETWORK 10005
 #define ID_HOSTNAME 10008
 #define ID_USERNAME 10009
 #define ID_PASSWORD1 10010
 #define ID_PASSWORD2 10011
-#define ID_PANEL3 10016
+#define ID_PANELCOMPILER 10015
+#define ID_TEXTMINGWPATH 10014
+#define ID_BTNFINDMINGW 10020
+#define ID_BUTTON1 10021
+#define ID_PANELMISC 10016
 #define ID_PRINTSTYLE 10017
 #define ID_CHECKBOX1 10013
 #define ID_CHECKBOX 10018
@@ -100,6 +104,15 @@ public:
     /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_SETAUTHCODE
     void OnUpdateAuthCode( wxCommandEvent& event );
 
+    /// wxEVT_COMMAND_TEXT_UPDATED event handler for ID_TEXTMINGWPATH
+    void OnTextmingwpathUpdated( wxCommandEvent& event );
+
+    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BTNFINDMINGW
+    void OnFindMingwClick( wxCommandEvent& event );
+
+    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON1
+    void OnVerifyMingwClick( wxCommandEvent& event );
+
     /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_OK
     void OnButtonOkClick( wxCommandEvent& event );
 
@@ -120,6 +133,8 @@ public:
     /// Retrieves icon resources
     wxIcon GetIconResource( const wxString& name );
 ////@end OptionsDialog member function declarations
+
+	bool VerifyMingwPath(bool showResults = false);
 
     /*
     wxCheckListBox* GetListBox();
@@ -163,6 +178,7 @@ public:
     wxTextCtrl* m_username;
     wxTextCtrl* m_password1;
     wxTextCtrl* m_password2;
+    wxTextCtrl* m_txtMingwPath;
     wxComboBox* m_printStyle;
     wxCheckBox* m_cbPrintLineNumbers;
     wxCheckBox* m_showToolbarText;
@@ -173,6 +189,8 @@ public:
 	Options* m_options;
 
 	wxArrayInt m_permMappings;
+
+	bool m_mingwPathValidated;
 };
 
 #endif

@@ -6,6 +6,8 @@
 #include <wx/valgen.h>
 #include <wx/valtext.h>
 
+#include "datastructures.h"
+
 class Permission;
 
 // copied from stc.h
@@ -29,7 +31,7 @@ class Options
 		// Modifiers:
 		bool SetPscpApp(wxString path_and_prog);
 		bool SetPlinkApp(wxString path_and_prog);
-		//bool SetMingwPath(wxString path);
+		bool SetMingwBasePath(wxString path);
 		bool SetUsername(wxString user);
 		bool SetHostname(wxString host);
 		bool SetPassphrase(wxString pass);
@@ -39,11 +41,13 @@ class Options
 		void SetShowToolbarText(bool useText);
 		void SetLineNumberPrinting(bool printLineNumbers);
 		void SetTerminalHistorySize(int size);
+		void SetMingwBinPaths(wxArrayString paths);
+		void SetMingwExecutables(StringFilenameHash files);
 
 		// Accessors:  (inlined)
 		wxString GetPscpApp() { return m_pscpProg; }
 		wxString GetPlinkApp() { return m_plinkProg; }
-		//wxString GetMingwPath() { return m_mingwPath; }
+		wxString GetMingwBasePath() { return m_mingwBasePath; }
 		wxString GetUsername() { return m_username; }
 		wxString GetHostname() { return m_hostname; }
 		wxString GetPassphrase() { return m_password; }
@@ -54,11 +58,14 @@ class Options
 		bool GetShowToolbarText() { return m_showToolbarText; }
 		bool GetLineNumberPrinting() {return m_printLineNumbers; }
 		int GetTerminalHistorySize() { return m_terminalSize; }
+		wxArrayString GetMingwProgramNames() { return m_mingwProgramNames; }
+		StringFilenameHash GetMingwExecutables() { return m_mingwExecutableNames; }
+		wxArrayString GetMingwBinPaths() { return m_mingwBinPaths; }
 
 	private:
 		wxString m_pscpProg;
 		wxString m_plinkProg;
-		//wxString m_mingwPath; // path only? (may be a good idea)
+		wxString m_mingwBasePath; // path only? (may be a good idea)
 
 		wxString m_username;
 		wxString m_hostname;
@@ -72,6 +79,10 @@ class Options
 
 		bool m_showToolbarText;
 		bool m_printLineNumbers;
+
+		StringFilenameHash m_mingwExecutableNames;
+		wxArrayString m_mingwBinPaths;
+		wxArrayString m_mingwProgramNames;
 
 		Permission* m_perms;
 };
