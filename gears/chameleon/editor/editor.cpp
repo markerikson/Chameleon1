@@ -25,9 +25,10 @@
 
 
 BEGIN_EVENT_TABLE(ChameleonEditor, wxStyledTextCtrl)
-	EVT_STC_CHARADDED(-1, ChameleonEditor::OnChar)
-	EVT_STC_MODIFIED(-1, ChameleonEditor::OnEditorModified)
+	EVT_STC_CHARADDED	(-1, ChameleonEditor::OnChar)
+	EVT_STC_MODIFIED	(-1, ChameleonEditor::OnEditorModified)
 	EVT_RIGHT_DOWN		(ChameleonEditor::OnRightClick)
+	EVT_STC_MARGINCLICK (-1, ChameleonEditor::OnMarginClick)
 	EVT_MENU			(ID_DEBUG_ADD_BREAKPOINT, ChameleonEditor::OnAddBreakpoint)
 	EVT_MENU			(ID_DEBUG_REMOVE_BREAKPOINT, ChameleonEditor::OnRemoveBreakpoint)
 	EVT_MENU			(ID_DEBUG_CLEAR_ALL_BREAKPOINTS, ChameleonEditor::OnClearBreakpoints)
@@ -152,6 +153,8 @@ ChameleonEditor::ChameleonEditor( ChameleonWindow *mframe,
 
 	this->MarkerDefine(MARKER_FOCUSEDLINE, wxSTC_MARK_SHORTARROW);
 	this->MarkerSetBackground(MARKER_FOCUSEDLINE, wxColour("yellow"));
+
+	this->SetMarginSensitive(1, true);
 
 	
 	/*
@@ -690,9 +693,8 @@ void ChameleonEditor::OnRightClick(wxMouseEvent &event)
 	m_lastRightClick = event.GetPosition();
 	int charpos = PositionFromPoint(m_lastRightClick);
 	int linenum = LineFromPosition(charpos);
-	int markerLineBitmask = this->MarkerGet(linenum);
-
-	bool breakpointOnLine = (markerLineBitmask & (1 << MARKER_BREAKPOINT));
+	
+	bool breakpointOnLine = BreakpointOnLine(linenum);
 
 	bool breakpointsAllowed = true;
 	bool isDebugging = m_debugManager->IsDebugging();//m_mainFrame->IsDebugging();
@@ -771,10 +773,8 @@ void ChameleonEditor::OnAddBreakpoint(wxCommandEvent &event)
 	//int charpos = PositionFromPoint(m_lastRightClick);
 	int linenum = GetLineForBreakpointOperation(); //LineFromPosition(charpos);
 
-	int markerNum = this->MarkerAdd(linenum, MARKER_BREAKPOINT);
-	
-	m_breakpoints.Add(markerNum);
-	CreateBreakpointEvent(linenum, true);	
+	AddBreakpoint(linenum);
+
 
 	ResetRightClickLocation();
 }
@@ -797,10 +797,8 @@ void ChameleonEditor::OnRemoveBreakpoint(wxCommandEvent &event)
 {
 	int linenum = GetLineForBreakpointOperation();
 
-	// need to remove the marker handle from the array - use
-	// LineFromHandle on debug start and clean up then
-	this->MarkerDelete(linenum, MARKER_BREAKPOINT);
-	CreateBreakpointEvent(linenum, false);
+	RemoveBreakpoint(linenum);
+
 
 	ResetRightClickLocation();
 }
@@ -1072,4 +1070,48 @@ void ChameleonEditor::OnDisplayVariable(wxCommandEvent &event)
 
 	// TODO Need to signal that it's a one-shot, which needs to be 
 	// handled appropriately in the debugger.
+}
+
+void ChameleonEditor::OnMarginClick( wxStyledTextEvent &event )
+{
+	// we know it's margin 2, because that's the only sensitive margin
+
+	int position = event.GetPosition();
+
+	int linenum = this->LineFromPosition(position);
+
+	if(BreakpointOnLine(linenum))
+	{
+		RemoveBreakpoint(linenum);
+	}
+	else
+	{
+		AddBreakpoint(linenum);
+	}
+
+}
+
+void ChameleonEditor::AddBreakpoint( int linenum )
+{
+	int markerNum = this->MarkerAdd(linenum, MARKER_BREAKPOINT);
+
+	m_breakpoints.Add(markerNum);
+	CreateBreakpointEvent(linenum, true);
+}
+
+bool ChameleonEditor::BreakpointOnLine( int linenum )
+{
+	int markerLineBitmask = this->MarkerGet(linenum);
+
+	bool breakpointOnLine = (markerLineBitmask & (1 << MARKER_BREAKPOINT));
+
+	return breakpointOnLine;
+}
+
+void ChameleonEditor::RemoveBreakpoint( int linenum )
+{
+	// need to remove the marker handle from the array - use
+	// LineFromHandle on debug start and clean up then
+	this->MarkerDelete(linenum, MARKER_BREAKPOINT);
+	CreateBreakpointEvent(linenum, false);
 }

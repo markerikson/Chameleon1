@@ -41,6 +41,7 @@ public:
 
 	void OnChar(wxStyledTextEvent &event);
 	void OnRightClick(wxMouseEvent &event);
+	void OnMarginClick(wxStyledTextEvent &event);
 	
 
 	void UpdateSyntaxHighlighting();
@@ -63,11 +64,14 @@ public:
 	void ResetEditor();
 	bool LastSavedRemotely() {	return m_bLastSavedRemotely;}
 
-	void OnAddBreakpoint(wxCommandEvent &event);
+	void OnAddBreakpoint(wxCommandEvent &event);	
 	void OnRemoveBreakpoint(wxCommandEvent &event);
 	void OnClearBreakpoints(wxCommandEvent &event);
 	void OnAddWatch(wxCommandEvent &event);
 	void OnDisplayVariable(wxCommandEvent &event);
+
+	void AddBreakpoint( int linenum );
+	void RemoveBreakpoint( int linenum );
 
 private:
 
@@ -82,6 +86,7 @@ private:
 	wxString FindClickedWord();
 
 	void CreateBreakpointEvent(int linenumber, bool addBreakpoint);
+	bool BreakpointOnLine(int linenum);
 	
 
 	ChameleonWindow* m_mainFrame;

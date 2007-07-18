@@ -21,7 +21,8 @@ public:
 	//int HitTest(const wxPoint& pt, long& flags);
 	int FindPagePosition(wxNotebookPage* page);
 
-	void OnTabActivate (wxMouseEvent &event);
+	void OnTabRightClicked (wxMouseEvent &event);
+	void OnTabMiddleClicked(wxMouseEvent &event);
 
 	void OnSize(wxSizeEvent &event);
 

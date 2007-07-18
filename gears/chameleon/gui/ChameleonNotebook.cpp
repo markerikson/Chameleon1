@@ -19,8 +19,8 @@
 
 BEGIN_EVENT_TABLE(ChameleonNotebook, wxNotebook)
 //EVT_CONTEXT_MENU(ChameleonNotebook::TestMenu)
-
-	EVT_RIGHT_UP ( ChameleonNotebook::OnTabActivate)
+	EVT_MIDDLE_UP	(ChameleonNotebook::OnTabMiddleClicked)
+	EVT_RIGHT_UP	( ChameleonNotebook::OnTabRightClicked)
 	EVT_SIZE(ChameleonNotebook::OnSize)
 
 END_EVENT_TABLE()
@@ -69,7 +69,7 @@ int ChameleonNotebook::HitTest(const wxPoint& pt, long& flags)
 ///
 ///  @author Mark Erikson @date 04-22-2004
 //////////////////////////////////////////////////////////////////////////////
-void ChameleonNotebook::OnTabActivate (wxMouseEvent &event) 
+void ChameleonNotebook::OnTabRightClicked (wxMouseEvent &event) 
 {
 	wxPoint pt;
 	pt.x = event.GetX();
@@ -153,4 +153,27 @@ int ChameleonNotebook::FindPagePosition(wxNotebookPage* page)
 		if (GetPage(nPage) == page)
 			return nPage;
 	return -1;
+}
+
+void ChameleonNotebook::OnTabMiddleClicked( wxMouseEvent &event )
+{
+	wxPoint pt;
+	pt.x = event.GetX();
+	pt.y = event.GetY();
+
+	long flags = 0;
+	int pageNum = this->HitTest (pt, &flags);
+	if (pageNum < 0)
+	{
+		return;
+	}
+
+	m_parent->SetIntVar(VN_CLICKEDTAB, pageNum);
+
+
+	wxCommandEvent command;
+	command.SetId(ID_CLOSETAB);
+	command.SetEventType(10019);
+	m_parent->AddPendingEvent(command);
+	
 }
