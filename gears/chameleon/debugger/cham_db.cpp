@@ -283,8 +283,7 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 
 		//sendCommand("list"+m_returnChar);
 		sendCommand(sendAllBreakpoints);
-		// needed as a flag that things are finished!
-		sendCommand("done"+m_returnChar);	//tag... not really a command
+		sendCommand("echo Initialization done"+m_returnChar);	//tag... not really a command
 		break;
 	}
 
@@ -1348,40 +1347,21 @@ bool Debugger::ParseVariableTypes( wxString &fromGDB )
 		}
 	}
 
-	/*
+	
 	do
 	{
 		lineBreak = fromGDB.Find("\n");
 
 		if(lineBreak == -1)
 		{
-			if(fromGDB.EndsWith(PROMPT_CHAR))
-			{
-				singleLineItem = true;	
-			}
-			else
-			{
-				fromGDB = PROMPT_CHAR;
-			}
-			
+			fromGDB = PROMPT_CHAR;
 		}
-		
-
-		if(fromGDB != PROMPT_CHAR)
+		else
 		{
-			if(singleLineItem)
-			{
-				singleLine = fromGDB.Mid(0, fromGDB.Len() - 1);
-				fromGDB = PROMPT_CHAR;
-			}
-			else
-			{
-				singleLine = fromGDB.Mid(0, lineBreak);
-				singleLine = singleLine.BeforeFirst('\r');
+			singleLine = fromGDB.Mid(0, lineBreak);
+			singleLine = singleLine.BeforeFirst('\r');
 
-				fromGDB = fromGDB.AfterFirst('\n');
-			}
-			
+			fromGDB = fromGDB.AfterFirst('\n');
 
 			if(singleLine.Mid(0,4) == "type")
 			{
@@ -1425,7 +1405,7 @@ bool Debugger::ParseVariableTypes( wxString &fromGDB )
 
 		}
 	}while(fromGDB != PROMPT_CHAR);
-	*/
+	
 
 	if(!fromWatch.IsEmpty())
 	{
@@ -1515,7 +1495,7 @@ void Debugger::removeVar(wxString varName, wxString funcName, wxString className
 ///
 ///  @author Ben Carhart @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
-bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
+bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &variableValues)
 {
 	wxString singleLine, match;
 	wxArrayString fromWatch, ignoreVars;
@@ -1524,13 +1504,8 @@ bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 	bool parseError = false, stayIn = true;
 
 	wxArrayString outputLines = wxStringTokenize(fromGDB, "`");
-
-	for(int i = 0; i < outputLines.GetCount(); i++)
-	{
-		wxString outputLine = outputLines[i];
-
-		int q = i;
-	}
+	wxRegEx reVariableValue = "\\$[[:digit:]]+ = (.+)";
+	
 
 	/* TODO:
 	 * Tokenizing successfully splits things up into the relevant lines. But, now
@@ -1542,195 +1517,38 @@ bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 	 * wxTreeListCtrl as a replacement for the listview.
 	 */
 
-	for(int i = 0; (i < m_varCount) && !parseError; i++)
+	int variableIndex = 0;
+	for(int i = 0; i < outputLines.GetCount(); i++)
 	{
-		lineBreak = fromGDB.Find("\n");
+		wxString outputLine = outputLines[i];
 
-		if(lineBreak == -1)
+		if(outputLine.StartsWith("print"))
 		{
-			// definitely only have one line here
-			
-			if(fromGDB.EndsWith(PROMPT_CHAR))
+			int dollarIndex = outputLine.Index("$");
+
+			if(dollarIndex != -1)
 			{
-				singleLineItem = true;	
+				outputLine = outputLine.Mid(dollarIndex);
 			}
-			else
-			{
-				parseError = true;
-			}
-			
 		}
 		
-		if(!parseError)
+		
+		if(outputLine.StartsWith("No symbol"))
 		{
-			stayIn = true;
+			variableValues.Add(outputLine);
+			variableIndex++;
+		}
+		else if(reVariableValue.Matches(outputLine))
+		{
+			wxString variableValue = reVariableValue.GetMatch(outputLine, 1);
+			variableValues.Add(variableValue);
+			variableIndex++;
+		}
 
-			while(stayIn)
-			{
-				// fromGDB should contain Windows-based line endings, ie, CRLF (\r\n).  
-
-				if(singleLineItem)
-				{
-					lineBreak = fromGDB.Find(PROMPT_CHAR);
-					singleLine = fromGDB.Mid(0, lineBreak);
-					fromGDB = wxEmptyString;
-				}
-				else
-				{
-					lineBreak = fromGDB.Find("\n");
-					singleLine = fromGDB.Mid(0, lineBreak + 1);
-					//singleLine = singleLine.BeforeLast('\r');
-
-					fromGDB = fromGDB.AfterFirst('\n');
-				}
-
-				if(singleLine.IsEmpty())
-				{
-					stayIn = false;
-				}
-
-				if( stayIn && 
-				   (singleLine.StartsWith("$") ||
-					singleLine.StartsWith("No symbol")))
-				{
-					while(!fromGDB.StartsWith("$") && 
-							!fromGDB.StartsWith("No Symbol") &&
-							!fromGDB.StartsWith(PROMPT_CHAR) &&
-							!fromGDB.IsEmpty())
-					{
-						lineBreak = fromGDB.Find("\n");
-						singleLine += fromGDB.Mid(0, lineBreak + 1);
-						fromGDB = fromGDB.AfterFirst('\n');
-					}
-					stayIn = false;
-				}
-			}
-
-			if(!singleLine.IsEmpty())
-			{
-				wxString regexString;
-				if(singleLine.Mid(0,9) == "No symbol")
-				{
-					//~~DEBUG CODE~~//
-					//wxLogDebug("no symbol found: "+singleLine+"\n");
-
-					varValue.Add(singleLine);
-					continue;
-				}
-				else if(m_varInfo[i].type.Find("[") == -1)
-				{
-					if( m_varInfo[i].type.Find("&") == -1 &&
-						m_varInfo[i].type.Find("*") == -1)
-					{
-						//VariableInfo varInfo = m_varInfo[i];
-						wxString type = m_varInfo[i].type;
-						if(m_varRegExes.find(type) != m_varRegExes.end())
-						{
-							regexString = m_varRegExes[type];
-						}
-						else
-						{
-							regexString = m_varRegExes["class"];
-						}
-					}
-					else
-					{
-						//we have a pointer dereference or a referenced variable on our hands
-						if(m_varInfo[i].type.Find("&") > 0)
-						{
-							wxString tmp = m_varInfo[i].type.BeforeLast('&');
-							regexString = m_varRegExes[tmp];
-						}
-						else
-						{
-							//we're assuming it's a dereferenced pointer
-							wxString tmp = m_varInfo[i].type.BeforeLast('*');
-							regexString = m_varRegExes[tmp];
-						}
-					}//end referenced variable test
-				}
-				else
-				{
-					//we have an array of some type...
-					if(m_varInfo[i].type.Find("char") != -1)
-					{
-						regexString = m_varRegExes["char[]"];
-						//it's a char string.  Parse as regular string
-					}
-					else
-					{
-						regexString = m_varRegExes["array"];
-					}
-				}//end array-test
-
-				if(regexString == wxEmptyString)
-				{
-					//~~DEBUG CODE~~//
-					//wxLogDebug("\n--parsePrint: unknown type: "+singleLine+"\n");
-
-					//continue;
-					m_varInfo[i].type = "Unknown";
-					varValue.Add(singleLine); 
-				}
-				else
-				{
-					wxRegEx varParser(regexString, wxRE_ADVANCED);
-					bool keepMatching = true;
-
-					while(keepMatching && !parseError)
-					{
-						if(varParser.Matches(singleLine))
-						{
-							match = varParser.GetMatch(singleLine, 1);
-
-							//~~DEBUG CODE~~//
-							//wxLogDebug("\n--parsePrint: added match: "+match+"\n");
-
-							varValue.Add(match);
-							keepMatching = false;
-						}
-						else
-						{
-							int nextMarker = -1;
-							wxString endOfVarRegex;
-
-							endOfVarRegex = "\\r\\n" + PROMPT_CHAR;
-							
-							wxRegEx reEndOfVar(endOfVarRegex, wxRE_ADVANCED);
-							size_t start, len;
-
-							if(reEndOfVar.Matches(fromGDB))
-							{
-								reEndOfVar.GetMatch(&start, &len);
-
-								nextMarker = (int)start;
-								wxString temp = fromGDB.Mid(0, nextMarker - 1);
-
-								if(singleLine.Find(temp) != -1)
-								{
-									singleLine += temp;
-								}
-								else
-								{
-									parseError = true;
-								}
-							}
-							else
-							{
-								parseError = true;
-							}
-						} // end else
-					} // end while
-				} // end else regex == wxemptystring				
-			} // end if !singleline.empty
-		} // end else (linebreak)
-	}//end for-loop
-
-	if(parseError)
-	{
-		return(false);
+		int q = i;
 	}
-	return(true);
+
+	return !parseError;
 }
 //END VARIABLE FUNCTIONALITY
 
@@ -1829,7 +1647,7 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 	wxRegEx reCase2("(\\n|^)(\\d+)[ \\t]+", wxRE_ADVANCED);
 
 	//go parsing RegEx
-	wxRegEx reStart = " command: \"done\"";
+	wxRegEx reStart = "Initialization done";
 	wxRegEx reGoCase = "Breakpoint ([[:digit:]]+)";
 
 	//breakpoint parsing RegEx
@@ -1884,14 +1702,17 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 	{
 		case START:			//program start
 			//this re-directs to where the output actually is that we want
+			
+			/*
 			if(m_isRemote)
 			{tempString = tempHold;}
 			else
 			{tempString = errorMsg();}
+			*/
 
-			if(tempString != "")
-			{
-				if(reStart.Matches(tempString))
+			//if(tempString != "")
+			//{
+				if(reStart.Matches(tempHold))
 				{
 					//the dope command "done" sent to GDB returns an error.
 					//this means that all init. commands have gone through,
@@ -1899,7 +1720,7 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 					m_status = DEBUG_STOPPED;
 					go();
 				}
-			}
+			//}
 
 			m_data.Empty();
 			break;
@@ -1982,6 +1803,7 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 						 * number string, halve it, and pull out the first half.
 						 */
 
+						/*
 						if(!m_isRemote)
 						{
 							int numberLength = m_Linenumber.Len();
@@ -1990,7 +1812,7 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 							wxString firstHalf = m_Linenumber.SubString(0, halfLength - 1);
 							m_Linenumber = firstHalf;
 						}
-						
+						*/
 
 
 						m_status = DEBUG_BREAK;

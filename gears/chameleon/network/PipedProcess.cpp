@@ -116,8 +116,8 @@ public:
 			if ( !m_input )
 				break;
 
-			if (EatEOL(c))
-				break;
+			//if (EatEOL(c))
+			//	break;
 
 			line += c;
 		}
@@ -216,9 +216,16 @@ bool PipedProcess::HasInput()
 	if (IsInputAvailable())
 	{
 		cbTextInputStream sout(*GetInputStream());
-
+		
 		wxString msg;
-		msg << sout.ReadLine();
+
+		while(IsInputAvailable())
+		{
+			wxString line = sout.ReadLine();
+			msg << line;
+		}
+		
+		
 
 		//CodeBlocksEvent event(cbEVT_PIPEDPROCESS_STDOUT, m_Id);
 		ChameleonProcessEvent event(chEVT_PROCESS_STDOUT);

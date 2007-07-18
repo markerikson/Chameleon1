@@ -308,6 +308,12 @@ void VariableWatchPanel::UpdateVariableInfo(wxDebugEvent event)
 	{
 		wxString name = names[i];
 		int idx = names.Index(name);
+
+		if(idx >= values.GetCount())
+		{
+			continue;
+		}
+
 		wxString value = values[idx];
 		wxString type = types[idx];
 
@@ -322,16 +328,27 @@ void VariableWatchPanel::UpdateVariableInfo(wxDebugEvent event)
 			//wxString listedType = retrievalItem.m_text;
 
 			m_list->SetItem(nameLineNum, 1, type);
+			retrievalItem.m_itemId = nameLineNum;
 			retrievalItem.m_col = 2;
 			m_list->GetItem(retrievalItem);
 
 			wxString listedValue = retrievalItem.m_text;
 
-			if(listedValue != value)
+			if(listedValue == value)
+			{
+				//retrievalItem.SetTextColour(wxColour("black"));
+				//m_list->SetItem(textColorItem);
+				m_list->SetItemTextColour(nameLineNum, wxColour("black"));
+			}		
+			else
 			{
 				m_list->SetItem(nameLineNum, 2, value);
-				//m_list->SetItem(textColorItem);
-			}				
+				//retrievalItem.SetTextColour(wxColour("red"));
+				m_list->SetItemTextColour(nameLineNum, wxColour("red"));
+				
+			}
+
+			
 		}
 	}
 }
