@@ -122,6 +122,7 @@ bool OptionsDialog::Create( wxWindow* parent, wxWindowID id, const wxString& cap
     m_printStyle = NULL;
     m_cbPrintLineNumbers = NULL;
     m_showToolbarText = NULL;
+    m_chkCombineWatchWindow = NULL;
     m_termHistory = NULL;
 ////@end OptionsDialog member initialisation
 
@@ -260,34 +261,38 @@ void OptionsDialog::CreateControls()
     m_printStyle->SetStringSelection(_("Black and white"));
     itemBoxSizer38->Add(m_printStyle, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxBOTTOM, 5);
 
-    m_cbPrintLineNumbers = new wxCheckBox( itemPanel36, ID_CHECKBOX1, _("Print line numbers"), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE );
+    m_cbPrintLineNumbers = new wxCheckBox( itemPanel36, ID_PRINTLINENUMBERS, _("Print line numbers"), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE );
     m_cbPrintLineNumbers->SetValue(false);
     itemBoxSizer38->Add(m_cbPrintLineNumbers, 0, wxALIGN_LEFT|wxALL, 5);
 
-    m_showToolbarText = new wxCheckBox( itemPanel36, ID_CHECKBOX, _("Show text on toolbar buttons"), wxDefaultPosition, wxDefaultSize, 0 );
+    m_showToolbarText = new wxCheckBox( itemPanel36, ID_SHOWTOOLBARTEXT, _("Show text on toolbar buttons"), wxDefaultPosition, wxDefaultSize, 0 );
     m_showToolbarText->SetValue(false);
     itemBoxSizer38->Add(m_showToolbarText, 1, wxGROW|wxALL, 5);
 
-    wxBoxSizer* itemBoxSizer43 = new wxBoxSizer(wxHORIZONTAL);
-    itemBoxSizer38->Add(itemBoxSizer43, 0, wxALIGN_LEFT|wxALL, 0);
-    wxStaticText* itemStaticText44 = new wxStaticText( itemPanel36, wxID_STATIC, _("Maximum history lines in the terminal:"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer43->Add(itemStaticText44, 0, wxALIGN_CENTER_VERTICAL|wxALL|wxADJUST_MINSIZE, 5);
+    m_chkCombineWatchWindow = new wxCheckBox( itemPanel36, ID_COMBINEWATCH, _("Combine watch window and debug output into one tab"), wxDefaultPosition, wxDefaultSize, 0 );
+    m_chkCombineWatchWindow->SetValue(false);
+    itemBoxSizer38->Add(m_chkCombineWatchWindow, 0, wxALIGN_LEFT|wxALL, 5);
+
+    wxBoxSizer* itemBoxSizer44 = new wxBoxSizer(wxHORIZONTAL);
+    itemBoxSizer38->Add(itemBoxSizer44, 0, wxALIGN_LEFT|wxALL, 0);
+    wxStaticText* itemStaticText45 = new wxStaticText( itemPanel36, wxID_STATIC, _("Maximum history lines in the terminal:"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer44->Add(itemStaticText45, 0, wxALIGN_CENTER_VERTICAL|wxALL|wxADJUST_MINSIZE, 5);
 
     m_termHistory = new wxSpinCtrl( itemPanel36, ID_SPINCTRL, _T("0"), wxDefaultPosition, wxSize(60, -1), wxSP_ARROW_KEYS, 25, 2500, 0 );
-    itemBoxSizer43->Add(m_termHistory, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    itemBoxSizer44->Add(m_termHistory, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     m_optionsNotebook->AddPage(itemPanel36, _("Miscellaneous"));
 
     itemBoxSizer2->Add(m_optionsNotebook, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
-    wxBoxSizer* itemBoxSizer46 = new wxBoxSizer(wxHORIZONTAL);
-    itemBoxSizer2->Add(itemBoxSizer46, 0, wxALIGN_RIGHT|wxALL, 0);
+    wxBoxSizer* itemBoxSizer47 = new wxBoxSizer(wxHORIZONTAL);
+    itemBoxSizer2->Add(itemBoxSizer47, 0, wxALIGN_RIGHT|wxALL, 0);
 
-    wxButton* itemButton47 = new wxButton( itemDialog1, ID_BUTTON_OK, _("OK"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer46->Add(itemButton47, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxButton* itemButton48 = new wxButton( itemDialog1, ID_BUTTON_OK, _("OK"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer47->Add(itemButton48, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxButton* itemButton48 = new wxButton( itemDialog1, ID_BUTTON_CANCEL, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer46->Add(itemButton48, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxButton* itemButton49 = new wxButton( itemDialog1, ID_BUTTON_CANCEL, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer47->Add(itemButton49, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
 ////@end OptionsDialog content construction
 }
@@ -676,6 +681,7 @@ bool OptionsDialog::EvaluateOptions()
 
 		m_options->SetShowToolbarText(m_showToolbarText->IsChecked());
 		m_options->SetLineNumberPrinting(m_cbPrintLineNumbers->IsChecked());
+		m_options->SetCombineWatchWindow(m_chkCombineWatchWindow->IsChecked());
 	}
 	else
 	{
@@ -724,6 +730,7 @@ void OptionsDialog::InitializeDialog()
 
 	m_showToolbarText->SetValue(m_options->GetShowToolbarText());
 	m_cbPrintLineNumbers->SetValue(m_options->GetLineNumberPrinting());
+	m_chkCombineWatchWindow->SetValue(m_options->GetCombineWatchWindow());
 
 	m_txtMingwPath->SetValue(m_options->GetMingwBasePath());
 

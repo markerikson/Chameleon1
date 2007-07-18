@@ -244,6 +244,21 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 	m_watchPanel = new VariableWatchPanel(m_noteTerm, this, ID_VARWATCHPANEL);
 
+	m_watchPanelContainer = new wxPanel(m_noteTerm, 0, 0, 40, 40);
+	wxBoxSizer* watchSizer = new wxBoxSizer(wxHORIZONTAL);
+	m_watchPanelContainer->SetSizer(watchSizer);
+	m_watchPanelSplitter = new wxProportionalSplitterWindow(m_watchPanelContainer);
+	watchSizer->Add(m_watchPanelSplitter, wxSizerFlags().Expand().Proportion(1));
+	m_watchPanelContainer->Hide();
+
+	m_container1 = new wxPanel(m_noteTerm, 0, 0, 20, 80);
+	wxBoxSizer* c1Sizer = new wxBoxSizer(wxHORIZONTAL);
+	m_container1->SetSizer(c1Sizer);
+
+	m_container2 = new wxPanel(m_noteTerm, 0, 0, 80, 20);
+	wxBoxSizer* c2Sizer = new wxBoxSizer(wxHORIZONTAL);
+	m_container2->SetSizer(c2Sizer);
+
 	m_projectManager = new ChameleonProjectManager(m_book);
 
 	m_debugManager = new DebugManager(m_debugger, m_debugTerminal, m_projectManager, this, m_watchPanel);
@@ -251,8 +266,6 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 	m_debugger->SetEventHandler(m_debugManager);
 	m_watchPanel->SetEventHandler(m_debugManager);
 
-
-	
 
 	// project setup
 	m_projMultiFiles = NULL;
@@ -448,6 +461,9 @@ void ChameleonWindow::InitializeProgramOptions()
 
 		bool printLineNumbers = (m_config->Read("Miscellaneous/PrintLineNumbers", "false") == "true");
 		m_options->SetLineNumberPrinting(printLineNumbers);
+
+		bool combineWatchWindow = (m_config->Read("Miscellaneous/CombineWatchWindow", "false") == "true");
+		m_options->SetCombineWatchWindow(combineWatchWindow);
 
 
 		int terminalHistory = m_config->Read("Miscellaneous/TerminalHistory", 100);
@@ -2295,6 +2311,9 @@ void ChameleonWindow::EvaluateOptions()
 	bool printLineNumbers = m_options->GetLineNumberPrinting();
 	m_config->Write("Miscellaneous/PrintLineNumbers", printLineNumbers ? "true" : "false");
 
+	bool combineWatchWindow = m_options->GetCombineWatchWindow();
+	m_config->Write("Miscellaneous/CombineWatchWindow", combineWatchWindow ? "true" : "false");
+
 	m_config->Write("Compiler/MingwBasePath", m_options->GetMingwBasePath());
 
 	wxArrayString mingwBinPaths = m_options->GetMingwBinPaths();
@@ -2582,7 +2601,6 @@ void ChameleonWindow::UpdateToolbar()
 void ChameleonWindow::UpdateTerminalNotebook()
 {
 	Permission* perms = m_options->GetPerms();
-	int splitterLocation = m_splitEditorOutput->GetSashPosition();
 
 	int numPages = m_noteTerm->GetPageCount();
 	for(int i = 0; i < numPages; i++)
@@ -2590,6 +2608,15 @@ void ChameleonWindow::UpdateTerminalNotebook()
 		wxNotebookPage* page = m_noteTerm->GetPage(0);
 		page->Hide();
 		m_noteTerm->RemovePage(0);
+	}
+
+	m_container1->GetSizer()->Detach(m_watchPanel);
+	m_container2->GetSizer()->Detach(m_debugTermContainer);
+
+	if(m_watchPanel->GetParent() == m_watchPanelSplitter)
+	{
+		m_watchPanelSplitter->Unsplit(m_debugTermContainer);
+		m_watchPanelSplitter->RemoveChild(m_watchPanel);
 	}
 
 	if(perms->isEnabled(PERM_TERMINAL))
@@ -2616,15 +2643,58 @@ void ChameleonWindow::UpdateTerminalNotebook()
 
 	if(perms->isEnabled(PERM_DEBUG))
 	{
-		m_watchPanel->Show();
-		m_debugTermContainer->Show();
-		m_noteTerm->AddPage(m_watchPanel, "Variable Watches");
-		m_noteTerm->AddPage(m_debugTermContainer, "Debug Console");
+		if(m_options->GetCombineWatchWindow())
+		{
+			m_watchPanelContainer->Show();
+
+			m_watchPanel->Reparent(m_watchPanelSplitter);
+			m_debugTermContainer->Reparent(m_watchPanelSplitter);
+
+			m_watchPanelSplitter->SplitVertically(m_watchPanel, m_debugTermContainer);
+
+			m_noteTerm->AddPage(m_watchPanelContainer, "Debug Information");
+
+			m_container1->Hide();
+			m_container2->Hide();
+		}
+		else
+		{
+			wxWindow* parent = m_watchPanel->GetParent();
+
+			m_watchPanel->Show();
+			m_debugTermContainer->Show();
+
+			if(m_watchPanel->GetParent() != m_container1)
+			{
+				m_watchPanel->Reparent(m_container1);
+				m_container1->GetSizer()->Add(m_watchPanel, wxSizerFlags().Expand().Proportion(1));
+				m_debugTermContainer->Reparent(m_container2);
+				m_container2->GetSizer()->Add(m_debugTermContainer, wxSizerFlags().Expand().Proportion(1));
+			}
+			
+			m_noteTerm->AddPage(m_container1, "Variable Watches");
+			m_noteTerm->AddPage(m_container2, "Debug Console");
+
+			m_watchPanel->Refresh();
+			m_debugTermContainer->Refresh();
+
+			wxSize size = m_termContainer->GetSize();
+			wxPoint origin(0, 0);
+			m_debugTermContainer->SetPosition(origin);
+			m_debugTermContainer->SetSize(size);
+		
+			m_watchPanelContainer->Hide();
+
+			m_splitProjectEditor->UpdateSize();
+		}
 	}
 	else
 	{
+		m_watchPanelContainer->Hide();
 		m_watchPanel->Hide();
 		m_debugTermContainer->Hide();
+		m_container1->Hide();
+		m_container2->Hide();
 	}
 
 	if(m_noteTerm->GetPageCount() == 0)
@@ -2638,7 +2708,6 @@ void ChameleonWindow::UpdateTerminalNotebook()
 		{
 			m_splitEditorOutput->SplitHorizontally(m_splitProjectEditor, m_noteTerm, 0.575f);//-260);//-200);
 			m_splitEditorOutput->SetMinimumPaneSize(20);
-			//m_splitEditorOutput->SetSashGravity(1.0);
 			m_terminal->UpdateSize();
 			m_noteTerm->Show();	
 		}		
@@ -2647,6 +2716,8 @@ void ChameleonWindow::UpdateTerminalNotebook()
 	}
 	m_noteTerm->Refresh();
 	m_book->Refresh();
+
+	m_watchPanel->Refresh();
 }
 
 // Project code begins here

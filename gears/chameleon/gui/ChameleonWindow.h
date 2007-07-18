@@ -224,6 +224,11 @@ private:
 	/*! The actual debug I/O widget */
 	wxSSH* m_debugTerminal;
 
+	wxPanel* m_watchPanelContainer;
+	wxPanel* m_container1;
+	wxPanel* m_container2;
+	wxProportionalSplitterWindow* m_watchPanelSplitter;
+
 	// dialogs
 	OptionsDialog*  m_optionsDialog;
 	RemoteFileDialog* m_remoteFileDialog;

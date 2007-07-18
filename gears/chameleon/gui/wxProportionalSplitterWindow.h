@@ -87,6 +87,8 @@ public:
 		event.Skip();
 	}
 
+	float GetSplitPercentage() { return splitPercent_; }
+
 private:
 	bool isHorizontal(void) const { return (GetSplitMode() == wxSPLIT_HORIZONTAL); }
 

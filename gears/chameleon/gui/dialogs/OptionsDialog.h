@@ -59,8 +59,9 @@ class ChameleonWindow;
 #define ID_BUTTON1 10021
 #define ID_PANELMISC 10016
 #define ID_PRINTSTYLE 10017
-#define ID_CHECKBOX1 10013
-#define ID_CHECKBOX 10018
+#define ID_PRINTLINENUMBERS 10013
+#define ID_SHOWTOOLBARTEXT 10018
+#define ID_COMBINEWATCH 10022
 #define ID_SPINCTRL 10019
 #define ID_BUTTON_OK 10002
 #define ID_BUTTON_CANCEL 10003
@@ -182,6 +183,7 @@ public:
     wxComboBox* m_printStyle;
     wxCheckBox* m_cbPrintLineNumbers;
     wxCheckBox* m_showToolbarText;
+    wxCheckBox* m_chkCombineWatchWindow;
     wxSpinCtrl* m_termHistory;
 ////@end OptionsDialog member variables
 

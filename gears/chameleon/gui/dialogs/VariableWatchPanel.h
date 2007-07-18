@@ -21,7 +21,6 @@
  */
 
 ////@begin includes
-#include "wx/wx.h"
 #include "wx/listctrl.h"
 ////@end includes
 
@@ -44,15 +43,15 @@ class ChameleonWindow;
 
 ////@begin control identifiers
 #define ID_VARWATCHDIALOG 10000
-#define SYMBOL_VARIABLEWATCHPANEL_STYLE wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX
-#define SYMBOL_VARIABLEWATCHPANEL_TITLE _("VariableWatch")
-#define SYMBOL_VARIABLEWATCHPANEL_IDNAME ID_VARWATCHDIALOG
-#define SYMBOL_VARIABLEWATCHPANEL_SIZE wxDefaultSize
-#define SYMBOL_VARIABLEWATCHPANEL_POSITION wxPoint(0, 0)
 #define ID_LISTCTRL 10001
 #define ID_ADDWATCH 10002
 #define ID_REMOVEWATCH 10003
 #define ID_CLEARALLWATCHES 10004
+#define SYMBOL_VARIABLEWATCHPANEL_STYLE wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX|wxDIALOG_MODAL
+#define SYMBOL_VARIABLEWATCHPANEL_TITLE _("VariableWatch")
+#define SYMBOL_VARIABLEWATCHPANEL_IDNAME ID_VARWATCHDIALOG
+#define SYMBOL_VARIABLEWATCHPANEL_SIZE wxDefaultSize
+#define SYMBOL_VARIABLEWATCHPANEL_POSITION wxDefaultPosition
 ////@end control identifiers
 
 /*!
@@ -85,6 +84,9 @@ public:
 
 ////@begin VariableWatchPanel event handler declarations
 
+    /// wxEVT_SIZE event handler for ID_VARWATCHDIALOG
+    void OnSize( wxSizeEvent& event );
+
     /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_ADDWATCH
     void OnAddwatchClick( wxCommandEvent& event );
 
@@ -98,6 +100,11 @@ public:
 
 ////@begin VariableWatchPanel member function declarations
 
+    /// Retrieves bitmap resources
+    wxBitmap GetBitmapResource( const wxString& name );
+
+    /// Retrieves icon resources
+    wxIcon GetIconResource( const wxString& name );
 ////@end VariableWatchPanel member function declarations
 
 	void AddWatch();

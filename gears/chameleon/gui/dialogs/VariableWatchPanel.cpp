@@ -47,6 +47,8 @@ IMPLEMENT_CLASS( VariableWatchPanel, wxPanel )
 BEGIN_EVENT_TABLE( VariableWatchPanel, wxPanel )
 
 ////@begin VariableWatchPanel event table entries
+    EVT_SIZE( VariableWatchPanel::OnSize )
+
     EVT_BUTTON( ID_ADDWATCH, VariableWatchPanel::OnAddwatchClick )
 
     EVT_BUTTON( ID_REMOVEWATCH, VariableWatchPanel::OnRemovewatchClick )
@@ -83,6 +85,11 @@ VariableWatchPanel::VariableWatchPanel( wxWindow* parent, wxEvtHandler* mainfram
 	itemCol.m_text = _T("Value");
 	itemCol.m_width = 400;
 	m_list->InsertColumn(2, itemCol);
+
+	wxSize minSize;
+	minSize.Set(100, 100);
+
+	m_list->SetMinSize(minSize);
 }
 
 /*!
@@ -112,28 +119,25 @@ bool VariableWatchPanel::Create( wxWindow* parent, wxWindowID id, const wxPoint&
 void VariableWatchPanel::CreateControls()
 {    
 ////@begin VariableWatchPanel content construction
+    VariableWatchPanel* itemPanel1 = this;
 
-    VariableWatchPanel* item1 = this;
+    wxBoxSizer* itemBoxSizer2 = new wxBoxSizer(wxVERTICAL);
+    itemPanel1->SetSizer(itemBoxSizer2);
 
-    wxBoxSizer* item2 = new wxBoxSizer(wxVERTICAL);
-    item1->SetSizer(item2);
-    item1->SetAutoLayout(TRUE);
+    m_list = new wxListCtrl( itemPanel1, ID_LISTCTRL, wxDefaultPosition, wxDefaultSize, wxLC_REPORT|wxLC_SINGLE_SEL|wxLC_HRULES|wxSIMPLE_BORDER );
+    itemBoxSizer2->Add(m_list, 1, wxGROW, 5);
 
-    wxListCtrl* item3 = new wxListCtrl( item1, ID_LISTCTRL, wxDefaultPosition, wxDefaultSize, wxLC_REPORT|wxLC_SINGLE_SEL|wxLC_HRULES|wxSIMPLE_BORDER );
-    m_list = item3;
-    item2->Add(item3, 1, wxGROW, 5);
+    wxBoxSizer* itemBoxSizer4 = new wxBoxSizer(wxHORIZONTAL);
+    itemBoxSizer2->Add(itemBoxSizer4, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT, 5);
 
-    wxBoxSizer* item4 = new wxBoxSizer(wxHORIZONTAL);
-    item2->Add(item4, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT, 5);
+    wxButton* itemButton5 = new wxButton( itemPanel1, ID_ADDWATCH, _("Add watch"), wxDefaultPosition, wxSize(80, -1), 0 );
+    itemBoxSizer4->Add(itemButton5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxButton* item5 = new wxButton( item1, ID_ADDWATCH, _("Add watch"), wxDefaultPosition, wxSize(80, -1), 0 );
-    item4->Add(item5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxButton* itemButton6 = new wxButton( itemPanel1, ID_REMOVEWATCH, _("Remove watch"), wxDefaultPosition, wxSize(80, -1), 0 );
+    itemBoxSizer4->Add(itemButton6, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxButton* item6 = new wxButton( item1, ID_REMOVEWATCH, _("Remove watch"), wxDefaultPosition, wxSize(80, -1), 0 );
-    item4->Add(item6, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
-
-    wxButton* item7 = new wxButton( item1, ID_CLEARALLWATCHES, _("Clear watches"), wxDefaultPosition, wxDefaultSize, 0 );
-    item4->Add(item7, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxButton* itemButton7 = new wxButton( itemPanel1, ID_CLEARALLWATCHES, _("Clear watches"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer4->Add(itemButton7, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
 ////@end VariableWatchPanel content construction
 }
@@ -403,4 +407,51 @@ void VariableWatchPanel::OnClearallwatchesClick( wxCommandEvent& event )
 	}
 }
 
+
+
+/*!
+ * Get bitmap resources
+ */
+
+wxBitmap VariableWatchPanel::GetBitmapResource( const wxString& name )
+{
+    // Bitmap retrieval
+////@begin VariableWatchPanel bitmap retrieval
+    wxUnusedVar(name);
+    return wxNullBitmap;
+////@end VariableWatchPanel bitmap retrieval
+}
+
+/*!
+ * Get icon resources
+ */
+
+wxIcon VariableWatchPanel::GetIconResource( const wxString& name )
+{
+    // Icon retrieval
+////@begin VariableWatchPanel icon retrieval
+    wxUnusedVar(name);
+    return wxNullIcon;
+////@end VariableWatchPanel icon retrieval
+}
+
+
+/*!
+ * wxEVT_SIZE event handler for ID_VARWATCHDIALOG
+ */
+
+void VariableWatchPanel::OnSize( wxSizeEvent& event )
+{
+	wxSize size = event.GetSize();
+	int width = size.GetWidth();
+	int height = size.GetHeight();
+
+	int i = 42;
+	int q = i;
+	i = q;
+
+
+    event.Skip();
+
+}
 
