@@ -37,8 +37,10 @@
 
 #include "cham_db.h"
 #include "../common/ProjectInfo.h"
+#include "../common/Options.h"
 #include <wx/wfstream.h>
 #include <wx/RegEx.h>
+#include <wx/tokenzr.h>
 
 #include <wx/arrimpl.cpp> // this is a magic incantation which must be done!
 WX_DEFINE_OBJARRAY(VariableInfoArray);
@@ -69,7 +71,7 @@ END_EVENT_TABLE()
 ///
 ///  @author Ben Carhart @date 04-23-2004
 //////////////////////////////////////////////////////////////////////////////
-Debugger::Debugger(Networking* networking, wxEvtHandler* pointer)
+Debugger::Debugger(Networking* networking, Options* options, wxEvtHandler* pointer)
 {
 	flushPrivateVar();
 	m_varCount = 0;
@@ -82,6 +84,7 @@ Debugger::Debugger(Networking* networking, wxEvtHandler* pointer)
 	m_status = DEBUG_DEAD;
 	m_classStatus = STOP;
 	m_myConnection = networking;
+	m_options = options;
 
 	//reg-Ex for Variable watching
 	//------
@@ -237,7 +240,7 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 		ProjectInfo* proj = event.GetProject();
 
 		wxArrayString srcFiles = proj->GetSources();
-		wxString execFile = proj->GetExecutableFileName();
+		wxString execFile = proj->GetExecutableFileName(true);
 		m_projectBeingDebugged = proj;
 
 		startProcess(true, event.IsRemote(), execFile, "gdb -q");
@@ -246,13 +249,21 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 		for(i = 0; i < (int)srcFiles.GetCount(); i++)
 		{
 			tmp = srcFiles[i];
+
+			wxString filename = tmp;
+
+			if(!proj->IsRemote())
+			{
+				filename.Replace("\\", "/");
+			}
+
 			if(breakpointList.find(tmp) != breakpointList.end())
 			{
 				breakpointLines = breakpointList[tmp];
 
 				for(j = 0; j < (int)breakpointLines.GetCount(); j++)
 				{
-					sendAllBreakpoints<<"break \""<<tmp<<":"<<breakpointLines[j]<<"\""<<m_returnChar;
+					sendAllBreakpoints<<"break \""<<filename<<":"<<breakpointLines[j]<<"\""<<m_returnChar;
 
 					m_lineToNum[tmp].lineNumbers.Add(breakpointLines[j]);
 					m_lineToNum[tmp].gdbNumbers.Add(m_gdbBreakpointNum);
@@ -270,8 +281,9 @@ void Debugger::onDebugEvent(wxDebugEvent &event)
 		//wxLogDebug("--STARTUP: breakpoint string:\n------\n" + sendAllBreakpoints + "\n\n");
 
 
-		sendCommand("list"+m_returnChar);
+		//sendCommand("list"+m_returnChar);
 		sendCommand(sendAllBreakpoints);
+		// needed as a flag that things are finished!
 		sendCommand("done"+m_returnChar);	//tag... not really a command
 		break;
 	}
@@ -598,9 +610,21 @@ void Debugger::startProcess(bool fullRestart, bool mode, wxString fName, wxStrin
 	}
 
 	if(m_isRemote)
-	{m_returnChar = "\r";}
+	{
+		m_returnChar = "\r";
+	}
 	else
-	{m_returnChar = "\n";}
+	{
+		m_returnChar = "\r\n";
+
+		StringFilenameHash mingwExecutables = m_options->GetMingwExecutables();
+		wxFileName gdbPath = mingwExecutables["gdb.exe"];
+
+		wxString localGDBCommand;
+		localGDBCommand.Printf("\"%s\" -q", gdbPath.GetFullPath());
+		//execThis.Replace("gdb", gdbPath.GetFullPath());
+		execThis = localGDBCommand;
+	}
 
 	if(fName != "")
 	{
@@ -1267,12 +1291,18 @@ void Debugger::sendPrint(wxString fromGDB)
 			{
 				name += "._M_dataplus._M_p";
 			}
+
 			if(m_varInfo[i].type.Find("*") != -1)
 			{	
-				name.Prepend("*");
+				//name.Prepend("*");
+				tmp.Printf("set print address on%sprint %s%sset print address off%s",
+							m_returnChar, name, m_returnChar, m_returnChar);
 			}
-
-			tmp.Printf("print %s%s", name, m_returnChar);
+			else
+			{
+				tmp.Printf("print %s%s", name, m_returnChar);
+			}
+			
 			m_command.Append(tmp);
 		}
 
@@ -1288,21 +1318,70 @@ bool Debugger::ParseVariableTypes( wxString &fromGDB )
 	wxArrayString fromWatch, ignoreVars;
 	bool watchStatus = false;
 	int lineBreak = 0, endQuote = 0, fromWatchIndex = 0, ampIdx = -1;
+	int promptIndex = -1;
+	bool singleLineItem = false;
+	wxRegEx reTypeFinder = "type = (\\(*[[:alnum:]]+([[:blank:]]|\\*|&)*\\)*)";
 
+	wxArrayString outputLines = wxStringTokenize(fromGDB, "`");
+
+	for(int i = 0; i < outputLines.GetCount(); i++)
+	{
+		wxString outputLine = outputLines[i];
+		if(reTypeFinder.Matches(outputLine))
+		{
+			wxString match = reTypeFinder.GetMatch(outputLine, 1);
+			fromWatch.Add(match);
+		}
+		else if(outputLine.Mid(0,9) == "No symbol")
+		{
+			lineBreak = outputLine.Find("\"");
+			singleLine = outputLine.Mid(lineBreak + 1);
+
+			endQuote = outputLine.Find("\"");
+			singleLine = outputLine.Mid(0, endQuote);
+
+			ignoreVars.Add(outputLine);
+		}
+		else if(outputLine.Mid(0,9) == "Attempt t")
+		{
+			fromWatch.Add("error");
+		}
+	}
+
+	/*
 	do
 	{
 		lineBreak = fromGDB.Find("\n");
 
 		if(lineBreak == -1)
 		{
-			fromGDB = PROMPT_CHAR;
+			if(fromGDB.EndsWith(PROMPT_CHAR))
+			{
+				singleLineItem = true;	
+			}
+			else
+			{
+				fromGDB = PROMPT_CHAR;
+			}
+			
 		}
-		else
-		{
-			singleLine = fromGDB.Mid(0, lineBreak);
-			singleLine = singleLine.BeforeFirst('\r');
+		
 
-			fromGDB = fromGDB.AfterFirst('\n');
+		if(fromGDB != PROMPT_CHAR)
+		{
+			if(singleLineItem)
+			{
+				singleLine = fromGDB.Mid(0, fromGDB.Len() - 1);
+				fromGDB = PROMPT_CHAR;
+			}
+			else
+			{
+				singleLine = fromGDB.Mid(0, lineBreak);
+				singleLine = singleLine.BeforeFirst('\r');
+
+				fromGDB = fromGDB.AfterFirst('\n');
+			}
+			
 
 			if(singleLine.Mid(0,4) == "type")
 			{
@@ -1346,7 +1425,7 @@ bool Debugger::ParseVariableTypes( wxString &fromGDB )
 
 		}
 	}while(fromGDB != PROMPT_CHAR);
-
+	*/
 
 	if(!fromWatch.IsEmpty())
 	{
@@ -1441,7 +1520,27 @@ bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 	wxString singleLine, match;
 	wxArrayString fromWatch, ignoreVars;
 	int lineBreak = 0, endQuote = 0, fromWatchIndex = 0;
+	bool singleLineItem = false;
 	bool parseError = false, stayIn = true;
+
+	wxArrayString outputLines = wxStringTokenize(fromGDB, "`");
+
+	for(int i = 0; i < outputLines.GetCount(); i++)
+	{
+		wxString outputLine = outputLines[i];
+
+		int q = i;
+	}
+
+	/* TODO:
+	 * Tokenizing successfully splits things up into the relevant lines. But, now
+	 * we need to deal with the various items.  It might be possible to ditch
+	 * regex value parsing entirely, and just display everything after the "$N = ".
+	 * Also, for classes, it would be useful to display any internal members
+	 * hierarchically.  I _should_ be able to split things up based on the {}'s, 
+	 * store them using that STL tree class I found, and display them using 
+	 * wxTreeListCtrl as a replacement for the listview.
+	 */
 
 	for(int i = 0; (i < m_varCount) && !parseError; i++)
 	{
@@ -1449,20 +1548,41 @@ bool Debugger::parsePrintOutput(wxString fromGDB, wxArrayString &varValue)
 
 		if(lineBreak == -1)
 		{
-			parseError = true;
+			// definitely only have one line here
+			
+			if(fromGDB.EndsWith(PROMPT_CHAR))
+			{
+				singleLineItem = true;	
+			}
+			else
+			{
+				parseError = true;
+			}
+			
 		}
-		else
+		
+		if(!parseError)
 		{
 			stayIn = true;
 
 			while(stayIn)
 			{
 				// fromGDB should contain Windows-based line endings, ie, CRLF (\r\n).  
-				lineBreak = fromGDB.Find("\n");
-				singleLine = fromGDB.Mid(0, lineBreak + 1);
-				//singleLine = singleLine.BeforeLast('\r');
 
-				fromGDB = fromGDB.AfterFirst('\n');
+				if(singleLineItem)
+				{
+					lineBreak = fromGDB.Find(PROMPT_CHAR);
+					singleLine = fromGDB.Mid(0, lineBreak);
+					fromGDB = wxEmptyString;
+				}
+				else
+				{
+					lineBreak = fromGDB.Find("\n");
+					singleLine = fromGDB.Mid(0, lineBreak + 1);
+					//singleLine = singleLine.BeforeLast('\r');
+
+					fromGDB = fromGDB.AfterFirst('\n');
+				}
 
 				if(singleLine.IsEmpty())
 				{
@@ -1703,7 +1823,7 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 		 keepParsing = false;
 
 	//step parsing RegEx
-	wxRegEx reCase1 = " at (([[:alnum:]]|[[:blank:]]|\\.|/|_)+):([[:digit:]]+)";
+	wxRegEx reCase1 = " at (([[:alnum:]]|[[:blank:]]|\\.|/|_|:)+):([[:digit:]]+)";
 	// needs the wxRE_ADVANCED in order to work properly, so can't just
 	// assign this one as if it were a string
 	wxRegEx reCase2("(\\n|^)(\\d+)[ \\t]+", wxRE_ADVANCED);
@@ -1736,7 +1856,7 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 		for(int i = 0; i < (int)m_data.GetCount() && skipThrough; i++)
 		{
 			tempHold = m_data[i];
-			if(tempHold.Last() == PROMPT_CHAR)
+			if(tempHold.Length() > 0 && tempHold.Last() == PROMPT_CHAR)
 			{
 				tempHold.Empty();
 
@@ -1843,6 +1963,35 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 					{
 						m_Filename = reCase1.GetMatch(tempHold, 1);
 						m_Linenumber = reCase1.GetMatch(tempHold, 3);
+
+						/* HACK
+						 * When debugging locally, the output comes back without any
+						 * newline characters.  When a breakpoint is hit, the line
+						 * number comes back at the end of the first line and the 
+						 * start of the second, which then gets smooshed together.
+						 * Example:
+						 * Breakpoint 1, main() at sample.cpp:42 
+						 * 42  int i = 23;
+						 *
+						 * becomes:
+						 *
+						 * Breakpoint 1, main() at sample.cpp:4242  int i = 23;
+						 *
+						 * The regex correctly pulls out a number, but it's twice
+						 * as long as it should be.  So, we'll find the length of the
+						 * number string, halve it, and pull out the first half.
+						 */
+
+						if(!m_isRemote)
+						{
+							int numberLength = m_Linenumber.Len();
+							int halfLength = numberLength / 2;
+							// second argument is inclusive, so subtract 1
+							wxString firstHalf = m_Linenumber.SubString(0, halfLength - 1);
+							m_Linenumber = firstHalf;
+						}
+						
+
 
 						m_status = DEBUG_BREAK;
 
@@ -2216,11 +2365,12 @@ void Debugger::sendCommand(wxString send)
 {
 	if(m_procLives)
 	{
+		wxLogDebug("DB sent: %s", send);
 		m_streamOut->WriteString(send);
 		send = send + "<- sent";
 		
 		//DEBUG CODE//
-		//wxLogDebug("DB send command: %s", send);
+		
 	}
 	else
 	{

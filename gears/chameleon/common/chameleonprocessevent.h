@@ -22,14 +22,19 @@ class ChameleonProcessEvent : public wxEvent
 {
 	public:
 		ChameleonProcessEvent(wxEventType eventtype);
+		ChameleonProcessEvent(const ChameleonProcessEvent& event);
 
 		void SetInt(int i) {m_int = i; }
 		void SetPid(int i) {m_pid = i; }
 		void SetString(wxString s) { m_string = s; }
 
-		int GetInt() { return m_int; }
-		int GetPid() { return m_pid; }
-		wxString GetString() { return m_string; }
+		int GetInt() const { return m_int; }
+		int GetPid() const
+		{ 
+			int pid = m_pid;
+			return m_pid; 
+		}
+		wxString GetString() const { return m_string; }
 
 		virtual wxEvent *Clone() const { return new ChameleonProcessEvent(*this); }
 

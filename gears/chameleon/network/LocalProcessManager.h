@@ -26,7 +26,7 @@ private:
 	void OnProcessOutput(ChameleonProcessEvent& event);
 	//void OnProcessStandardOut(ChameleonProcessEvent& event);
 	//void OnProcessStandardErr(ChameleonProcessEvent& event);
-	void OnProcessTerminated(wxProcessEvent& event);
+	void OnProcessTerminated(ChameleonProcessEvent& event);//wxProcessEvent& event);
 
 	ProcessInfo* FindProcess(int pid);
 

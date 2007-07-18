@@ -24,9 +24,10 @@
 #include "../common/datastructures.h"
 
 class ProjectInfo;
+class Options;
 
 //global declarations
-const wxString PROMPT_CHAR = "%";
+const wxString PROMPT_CHAR = "`";
 
 //keywords for parsing output
 enum DEBUG_KEYS {
@@ -71,7 +72,7 @@ class Debugger : public wxEvtHandler
 {
 	public:
 		//defaults
-		Debugger(Networking* networking, wxEvtHandler* pointer);
+		Debugger(Networking* networking, Options* options, wxEvtHandler* pointer);
 		~Debugger();					//destructor
 
 		void onDebugEvent(wxDebugEvent &event);
@@ -190,6 +191,7 @@ class Debugger : public wxEvtHandler
 		wxString m_currentSourceName;	//holds filename source
 
 		Networking *m_myConnection;	//the networking object for remote
+		Options* m_options;
 		wxTextOutputStream* m_streamOut;	//output to GDB
 		wxDebugEvent* m_myEvent;		//how i communicate
 

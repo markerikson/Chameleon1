@@ -50,7 +50,7 @@ void DebugManager::OnDebugCommand( int eventID, ProjectInfo* project, ChameleonE
 				if(breaks.GetCount() > 0)
 				{
 					wxFileName fn = ed->GetFileName();
-					wxString filename = fn.GetFullPath(wxPATH_UNIX);
+					wxString filename = fn.GetFullPath(project->IsRemote() ? wxPATH_UNIX : wxPATH_DOS);
 
 					bphash[filename] = breaks;
 				}

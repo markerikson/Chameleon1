@@ -217,7 +217,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 	m_network = new Networking(m_options);
 	m_compiler = new Compiler(m_options, m_network);
-	m_debugger = new Debugger(m_network, this);
+	m_debugger = new Debugger(m_network, m_options, this);
 
 	m_optionsDialog = new OptionsDialog(this, m_options, ID_OPTIONSDIALOG, "Options");
 
@@ -2838,6 +2838,8 @@ void ChameleonWindow::OpenProjectFile(bool isRemote)
 	LoadFilesIntoProjectTree("/Headers", FILE_HEADERS, m_projectFileFolders[1], config, currentPathFormat);
 	LoadFilesIntoProjectTree("/Libraries", FILE_LIBRARIES, m_projectFileFolders[2], config, currentPathFormat);
 	LoadFilesIntoProjectTree("/Other", FILE_NONSOURCE, m_projectFileFolders[3], config, currentPathFormat);
+
+	m_projectTree->ExpandAll();
 
 	m_projectTree->Thaw();
 }

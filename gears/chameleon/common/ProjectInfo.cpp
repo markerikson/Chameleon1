@@ -424,10 +424,36 @@ bool ProjectInfo::IsSingleFile()
 
 	bool isSingleFile = true;
 
-	if(numSourceFiles != 1)
+	if(numSourceFiles > 1)
 	{
 		isSingleFile = false;
 	}
 
 	return isSingleFile;
+}
+
+wxString ProjectInfo::GetExecutableFileName(bool reverseSlashes)
+{
+	wxString fullFilePath;
+
+	if(m_isRemote)
+	{
+		fullFilePath = m_executableName.GetFullPath(wxPATH_UNIX);
+	}
+	else
+	{
+		if(!reverseSlashes)
+		{
+			fullFilePath = m_executableName.GetFullPath(wxPATH_DOS);
+		}
+		else
+		{
+			fullFilePath += m_executableName.GetVolume();
+			fullFilePath += m_executableName.GetVolumeSeparator();
+			fullFilePath += m_executableName.GetPath(wxPATH_GET_VOLUME | wxPATH_GET_SEPARATOR, wxPATH_UNIX);
+			fullFilePath += m_executableName.GetFullName();
+		}
+	}
+
+	return fullFilePath;
 }

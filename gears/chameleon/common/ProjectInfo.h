@@ -38,7 +38,7 @@ public:
 	bool IsBeingCompiled() { return m_isBeingCompiled; }
 	bool IsReadOnly() { return m_isReadOnly; }
 	bool IsCompilable();
-	wxString GetExecutableFileName() { return m_executableName.GetFullPath(wxPATH_UNIX); }
+	wxString GetExecutableFileName(bool reverseSlashes = false);
 	wxString GetProjectName();
 	wxFileName GetProjectFile() { return m_projectFile; }
 	wxString GetProjectBasePath();

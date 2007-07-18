@@ -7,7 +7,7 @@
 BEGIN_EVENT_TABLE(LocalProcessManager, wxEvtHandler)
 	EVT_PROCESS_STDOUT(LocalProcessManager::OnProcessOutput)
 	EVT_PROCESS_STDERR(LocalProcessManager::OnProcessOutput)
-	EVT_END_PROCESS(-1, LocalProcessManager::OnProcessTerminated)
+	EVT_PROCESS_ENDED(LocalProcessManager::OnProcessTerminated)
 END_EVENT_TABLE()
 
 LocalProcessManager::LocalProcessManager()
@@ -19,13 +19,14 @@ wxTextOutputStream* LocalProcessManager::StartLocalCommand( wxString command, wx
 {
 	PipedProcess* pProcess;
 
-	pProcess = new PipedProcess((void**)&pProcess, parent, m_nextProcessID, true, wxGetCwd());
+	pProcess = new PipedProcess((void**)&pProcess, this, m_nextProcessID, true, wxGetCwd());
 	m_nextProcessID++;
 
 	wxString finalCommand;
 
 
-	long pid = wxExecute(command, wxEXEC_ASYNC, pProcess);
+	//long pid = wxExecute(command, wxEXEC_ASYNC, pProcess);
+	long pid = pProcess->Launch(command);
 
 	ProcessInfo* p = new ProcessInfo;
 	p->pid = pid;
@@ -34,12 +35,13 @@ wxTextOutputStream* LocalProcessManager::StartLocalCommand( wxString command, wx
 	p->stdinStream = new wxTextOutputStream(*pProcess->GetOutputStream(), wxEOL_NATIVE);
 	p->outputBuf = "";
 	p->owner = parent; // set when process gets used
+	
 	m_processes.Add(p);
 
 	return p->stdinStream;
 }
 
-void LocalProcessManager::OnProcessTerminated( wxProcessEvent& event )
+void LocalProcessManager::OnProcessTerminated( ChameleonProcessEvent& event)//wxProcessEvent& event )
 {
 	ProcessInfo* p = FindProcess(event.GetPid());
 

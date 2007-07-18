@@ -174,8 +174,8 @@ int PipedProcess::Launch(const wxString& cmd, unsigned int pollingInterval)
 	m_Pid = wxExecute(cmd, wxEXEC_ASYNC, this);
 	if (m_Pid)
 	{
-		//		m_timerPollProcess.SetOwner(this, idTimerPollProcess);
-		//		m_timerPollProcess.Start(pollingInterval);
+		m_timerPollProcess.SetOwner(this, idTimerPollProcess);
+		m_timerPollProcess.Start(pollingInterval);
 	}
 	return m_Pid;
 }
@@ -213,14 +213,14 @@ bool PipedProcess::HasInput()
 {
 	bool hasInput = false;
 
-	if (IsErrorAvailable())
+	if (IsInputAvailable())
 	{
-		cbTextInputStream serr(*GetErrorStream());
+		cbTextInputStream sout(*GetInputStream());
 
 		wxString msg;
-		msg << serr.ReadLine();
+		msg << sout.ReadLine();
 
-		//CodeBlocksEvent event(cbEVT_PIPEDPROCESS_STDERR, m_Id);
+		//CodeBlocksEvent event(cbEVT_PIPEDPROCESS_STDOUT, m_Id);
 		ChameleonProcessEvent event(chEVT_PROCESS_STDOUT);
 		event.SetString(msg);
 		event.SetInt(m_Pid);
@@ -230,14 +230,14 @@ bool PipedProcess::HasInput()
 		hasInput = true;
 	}
 
-	if (IsInputAvailable())
+	if (IsErrorAvailable())
 	{
-		cbTextInputStream sout(*GetInputStream());
+		cbTextInputStream serr(*GetErrorStream());
 
 		wxString msg;
-		msg << sout.ReadLine();
+		msg << serr.ReadLine();
 
-		//CodeBlocksEvent event(cbEVT_PIPEDPROCESS_STDOUT, m_Id);
+		//CodeBlocksEvent event(cbEVT_PIPEDPROCESS_STDERR, m_Id);
 		ChameleonProcessEvent event(chEVT_PROCESS_STDERR);
 		event.SetString(msg);
 		event.SetInt(m_Pid);
@@ -246,6 +246,8 @@ bool PipedProcess::HasInput()
 
 		hasInput = true;
 	}
+
+	
 
 	return hasInput;
 }
@@ -259,6 +261,7 @@ void PipedProcess::OnTerminate(int pid, int status)
 	//CodeBlocksEvent event(cbEVT_PIPEDPROCESS_TERMINATED, m_Id);
 	ChameleonProcessEvent event(chEVT_PROCESS_ENDED);
 	event.SetInt(status);
+	event.SetPid(pid);
 	//   	m_Parent->ProcessEvent(event);
 	wxPostEvent(m_Parent, event);
 
@@ -269,7 +272,9 @@ void PipedProcess::OnTerminate(int pid, int status)
 
 void PipedProcess::OnTimer(wxTimerEvent& event)
 {
-	wxWakeUpIdle();
+	//wxWakeUpIdle();
+	while (HasInput())
+		;
 }
 
 void PipedProcess::OnIdle(wxIdleEvent& event)

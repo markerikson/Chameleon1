@@ -14,3 +14,12 @@ ChameleonProcessEvent::ChameleonProcessEvent(wxEventType eventtype)
 {
 	//
 }
+
+ChameleonProcessEvent::ChameleonProcessEvent(const ChameleonProcessEvent& otherEvent)
+: wxEvent(otherEvent)
+{
+	this->SetString(otherEvent.GetString());
+	this->SetInt(otherEvent.GetInt());
+	this->SetPid(otherEvent.GetPid());
+
+}
