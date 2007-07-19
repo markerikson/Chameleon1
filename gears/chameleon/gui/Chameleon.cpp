@@ -532,6 +532,10 @@ void ChameleonWindow::InitializeProgramOptions()
 	{
 		perms->setGlobalEnabled(enabledCode);
 	}
+
+#if wxUSE_DRAG_AND_DROP
+	SetDropTarget(new ChameleonFileDropTarget(this));
+#endif //wxUSE_DRAG_AND_DROP
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -905,6 +909,11 @@ void ChameleonWindow::NewFile()
 	wxString noname = locationPrefix + "<untitled> " + wxString::Format ("%d", m_fileNum);
 	ProjectInfo* singleFileProject = new ProjectInfo();
 	ChameleonEditor* edit = new ChameleonEditor (this, m_debugManager, m_options, singleFileProject, m_book, -1);
+
+#if wxUSE_DRAG_AND_DROP
+	edit->SetDropTarget(new ChameleonFileDropTarget(this));
+#endif
+
 	m_currentEd = edit;
 	m_currentPage = m_book->GetPageCount();
 	m_book->AddPage (edit, noname, true);
@@ -1413,7 +1422,9 @@ void ChameleonWindow::OpenSourceFile (wxArrayString fnames)
 			else
 			{
 				ChameleonEditor *edit = new ChameleonEditor (this, m_debugManager, m_options, proj, m_book, -1);
-
+#if wxUSE_DRAG_AND_DROP
+				edit->SetDropTarget(new ChameleonFileDropTarget(this));
+#endif
 				m_currentEd = edit;
 				m_currentPage = m_book->GetPageCount();
 				m_book->AddPage (m_currentEd, locationPrefix + fileNameNoPath, true);
@@ -3813,7 +3824,7 @@ restartConnection:
 
 void ChameleonWindow::OnCopy()
 {
-	/* HACK!!! 
+	/* HACK !!! 
 	* Okay, here's the problem.  When keyboard shortcuts like CTRL-C are listed in the text
 	* of a menu item, that shortcut is automatically assigned.  But, this means that the menu's
 	* enclosing frame will always capture that shortcut.
@@ -3973,59 +3984,23 @@ void ChameleonWindow::OnPrintSetup()
 void ChameleonWindow::OnHelp()
 {
 	m_helpController->DisplayContents();
-	/*
-	wxTheApp->
-	wxString helpFile = "chameleon.chm";
-	wxFileName helpPath(wxGetCwd(), helpFile);
-	
-	
-	wxString ext = "chm";
-	wxFileType *ft = wxTheMimeTypesManager->GetFileTypeFromExtension(ext);
-	if ( !ft )
-	{
-		return;
-	}
-
-	wxString cmd;
-	bool ok = ft->GetOpenCommand(&cmd,
-		wxFileType::MessageParameters(helpPath.GetFullPath(), _T("")));
-	delete ft;
-	if ( !ok )
-	{
-		return;
-	}
-
-	wxProcess *process = new wxProcess();
-	long pidLast = wxExecute(cmd, wxEXEC_ASYNC, process);
-	if ( !pidLast )
-	{
-		delete process;
-	}
-
-	return;
-	*/
 }
 
 
 
-/*
-void ChameleonWindow::CleanupDropMenu()
+#if wxUSE_DRAG_AND_DROP
+
+bool ChameleonFileDropTarget::OnDropFiles(wxCoord WXUNUSED(x), wxCoord WXUNUSED(y),
+												const wxArrayString& filenames)
 {
-	wxToolBar* tb = GetToolBar();
+	wxCHECK_MSG(m_owner, false, wxT("Invalid drop target"));
+	const size_t count = filenames.GetCount();
+	if (count == 0)
+		return false;
 
-	if(tb == NULL)
-	{
-		return;
-	}
-
-	wxControl* dropControl = tb->FindControl(ID_DEBUG_REMOVEEDITORBREAKPOINT);
-	if(dropControl != NULL)
-	{
-		mmDropMenu* dropMenu = (mmDropMenu*)dropControl;
-		wxMenu* menu = dropMenu->GetChild();
-
-		delete dropMenu;
-		delete menu;
-	}
+	m_owner->SetRemoteMode(false);
+	m_owner->OpenSourceFile(filenames);
+	return true;
 }
-*/
+
+#endif //wxUSE_DRAG_AND_DROP

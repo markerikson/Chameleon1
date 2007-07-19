@@ -18,6 +18,7 @@
 #include "../common/DebugEvent.h"
 #include <wx/fdrepdlg.h>
 #include <wx/treectrl.h>
+#include "wx/dnd.h"
 
 // forward declarations
 
@@ -91,9 +92,11 @@ public:
 	int GetIntVar(int variableName);
 
 	bool IsEnabled(int permission);
-	bool InRemoteMode();
 	bool IsDebugging();
 	bool IsDebuggerPaused();
+
+	bool GetRemoteMode() { return m_remoteMode; }
+	void SetRemoteMode(bool remote) { m_remoteMode = remote; }
 
 	void FocusOnLine(wxString filename, int linenumber, bool showMarker = true, wxString linecontents = wxEmptyString);
 
@@ -303,6 +306,18 @@ class FileNameTreeData : public wxTreeItemData
 public:
 	wxString filename;
 };
+
+
+#if wxUSE_DRAG_AND_DROP
+class  ChameleonFileDropTarget : public wxFileDropTarget
+{
+public:
+	ChameleonFileDropTarget(ChameleonWindow *owner) : m_owner(owner) {}
+	virtual bool OnDropFiles(wxCoord x, wxCoord y, const wxArrayString& filenames);
+
+	ChameleonWindow *m_owner;
+};
+#endif //wxUSE_DRAG_AND_DROP
 
 
 #endif
