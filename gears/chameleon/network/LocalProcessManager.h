@@ -13,7 +13,7 @@ class wxTextOutputStream;
 class PipedProcess;
 
 //WX_DEFINE_ARRAY_PTR(PipedProcess*, PipedProcessArray);
-WX_DEFINE_ARRAY_PTR(ProcessInfo*, ProcessInfoArray);
+//WX_DEFINE_ARRAY_PTR(ProcessInfo*, ProcessInfoArray);
 
 class LocalProcessManager : public wxEvtHandler
 {

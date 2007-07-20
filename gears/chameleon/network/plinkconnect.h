@@ -61,6 +61,7 @@ class PlinkConnect : public wxEvtHandler {
 		bool m_isConnected; // overall Plink-Network status
 		bool m_synchronous;
 		ProcessInfoList m_processes;
+		ProcessInfoArray m_procs;
 
 		bool m_waitingForFingerprint;
 		

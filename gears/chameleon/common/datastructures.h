@@ -295,6 +295,7 @@ typedef struct
 } ProcessInfo;
 
 WX_DECLARE_LIST(ProcessInfo, ProcessInfoList);
+WX_DEFINE_ARRAY(ProcessInfo*, ProcessInfoArray);
 
 enum NetworkStatus
 {
