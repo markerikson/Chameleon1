@@ -200,12 +200,12 @@ void ProjectInfo::AddFileToProject(wxString filename, FileFilterType filterType)
 	filelist->Add(filename);
 	BoolArray* enablelist = SelectBoolArray(filterType);
 	enablelist->Add(true);
-
+/*
 	if(filelist->GetCount() > 1)
 	{
 		SetSingleFile(false);
 	}
-
+*/
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -229,10 +229,12 @@ void ProjectInfo::RemoveFileFromProject(wxString filename, FileFilterType filter
 	BoolArray* enablelist = SelectBoolArray(filterType);
 	enablelist->RemoveAt(index);
 
+/*
 	if(filelist->GetCount() < 2)
 	{
 		SetSingleFile(true);
 	}
+*/
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -418,6 +420,7 @@ FileFilterType ProjectInfo::GetFileType(wxString filename)
 	return fileType;
 }
 
+/*
 bool ProjectInfo::IsSingleFile()
 {
 	int numSourceFiles = m_sourceFiles.Count();
@@ -431,6 +434,7 @@ bool ProjectInfo::IsSingleFile()
 
 	return isSingleFile;
 }
+*/
 
 wxString ProjectInfo::GetExecutableFileName(bool reverseSlashes)
 {

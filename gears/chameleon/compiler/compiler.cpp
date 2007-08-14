@@ -347,7 +347,7 @@ void Compiler::OnProcessTerm(ChameleonProcessEvent& e)
 		RemoveIntermediateFiles();
 	}
 	else {
-		wxLogDebug("Compiler Recieved extranious term event");
+		wxLogDebug("Compiler received extraneous term event: %s", e.GetString());
 		// Probably from the file removal command
 	}
 
@@ -385,7 +385,7 @@ void Compiler::HaltCompiling()
 //////////////////////////////////////////////////////////////////////////////
 void Compiler::OnProcessOut(ChameleonProcessEvent& e)
 {
-	wxLogDebug("Compiler Received: %s", e.GetString());
+	wxLogDebug("Compiler received: %s", e.GetString());
 
 	if(m_isCompiling || m_isLinking) {
 		wxString s = e.GetString();
@@ -404,7 +404,7 @@ void Compiler::OnProcessOut(ChameleonProcessEvent& e)
 		ParseCompilerMessages(s);
 	}
 	else {
-		wxLogDebug("Compiler Recieved Output while not compiling: " + e.GetString());
+		wxLogDebug("Compiler received output while not compiling: " + e.GetString());
 	}
 }
 

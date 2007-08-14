@@ -33,7 +33,7 @@ public:
 	wxArrayString GetNonSources() {return m_nonSourceFiles; }
 	EditorPointerArray GetEditors() { return m_edPointers; }
 	bool IsRemote() { return m_isRemote; }
-	bool IsSingleFile();// { return m_sourceFiles.Count() > 0; }//return m_isSingleFile; }
+	bool IsSingleFile() { return m_isSingleFile; }
 	bool IsCompiled() { return m_isCompiled; }
 	bool IsBeingCompiled() { return m_isBeingCompiled; }
 	bool IsReadOnly() { return m_isReadOnly; }

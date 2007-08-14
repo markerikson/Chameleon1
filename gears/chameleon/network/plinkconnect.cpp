@@ -25,7 +25,7 @@
 	#define new DEBUG_NEW
 #endif
 
-//#define PROCESSLIST
+#define PROCESSLIST
 
 
 #ifdef _PC_INTERNAL_TIMER_ //#ifdef's not allowed inside Event Table
@@ -393,6 +393,7 @@ wxTextOutputStream* PlinkConnect::executeCmd(wxString command, wxEvtHandler* lis
 	ProcessInfo* p = m_procs[m_procs.GetCount() - 1]; 
 #endif
 	
+	wxLogDebug("Executing command.  Process: %x, command: %s", p, command);
 	p->owner = listener;
 	p->isRunSynch = isSynch;
 

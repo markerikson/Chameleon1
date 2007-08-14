@@ -52,8 +52,9 @@ wxString GlobalPermStrings[] = {"Syntax highlighting",
 								"Local mode",
 								"Projects",
 								"Compilation",
-								"Advanced compiler output",
-								"Test permission"};
+								//"Advanced compiler output",
+								//"Test permission"
+								};
 
 //@@@@@@@@@
 //@ BEGIN @
@@ -92,11 +93,6 @@ Permission::Permission(wxString loadAuthCode, wxString loadPermCode)
 
 	permCode = status.to_ulong();
 	authCode = auth.to_ulong();
-
-	if(isEnabled(PERM_ADVANCEDCOMPILE))
-	{
-		enable(PERM_COMPILE);
-	}
 }
 
 //Destructor
@@ -162,11 +158,6 @@ void Permission::enable(int id)
 	{
 		status.set(id);
 		permCode = status.to_ulong();
-
-		if(isEnabled(PERM_ADVANCEDCOMPILE) && !(isEnabled(PERM_COMPILE)))
-		{
-			enable(PERM_COMPILE);
-		}
 	}
 
 }
@@ -185,12 +176,6 @@ void Permission::disable(int id)
 {
 	status.reset(id);
 	permCode = status.to_ulong();
-
-	if(id == PERM_COMPILE)
-	{
-		status.reset(PERM_ADVANCEDCOMPILE);
-		permCode = status.to_ulong();
-	}
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -255,11 +240,6 @@ void Permission::setGlobalEnabled(wxString newEnableCode)
 {
 	newEnableCode.ToLong(&permCode);
 	status = bitset<NUM_MODULES>(permCode);
-
-	if(isEnabled(PERM_ADVANCEDCOMPILE))
-	{
-		enable(PERM_COMPILE);
-	}
 
 	savedPermCode << getGlobalEnabled();
 }

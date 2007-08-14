@@ -240,7 +240,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 	Permission* perms = m_options->GetPerms();
 	m_outputPanel = new CompilerOutputPanel(m_noteTerm, this, ID_COMPILEROUTPUT);
-	m_outputPanel->SetAdvanced(perms->isEnabled(PERM_ADVANCEDCOMPILE));
+	//m_outputPanel->SetAdvanced(perms->isEnabled(PERM_ADVANCEDCOMPILE));
 
 	m_watchPanel = new VariableWatchPanel(m_noteTerm, this, ID_VARWATCHPANEL);
 
@@ -2535,15 +2535,6 @@ void ChameleonWindow::UpdateToolbar()
 		t->AddTool(ID_DISCONNECT, "Disconnect", bmDisconnect, "Disconnect the terminal from the remote server");		
 	}
 
-
-	if(perms->isEnabled(PERM_TEST))
-	{
-		t->AddSeparator();	
-
-		wxBitmap bmTest(button_xpm);
-		t->AddTool(ID_TEST, "Test", bmTest);
-	}
-
 	if(perms->isEnabled(PERM_COMPILE))
 	{
 		t->AddSeparator();
@@ -2640,12 +2631,10 @@ void ChameleonWindow::UpdateTerminalNotebook()
 		m_termContainer->Hide();
 	}
 
-	bool advCompileEnabled = perms->isEnabled(PERM_ADVANCEDCOMPILE);
 	if(perms->isEnabled(PERM_COMPILE))
 	{
 		m_outputPanel->Show();
 		m_noteTerm->AddPage(m_outputPanel, "Compiler Output");
-		m_outputPanel->SetAdvanced(advCompileEnabled);
 	}	
 	else
 	{
