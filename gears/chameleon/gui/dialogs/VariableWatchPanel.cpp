@@ -28,7 +28,28 @@
 #include "VariableWatchPanel.h"
 //#include "AddVariableWatch.h"
 #include "../ChameleonWindow.h"
+#include "../../common/tree.h"
+
 #include "../../common/fixvsbug.h"
+
+
+
+typedef tree_node_<wxString> ParseTreeNode;
+typedef tree<wxString>::iterator PTIterator;
+
+
+int FindCharOutsideQuotes(const wxString& str, wxChar ch);
+int FindCommaPos(const wxString& str);
+void ParseEntry(ParseTree& tree, PTIterator& currentNode, wxString& text);
+void print_tree(const ParseTree& tr, ParseTree::pre_order_iterator it, ParseTree::pre_order_iterator end);
+PTIterator InsertEntry(ParseTree& tree, PTIterator& currentNode, wxString text);
+
+WX_DECLARE_HASH_MAP( ParseTreeNode*,      // type of the keys
+					wxTreeItemId,    // type of the values
+					wxPointerHash,     // hasher
+					wxPointerEqual,   // key equality predicate
+					NodeIdHash); // name of the class
+
 
 
 ////@begin XPM images
@@ -90,6 +111,46 @@ VariableWatchPanel::VariableWatchPanel( wxWindow* parent, wxEvtHandler* mainfram
 	minSize.Set(100, 100);
 
 	m_list->SetMinSize(minSize);
+
+
+	/*
+	int st = 0;
+
+	st |= wxTR_HIDE_ROOT;
+	st |= wxTR_HAS_BUTTONS;
+	st |= wxTR_VRULE;
+	st |= wxTR_HRULE;
+	st |= wxTR_FULL_ROW_HIGHLIGHT;
+
+	m_tree->SetFlag(st);
+	m_tree->AddColumn("Value", 400);
+	m_tree->InsertColumn(0, "Type", 80);
+	m_tree->InsertColumn(0, "Name", 120);
+	//m_tree->AddColumn("Name", 120);
+	//m_tree->AddColumn("Type", 80);
+	
+
+	
+	
+	m_tree->AddRoot("Root");
+	m_tree->SetMainColumn(0);
+	*/
+	
+/*
+	wxTreeItemId root = m_tree->GetRootItem();
+
+	
+	wxTreeItemId first = m_tree->AppendItem(root, "first");
+	wxTreeItemId second = m_tree->AppendItem(root, "second");
+	wxTreeItemId third = m_tree->AppendItem(root, "third");
+	wxTreeItemId fourth = m_tree->AppendItem(root, "fourth");
+
+
+	m_tree->AppendItem(first, "1-1");
+	m_tree->AppendItem(second, "1-2");
+	m_tree->AppendItem(second, "1-3");
+*/
+
 }
 
 /*!
@@ -107,6 +168,10 @@ bool VariableWatchPanel::Create( wxWindow* parent, wxWindowID id, const wxPoint&
     wxPanel::Create( parent, id, pos, size, style );
 
     CreateControls();
+    if (GetSizer())
+    {
+        GetSizer()->SetSizeHints(this);
+    }
     Centre();
 ////@end VariableWatchPanel creation
     return TRUE;
@@ -124,7 +189,7 @@ void VariableWatchPanel::CreateControls()
     wxBoxSizer* itemBoxSizer2 = new wxBoxSizer(wxVERTICAL);
     itemPanel1->SetSizer(itemBoxSizer2);
 
-    m_list = new wxListCtrl( itemPanel1, ID_LISTCTRL, wxDefaultPosition, wxDefaultSize, wxLC_REPORT|wxLC_SINGLE_SEL|wxLC_HRULES|wxSIMPLE_BORDER );
+    m_list = new wxListCtrl( itemPanel1, ID_LISTCTRL, wxDefaultPosition, wxSize(400, 300), wxLC_REPORT|wxLC_SINGLE_SEL|wxLC_HRULES|wxSIMPLE_BORDER );
     itemBoxSizer2->Add(m_list, 1, wxGROW, 5);
 
     wxBoxSizer* itemBoxSizer4 = new wxBoxSizer(wxHORIZONTAL);
@@ -140,6 +205,13 @@ void VariableWatchPanel::CreateControls()
     itemBoxSizer4->Add(itemButton7, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
 ////@end VariableWatchPanel content construction
+
+	/*
+	int style = wxTR_HAS_BUTTONS | wxTR_HIDE_ROOT;// | wxTR_FULL_ROW_HIGHLIGHT | wxTR_SINGLE | wxTR_LINES_AT_ROOT;
+	m_tree = new wxTreeListCtrl(itemNotebook3, ID_TREELIST);//, wxDefaultPosition, wxDefaultSize, style);
+	itemNotebook3->AddPage(m_tree, "Variables (tree)");
+	*/
+
 }
 
 /*!
@@ -227,11 +299,19 @@ void VariableWatchPanel::AddWatch()
 void VariableWatchPanel::AddWatchedVariables(wxDebugEvent debug)
 {	
 	wxArrayString variableNames = debug.GetVariableNames();
+
+	//wxTreeItemId root = m_tree->GetRootItem();
 	
 	for(int i = 0; i < variableNames.size(); i++)
 	{
+		
 		wxString varName = variableNames[i];
 		m_list->InsertItem(m_list->GetItemCount(), varName);
+
+		/*
+		int varCount = m_tree->GetChildrenCount(root);
+		wxTreeItemId item = m_tree->AppendItem(root, varName);
+		*/
 	}
 }
 
@@ -267,7 +347,28 @@ void VariableWatchPanel::RemoveWatch()
 		m_parentEventHandler->AddPendingEvent(dbg);
 
 		m_list->DeleteItem(index);
+
 	}
+
+	/*
+	wxTreeItemId selectedItem = m_tree->GetSelection();
+	if(selectedItem.IsOk())
+	{
+		wxString name = m_tree->GetItemText(selectedItem, 0);
+
+		wxDebugEvent dbg;
+
+		dbg.SetId(ID_DEBUG_REMOVE_WATCH);
+		wxArrayString vars;
+		vars.Add(name);
+		dbg.SetVariableNames(vars);
+		m_parentEventHandler->AddPendingEvent(dbg);
+		
+		m_tree->Delete(selectedItem);
+
+
+	}
+	*/
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -290,18 +391,14 @@ void VariableWatchPanel::UpdateVariableInfo(wxDebugEvent event)
 
 	//m_list->DeleteAllItems();
 
+	wxColour red("red");
+	wxColour black("black");
+
 	wxListItem textColorItem;
-	textColorItem.SetTextColour(wxColour("black"));
+	textColorItem.SetTextColour(black);
 	textColorItem.m_col = 2;
 
-	// reset all variable value text to black
-	for(int i = 0; i < m_list->GetItemCount(); i++)
-	{
-		textColorItem.m_itemId = i;
-		//m_list->SetItem(textColorItem);
-	}
-
-	textColorItem.SetTextColour(wxColour("red"));
+	textColorItem.SetTextColour(red);
 
 	wxListItem retrievalItem;
 	retrievalItem.m_mask = wxLIST_MASK_TEXT;
@@ -326,11 +423,6 @@ void VariableWatchPanel::UpdateVariableInfo(wxDebugEvent event)
 		// found the item's name
 		if(nameLineNum > -1)
 		{
-			//retrievalItem.SetId(nameLineNum);
-			//retrievalItem.m_col = 1;
-			//m_list->GetItem(retrievalItem);
-			//wxString listedType = retrievalItem.m_text;
-
 			m_list->SetItem(nameLineNum, 1, type);
 			retrievalItem.m_itemId = nameLineNum;
 			retrievalItem.m_col = 2;
@@ -340,21 +432,102 @@ void VariableWatchPanel::UpdateVariableInfo(wxDebugEvent event)
 
 			if(listedValue == value)
 			{
-				//retrievalItem.SetTextColour(wxColour("black"));
-				//m_list->SetItem(textColorItem);
-				m_list->SetItemTextColour(nameLineNum, wxColour("black"));
+				m_list->SetItemTextColour(nameLineNum, black);
 			}		
 			else
 			{
 				m_list->SetItem(nameLineNum, 2, value);
-				//retrievalItem.SetTextColour(wxColour("red"));
-				m_list->SetItemTextColour(nameLineNum, wxColour("red"));
-				
+				m_list->SetItemTextColour(nameLineNum, red);
+			}
+		}
+
+		/*
+		wxTreeItemId root = m_tree->GetRootItem();
+		wxTreeItemIdValue cookie;
+		wxTreeItemId firstChild = m_tree->GetFirstChild(root, cookie);
+
+		wxTreeItemId item = m_tree->FindItem(root, name, wxTL_MODE_NAV_LEVEL | wxTL_MODE_FIND_EXACT);
+
+		if(item.IsOk())
+		{
+			m_tree->SetItemText(item, 1, type);
+
+			wxString currentValue = m_tree->GetItemText(item, 2);
+
+			if(currentValue == value)
+			{
+				m_tree->SetItemTextColour(item, black);
+			}
+			else
+			{
+				m_tree->SetItemText(item, 2, value);
+				m_tree->SetItemTextColour(item, red);
 			}
 
+			int braceOpenPos = FindCharOutsideQuotes(value, _T('{'));
+
+			if(braceOpenPos > -1)
+			{
+				ParseTree tree;
+				PTIterator top = tree.begin();
+				PTIterator first = tree.insert(top, name);
+
+				wxString copiedValue = value;
+				ParseEntry(tree, first, copiedValue);
+
+				DisplayParsedValue(item, tree);
+			}
+		}
+		*/
+	}
+}
+
+void VariableWatchPanel::DisplayParsedValue(wxTreeItemId currentNodeId, ParseTree& tree)
+{
+
+	if(m_tree->GetChildrenCount(currentNodeId) > 0)
+	{
+		// assume we have already inserted everything
+	}
+	else
+	{
+		// insert stuff
+		ParseTree::breadth_first_iterator it = tree.begin_breadth_first();
+		
+		ParseTree::breadth_first_iterator end = tree.end_breadth_first();
+
+		NodeIdHash addedNodes;
+
+		ParseTreeNode* parentNode = it.node;
+		ParseTreeNode* rootNode = parentNode;
+		ParseTreeNode* previousNode = parentNode;
+		int oldDepth = tree.depth(it);
+		wxTreeItemId currentParentId = currentNodeId;
+
+		it++;
+
+		while(it!=end) 
+		{
+			int currentDepth = tree.depth(it);
+
+			if(it.node->parent != parentNode && it.node->parent != rootNode)
+			{
+				parentNode = it.node->parent;
+				currentParentId = addedNodes[parentNode];
+			}
+
+			wxString data = it.node->data;
+			ParseTreeNode* currentNode = it.node;
+
 			
+			wxTreeItemId addedId = m_tree->AppendItem(currentParentId, data);
+			addedNodes[it.node] = addedId;
+
+			//it.node->parent->data
+			++it;
 		}
 	}
+	
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -371,6 +544,28 @@ void VariableWatchPanel::ClearVariableValues()
 	{
 		m_list->SetItem(i, 2, wxEmptyString);
 	}
+
+	/*
+	wxTreeItemId root = m_tree->GetRootItem();
+
+	int numItems = m_tree->GetChildrenCount(root, false);
+
+	wxTreeItemIdValue cookie;
+	wxTreeItemId item = m_tree->GetFirstChild (root, cookie);
+	while (item.IsOk()) 
+	{
+		m_tree->SetItemText(item, 2, wxEmptyString);
+
+		int numChildren = m_tree->GetChildrenCount(item);
+
+		if(numChildren > 0)
+		{
+			m_tree->DeleteChildren(item);
+		}
+
+		item = m_tree->GetNextSibling (item);
+	}
+	*/
 }
 
 /*!
@@ -400,11 +595,28 @@ void VariableWatchPanel::OnClearallwatchesClick( wxCommandEvent& event )
 	selectionItem.m_state = wxLIST_STATE_SELECTED;
 	selectionItem.SetId(0);
 
+
 	for(int i = 0; i < numItems; i++)
 	{
 		m_list->SetItem(selectionItem);
 		RemoveWatch();
 	}
+
+	/*
+	wxTreeItemId root = m_tree->GetRootItem();
+	numItems = m_tree->GetChildrenCount(root,false);
+
+	for(int i = 0; i < numItems; i++)
+	{
+		wxTreeItemIdValue cookie;
+		wxTreeItemId child = m_tree->GetFirstChild(root, cookie);
+
+		m_tree->SelectItem(child);
+		RemoveWatch();
+	}
+	*/
+
+
 }
 
 
@@ -455,3 +667,267 @@ void VariableWatchPanel::OnSize( wxSizeEvent& event )
 
 }
 
+void VariableWatchPanel::DebuggerExited()
+{
+	ClearVariableValues();
+}
+
+void VariableWatchPanel::TestParsing()
+{
+	ParseTree tree;
+	PTIterator top = tree.begin();
+	PTIterator first = tree.insert(top, "sparky");
+
+	wxTreeItemId item = m_tree->GetRootItem();
+
+	//wxString copiedValue = "{age = 12, numbers = {1, 2, 4, 8, 16, 32}, name = {static npos = 4294967295, _M_dataplus = {<allocator<char>> = {<new_allocator<char>> = {<No data fields>}, <No data fields>}, _M_p = \"Sparky the Wonder Dog\"}}}";
+	
+	wxString testString = "$1 = {{age = 3, name = {static npos = 4294967295,_M_dataplus = {<allocator<char>> = {<new_allocator<char>> = {<No data fields>}, <No data fields>}, _M_p = 0x3210c4 \"Fred\"}}, sparky = 2003325944}, {age = 4, name = {static npos = 4294967295,_M_dataplus = {<allocator<char>> = {<new_allocator<char>> = {<No data fields>}, <No data fields>}, _M_p = 0x3210f4 \"George\"}}, sparky = 2003442721}, {age = 5, name = {static npos = 4294967295,_M_dataplus = {<allocator<char>> = {<new_allocator<char>> = {<No data fields>}, <No data fields>}, _M_p = 0x321124 \"Bob\"}}, sparky = 3280624}}";
+	
+	ParseEntry(tree, first, testString);
+
+	DisplayParsedValue(item, tree);
+}
+
+
+void ParseEntry(ParseTree& tree, PTIterator& currentNode, wxString& text)
+{
+	if (text.IsEmpty())
+		return;
+
+	while (1)
+	{
+		// trim the string from left and right
+		text.Trim(true);
+		text.Trim(false);
+
+		// find position of '{', '}' and ',' ***outside*** of any quotes.
+		// decide which is nearer to the start
+		int braceOpenPos = FindCharOutsideQuotes(text, _T('{'));
+		if (braceOpenPos == -1)    braceOpenPos = 0xFFFFFE;
+		int braceClosePos = FindCharOutsideQuotes(text, _T('}'));
+		if (braceClosePos == -1) braceClosePos = 0xFFFFFE;
+		int commaPos = FindCommaPos(text);
+		if (commaPos == -1) commaPos = 0xFFFFFE;
+		int pos = std::min(commaPos, std::min(braceOpenPos, braceClosePos));
+
+		if (pos == 0xFFFFFE)
+		{
+			// no comma, opening or closing brace
+			if (text.Right(3).Matches(_T(" = ")))
+				text.Truncate(text.Length() - 3);
+			if (!text.IsEmpty())
+			{
+				//entry.AddChild(text, watch);
+				tree.append_child(currentNode, text);
+				text.Clear();
+			}
+			break;
+		}
+		else
+		{
+			// display array on a single line?
+			// normal (multiple lines) display is taken care below, with array indexing
+
+			/*
+			if (watch &&
+			watch->is_array &&
+			braceOpenPos != 0xFFFFFE &&
+			braceClosePos != 0xFFFFFE)
+			{
+				wxString tmp = text.Left(braceClosePos + 1);
+				// if more than one opening/closing brace, then it's a complex array so
+				// ignore single-line
+				if (text.Freq(_T('{')) == 1 && text.Freq(_T('}')) == 1)
+				{
+					// array on single line for up to 8 (by default) elements
+					// if more elements, fall through to the multi-line display
+					int commas = 8;
+					if (tmp.Freq(_T(',')) < commas)
+					{
+						// array watch type
+						tmp[braceOpenPos] = _T('[');
+						tmp.Last() = _T(']');
+						entry.AddChild(tmp, watch);
+						text.Remove(0, braceClosePos + 1);
+						continue;
+					}
+				}
+			}
+			*/
+
+			wxString tmp = text.Left(pos);
+			//WatchTreeEntry* newchild = 0;
+			PTIterator newChild = tree.end();
+
+			if (tmp.Right(3).Matches(_T(" = ")))
+				tmp.Truncate(tmp.Length() - 3); // remove " = " if last in string
+			if (!tmp.IsEmpty())
+			{
+				// take array indexing into account (if applicable)
+				//if (array_index != -1)
+				//	tmp.Prepend(wxString::Format(_T("[%d]: "), array_index++));
+
+				//newchild = &entry.AddChild(tmp, watch);
+				newChild = tree.append_child(currentNode, tmp);
+			}
+			text.Remove(0, pos + 1);
+
+			if (pos == braceOpenPos)
+			{
+				if (newChild == tree.end())
+				{
+					newChild = currentNode;
+				}
+
+				//ParseEntry(*newchild, watch, text, array_index); // proceed one level deeper
+				ParseEntry(tree, newChild, text);
+
+			}
+			else if (pos == braceClosePos)
+			{
+				break; // return one level up
+			}
+		}
+	}
+}
+
+int FindCharOutsideQuotes(const wxString& str, wxChar ch)
+{
+	int len = str.Length();
+	int i = 0;
+	bool inSingleQuotes = false;
+	bool inDoubleQuotes = false;
+	wxChar lastChar = _T('\0');
+	while (i < len)
+	{
+		wxChar currChar = str.GetChar(i);
+
+		// did we find the char outside of any quotes?
+		if (!inSingleQuotes && !inDoubleQuotes && currChar == ch)
+			return i;
+
+		// double quotes (not escaped)
+		if (currChar == _T('"') && lastChar != _T('\\'))
+		{
+			// if not in single quotes, toggle the flag
+			if (!inSingleQuotes)
+				inDoubleQuotes = !inDoubleQuotes;
+		}
+		// single quotes (not escaped)
+		else if (currChar == _T('\'') && lastChar != _T('\\'))
+		{
+			// if not in double quotes, toggle the flag
+			if (!inDoubleQuotes)
+				inSingleQuotes = !inSingleQuotes;
+		}
+		// don't be fooled by double-escape
+		else if (currChar == _T('\\') && lastChar == _T('\\'))
+		{
+			// this will be assigned to lastChar
+			// so it's not an escape char
+			currChar = _T('\0');
+		}
+
+		lastChar = currChar;
+		++i;
+	}
+	return -1;
+}
+
+int FindCommaPos(const wxString& str)
+{
+	// comma is a special case because it separates the fields
+	// but it can also appear in a function/template signature, where
+	// we shouldn't treat it as a field separator
+
+	// what we 'll do now, is decide if the comma is inside
+	// a function signature.
+	// we 'll do it by counting the opening and closing parenthesis/angled-brackets
+	// *up to* the comma.
+	// if they 're equal, it's a field separator.
+	// if they 're not, it's in a function signature
+	// ;)
+
+	int len = str.Length();
+	int i = 0;
+	int parCount = 0;
+	int braCount = 0;
+	bool inQuotes = false;
+	while (i < len)
+	{
+		wxChar ch = str.GetChar(i);
+		switch (ch)
+		{
+		case _T('('):
+			++parCount; // increment on opening parenthesis
+			break;
+
+		case _T(')'):
+			--parCount; // decrement on closing parenthesis
+			break;
+
+		case _T('<'):
+			++braCount; // increment on opening angle bracket
+			break;
+
+		case _T('>'):
+			--braCount; // decrement on closing angle bracket
+			break;
+
+		case _T('"'):
+			// fall through
+		case _T('\''):
+			inQuotes = !inQuotes; // toggle inQuotes flag
+			break;
+
+		default:
+			break;
+		}
+
+		// if it's not inside quotes *and* we have parCount == 0, it's a field separator
+		if (!inQuotes && parCount == 0 && braCount == 0 && ch == _T(','))
+			return i;
+		++i;
+	}
+	return -1;
+}
+
+/*
+void print_tree(const ParseTree& tr, ParseTree::pre_order_iterator it, ParseTree::pre_order_iterator end)
+{
+	if(!tr.is_valid(it))
+	{
+		return;
+	}
+
+	int rootdepth=tr.depth(it);
+	std::cout << "-----" << std::endl;
+
+	while(it!=end) 
+	{
+		for(int i=0; i<tr.depth(it)-rootdepth; ++i) 
+			std::cout << "  ";
+		std::cout << (*it) << std::endl << std::flush;
+		++it;
+	}
+
+	std::cout << "-----" << std::endl;
+}
+*/
+
+PTIterator InsertEntry(ParseTree& tree, PTIterator& currentNode, wxString& text)
+{
+	PTIterator result = tree.end();
+
+	if(currentNode == tree.begin())
+	{
+		result = tree.insert(currentNode, text);
+	}
+	else
+	{
+		result = tree.append_child(currentNode, text);
+	}
+
+	return result;
+}

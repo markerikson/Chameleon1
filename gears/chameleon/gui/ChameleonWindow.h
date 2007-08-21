@@ -116,6 +116,7 @@ private:
 	void OnMenuEvent(wxCommandEvent &event);
 
 	void OnHelp();
+	void OnAbout();
 	void OnPrintSetup();
 	void OnPrintPreview();
 	void OnPrintPage();

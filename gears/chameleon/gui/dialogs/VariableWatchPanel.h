@@ -23,6 +23,8 @@
 ////@begin includes
 #include "wx/listctrl.h"
 ////@end includes
+#include "treelistctrl.h"
+#include "../../common/tree.h"
 
 //#include  <wx/dynarray.h>
 #include "../../common/datastructures.h"
@@ -36,6 +38,7 @@
 class wxListCtrl;
 ////@end forward declarations
 class ChameleonWindow;
+typedef tree<wxString> ParseTree;
 
 /*!
  * Control identifiers
@@ -53,6 +56,7 @@ class ChameleonWindow;
 #define SYMBOL_VARIABLEWATCHPANEL_SIZE wxDefaultSize
 #define SYMBOL_VARIABLEWATCHPANEL_POSITION wxDefaultPosition
 ////@end control identifiers
+#define ID_TREELIST 10099
 
 /*!
  * Compatibility
@@ -113,15 +117,21 @@ public:
 	void UpdateVariableInfo(wxDebugEvent event);
     /// Should we show tooltips?
     static bool ShowToolTips();
+	
+	
 	void AddWatchedVariables(wxDebugEvent debug);
+	void DebuggerExited();
+	void DisplayParsedValue(wxTreeItemId currentNode, ParseTree& tree);
 
 	void SetEventHandler(wxEvtHandler* eventHandler) { m_parentEventHandler = eventHandler; }
 
-
+	void TestParsing();
 
 ////@begin VariableWatchPanel member variables
     wxListCtrl* m_list;
 ////@end VariableWatchPanel member variables
+
+	wxTreeListCtrl* m_tree;
 
 private:
 	wxEvtHandler* m_parentEventHandler;

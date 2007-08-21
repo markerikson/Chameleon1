@@ -63,7 +63,14 @@ void DebugManager::OnDebugCommand( int eventID, ProjectInfo* project, ChameleonE
 		if(debugProject->IsRemote())
 		{
 			wxString tty = m_debugTerminal->ConnectForDebug();
-			debugEvent.SetTTYString("/dev/" + tty);
+
+			if(!tty.StartsWith("/dev"))
+			{
+				wxFileName ttyfile("/dev/");
+				ttyfile.AppendDir(tty);
+				tty = ttyfile.GetFullPath(wxPATH_UNIX);
+			}
+			debugEvent.SetTTYString(tty);
 		}
 
 		debugEvent.SetFileBreakpoints(bphash);
@@ -86,6 +93,8 @@ void DebugManager::OnDebugEvent( wxDebugEvent &event )
 
 			wxLogDebug("Debugger exit");
 			m_debugTerminal->Disconnect(false);
+
+			m_watchPanel->DebuggerExited();
 			break;
 		}
 		case ID_DEBUG_BREAKPOINT:

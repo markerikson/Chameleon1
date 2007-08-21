@@ -1319,7 +1319,7 @@ bool Debugger::ParseVariableTypes( wxString &fromGDB )
 	int lineBreak = 0, endQuote = 0, fromWatchIndex = 0, ampIdx = -1;
 	int promptIndex = -1;
 	bool singleLineItem = false;
-	wxRegEx reTypeFinder = "type = (\\(*[[:alnum:]]+([[:blank:]]|\\*|&)*\\)*)";
+	wxRegEx reTypeFinder = "type = (\\(*([[:alnum:]]|_)+([[:blank:]]|\\*|&|\\[|]|[[:digit:]])*\\)*)";//"type = (\\(*[[:alnum:]]+([[:blank:]]|\\*|&)*\\)*)";
 
 	wxArrayString outputLines = wxStringTokenize(fromGDB, "`");
 

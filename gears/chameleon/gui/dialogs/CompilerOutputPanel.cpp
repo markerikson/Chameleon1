@@ -68,7 +68,7 @@ CompilerOutputPanel::CompilerOutputPanel( wxWindow* parent, ChameleonWindow* mai
     Create(parent, id, caption, pos, size, style);
 
 	
-	SetAdvanced(false);
+	SetAdvanced(true);
 
 	wxFont monospacedFont(10, wxMODERN, wxNORMAL, wxNORMAL, false, "Courier New");
 	m_textbox->SetFont(monospacedFont);
@@ -97,8 +97,8 @@ bool CompilerOutputPanel::Create( wxWindow* parent, wxWindowID id, const wxStrin
 {
 ////@begin CompilerOutputPanel member initialisation
     m_sizer = NULL;
-    m_textbox = NULL;
     m_grid = NULL;
+    m_textbox = NULL;
 ////@end CompilerOutputPanel member initialisation
 
 ////@begin CompilerOutputPanel creation
@@ -106,8 +106,10 @@ bool CompilerOutputPanel::Create( wxWindow* parent, wxWindowID id, const wxStrin
     wxPanel::Create( parent, id, pos, size, style );
 
     CreateControls();
-    GetSizer()->Fit(this);
-    GetSizer()->SetSizeHints(this);
+    if (GetSizer())
+    {
+        GetSizer()->SetSizeHints(this);
+    }
     Centre();
 ////@end CompilerOutputPanel creation
     return TRUE;
@@ -120,26 +122,21 @@ bool CompilerOutputPanel::Create( wxWindow* parent, wxWindowID id, const wxStrin
 void CompilerOutputPanel::CreateControls()
 {    
 ////@begin CompilerOutputPanel content construction
+    CompilerOutputPanel* itemPanel1 = this;
 
-    CompilerOutputPanel* item1 = this;
+    m_sizer = new wxBoxSizer(wxVERTICAL);
+    itemPanel1->SetSizer(m_sizer);
 
-    wxBoxSizer* item2 = new wxBoxSizer(wxVERTICAL);
-    m_sizer = item2;
-    item1->SetSizer(item2);
-    item1->SetAutoLayout(TRUE);
+    m_grid = new wxGrid( itemPanel1, ID_COMPILERGRID, wxDefaultPosition, wxSize(200, 150), wxSUNKEN_BORDER|wxHSCROLL|wxVSCROLL );
+    m_grid->SetDefaultColSize(80);
+    m_grid->SetDefaultRowSize(20);
+    m_grid->SetColLabelSize(20);
+    m_grid->SetRowLabelSize(0);
+    m_grid->CreateGrid(1, 3, wxGrid::wxGridSelectRows);
+    m_sizer->Add(m_grid, 1, wxGROW|wxALL, 5);
 
-    wxTextCtrl* item3 = new wxTextCtrl( item1, ID_COMPILERTEXT, _T(""), wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxTE_READONLY );
-    m_textbox = item3;
-    item2->Add(item3, 1, wxGROW|wxALL, 5);
-
-    wxGrid* item4 = new wxGrid( item1, ID_COMPILERGRID, wxDefaultPosition, wxSize(200, 150), wxSUNKEN_BORDER );
-    m_grid = item4;
-    item4->SetDefaultColSize(80);
-    item4->SetDefaultRowSize(20);
-    item4->SetColLabelSize(20);
-    item4->SetRowLabelSize(0);
-    item4->CreateGrid(1, 3, wxGrid::wxGridSelectRows);
-    item2->Add(item4, 1, wxGROW|wxALL, 5);
+    m_textbox = new wxTextCtrl( itemPanel1, ID_COMPILERTEXT, _T(""), wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxTE_READONLY );
+    m_sizer->Add(m_textbox, 1, wxGROW|wxALL, 5);
 
 ////@end CompilerOutputPanel content construction
 }
@@ -187,6 +184,7 @@ void CompilerOutputPanel::SetAdvanced(bool advanced)
 {
 	m_isAdvanced = advanced;
 
+	
 	m_sizer->Detach(m_grid);
 	m_sizer->Detach(m_textbox);
 
@@ -203,6 +201,7 @@ void CompilerOutputPanel::SetAdvanced(bool advanced)
 		m_textbox->Show();
 	}
 	m_sizer->Layout();
+	
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -406,4 +405,30 @@ void CompilerOutputPanel::SetFocus()
 		m_textbox->SetFocus();
 		m_textbox->Refresh();
 	}
+}
+
+/*!
+ * Get bitmap resources
+ */
+
+wxBitmap CompilerOutputPanel::GetBitmapResource( const wxString& name )
+{
+    // Bitmap retrieval
+////@begin CompilerOutputPanel bitmap retrieval
+    wxUnusedVar(name);
+    return wxNullBitmap;
+////@end CompilerOutputPanel bitmap retrieval
+}
+
+/*!
+ * Get icon resources
+ */
+
+wxIcon CompilerOutputPanel::GetIconResource( const wxString& name )
+{
+    // Icon retrieval
+////@begin CompilerOutputPanel icon retrieval
+    wxUnusedVar(name);
+    return wxNullIcon;
+////@end CompilerOutputPanel icon retrieval
 }

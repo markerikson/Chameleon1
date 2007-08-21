@@ -337,6 +337,7 @@ void Compiler::OnProcessTerm(ChameleonProcessEvent& e)
 			m_currProj->SetCompiled(true);
 			m_currProj->SetExecutableName(m_intermediateFiles.Last());
 			e.SetFile(m_intermediateFiles.Last());
+			e.SetRemoteFile(m_currProj->IsRemote());
 		}
 
 		m_intermediateFiles.RemoveAt(m_intermediateFiles.Count() - 1);

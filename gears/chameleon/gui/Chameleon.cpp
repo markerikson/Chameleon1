@@ -737,8 +737,7 @@ void ChameleonWindow::OnMenuEvent(wxCommandEvent &event)
 
 		case ID_ABOUT:
 		{
-			AboutChameleonDialog acd(this);
-			acd.ShowModal();
+			OnAbout();
 			break;
 		}
 		
@@ -2634,6 +2633,7 @@ void ChameleonWindow::UpdateTerminalNotebook()
 	if(perms->isEnabled(PERM_COMPILE))
 	{
 		m_outputPanel->Show();
+		m_outputPanel->SetAdvanced(true);
 		m_noteTerm->AddPage(m_outputPanel, "Compiler Output");
 	}	
 	else
@@ -3973,6 +3973,13 @@ void ChameleonWindow::OnPrintSetup()
 void ChameleonWindow::OnHelp()
 {
 	m_helpController->DisplayContents();
+}
+
+void ChameleonWindow::OnAbout()
+{
+	AboutChameleonDialog acd(this);
+	acd.ShowModal();
+	//m_watchPanel->TestParsing();
 }
 
 

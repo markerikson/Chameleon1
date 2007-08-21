@@ -127,7 +127,7 @@ wxString wxSSH::ConnectForDebug()
 	Refresh();
 
 	// Start the new Process
-	m_plinkStdIn = m_networking->StartRemoteCommand("who am i && sleep 24h || echo \"CHdEBUGGER-CONNECT\"", this);
+	m_plinkStdIn = m_networking->StartRemoteCommand("tty && sleep 24h || echo \"CHdEBUGGER-CONNECT\"", this);
 	if(m_plinkStdIn != NULL) {
 		m_connected = true;
 		m_inputBuffer = "";
@@ -135,13 +135,15 @@ wxString wxSSH::ConnectForDebug()
 	}
 
 	// Synchronous:
-	wxRegEx reParseTTY(".+?\\s+(.+?)\\s+\\w{3}\\s+\\d+\\s+\\d+:\\d+\\s", wxRE_ADVANCED);
+	//wxRegEx reParseTTY(".+?\\s+(.+?)\\s+\\w{3}\\s+\\d+\\s+\\d+:\\d+\\s", wxRE_ADVANCED);
+
+	wxRegEx reParseTTY("/([[:alnum:]]|/|_)+", wxRE_ADVANCED);
 	while(!reParseTTY.Matches(m_inputBuffer) && 
 		!m_inputBuffer.Contains("CHdEBUGGER-CONNECT")) {
 		wxSafeYield(); // yes, mark probably won't like this, but darn it's simple, and works
 	}
 
-	wxString tty = reParseTTY.GetMatch(m_inputBuffer, 1); // empty string is return if it fails
+	wxString tty = reParseTTY.GetMatch(m_inputBuffer, 0); // empty string is return if it fails
 
 	m_inputBuffer = "";
 	m_startingDebugConnection = false;

@@ -21,7 +21,6 @@
  */
 
 ////@begin includes
-#include "wx/wx.h"
 #include "wx/grid.h"
 ////@end includes
 
@@ -40,13 +39,13 @@ class wxGrid;
 
 ////@begin control identifiers
 #define ID_DIALOG 10000
-#define SYMBOL_COMPILEROUTPUTPANEL_STYLE wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX
+#define ID_COMPILERGRID 10002
+#define ID_COMPILERTEXT 10001
+#define SYMBOL_COMPILEROUTPUTPANEL_STYLE wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX|wxDIALOG_MODAL
 #define SYMBOL_COMPILEROUTPUTPANEL_TITLE _("CompilerOutputPanel")
 #define SYMBOL_COMPILEROUTPUTPANEL_IDNAME ID_DIALOG
 #define SYMBOL_COMPILEROUTPUTPANEL_SIZE wxSize(400, 300)
-#define SYMBOL_COMPILEROUTPUTPANEL_POSITION wxPoint(0, 0)
-#define ID_COMPILERTEXT 10001
-#define ID_COMPILERGRID 10002
+#define SYMBOL_COMPILEROUTPUTPANEL_POSITION wxDefaultPosition
 ////@end control identifiers
 
 /*!
@@ -87,6 +86,11 @@ public:
 
 ////@begin CompilerOutputPanel member function declarations
 
+    /// Retrieves bitmap resources
+    wxBitmap GetBitmapResource( const wxString& name );
+
+    /// Retrieves icon resources
+    wxIcon GetIconResource( const wxString& name );
 ////@end CompilerOutputPanel member function declarations
 
 	virtual void SetFocus();
@@ -108,8 +112,8 @@ public:
 
 ////@begin CompilerOutputPanel member variables
     wxBoxSizer* m_sizer;
-    wxTextCtrl* m_textbox;
     wxGrid* m_grid;
+    wxTextCtrl* m_textbox;
 ////@end CompilerOutputPanel member variables
 
 	ChameleonWindow* m_mainFrame;

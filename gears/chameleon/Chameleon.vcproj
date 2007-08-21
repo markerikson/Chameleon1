@@ -233,6 +233,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\gui\dialogs\treelistctrl.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\gui\dialogs\VariableWatchPanel.cpp"
 					>
 				</File>
@@ -419,6 +423,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\gui\dialogs\treelistctrl.h"
+					>
+				</File>
+				<File
 					RelativePath=".\gui\dialogs\VariableWatchPanel.h"
 					>
 				</File>
@@ -520,6 +528,18 @@
 				</File>
 				<File
 					RelativePath=".\common\ProjectInfo.h"
+					>
+				</File>
+				<File
+					RelativePath=".\common\tree.h"
+					>
+				</File>
+				<File
+					RelativePath=".\common\tree_msvc.h"
+					>
+				</File>
+				<File
+					RelativePath=".\common\tree_util.h"
 					>
 				</File>
 				<File
