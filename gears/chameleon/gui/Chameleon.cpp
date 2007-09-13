@@ -1404,9 +1404,11 @@ void ChameleonWindow::OpenSourceFile (wxArrayString fnames)
 				proj = new ProjectInfo();
 				proj->SetRemote(m_remoteMode);
 
+				/*
 				wxString fullFileName = newFileName.GetFullPath();
 				FileFilterType filterType = proj->GetFileType(fullFileName);
 				proj->AddFileToProject(fullFileName, filterType);
+				*/
 			}
 			
 			// current buffer is empty and untouched, so load the file into it
@@ -2992,6 +2994,14 @@ void ChameleonWindow::AddFileToProject()
 void ChameleonWindow::OnTreeItemActivated(wxTreeEvent &event)
 {
 	wxTreeItemId item = event.GetItem();
+
+	if(item == m_projectFileFolders[0] 
+		|| item == m_projectFileFolders[1]
+		|| item == m_projectFileFolders[2]
+		|| item == m_projectFileFolders[3])
+	{
+		return;
+	}
 
 	wxTreeItemId rootItem = m_projectTree->GetRootItem();
 

@@ -87,6 +87,8 @@ void Compiler::CompileProject(ProjectInfo* proj, wxEvtHandler* h)
 	m_currFileNum = 0;
 	m_compilingStatus = CR_OK; // default
 
+
+	m_intermediateFiles.Clear();
 	StartNextFile();
 }
 
