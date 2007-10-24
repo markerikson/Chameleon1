@@ -4,14 +4,14 @@ Full-text search=Yes
 Contents file=Chameleon.hhc
 Compiled file=Chameleon.chm
 Default Window=Help
-Default topic=um-welcome.htm
+Default topic=um-intro.htm
 Language=0x809 English (United Kingdom)
 Default Font=MS Sans Serif,8,0
 Index file=Chameleon.hhk
 Title=Chameleon
 
 [WINDOWS]
-Help=,"Chameleon.hhc","Chameleon.hhk","um-welcome.htm",,,,,,0x2420,,0x380e,,,,,0,,,
+Help=,"Chameleon.hhc","Chameleon.hhk","um-intro.htm",,,,,,0x2420,,0x380e,,,,,0,,,
 
 [FILES]
 um-welcome.htm

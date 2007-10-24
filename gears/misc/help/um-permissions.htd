@@ -9,7 +9,7 @@
   <p>The Permissions module couples with the Professor program as one of the prime reasons this IDE is named Chameleon.  This module, when coupled with a number generated from the Professor Program, enables ('shows') or disables ('hides') various features of the Chameleon IDE.  This module is also dual-layered.  When you type in an authorization code, things are not automatically "shown".  Instead, you are given the items your professor enabled, and they are listed with a checkbox (layer one).  To show them, make sure the checkbox has a check in it, and click "OK" and the item will appear (layer two).  Otherwise they will remain hidden.</p>
 
   <h3><a name="purpose">Purpose</a></h3>
-  <p class=pindent>The purpose of this module is to allow the professor to selectively enable more advanced features of the IDE, allowing the students to become familiar with the new features as they need them.  Overall, this is something that you as a studen't don't need to worry about that much - your professor will handle most stuff relating to this.</p>
+  <p class=pindent>The purpose of this module is to allow the professor to selectively enable more advanced features of the IDE, allowing the students to become familiar with the new features as they need them.  Overall, this is something that you as a student don't need to worry about that much - your professor will handle most stuff relating to this.</p>
 
 </body>
 </html>
