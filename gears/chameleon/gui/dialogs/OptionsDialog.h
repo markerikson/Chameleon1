@@ -57,6 +57,7 @@ class ChameleonWindow;
 #define ID_TEXTMINGWPATH 10014
 #define ID_BTNFINDMINGW 10020
 #define ID_BUTTON1 10021
+#define ID_CHECKBOX1 10023
 #define ID_PANELMISC 10016
 #define ID_PRINTSTYLE 10017
 #define ID_PRINTLINENUMBERS 10013
@@ -180,6 +181,7 @@ public:
     wxTextCtrl* m_password1;
     wxTextCtrl* m_password2;
     wxTextCtrl* m_txtMingwPath;
+    wxCheckBox* m_chkShowCompileCommands;
     wxComboBox* m_printStyle;
     wxCheckBox* m_cbPrintLineNumbers;
     wxCheckBox* m_showToolbarText;

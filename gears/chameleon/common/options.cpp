@@ -124,6 +124,11 @@ void Options::SetShowToolbarText(bool useText)
 	m_showToolbarText = useText;
 }
 
+void Options::SetShowCompileCommands(bool showCommands)
+{
+	m_showCompileCommands = showCommands;
+}
+
 void Options::SetTerminalHistorySize(int size)
 {
 	m_terminalSize = size;

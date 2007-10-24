@@ -20,6 +20,7 @@ class CompilerEvent : public wxEvent
 		CompileResult GetResult() { return m_tri; }
 		wxString GetMessage() { return m_message; }
 		wxString GetGCCOutput() { return m_output; }
+		wxString GetCommandLine() { return m_commandLine; }
 		bool IsRemoteFile() { return m_isRemoteFile; }
 
 		void SetFile(wxFileName file) { m_file = file; }
@@ -27,6 +28,7 @@ class CompilerEvent : public wxEvent
 		void SetResult(CompileResult t) { m_tri = t; }
 		void SetMessage(wxString s) { m_message = s; }
 		void SetGCCOutput(wxString s) { m_output = s; }
+		void SetCommandLine(wxString s) { m_commandLine = s; }
 		void SetRemoteFile(bool remoteFile) { m_isRemoteFile = remoteFile; }
 
 		virtual wxEvent *Clone() const { return new CompilerEvent(*this); }
@@ -38,6 +40,7 @@ class CompilerEvent : public wxEvent
 		int m_num;
 		wxString m_message;
 		wxString m_output;
+		wxString m_commandLine;
 		bool m_isRemoteFile;
 
 };

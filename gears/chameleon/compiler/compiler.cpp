@@ -156,6 +156,7 @@ void Compiler::StartNextFile()
 	CompilerEvent e(chEVT_COMPILER_START);
 	e.SetRemoteFile(isRemote);
 	e.SetFile(inFile);
+	e.SetCommandLine(cmd);
 	AddPendingEvent(e);
 
 	m_currFileNum++; // increment file counter

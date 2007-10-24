@@ -59,6 +59,7 @@ class wxGrid;
 class CompilerEvent;
 class wxGridEvent;
 class ChameleonWindow;
+class Options;
 
 /*!
  * CompilerOutputPanel class declaration
@@ -72,7 +73,7 @@ class CompilerOutputPanel: public wxPanel
 public:
     /// Constructors
     CompilerOutputPanel( );
-    CompilerOutputPanel( wxWindow* parent, ChameleonWindow* mainFrame, wxWindowID id = SYMBOL_COMPILEROUTPUTPANEL_IDNAME, const wxString& caption = SYMBOL_COMPILEROUTPUTPANEL_TITLE, const wxPoint& pos = SYMBOL_COMPILEROUTPUTPANEL_POSITION, const wxSize& size = SYMBOL_COMPILEROUTPUTPANEL_SIZE, long style = SYMBOL_COMPILEROUTPUTPANEL_STYLE );
+    CompilerOutputPanel( wxWindow* parent, ChameleonWindow* mainFrame, Options* options, wxWindowID id = SYMBOL_COMPILEROUTPUTPANEL_IDNAME, const wxString& caption = SYMBOL_COMPILEROUTPUTPANEL_TITLE, const wxPoint& pos = SYMBOL_COMPILEROUTPUTPANEL_POSITION, const wxSize& size = SYMBOL_COMPILEROUTPUTPANEL_SIZE, long style = SYMBOL_COMPILEROUTPUTPANEL_STYLE );
 
     /// Creation
     bool Create( wxWindow* parent, wxWindowID id = SYMBOL_COMPILEROUTPUTPANEL_IDNAME, const wxString& caption = SYMBOL_COMPILEROUTPUTPANEL_TITLE, const wxPoint& pos = SYMBOL_COMPILEROUTPUTPANEL_POSITION, const wxSize& size = SYMBOL_COMPILEROUTPUTPANEL_SIZE, long style = SYMBOL_COMPILEROUTPUTPANEL_STYLE );
@@ -117,6 +118,7 @@ public:
 ////@end CompilerOutputPanel member variables
 
 	ChameleonWindow* m_mainFrame;
+	Options* m_options;
 
 	bool m_isAdvanced;
 	int m_numErrors;

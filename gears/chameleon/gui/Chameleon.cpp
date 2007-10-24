@@ -239,7 +239,7 @@ ChameleonWindow::ChameleonWindow(const wxString& title, const wxPoint& pos, cons
 
 
 	Permission* perms = m_options->GetPerms();
-	m_outputPanel = new CompilerOutputPanel(m_noteTerm, this, ID_COMPILEROUTPUT);
+	m_outputPanel = new CompilerOutputPanel(m_noteTerm, this, m_options, ID_COMPILEROUTPUT);
 	//m_outputPanel->SetAdvanced(perms->isEnabled(PERM_ADVANCEDCOMPILE));
 
 	m_watchPanel = new VariableWatchPanel(m_noteTerm, this, ID_VARWATCHPANEL);
@@ -462,7 +462,10 @@ void ChameleonWindow::InitializeProgramOptions()
 		bool printLineNumbers = (m_config->Read("Miscellaneous/PrintLineNumbers", "false") == "true");
 		m_options->SetLineNumberPrinting(printLineNumbers);
 
-		bool combineWatchWindow = (m_config->Read("Miscellaneous/CombineWatchWindow", "false") == "true");
+		bool combineWatchWindow = (m_config->Read("Miscellaneous/CombineWatchWindow", "true") == "true");
+		m_options->SetCombineWatchWindow(combineWatchWindow);
+
+		bool showCompileCommands = (m_config->Read("Miscellaneous/ShowCompileCommands", "true") == "true");
 		m_options->SetCombineWatchWindow(combineWatchWindow);
 
 
@@ -2325,6 +2328,9 @@ void ChameleonWindow::EvaluateOptions()
 
 	bool combineWatchWindow = m_options->GetCombineWatchWindow();
 	m_config->Write("Miscellaneous/CombineWatchWindow", combineWatchWindow ? "true" : "false");
+
+	bool showCompileCommands = m_options->GetShowCompileCommands();
+	m_config->Write("Miscellaneous/ShowCompileCommands", showCompileCommands ? "true" : "false");
 
 	m_config->Write("Compiler/MingwBasePath", m_options->GetMingwBasePath());
 

@@ -40,6 +40,7 @@ class Options
 		void SetCombineWatchWindow(bool combine) { m_combineWatchWindow = combine; }
 		void SetPrintStyle(int style);
 		void SetShowToolbarText(bool useText);
+		void SetShowCompileCommands(bool showCommands);
 		void SetLineNumberPrinting(bool printLineNumbers);
 		void SetTerminalHistorySize(int size);
 		void SetMingwBinPaths(wxArrayString paths);
@@ -59,6 +60,7 @@ class Options
 		bool GetShowToolbarText() { return m_showToolbarText; }
 		bool GetLineNumberPrinting() {return m_printLineNumbers; }
 		bool GetCombineWatchWindow() { return m_combineWatchWindow; }
+		bool GetShowCompileCommands() { return m_showCompileCommands; }
 		int GetTerminalHistorySize() { return m_terminalSize; }
 		wxArrayString GetMingwProgramNames() { return m_mingwProgramNames; }
 		StringFilenameHash GetMingwExecutables() { return m_mingwExecutableNames; }
@@ -84,6 +86,7 @@ class Options
 		bool m_showToolbarText;
 		bool m_printLineNumbers;
 		bool m_combineWatchWindow;
+		bool m_showCompileCommands;
 
 		StringFilenameHash m_mingwExecutableNames;
 		wxArrayString m_mingwBinPaths;

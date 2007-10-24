@@ -85,41 +85,6 @@ Debugger::Debugger(Networking* networking, Options* options, wxEvtHandler* point
 	m_classStatus = STOP;
 	m_myConnection = networking;
 	m_options = options;
-
-	//reg-Ex for Variable watching
-	//------
-	// ints - "$n = val"
-	// look for a space first, to make sure we don't grab the GDB print number instead
-	m_varRegExes["int"] = " ([[:digit:]]+)";
-
-	// ints & - "$n = (int &) val"
-	//note: is this even needed??
-	m_varRegExes["&"] = ".+ ([[:digit:]]+)";
-
-	// ints * - "$n = val"
-	//TODO: Eliminate this
-	m_varRegExes["int*"] = " ([[:digit:]]+)";
-	
-	// double-"$n = val.val"
-	m_varRegExes["double"] = " ([[:digit:]]+(\\.[[:digit:]]+)?)";
-	m_varRegExes["float"] = " ([[:digit:]]+(\\.[[:digit:]]+)?)";
-
-	// char[]-"$n = val 'char'"
-	m_varRegExes["char"] = "[[:digit:]]+ '(.*?)'";
-	
-	// char - "$n = "text""
-	m_varRegExes["char[]"] = "\"(.*)\"";//"[[:digit:]]+ '([[:alnum:]]+)'";
-	
-	// array- "$n = {val, val...}"
-	m_varRegExes["array"] = "({.*})\\r\\n$";
-	
-	// str#2- "$n = "text"" (same as [char])
-	m_varRegExes["string"] = "\"(.*)\"";
-
-	
-
-	// obj -  "$n = {varName = val, varName = val, ..} (varName can be of any listed type...)
-	m_varRegExes["class"] = "({.*})\\r\\n$";
 }
 //end constructors
 
@@ -1319,7 +1284,7 @@ bool Debugger::ParseVariableTypes( wxString &fromGDB )
 	int lineBreak = 0, endQuote = 0, fromWatchIndex = 0, ampIdx = -1;
 	int promptIndex = -1;
 	bool singleLineItem = false;
-	wxRegEx reTypeFinder = "type = (\\(*([[:alnum:]]|_)+([[:blank:]]|\\*|&|\\[|]|[[:digit:]])*\\)*)";//"type = (\\(*[[:alnum:]]+([[:blank:]]|\\*|&)*\\)*)";
+	wxRegEx reTypeFinder = "type = (\\(*([[:alnum:]]|_)+([[:blank:]]|\\*|&|\\[|]|[[:digit:]])*\\)*)";
 
 	wxArrayString outputLines = wxStringTokenize(fromGDB, "`");
 
@@ -1702,25 +1667,15 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 	{
 		case START:			//program start
 			//this re-directs to where the output actually is that we want
-			
-			/*
-			if(m_isRemote)
-			{tempString = tempHold;}
-			else
-			{tempString = errorMsg();}
-			*/
 
-			//if(tempString != "")
-			//{
-				if(reStart.Matches(tempHold))
-				{
-					//the dope command "done" sent to GDB returns an error.
-					//this means that all init. commands have gone through,
-					//and we can start the program.
-					m_status = DEBUG_STOPPED;
-					go();
-				}
-			//}
+			if(reStart.Matches(tempHold))
+			{
+				//the dope command "done" sent to GDB returns an error.
+				//this means that all init. commands have gone through,
+				//and we can start the program.
+				m_status = DEBUG_STOPPED;
+				go();
+			}
 
 			m_data.Empty();
 			break;
@@ -1784,36 +1739,6 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 					{
 						m_Filename = reCase1.GetMatch(tempHold, 1);
 						m_Linenumber = reCase1.GetMatch(tempHold, 3);
-
-						/* HACK
-						 * When debugging locally, the output comes back without any
-						 * newline characters.  When a breakpoint is hit, the line
-						 * number comes back at the end of the first line and the 
-						 * start of the second, which then gets smooshed together.
-						 * Example:
-						 * Breakpoint 1, main() at sample.cpp:42 
-						 * 42  int i = 23;
-						 *
-						 * becomes:
-						 *
-						 * Breakpoint 1, main() at sample.cpp:4242  int i = 23;
-						 *
-						 * The regex correctly pulls out a number, but it's twice
-						 * as long as it should be.  So, we'll find the length of the
-						 * number string, halve it, and pull out the first half.
-						 */
-
-						/*
-						if(!m_isRemote)
-						{
-							int numberLength = m_Linenumber.Len();
-							int halfLength = numberLength / 2;
-							// second argument is inclusive, so subtract 1
-							wxString firstHalf = m_Linenumber.SubString(0, halfLength - 1);
-							m_Linenumber = firstHalf;
-						}
-						*/
-
 
 						m_status = DEBUG_BREAK;
 
@@ -1909,7 +1834,7 @@ void Debugger::onProcessOutputEvent(ChameleonProcessEvent &e)
 		case STEP_OUT:
 		{
 
-			//looking for this heirarchy:
+			//looking for this hierarchy:
 			// 1) the word "Program" as this indicates a fatal error
 			//  2) the pattern "f_name.ext:ln"
 			//   3) a line number

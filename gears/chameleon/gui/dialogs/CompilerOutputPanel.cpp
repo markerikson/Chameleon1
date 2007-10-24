@@ -25,6 +25,7 @@
 
 #include "CompilerOutputPanel.h"
 #include "wx/generic/gridctrl.h"
+#include "../../common/Options.h"
 #include "../../compiler/compilerevent.h"
 #include "../../common/datastructures.h"
 #include "../ChameleonWindow.h"
@@ -63,10 +64,11 @@ CompilerOutputPanel::CompilerOutputPanel( )
 {
 }
 
-CompilerOutputPanel::CompilerOutputPanel( wxWindow* parent, ChameleonWindow* mainFrame, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+CompilerOutputPanel::CompilerOutputPanel( wxWindow* parent, ChameleonWindow* mainFrame, Options* options, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
 {
     Create(parent, id, caption, pos, size, style);
 
+	m_options = options;
 	
 	SetAdvanced(true);
 
@@ -220,27 +222,39 @@ void CompilerOutputPanel::OnCompilerStart(CompilerEvent& event)
 
 	wxFileName fn = event.GetFile();
 	wxString filename = fn.GetFullPath(event.IsRemoteFile() ? wxPATH_UNIX : wxPATH_DOS);
+	wxString commandLine = event.GetCommandLine();
 
-	wxString compileOutput = "Compiling: " + filename;
-	if(filename == "Linking") {
+	wxString compileOutput; 
+	if(filename == "Linking") 
+	{
 		//special case for Linking
 		compileOutput = "Linking:";
 	}
+	else
+	{
+		if(m_options->GetShowCompileCommands())
+		{
+			compileOutput = wxString::Format("Compiling: %s\r\nCompile command: %s", filename, commandLine);
+		}
+		else
+		{
+			compileOutput = wxString::Format("Compiling: %s", filename);
+		}
+	}
 
-	//if(m_isAdvanced)
-	//{
-		int newRowNum = m_grid->GetNumberRows();
-		m_grid->AppendRows(1);
-		
-		// merge all three cells in the new row into a single cell
-		m_grid->SetCellSize(newRowNum, 0, 1, 3);
+	int newRowNum = m_grid->GetNumberRows();
+	m_grid->AppendRows(1);
+	
+	// merge all three cells in the new row into a single cell
+	m_grid->SetCellSize(newRowNum, 0, 1, 3);
 
-		m_grid->SetCellValue(compileOutput, newRowNum, 0);
-	//}
-	//else
-	//{
-		*m_textbox << compileOutput << "\r\n";
-	//}
+	m_grid->SetCellValue(compileOutput, newRowNum, 0);
+
+	*m_textbox << compileOutput << "\r\n";
+
+	m_grid->AutoSizeRow(newRowNum, false);
+
+	m_grid->MakeCellVisible(newRowNum, 0);
     
 }
 

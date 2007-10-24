@@ -175,8 +175,6 @@ class Debugger : public wxEvtHandler
 		wxArrayString m_data;			//holds data from GDB
 		wxArrayString m_fullOutput;	//holds ALL data back from the process
 
-		StringStringHashmap m_varRegExes;
-
 		//globals for use in parse
 		wxString m_Filename; 
 		wxString m_Linenumber;
